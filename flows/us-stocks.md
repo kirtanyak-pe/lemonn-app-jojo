@@ -28,7 +28,7 @@ Prototype: https://kirtanyak-pe.github.io/lemonn-app-prototype/#/us-stocks · ma
 
 | Section | Screens | What |
 |---|---|---|
-| Entry points | `us-stocks-02`, `03`, `05`–`07` | Ways into US Stocks: S&P 500, Search, Portfolio, MF (the Home entry is `stocks-09`) |
+| Entry points | `us-stocks-02`, `05`–`07` | Ways into US Stocks: S&P 500, Portfolio, MF (the Home entry is `stocks-09`; Search is the Search flow's US tab, `search-29`) |
 | FTUX | `13`–`15`, `20`–`28` | Stock page (not activated), risk disclosure, confirm details, $0 wallet, add money (the Home screens of the flow are `stocks-11`…`18`) |
 | Activated user | `31`–`52` | Stock page (no holdings / holding), buy (amount / shares / limit / SL / AMO / errors), results, sell |
 | USD wallet | `53`–`70` | Wallet states, balance details, withdraw, withdrawal tracking |
@@ -68,6 +68,9 @@ Every tap he wired is kept. The main path: FTUX sheet → Activate → Risk disc
 
 ### Changelog
 
+- 2026-11-02 — Colours are L3 only. Logo plates use `--l3-static-black` / `--l3-static-white`, the NVIDIA coin `--l3-content-accent-brand-default`, and the wallet coin art semantic success greens instead of base hues. The two-tone SVGs (MF category icons, expert rings, banner tile, chevron, S&P chart-type and bolts, holdings leaves, order success / error) carry `var(--l3-…)` colours and are drawn inline by `components/InlineSvg`, so they follow light / dark. 28 unused SVGs were deleted. The mascot and company logos keep their own artwork colours.
+- 2026-11-02 — Every US screen uses the L3 `Actionbar`, left-aligned (L3 has no centred title): Portfolio (title + Search/Wallet actions + tabs in `bottom`), MF home (`search` slot; the profile avatar is dropped, as the Actionbar has no left slot), Stock and ETF pages (back + star; scrolled title = symbol, description = price + move), Deposit, Withdraw, Confirm details and Balance details (centred-title overrides removed). The line under the bar shows only after scrolling.
+- 2026-11-01 — Search (E2a, `us-stocks-03`) removed: it's the app's Search flow, US tab (`search-29`); Portfolio's Search goes there.
 - 2026-10-30 — Home now uses the app's Stocks home: his `home` and `ftux` parts and the "activation submitted" sheet removed (57 screens); `ScreenBackdrop` only draws screens of this flow; the risk disclosure's default backdrop is the not-activated stock page.
 - 2026-10-30 — Market now uses the app's Market flow (US list + picker); E3 screen removed (69 screens). US logos and catalogue moved to `src/shared`.
 - 2026-10-30 — Imported from `US-Stocks-Happy-Flow (1).html` (his L3 update with Raised). Rebuilt from the compiled
@@ -121,7 +124,6 @@ branch `jojo`, **as he built it**. Nothing below is fixed: every item is marked 
 | Text / icon / round buttons | stock page tools | Button (Ghost / Tertiary) |
 | Logo discs | stock page, entry `Primitives.tsx` | Avatar / BrandLogo |
 | Hand-drawn price chart, bar chart, day-range meter, rating gauge, progress bars | stock page, entry `SpxChart.tsx` | Chart / ProgressBar |
-| Empty states (halo) | entry `OrdersTab.tsx` | EmptyState (+ L3 empty-state illustration) |
 | Cards, banners, carousels, pager dots | entry `HoldingsCards.tsx`, wallet `BalanceCard.tsx`, `PendingBanner.tsx` | Card (+ gaps for carousel / dots) |
 | Success tick, result art | money `WithdrawPlacedScreen.tsx`, trade `OrderResult.tsx` | EmptyState-style art / L3 icon |
 | L3 components restyled from outside (Tabs, Tag, Stepper, Select, Actionbar title) | stock page `.periods` / `.tags`, trade `OrderPad.module.css`, wallet, entry `OrdersTab` | use props, or an L3 change |
@@ -131,7 +133,7 @@ branch `jojo`, **as he built it**. Nothing below is fixed: every item is marked 
 - **Layout by hand:** `display:flex` + gap/padding everywhere (~500 rules) instead of `Stack` / `Section` / `Inset` /
   `Grid` — flagged once per file.
 - **Raw px:** ~330 values that aren't 1px hairlines (flagged inline in the CSS).
-- **Raw colours:** `#0000` / `#000` text tricks, logo plates `#000` / `#fff` (`data.ts`, `searchData.ts`), coin art gradient (`wallet/CoinArt.module.css`), NVIDIA green `#76b900` (entry MF home).
+- **Raw colours:** `#0000` / `#000` text tricks, logo plates `#000` / `#fff` (`data.ts`), coin art gradient (`wallet/CoinArt.module.css`), NVIDIA green `#76b900` (entry MF home).
 - **Inline styles / inlined Material-symbol SVGs** as data URIs in each part's `icons.ts` (L3 Icon set instead).
 - **sessionStorage** hand-offs between screens (market choice, mover filters, wallet flip, typed amounts).
 
@@ -167,12 +169,22 @@ The rebuild ran per part, so a few helpers exist more than once: the mask-image 
 // ./assets and hands back its URL.
 const files = import.meta.glob('./assets/**/*', { eager: true, query: '?url', import: 'default' }) as Record<string, string>
 
-/** URL of an imported image: asset('assets/wallet/separator.svg'). */
+/** URL of an imported image: asset('assets/trade/loading.svg'). */
 export function asset(path: string): string {
   const key = './assets/' + path.replace(/^assets\//, '')
   const url = files[key]
   if (!url && import.meta.env.DEV) console.warn(`us-stocks: missing asset ${path}`)
   return url ?? ''
+}
+
+// The same SVGs as markup, for InlineSvg: drawn inline, their var(--l3-…) colours follow light / dark.
+const svgs = import.meta.glob('./assets/**/*.svg', { eager: true, query: '?raw', import: 'default' }) as Record<string, string>
+
+/** Markup of an imported SVG: svgMarkup('assets/entry/mf/tile.svg'). */
+export function svgMarkup(path: string): string {
+  const markup = svgs['./assets/' + path.replace(/^assets\//, '')]
+  if (!markup && import.meta.env.DEV) console.warn(`us-stocks: missing svg ${path}`)
+  return markup ?? ''
 }
 ```
 
@@ -2683,15 +2695,7 @@ UAq�oZ�+����}gc�Vti�\�MbXg	�֖,Asb��@���!y�d�
 
 ```tsx
 <svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="7.4406" height="9" viewBox="0 0 7.4406 9" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path id="Vector" d="M7.35413 2.85133H4.96846L7.11372 0.14078C7.15812 0.0833848 7.11805 0 7.0455 0H2.8925C2.86218 0 2.83294 0.0162438 2.81778 0.0433168L0.0119357 4.88938C-0.0216348 4.94677 0.0195161 5.01933 0.086657 5.01933H1.97527L1.00714 8.89185C0.986563 8.97632 1.08836 9.03588 1.15117 8.97523L7.41369 2.99969C7.47 2.94662 7.4321 2.85133 7.35413 2.85133Z" fill="#A6A6A6" style="fill:#A6A6A6;fill:color(display-p3 0.6510 0.6510 0.6510);fill-opacity:1;"/>
-</svg>
-```
-
-### `src/flows/us-stocks/assets/entry/index/caret.svg`
-
-```tsx
-<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="6.45" height="3.525" viewBox="0 0 6.45 3.525" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path id="Vector" d="M0.375 3.525C0.2625 3.525 0.171875 3.4875 0.103125 3.4125C0.034375 3.3375 0 3.25 0 3.15C0 3.125 0.0375 3.0375 0.1125 2.8875L2.83125 0.16875C2.89375 0.10625 2.95625 0.0625 3.01875 0.0375C3.08125 0.0125 3.15 0 3.225 0C3.3 0 3.36875 0.0125 3.43125 0.0375C3.49375 0.0625 3.55625 0.10625 3.61875 0.16875L6.3375 2.8875C6.375 2.925 6.40312 2.96563 6.42188 3.00938C6.44063 3.05313 6.45 3.1 6.45 3.15C6.45 3.25 6.41563 3.3375 6.34688 3.4125C6.27813 3.4875 6.1875 3.525 6.075 3.525H0.375Z" fill="#BBBBBB" style="fill:#BBBBBB;fill:color(display-p3 0.7333 0.7333 0.7333);fill-opacity:1;"/>
+<path id="Vector" d="M7.35413 2.85133H4.96846L7.11372 0.14078C7.15812 0.0833848 7.11805 0 7.0455 0H2.8925C2.86218 0 2.83294 0.0162438 2.81778 0.0433168L0.0119357 4.88938C-0.0216348 4.94677 0.0195161 5.01933 0.086657 5.01933H1.97527L1.00714 8.89185C0.986563 8.97632 1.08836 9.03588 1.15117 8.97523L7.41369 2.99969C7.47 2.94662 7.4321 2.85133 7.35413 2.85133Z" style="fill:var(--l3-content-tertiary);fill-opacity:1;"/>
 </svg>
 ```
 
@@ -2700,17 +2704,7 @@ UAq�oZ�+����}gc�Vti�\�MbXg	�֖,Asb��@���!y�d�
 ```tsx
 <svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="22.5906" height="11.4028" viewBox="0 0 22.5906 11.4028" fill="none" xmlns="http://www.w3.org/2000/svg">
 <g id="Graph">
-<path id="Vector 5" d="M22.0906 10.887C22.0906 10.887 20.4857 9.55973 19.3632 9.79606C18.6116 9.95429 18.4782 11.0459 17.7267 10.887C17.0595 10.7459 17.3177 9.52848 16.6357 9.52331C16.2623 9.52048 15.8761 9.92397 15.6787 10.1653C15.6242 10.232 15.5118 10.2137 15.4901 10.1304C15.2079 9.04868 13.9117 4.17014 13.4268 3.92775C12.8813 3.65504 12.1841 8.06947 11.4537 7.88687C10.7232 7.70427 9.40288 0.0486181 8.18075 0.522835C7.13768 0.927574 4.81345 3.15828 4.15479 3.80324C4.05108 3.90479 3.89132 3.91789 3.7723 3.83481C3.214 3.4451 1.63474 2.3378 0.500031 1.49386" stroke-linecap="round" stroke="#6DAAFB" style="stroke:#6DAAFB;stroke:color(display-p3 0.4275 0.6667 0.9843);stroke-opacity:1;"/>
-</g>
-</svg>
-```
-
-### `src/flows/us-stocks/assets/entry/index/chevron.svg`
-
-```tsx
-<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g id="Icon">
-<path id="Vector (Stroke)" d="M5.5286 3.5286C5.78895 3.26825 6.21106 3.26825 6.4714 3.5286L10.4714 7.5286C10.7318 7.78895 10.7318 8.21106 10.4714 8.4714L6.4714 12.4714C6.21106 12.7318 5.78895 12.7318 5.5286 12.4714C5.26825 12.2111 5.26825 11.7889 5.5286 11.5286L9.05719 8L5.5286 4.4714C5.26825 4.21106 5.26825 3.78895 5.5286 3.5286Z" fill-rule="evenodd" clip-rule="evenodd" fill="#6DAAFB" style="fill:#6DAAFB;fill:color(display-p3 0.4275 0.6667 0.9843);fill-opacity:1;"/>
+<path id="Vector 5" d="M22.0906 10.887C22.0906 10.887 20.4857 9.55973 19.3632 9.79606C18.6116 9.95429 18.4782 11.0459 17.7267 10.887C17.0595 10.7459 17.3177 9.52848 16.6357 9.52331C16.2623 9.52048 15.8761 9.92397 15.6787 10.1653C15.6242 10.232 15.5118 10.2137 15.4901 10.1304C15.2079 9.04868 13.9117 4.17014 13.4268 3.92775C12.8813 3.65504 12.1841 8.06947 11.4537 7.88687C10.7232 7.70427 9.40288 0.0486181 8.18075 0.522835C7.13768 0.927574 4.81345 3.15828 4.15479 3.80324C4.05108 3.90479 3.89132 3.91789 3.7723 3.83481C3.214 3.4451 1.63474 2.3378 0.500031 1.49386" stroke-linecap="round" style="stroke:var(--l3-content-accent-discover-default);stroke-opacity:1;"/>
 </g>
 </svg>
 ```
@@ -2730,12 +2724,12 @@ UAq�oZ�+����}gc�Vti�\�MbXg	�֖,Asb��@���!y�d�
 ```tsx
 <svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="16.4261" height="19.2445" viewBox="0 0 16.4261 19.2445" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 <g id="Vector">
-<use xlink:href="#stroke0_0_208" fill="#E8E8E8" style="fill:#E8E8E8;fill:color(display-p3 0.9098 0.9098 0.9098);fill-opacity:1;"/>
+<use xlink:href="#stroke0_0_208" style="fill:var(--l3-content-primary);fill-opacity:1;"/>
 <mask id="stroke1_0_208" maskUnits="userSpaceOnUse" x="-0.498059" y="-0.5" width="17" height="20" fill="black">
 <rect fill="white" x="-0.498059" y="-0.5" width="17" height="20"/>
 <use xlink:href="#stroke0_0_208"/>
 </mask>
-<path d="M14.7657 6.64258H10.4629L14.3321 1.75391C14.4121 1.65039 14.3399 1.5 14.209 1.5H6.71878C6.66409 1.5 6.61136 1.5293 6.58402 1.57812L1.52347 10.3184C1.46292 10.4219 1.53714 10.5527 1.65823 10.5527H5.06448L3.31839 17.5371C3.28128 17.6895 3.46487 17.7969 3.57816 17.6875L14.8731 6.91016C14.9746 6.81445 14.9063 6.64258 14.7657 6.64258Z" stroke-width="3" stroke="#262626" style="stroke:#262626;stroke:color(display-p3 0.1490 0.1490 0.1490);stroke-opacity:1;" mask="url(#stroke1_0_208)"/>
+<path d="M14.7657 6.64258H10.4629L14.3321 1.75391C14.4121 1.65039 14.3399 1.5 14.209 1.5H6.71878C6.66409 1.5 6.61136 1.5293 6.58402 1.57812L1.52347 10.3184C1.46292 10.4219 1.53714 10.5527 1.65823 10.5527H5.06448L3.31839 17.5371C3.28128 17.6895 3.46487 17.7969 3.57816 17.6875L14.8731 6.91016C14.9746 6.81445 14.9063 6.64258 14.7657 6.64258Z" stroke-width="3" style="stroke:var(--l3-surface-primary);stroke-opacity:1;" mask="url(#stroke1_0_208)"/>
 </g>
 <defs>
 <path id="stroke0_0_208" d="M14.7657 6.64258H10.4629L14.3321 1.75391C14.4121 1.65039 14.3399 1.5 14.209 1.5H6.71878C6.66409 1.5 6.61136 1.5293 6.58401 1.57812L1.52347 10.3184C1.46292 10.4219 1.53714 10.5527 1.65823 10.5527H5.06448L3.31839 17.5371C3.28128 17.6895 3.46487 17.7969 3.57816 17.6875L14.8731 6.91016C14.9746 6.81445 14.9063 6.64258 14.7657 6.64258Z"/>
@@ -2930,22 +2924,12 @@ TE@P�P�.�ECE@8J��U@P�b���q�PE@P����
 ```tsx
 <svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="18.5716" height="18.5714" viewBox="0 0 18.5716 18.5714" fill="none" xmlns="http://www.w3.org/2000/svg">
 <g id="decent-work-and-economic-growth">
-<path id="Vector 4549" d="M0.714408 17.8571V10.7143L5.71441 7.85714L11.4287 12.1429L17.8573 7.14286V17.8571H0.714408Z" fill="#063D23" style="fill:#063D23;fill:color(display-p3 0.0235 0.2392 0.1373);fill-opacity:1;"/>
-<path id="Vector 4554" d="M0.714408 17.8571V10.7143L5.71441 7.85714L11.4287 12.1429L17.8573 7.14286V17.8571H0.714408Z" stroke-width="1.42857" stroke-linecap="round" stroke-linejoin="round" stroke="#37AD75" style="stroke:#37AD75;stroke:color(display-p3 0.2157 0.6784 0.4588);stroke-opacity:1;"/>
-<path id="Vector 4551" d="M14.2847 0.714286H17.8561V4.28571" stroke-width="1.42857" stroke-linecap="round" stroke-linejoin="round" stroke="#37AD75" style="stroke:#37AD75;stroke:color(display-p3 0.2157 0.6784 0.4588);stroke-opacity:1;"/>
-<path id="Vector 4550" d="M0.714408 5L5.71441 2.14286L11.4287 6.42857L17.8573 1.07143" stroke-width="1.42857" stroke-linecap="round" stroke-linejoin="round" stroke="#37AD75" style="stroke:#37AD75;stroke:color(display-p3 0.2157 0.6784 0.4588);stroke-opacity:1;"/>
-<path id="Vector 4552" d="M5.71441 7.85714V17.8571" stroke-width="1.42857" stroke-linecap="round" stroke-linejoin="round" stroke="#37AD75" style="stroke:#37AD75;stroke:color(display-p3 0.2157 0.6784 0.4588);stroke-opacity:1;"/>
-<path id="Vector 4553" d="M11.4293 12.1429V17.8571" stroke-width="1.42857" stroke-linecap="round" stroke-linejoin="round" stroke="#37AD75" style="stroke:#37AD75;stroke:color(display-p3 0.2157 0.6784 0.4588);stroke-opacity:1;"/>
-</g>
-</svg>
-```
-
-### `src/flows/us-stocks/assets/entry/mf/arrow-forward.svg`
-
-```tsx
-<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g id="arrow_forward_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24 1">
-<path id="Vector" d="M13.4818 10.8335H3.33594V9.16683H13.4818L8.8151 4.50016L10.0026 3.3335L16.6693 10.0002L10.0026 16.6668L8.8151 15.5002L13.4818 10.8335Z" fill="#DBDBDB" style="fill:#DBDBDB;fill:color(display-p3 0.8588 0.8588 0.8588);fill-opacity:1;"/>
+<path id="Vector 4549" d="M0.714408 17.8571V10.7143L5.71441 7.85714L11.4287 12.1429L17.8573 7.14286V17.8571H0.714408Z" style="fill:var(--l3-surface-accent-success-light);fill-opacity:1;"/>
+<path id="Vector 4554" d="M0.714408 17.8571V10.7143L5.71441 7.85714L11.4287 12.1429L17.8573 7.14286V17.8571H0.714408Z" stroke-width="1.42857" stroke-linecap="round" stroke-linejoin="round" style="stroke:var(--l3-content-accent-success-default);stroke-opacity:1;"/>
+<path id="Vector 4551" d="M14.2847 0.714286H17.8561V4.28571" stroke-width="1.42857" stroke-linecap="round" stroke-linejoin="round" style="stroke:var(--l3-content-accent-success-default);stroke-opacity:1;"/>
+<path id="Vector 4550" d="M0.714408 5L5.71441 2.14286L11.4287 6.42857L17.8573 1.07143" stroke-width="1.42857" stroke-linecap="round" stroke-linejoin="round" style="stroke:var(--l3-content-accent-success-default);stroke-opacity:1;"/>
+<path id="Vector 4552" d="M5.71441 7.85714V17.8571" stroke-width="1.42857" stroke-linecap="round" stroke-linejoin="round" style="stroke:var(--l3-content-accent-success-default);stroke-opacity:1;"/>
+<path id="Vector 4553" d="M11.4293 12.1429V17.8571" stroke-width="1.42857" stroke-linecap="round" stroke-linejoin="round" style="stroke:var(--l3-content-accent-success-default);stroke-opacity:1;"/>
 </g>
 </svg>
 ```
@@ -2955,7 +2939,7 @@ TE@P�P�.�ECE@8J��U@P�b���q�PE@P����
 ```tsx
 <svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
 <g id="arrow_forward_ios_24dp_E3E3E3_FILL1_wght400_GRAD0_opsz24 1">
-<path id="Vector" d="M9.64975 8L4.74975 3.1C4.58308 2.93333 4.50253 2.73611 4.50808 2.50833C4.51364 2.28056 4.59975 2.08333 4.76641 1.91667C4.93308 1.75 5.1303 1.66667 5.35808 1.66667C5.58586 1.66667 5.78308 1.75 5.94975 1.91667L11.0664 7.05C11.1997 7.18333 11.2997 7.33333 11.3664 7.5C11.4331 7.66667 11.4664 7.83333 11.4664 8C11.4664 8.16667 11.4331 8.33333 11.3664 8.5C11.2997 8.66667 11.1997 8.81667 11.0664 8.95L5.93308 14.0833C5.76641 14.25 5.57197 14.3306 5.34975 14.325C5.12753 14.3194 4.93308 14.2333 4.76641 14.0667C4.59975 13.9 4.51641 13.7028 4.51641 13.475C4.51641 13.2472 4.59975 13.05 4.76641 12.8833L9.64975 8Z" fill="#2E2E2E" style="fill:#2E2E2E;fill:color(display-p3 0.1800 0.1800 0.1800);fill-opacity:1;"/>
+<path id="Vector" d="M9.64975 8L4.74975 3.1C4.58308 2.93333 4.50253 2.73611 4.50808 2.50833C4.51364 2.28056 4.59975 2.08333 4.76641 1.91667C4.93308 1.75 5.1303 1.66667 5.35808 1.66667C5.58586 1.66667 5.78308 1.75 5.94975 1.91667L11.0664 7.05C11.1997 7.18333 11.2997 7.33333 11.3664 7.5C11.4331 7.66667 11.4664 7.83333 11.4664 8C11.4664 8.16667 11.4331 8.33333 11.3664 8.5C11.2997 8.66667 11.1997 8.81667 11.0664 8.95L5.93308 14.0833C5.76641 14.25 5.57197 14.3306 5.34975 14.325C5.12753 14.3194 4.93308 14.2333 4.76641 14.0667C4.59975 13.9 4.51641 13.7028 4.51641 13.475C4.51641 13.2472 4.59975 13.05 4.76641 12.8833L9.64975 8Z" style="fill:var(--l3-content-primary);fill-opacity:1;"/>
 </g>
 </svg>
 ```
@@ -2966,16 +2950,6 @@ TE@P�P�.�ECE@8J��U@P�b���q�PE@P����
 <svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
 <g id="arrow_forward_ios_24dp_E3E3E3_FILL1_wght400_GRAD0_opsz24 1">
 <path id="Vector" d="M9.64975 8L4.74975 3.1C4.58308 2.93333 4.50253 2.73611 4.50808 2.50833C4.51364 2.28056 4.59975 2.08333 4.76641 1.91667C4.93308 1.75 5.1303 1.66667 5.35808 1.66667C5.58586 1.66667 5.78308 1.75 5.94975 1.91667L11.0664 7.05C11.1997 7.18333 11.2997 7.33333 11.3664 7.5C11.4331 7.66667 11.4664 7.83333 11.4664 8C11.4664 8.16667 11.4331 8.33333 11.3664 8.5C11.2997 8.66667 11.1997 8.81667 11.0664 8.95L5.93308 14.0833C5.76641 14.25 5.57197 14.3306 5.34975 14.325C5.12753 14.3194 4.93308 14.2333 4.76641 14.0667C4.59975 13.9 4.51641 13.7028 4.51641 13.475C4.51641 13.2472 4.59975 13.05 4.76641 12.8833L9.64975 8Z" fill="white" style="fill:white;fill-opacity:1;"/>
-</g>
-</svg>
-```
-
-### `src/flows/us-stocks/assets/entry/mf/chevron.svg`
-
-```tsx
-<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g id="keyboard_arrow_down_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24 1">
-<path id="Vector" d="M11.6248 15.8993C11.5081 15.8576 11.3998 15.7868 11.2998 15.6868L6.6998 11.0868C6.51647 10.9035 6.4248 10.6701 6.4248 10.3868C6.4248 10.1035 6.51647 9.87015 6.6998 9.68681C6.88314 9.50348 7.11647 9.41181 7.3998 9.41181C7.68314 9.41181 7.91647 9.50348 8.0998 9.68681L11.9998 13.5868L15.8998 9.68681C16.0831 9.50348 16.3165 9.41181 16.5998 9.41181C16.8831 9.41181 17.1165 9.50348 17.2998 9.68681C17.4831 9.87015 17.5748 10.1035 17.5748 10.3868C17.5748 10.6701 17.4831 10.9035 17.2998 11.0868L12.6998 15.6868C12.5998 15.7868 12.4915 15.8576 12.3748 15.8993C12.2581 15.941 12.1331 15.9618 11.9998 15.9618C11.8665 15.9618 11.7415 15.941 11.6248 15.8993Z" fill="#E8E8E8" style="fill:#E8E8E8;fill:color(display-p3 0.9098 0.9098 0.9098);fill-opacity:1;"/>
 </g>
 </svg>
 ```
@@ -3609,13 +3583,13 @@ Un���_����+�@Ѯ0ߌI�aQ�)�8s��"��Z��'	�
 ```tsx
 <svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="18.5709" height="18.5717" viewBox="0 0 18.5709 18.5717" fill="none" xmlns="http://www.w3.org/2000/svg">
 <g id="chart-profit-growth-through-the-roof--chart-profit-growth-through-the-roof-over-perform">
-<path id="Subtract" d="M9.28571 3.57171H2.14286C1.35389 3.57171 0.714286 4.21131 0.714286 5.00028V16.4289C0.714286 17.2179 1.35389 17.8574 2.14286 17.8574H13.5714C14.3604 17.8574 15 17.2179 15 16.4289V9.28599C13.8166 9.28599 12.8571 8.32661 12.8571 7.14314C12.8571 6.92366 12.8901 6.71191 12.9514 6.51255C12.7669 6.41486 12.5936 6.28835 12.4382 6.13299C12.283 5.97778 12.1566 5.80468 12.059 5.62034C11.8597 5.68159 11.648 5.71456 11.4286 5.71456C10.2451 5.71456 9.28571 4.75518 9.28571 3.57171Z" fill-rule="evenodd" clip-rule="evenodd" fill="#063D23" style="fill:#063D23;fill:color(display-p3 0.0235 0.2392 0.1373);fill-opacity:1;"/>
-<path id="Rectangle 2332" d="M8.57143 3.57171H2.14286C1.35389 3.57171 0.714286 4.21131 0.714286 5.00028V16.4289C0.714286 17.2179 1.35389 17.8574 2.14286 17.8574H13.5714C14.3604 17.8574 15 17.2179 15 16.4289V10.0003" stroke-width="1.42857" stroke-linecap="round" stroke-linejoin="round" stroke="#37AD75" style="stroke:#37AD75;stroke:color(display-p3 0.2157 0.6784 0.4588);stroke-opacity:1;"/>
-<path id="Vector 5498" d="M11.4291 0.714286V3.57143" stroke-width="1.42857" stroke-linecap="round" stroke-linejoin="round" stroke="#37AD75" style="stroke:#37AD75;stroke:color(display-p3 0.2157 0.6784 0.4588);stroke-opacity:1;"/>
-<path id="Vector 5502" d="M15.9689 2.59759L13.9487 4.6179" stroke-width="1.42857" stroke-linecap="round" stroke-linejoin="round" stroke="#37AD75" style="stroke:#37AD75;stroke:color(display-p3 0.2157 0.6784 0.4588);stroke-opacity:1;"/>
-<path id="Vector 5500" d="M14.9994 7.143H17.8566" stroke-width="1.42857" stroke-linecap="round" stroke-linejoin="round" stroke="#37AD75" style="stroke:#37AD75;stroke:color(display-p3 0.2157 0.6784 0.4588);stroke-opacity:1;"/>
-<path id="Vector 5503" d="M7.85491 7.143H11.4263V10.7144" stroke-width="1.42857" stroke-linecap="round" stroke-linejoin="round" stroke="#37AD75" style="stroke:#37AD75;stroke:color(display-p3 0.2157 0.6784 0.4588);stroke-opacity:1;"/>
-<path id="Vector 5504" d="M11.4286 7.143L8.2248 10.3468C6.61734 11.9542 4.43717 12.8573 2.16389 12.8573H0.714286" stroke-width="1.42857" stroke-linecap="round" stroke-linejoin="round" stroke="#37AD75" style="stroke:#37AD75;stroke:color(display-p3 0.2157 0.6784 0.4588);stroke-opacity:1;"/>
+<path id="Subtract" d="M9.28571 3.57171H2.14286C1.35389 3.57171 0.714286 4.21131 0.714286 5.00028V16.4289C0.714286 17.2179 1.35389 17.8574 2.14286 17.8574H13.5714C14.3604 17.8574 15 17.2179 15 16.4289V9.28599C13.8166 9.28599 12.8571 8.32661 12.8571 7.14314C12.8571 6.92366 12.8901 6.71191 12.9514 6.51255C12.7669 6.41486 12.5936 6.28835 12.4382 6.13299C12.283 5.97778 12.1566 5.80468 12.059 5.62034C11.8597 5.68159 11.648 5.71456 11.4286 5.71456C10.2451 5.71456 9.28571 4.75518 9.28571 3.57171Z" fill-rule="evenodd" clip-rule="evenodd" style="fill:var(--l3-surface-accent-success-light);fill-opacity:1;"/>
+<path id="Rectangle 2332" d="M8.57143 3.57171H2.14286C1.35389 3.57171 0.714286 4.21131 0.714286 5.00028V16.4289C0.714286 17.2179 1.35389 17.8574 2.14286 17.8574H13.5714C14.3604 17.8574 15 17.2179 15 16.4289V10.0003" stroke-width="1.42857" stroke-linecap="round" stroke-linejoin="round" style="stroke:var(--l3-content-accent-success-default);stroke-opacity:1;"/>
+<path id="Vector 5498" d="M11.4291 0.714286V3.57143" stroke-width="1.42857" stroke-linecap="round" stroke-linejoin="round" style="stroke:var(--l3-content-accent-success-default);stroke-opacity:1;"/>
+<path id="Vector 5502" d="M15.9689 2.59759L13.9487 4.6179" stroke-width="1.42857" stroke-linecap="round" stroke-linejoin="round" style="stroke:var(--l3-content-accent-success-default);stroke-opacity:1;"/>
+<path id="Vector 5500" d="M14.9994 7.143H17.8566" stroke-width="1.42857" stroke-linecap="round" stroke-linejoin="round" style="stroke:var(--l3-content-accent-success-default);stroke-opacity:1;"/>
+<path id="Vector 5503" d="M7.85491 7.143H11.4263V10.7144" stroke-width="1.42857" stroke-linecap="round" stroke-linejoin="round" style="stroke:var(--l3-content-accent-success-default);stroke-opacity:1;"/>
+<path id="Vector 5504" d="M11.4286 7.143L8.2248 10.3468C6.61734 11.9542 4.43717 12.8573 2.16389 12.8573H0.714286" stroke-width="1.42857" stroke-linecap="round" stroke-linejoin="round" style="stroke:var(--l3-content-accent-success-default);stroke-opacity:1;"/>
 </g>
 </svg>
 ```
@@ -3625,9 +3599,9 @@ Un���_����+�@Ѯ0ߌI�aQ�)�8s��"��Z��'	�
 ```tsx
 <svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
 <g id="pie-chart--product-data-analysis-analytics-pie-business-chart">
-<path id="Vector" d="M0.714286 10C0.714286 15.1284 4.87164 19.2857 10 19.2857C12.5642 19.2857 14.8856 18.2464 16.566 16.566L10 10V0.714286C4.87164 0.714286 0.714286 4.87164 0.714286 10Z" fill="#063D23" style="fill:#063D23;fill:color(display-p3 0.0235 0.2392 0.1373);fill-opacity:1;"/>
-<path id="Vector_2" d="M10 19.2857C15.1284 19.2857 19.2857 15.1284 19.2857 10C19.2857 4.87164 15.1284 0.714286 10 0.714286C4.87164 0.714286 0.714286 4.87164 0.714286 10C0.714286 15.1284 4.87164 19.2857 10 19.2857Z" stroke-width="1.42857" stroke-linecap="round" stroke-linejoin="round" stroke="#37AD75" style="stroke:#37AD75;stroke:color(display-p3 0.2157 0.6784 0.4588);stroke-opacity:1;"/>
-<path id="Vector_3" d="M9.99944 0.714286V10L16.5709 16.5714" stroke-width="1.42857" stroke-linecap="round" stroke-linejoin="round" stroke="#37AD75" style="stroke:#37AD75;stroke:color(display-p3 0.2157 0.6784 0.4588);stroke-opacity:1;"/>
+<path id="Vector" d="M0.714286 10C0.714286 15.1284 4.87164 19.2857 10 19.2857C12.5642 19.2857 14.8856 18.2464 16.566 16.566L10 10V0.714286C4.87164 0.714286 0.714286 4.87164 0.714286 10Z" style="fill:var(--l3-surface-accent-success-light);fill-opacity:1;"/>
+<path id="Vector_2" d="M10 19.2857C15.1284 19.2857 19.2857 15.1284 19.2857 10C19.2857 4.87164 15.1284 0.714286 10 0.714286C4.87164 0.714286 0.714286 4.87164 0.714286 10C0.714286 15.1284 4.87164 19.2857 10 19.2857Z" stroke-width="1.42857" stroke-linecap="round" stroke-linejoin="round" style="stroke:var(--l3-content-accent-success-default);stroke-opacity:1;"/>
+<path id="Vector_3" d="M9.99944 0.714286V10L16.5709 16.5714" stroke-width="1.42857" stroke-linecap="round" stroke-linejoin="round" style="stroke:var(--l3-content-accent-success-default);stroke-opacity:1;"/>
 </g>
 </svg>
 ```
@@ -3692,44 +3666,6 @@ Un���_����+�@Ѯ0ߌI�aQ�)�8s��"��Z��'	�
 <path id="Vector 304" d="M18.7274 14.1858L18.5555 15.2169C18.5249 15.4007 18.7456 15.5227 18.8894 15.4043C19.6273 14.797 20.2453 14.4653 21.0827 14.1689C21.2798 14.0992 21.2591 13.8016 21.0527 13.7683L19.6285 13.5386C19.2012 13.4697 18.7985 13.7589 18.7274 14.1858Z" fill="#C3C3C5" style="fill:#C3C3C5;fill:color(display-p3 0.7647 0.7647 0.7725);fill-opacity:1;"/>
 </g>
 <path id="Vector 236" d="M14.8501 18.148C15.7466 18.7084 16.9047 18.755 17.3716 18.7084C18.0719 18.7114 15.9708 20.5294 15.1303 20.2493C14.2898 19.9691 13.7295 17.4476 14.8501 18.148Z" fill="white" style="fill:white;fill-opacity:1;"/>
-</g>
-</svg>
-```
-
-### `src/flows/us-stocks/assets/entry/mf/mask-1.svg`
-
-```tsx
-<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path id="Ellipse 2417" d="M39.3846 20C39.3846 30.7058 30.7058 39.3846 20 39.3846C9.29417 39.3846 0.615385 30.7058 0.615385 20C0.615385 9.29417 9.29417 0.615385 20 0.615385C30.7058 0.615385 39.3846 9.29417 39.3846 20Z" fill="#D9D9D9" style="fill:#D9D9D9;fill:color(display-p3 0.8510 0.8510 0.8510);fill-opacity:1;stroke:#262626;stroke:color(display-p3 0.1490 0.1490 0.1490);stroke-opacity:1;" stroke-width="1.23077" stroke="#262626"/>
-</svg>
-```
-
-### `src/flows/us-stocks/assets/entry/mf/mask-2.svg`
-
-```tsx
-<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path id="Ellipse 2417" d="M39.3846 20C39.3846 30.7058 30.7058 39.3846 20 39.3846C9.29417 39.3846 0.615385 30.7058 0.615385 20C0.615385 9.29417 9.29417 0.615385 20 0.615385C30.7058 0.615385 39.3846 9.29417 39.3846 20Z" fill="#D9D9D9" style="fill:#D9D9D9;fill:color(display-p3 0.8510 0.8510 0.8510);fill-opacity:1;stroke:#262626;stroke:color(display-p3 0.1490 0.1490 0.1490);stroke-opacity:1;" stroke-width="1.23077" stroke="#262626"/>
-</svg>
-```
-
-### `src/flows/us-stocks/assets/entry/mf/mask-3.svg`
-
-```tsx
-<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-<circle id="Ellipse 2417" cx="20" cy="20" r="20" fill="#D9D9D9" style="fill:#D9D9D9;fill:color(display-p3 0.8510 0.8510 0.8510);fill-opacity:1;"/>
-</svg>
-```
-
-### `src/flows/us-stocks/assets/entry/mf/profile.svg`
-
-```tsx
-<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g id="Porfile">
-<path id="Vector" d="M16 32C7.15662 32 0 24.8434 0 16C0 7.15663 7.15662 0 16 0C24.8434 0 32 7.15663 32 16C32 24.8193 24.8434 32 16 32Z" fill="#6B91FC" style="fill:#6B91FC;fill:color(display-p3 0.4196 0.5686 0.9882);fill-opacity:1;"/>
-<path id="Vector_2" d="M12.0288 5.41549C10.8481 8.0179 9.66734 10.6203 8.48662 13.2468C8.19747 13.8974 7.90831 14.5239 7.61915 15.1745C7.47457 15.5119 7.32999 15.8492 7.18541 16.1625C7.06493 16.4275 6.89626 16.7167 6.87216 17.0299C6.82397 17.6083 7.23361 17.9215 7.73963 18.042C8.43843 18.2107 9.16132 18.3312 9.88421 18.4757C11.4746 18.8131 13.0649 19.1263 14.6553 19.4637C15.3059 19.6083 15.571 18.6203 14.9204 18.4757C13.2818 18.1384 11.6432 17.801 10.0047 17.4396C9.61915 17.3673 9.23361 17.2709 8.84807 17.1986C8.53481 17.1263 8.12517 17.1263 7.86011 16.9818C7.90831 17.1022 7.9324 17.1022 7.9565 16.9336C8.00469 16.8372 8.05289 16.7408 8.10108 16.6203C8.19746 16.4034 8.29385 16.2107 8.36614 15.9938C8.53481 15.6324 8.67939 15.2709 8.84807 14.9095C10.1975 11.8974 11.571 8.86128 12.9445 5.84923C13.1854 5.3432 12.2939 4.83718 12.0288 5.41549Z" fill="#1B1E2D" style="fill:#1B1E2D;fill:color(display-p3 0.1059 0.1176 0.1765);fill-opacity:1;"/>
-<path id="Vector_3" d="M18.6779 11.0594C18.7984 11.3727 18.9189 11.686 19.0393 11.9751C19.0634 12.0474 19.0875 12.0956 19.1357 12.1438C19.1598 12.192 19.208 12.2402 19.2803 12.2643C19.4008 12.3366 19.5454 12.3606 19.6658 12.3125C19.7863 12.2643 19.9068 12.192 19.9791 12.0715C20.0273 11.951 20.0755 11.8064 20.0273 11.686C19.9068 11.3727 19.7863 11.0594 19.6658 10.7703C19.6417 10.698 19.6176 10.6498 19.5695 10.6016C19.5454 10.5534 19.4972 10.5052 19.4249 10.4811C19.3044 10.4088 19.1598 10.3847 19.0393 10.4329C18.9189 10.4811 18.7984 10.5534 18.7261 10.6739C18.6779 10.7703 18.6297 10.9149 18.6779 11.0594Z" fill="#1B1E2D" style="fill:#1B1E2D;fill:color(display-p3 0.1059 0.1176 0.1765);fill-opacity:1;"/>
-<path id="Vector_4" d="M6.49516 8.52768C6.25419 8.76864 6.03733 9.00961 5.79636 9.25057C5.69998 9.34696 5.65178 9.46744 5.65178 9.61202C5.65178 9.68431 5.65179 9.7566 5.69998 9.80479C5.72408 9.87708 5.74817 9.92527 5.79636 9.97346C5.89275 10.0698 6.01323 10.118 6.15781 10.118C6.30239 10.118 6.42287 10.0698 6.51926 9.97346C6.76022 9.7325 6.97709 9.49154 7.21805 9.25057C7.31444 9.15419 7.36263 9.0337 7.36263 8.88913C7.36263 8.81684 7.36263 8.74455 7.31443 8.69635C7.29034 8.62407 7.26624 8.57587 7.21805 8.52768C7.12166 8.43129 7.00118 8.3831 6.8566 8.3831C6.73612 8.3831 6.59154 8.43129 6.49516 8.52768Z" fill="#1B1E2D" style="fill:#1B1E2D;fill:color(display-p3 0.1059 0.1176 0.1765);fill-opacity:1;"/>
-<path id="Vector_5" d="M8.51441 25.5094C11.5747 27.2684 15.3096 27.7745 18.7313 26.8829C21.9361 26.0636 24.7072 23.9672 26.5144 21.2202C27.5024 19.7022 28.2012 17.9913 28.5144 16.2323C28.6349 15.5817 27.6469 15.3166 27.5265 15.9672C26.9963 18.9311 25.4301 21.6058 23.1168 23.5335C20.659 25.5817 17.4301 26.5214 14.2493 26.2805C12.3939 26.1359 10.6108 25.5817 8.99634 24.6419C8.46622 24.3046 7.9361 25.1961 8.51441 25.5094Z" fill="#1B1E2D" style="fill:#1B1E2D;fill:color(display-p3 0.1059 0.1176 0.1765);fill-opacity:1;"/>
 </g>
 </svg>
 ```
@@ -3899,7 +3835,7 @@ X�@�@�����0ϵ�M+�� ((X�%���*��v�*O��
 
 ```tsx
 <svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="45.3333" height="45.3333" viewBox="0 0 45.3333 45.3333" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path id="Ellipse 2416" d="M44 22.6667C44 34.4487 34.4487 44 22.6667 44C10.8846 44 1.33333 34.4487 1.33333 22.6667C1.33333 10.8846 10.8846 1.33333 22.6667 1.33333C34.4487 1.33333 44 10.8846 44 22.6667Z" fill="#D9D9D9" style="fill:#D9D9D9;fill:color(display-p3 0.8510 0.8510 0.8510);fill-opacity:1;stroke:#262626;stroke:color(display-p3 0.1490 0.1490 0.1490);stroke-opacity:1;" stroke-width="2.66667" stroke="#262626"/>
+<path id="Ellipse 2416" d="M44 22.6667C44 34.4487 34.4487 44 22.6667 44C10.8846 44 1.33333 34.4487 1.33333 22.6667C1.33333 10.8846 10.8846 1.33333 22.6667 1.33333C34.4487 1.33333 44 10.8846 44 22.6667Z" style="fill:var(--l3-surface-tertiary);fill-opacity:1;stroke:var(--l3-surface-primary);stroke-opacity:1;" stroke-width="2.66667"/>
 </svg>
 ```
 
@@ -3907,7 +3843,7 @@ X�@�@�����0ϵ�M+�� ((X�%���*��v�*O��
 
 ```tsx
 <svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="45.3333" height="45.3333" viewBox="0 0 45.3333 45.3333" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path id="Ellipse 2416" d="M44 22.6667C44 34.4487 34.4487 44 22.6667 44C10.8846 44 1.33333 34.4487 1.33333 22.6667C1.33333 10.8846 10.8846 1.33333 22.6667 1.33333C34.4487 1.33333 44 10.8846 44 22.6667Z" fill="#D9D9D9" style="fill:#D9D9D9;fill:color(display-p3 0.8510 0.8510 0.8510);fill-opacity:1;stroke:#262626;stroke:color(display-p3 0.1490 0.1490 0.1490);stroke-opacity:1;" stroke-width="2.66667" stroke="#262626"/>
+<path id="Ellipse 2416" d="M44 22.6667C44 34.4487 34.4487 44 22.6667 44C10.8846 44 1.33333 34.4487 1.33333 22.6667C1.33333 10.8846 10.8846 1.33333 22.6667 1.33333C34.4487 1.33333 44 10.8846 44 22.6667Z" style="fill:var(--l3-surface-tertiary);fill-opacity:1;stroke:var(--l3-surface-primary);stroke-opacity:1;" stroke-width="2.66667"/>
 </svg>
 ```
 
@@ -3915,7 +3851,7 @@ X�@�@�����0ϵ�M+�� ((X�%���*��v�*O��
 
 ```tsx
 <svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="45.3333" height="45.3333" viewBox="0 0 45.3333 45.3333" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path id="Ellipse 2416" d="M44 22.6667C44 34.4487 34.4487 44 22.6667 44C10.8846 44 1.33333 34.4487 1.33333 22.6667C1.33333 10.8846 10.8846 1.33333 22.6667 1.33333C34.4487 1.33333 44 10.8846 44 22.6667Z" fill="#D9D9D9" style="fill:#D9D9D9;fill:color(display-p3 0.8510 0.8510 0.8510);fill-opacity:1;stroke:white;stroke-opacity:1;" stroke-width="2.66667" stroke="white"/>
+<path id="Ellipse 2416" d="M44 22.6667C44 34.4487 34.4487 44 22.6667 44C10.8846 44 1.33333 34.4487 1.33333 22.6667C1.33333 10.8846 10.8846 1.33333 22.6667 1.33333C34.4487 1.33333 44 10.8846 44 22.6667Z" style="fill:var(--l3-surface-tertiary);fill-opacity:1;stroke:var(--l3-surface-primary);stroke-opacity:1;" stroke-width="2.66667"/>
 </svg>
 ```
 
@@ -4046,21 +3982,21 @@ r��jJ	  Jqb,��t��S#A����+^���Ig��@ ��� �
 ```tsx
 <svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="18.5714" height="18.5714" viewBox="0 0 18.5714 18.5714" fill="none" xmlns="http://www.w3.org/2000/svg">
 <g id="safe-vault--saving-combo-payment-safe-combination-finance">
-<path id="Vector" d="M16.4286 0.714286H2.14286C1.35389 0.714286 0.714286 1.35389 0.714286 2.14286V14.2857C0.714286 15.0747 1.35389 15.7143 2.14286 15.7143H16.4286C17.2176 15.7143 17.8571 15.0747 17.8571 14.2857V2.14286C17.8571 1.35389 17.2176 0.714286 16.4286 0.714286Z" fill="#063D23" style="fill:#063D23;fill:color(display-p3 0.0235 0.2392 0.1373);fill-opacity:1;"/>
-<path id="Vector_2" d="M16.4286 0.714286H2.14286C1.35389 0.714286 0.714286 1.35389 0.714286 2.14286V14.2857C0.714286 15.0747 1.35389 15.7143 2.14286 15.7143H16.4286C17.2176 15.7143 17.8571 15.0747 17.8571 14.2857V2.14286C17.8571 1.35389 17.2176 0.714286 16.4286 0.714286Z" stroke-width="1.42857" stroke-linecap="round" stroke-linejoin="round" stroke="#37AD75" style="stroke:#37AD75;stroke:color(display-p3 0.2157 0.6784 0.4588);stroke-opacity:1;"/>
-<path id="Vector_3" d="M11.4291 10.7143C12.8098 10.7143 13.9291 9.595 13.9291 8.21429C13.9291 6.83357 12.8098 5.71429 11.4291 5.71429C10.0484 5.71429 8.92913 6.83357 8.92913 8.21429C8.92913 9.595 10.0484 10.7143 11.4291 10.7143Z" fill="#37AD75" style="fill:#37AD75;fill:color(display-p3 0.2157 0.6784 0.4588);fill-opacity:1;"/>
-<path id="Vector_4" d="M11.4291 10.7143C12.8098 10.7143 13.9291 9.595 13.9291 8.21429C13.9291 6.83357 12.8098 5.71429 11.4291 5.71429C10.0484 5.71429 8.92913 6.83357 8.92913 8.21429C8.92913 9.595 10.0484 10.7143 11.4291 10.7143Z" stroke-width="1.42857" stroke-linecap="round" stroke-linejoin="round" stroke="#37AD75" style="stroke:#37AD75;stroke:color(display-p3 0.2157 0.6784 0.4588);stroke-opacity:1;"/>
-<path id="Vector_5" d="M11.4291 3.92864V5.71436" stroke-width="1.42857" stroke-linecap="round" stroke-linejoin="round" stroke="#37AD75" style="stroke:#37AD75;stroke:color(display-p3 0.2157 0.6784 0.4588);stroke-opacity:1;"/>
-<path id="Vector_6" d="M11.4291 10.7143V12.5" stroke-width="1.42857" stroke-linecap="round" stroke-linejoin="round" stroke="#37AD75" style="stroke:#37AD75;stroke:color(display-p3 0.2157 0.6784 0.4588);stroke-opacity:1;"/>
-<path id="Vector_7" d="M15.7148 8.21429H13.9291" stroke-width="1.42857" stroke-linecap="round" stroke-linejoin="round" stroke="#37AD75" style="stroke:#37AD75;stroke:color(display-p3 0.2157 0.6784 0.4588);stroke-opacity:1;"/>
-<path id="Vector_8" d="M8.92578 8.21429H7.14007" stroke-width="1.42857" stroke-linecap="round" stroke-linejoin="round" stroke="#37AD75" style="stroke:#37AD75;stroke:color(display-p3 0.2157 0.6784 0.4588);stroke-opacity:1;"/>
-<path id="Vector_9" d="M14.4519 5.18548L13.1948 6.44262" stroke-width="1.42857" stroke-linecap="round" stroke-linejoin="round" stroke="#37AD75" style="stroke:#37AD75;stroke:color(display-p3 0.2157 0.6784 0.4588);stroke-opacity:1;"/>
-<path id="Vector_10" d="M9.65502 9.98577L8.39788 11.2429" stroke-width="1.42857" stroke-linecap="round" stroke-linejoin="round" stroke="#37AD75" style="stroke:#37AD75;stroke:color(display-p3 0.2157 0.6784 0.4588);stroke-opacity:1;"/>
-<path id="Vector_11" d="M14.4519 11.2429L13.1948 9.98577" stroke-width="1.42857" stroke-linecap="round" stroke-linejoin="round" stroke="#37AD75" style="stroke:#37AD75;stroke:color(display-p3 0.2157 0.6784 0.4588);stroke-opacity:1;"/>
-<path id="Vector_12" d="M9.65502 6.44262L8.39788 5.18548" stroke-width="1.42857" stroke-linecap="round" stroke-linejoin="round" stroke="#37AD75" style="stroke:#37AD75;stroke:color(display-p3 0.2157 0.6784 0.4588);stroke-opacity:1;"/>
-<path id="Vector_13" d="M3.56975 5.71429V10.7143" stroke-width="1.42857" stroke-linecap="round" stroke-linejoin="round" stroke="#37AD75" style="stroke:#37AD75;stroke:color(display-p3 0.2157 0.6784 0.4588);stroke-opacity:1;"/>
-<path id="Vector_14" d="M2.14007 15.7143V17.8571" stroke-width="1.42857" stroke-linecap="round" stroke-linejoin="round" stroke="#37AD75" style="stroke:#37AD75;stroke:color(display-p3 0.2157 0.6784 0.4588);stroke-opacity:1;"/>
-<path id="Vector_15" d="M15.7143 15.7143V17.8571" stroke-width="1.42857" stroke-linecap="round" stroke-linejoin="round" stroke="#37AD75" style="stroke:#37AD75;stroke:color(display-p3 0.2157 0.6784 0.4588);stroke-opacity:1;"/>
+<path id="Vector" d="M16.4286 0.714286H2.14286C1.35389 0.714286 0.714286 1.35389 0.714286 2.14286V14.2857C0.714286 15.0747 1.35389 15.7143 2.14286 15.7143H16.4286C17.2176 15.7143 17.8571 15.0747 17.8571 14.2857V2.14286C17.8571 1.35389 17.2176 0.714286 16.4286 0.714286Z" style="fill:var(--l3-surface-accent-success-light);fill-opacity:1;"/>
+<path id="Vector_2" d="M16.4286 0.714286H2.14286C1.35389 0.714286 0.714286 1.35389 0.714286 2.14286V14.2857C0.714286 15.0747 1.35389 15.7143 2.14286 15.7143H16.4286C17.2176 15.7143 17.8571 15.0747 17.8571 14.2857V2.14286C17.8571 1.35389 17.2176 0.714286 16.4286 0.714286Z" stroke-width="1.42857" stroke-linecap="round" stroke-linejoin="round" style="stroke:var(--l3-content-accent-success-default);stroke-opacity:1;"/>
+<path id="Vector_3" d="M11.4291 10.7143C12.8098 10.7143 13.9291 9.595 13.9291 8.21429C13.9291 6.83357 12.8098 5.71429 11.4291 5.71429C10.0484 5.71429 8.92913 6.83357 8.92913 8.21429C8.92913 9.595 10.0484 10.7143 11.4291 10.7143Z" style="fill:var(--l3-content-accent-success-default);fill-opacity:1;"/>
+<path id="Vector_4" d="M11.4291 10.7143C12.8098 10.7143 13.9291 9.595 13.9291 8.21429C13.9291 6.83357 12.8098 5.71429 11.4291 5.71429C10.0484 5.71429 8.92913 6.83357 8.92913 8.21429C8.92913 9.595 10.0484 10.7143 11.4291 10.7143Z" stroke-width="1.42857" stroke-linecap="round" stroke-linejoin="round" style="stroke:var(--l3-content-accent-success-default);stroke-opacity:1;"/>
+<path id="Vector_5" d="M11.4291 3.92864V5.71436" stroke-width="1.42857" stroke-linecap="round" stroke-linejoin="round" style="stroke:var(--l3-content-accent-success-default);stroke-opacity:1;"/>
+<path id="Vector_6" d="M11.4291 10.7143V12.5" stroke-width="1.42857" stroke-linecap="round" stroke-linejoin="round" style="stroke:var(--l3-content-accent-success-default);stroke-opacity:1;"/>
+<path id="Vector_7" d="M15.7148 8.21429H13.9291" stroke-width="1.42857" stroke-linecap="round" stroke-linejoin="round" style="stroke:var(--l3-content-accent-success-default);stroke-opacity:1;"/>
+<path id="Vector_8" d="M8.92578 8.21429H7.14007" stroke-width="1.42857" stroke-linecap="round" stroke-linejoin="round" style="stroke:var(--l3-content-accent-success-default);stroke-opacity:1;"/>
+<path id="Vector_9" d="M14.4519 5.18548L13.1948 6.44262" stroke-width="1.42857" stroke-linecap="round" stroke-linejoin="round" style="stroke:var(--l3-content-accent-success-default);stroke-opacity:1;"/>
+<path id="Vector_10" d="M9.65502 9.98577L8.39788 11.2429" stroke-width="1.42857" stroke-linecap="round" stroke-linejoin="round" style="stroke:var(--l3-content-accent-success-default);stroke-opacity:1;"/>
+<path id="Vector_11" d="M14.4519 11.2429L13.1948 9.98577" stroke-width="1.42857" stroke-linecap="round" stroke-linejoin="round" style="stroke:var(--l3-content-accent-success-default);stroke-opacity:1;"/>
+<path id="Vector_12" d="M9.65502 6.44262L8.39788 5.18548" stroke-width="1.42857" stroke-linecap="round" stroke-linejoin="round" style="stroke:var(--l3-content-accent-success-default);stroke-opacity:1;"/>
+<path id="Vector_13" d="M3.56975 5.71429V10.7143" stroke-width="1.42857" stroke-linecap="round" stroke-linejoin="round" style="stroke:var(--l3-content-accent-success-default);stroke-opacity:1;"/>
+<path id="Vector_14" d="M2.14007 15.7143V17.8571" stroke-width="1.42857" stroke-linecap="round" stroke-linejoin="round" style="stroke:var(--l3-content-accent-success-default);stroke-opacity:1;"/>
+<path id="Vector_15" d="M15.7143 15.7143V17.8571" stroke-width="1.42857" stroke-linecap="round" stroke-linejoin="round" style="stroke:var(--l3-content-accent-success-default);stroke-opacity:1;"/>
 </g>
 </svg>
 ```
@@ -4601,66 +4537,14 @@ h��ha�E�  @����=O������S��m���㡦8�
 ```tsx
 <svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
 <g id="tile">
-<circle cx="24" cy="24" r="24" fill="#1A1A1A" style="fill:#1A1A1A;fill:color(display-p3 0.1020 0.1020 0.1020);fill-opacity:1;"/>
+<circle cx="24" cy="24" r="24" style="fill:var(--l3-static-black);fill-opacity:1;"/>
 <circle cx="24" cy="24" r="24" fill="url(#paint0_radial_0_137)"/>
 </g>
 <defs>
 <radialGradient id="paint0_radial_0_137" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(12.2046 54.9308) rotate(-61.6815) scale(120.441 101.433)">
-<stop offset="0.383522" stop-color="#161616" style="stop-color:#161616;stop-color:color(display-p3 0.0863 0.0863 0.0863);stop-opacity:1;"/>
-<stop offset="1" stop-color="#F6C12F" style="stop-color:#F6C12F;stop-color:color(display-p3 0.9647 0.7566 0.1843);stop-opacity:1;"/>
+<stop offset="0.383522" style="stop-color:var(--l3-static-black);stop-opacity:1;"/>
+<stop offset="1" style="stop-color:var(--l3-surface-accent-warning-default);stop-opacity:1;"/>
 </radialGradient>
-</defs>
-</svg>
-```
-
-### `src/flows/us-stocks/assets/entry/mf/tri-up.svg`
-
-```tsx
-<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="7.71756" height="3.95858" viewBox="0 0 7.71756 3.95858" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path id="Up" d="M3.78807 3.92929L0.0294898 0.170711C-0.0335067 0.107714 0.0111099 0 0.1002 0H7.61736C7.70645 0 7.75107 0.107714 7.68807 0.17071L3.92949 3.92929C3.89044 3.96834 3.82712 3.96834 3.78807 3.92929Z" fill="#37AD75" style="fill:#37AD75;fill:color(display-p3 0.2157 0.6784 0.4588);fill-opacity:1;"/>
-</svg>
-```
-
-### `src/flows/us-stocks/assets/entry/portfolio/chevron.svg`
-
-```tsx
-<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g id="keyboard_arrow_down_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24 1">
-<path id="Vector" d="M11.6248 15.8993C11.5081 15.8576 11.3998 15.7868 11.2998 15.6868L6.6998 11.0868C6.51647 10.9035 6.4248 10.6701 6.4248 10.3868C6.4248 10.1035 6.51647 9.87015 6.6998 9.68681C6.88314 9.50348 7.11647 9.41181 7.3998 9.41181C7.68314 9.41181 7.91647 9.50348 8.0998 9.68681L11.9998 13.5868L15.8998 9.68681C16.0831 9.50348 16.3165 9.41181 16.5998 9.41181C16.8831 9.41181 17.1165 9.50348 17.2998 9.68681C17.4831 9.87015 17.5748 10.1035 17.5748 10.3868C17.5748 10.6701 17.4831 10.9035 17.2998 11.0868L12.6998 15.6868C12.5998 15.7868 12.4915 15.8576 12.3748 15.8993C12.2581 15.941 12.1331 15.9618 11.9998 15.9618C11.8665 15.9618 11.7415 15.941 11.6248 15.8993Z" fill="#E8E8E8" style="fill:#E8E8E8;fill:color(display-p3 0.9098 0.9098 0.9098);fill-opacity:1;"/>
-</g>
-</svg>
-```
-
-### `src/flows/us-stocks/assets/entry/portfolio/glow-2.svg`
-
-```tsx
-<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="216" height="133.222" viewBox="0 0 216 133.222" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g id="glow" filter="url(#filter0_f_0_59)">
-<ellipse cx="108" cy="66.6111" rx="60" ry="18.6111" fill="#256FEF" style="fill:#256FEF;fill:color(display-p3 0.1451 0.4353 0.9373);fill-opacity:1;"/>
-</g>
-<defs>
-<filter id="filter0_f_0_59" x="0" y="0" width="216" height="133.222" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-<feFlood flood-opacity="0" result="BackgroundImageFix"/>
-<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
-<feGaussianBlur stdDeviation="24" result="effect1_foregroundBlur_0_59"/>
-</filter>
-</defs>
-</svg>
-```
-
-### `src/flows/us-stocks/assets/entry/portfolio/glow.svg`
-
-```tsx
-<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="216" height="216" viewBox="0 0 216 216" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g id="glow" filter="url(#filter0_f_0_105)">
-<circle cx="108" cy="108" r="60" fill="#256FEF" style="fill:#256FEF;fill:color(display-p3 0.1451 0.4353 0.9373);fill-opacity:1;"/>
-</g>
-<defs>
-<filter id="filter0_f_0_105" x="0" y="0" width="216" height="216" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-<feFlood flood-opacity="0" result="BackgroundImageFix"/>
-<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
-<feGaussianBlur stdDeviation="24" result="effect1_foregroundBlur_0_105"/>
-</filter>
 </defs>
 </svg>
 ```
@@ -4670,9 +4554,9 @@ h��ha�E�  @����=O������S��m���㡦8�
 ```tsx
 <svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="47.1975" height="59.7109" viewBox="0 0 47.1975 59.7109" fill="none" xmlns="http://www.w3.org/2000/svg">
 <g id="Group">
-<path id="B_x5F_1_00000023984703501044630230000016850735099719653266_" d="M8.5177 4.72228C8.5177 4.72228 14.8847 15.1792 28.4147 21.9181C41.9447 28.5795 47.1975 18.4324 47.1975 18.4324C47.1975 18.4324 31.5983 15.3341 22.4456 2.24365C22.4456 2.24365 16.7949 -4.18544 8.5177 4.72228Z" fill="#8CC100" style="fill:#8CC100;fill:color(display-p3 0.5490 0.7569 0.0000);fill-opacity:1;"/>
-<path id="B_x5F_2_00000040542576470013807900000011566883152271610266_" d="M0 28.2692C0 28.2692 8.27716 38.3388 19.1011 41.747C33.5862 46.2396 39.5553 39.3458 39.5553 39.3458C39.5553 39.3458 24.8315 36.7122 15.1217 24.5512C15.1217 24.4738 8.27716 19.3615 0 28.2692Z" fill="#8CC100" style="fill:#8CC100;fill:color(display-p3 0.5490 0.7569 0.0000);fill-opacity:1;"/>
-<path id="B_x5F_3_00000013155029785668711730000010440573804295045286_" d="M7.797 47.866C11.856 52.5135 15.7558 55.2246 22.4412 57.7807C30.2409 60.8016 39.0751 59.6397 43.1341 58.5553C40.1894 57.9356 28.3307 55.3021 19.576 45.4648C19.4964 45.4648 12.811 43.7607 7.797 47.866Z" fill="#8CC100" style="fill:#8CC100;fill:color(display-p3 0.5490 0.7569 0.0000);fill-opacity:1;"/>
+<path id="B_x5F_1_00000023984703501044630230000016850735099719653266_" d="M8.5177 4.72228C8.5177 4.72228 14.8847 15.1792 28.4147 21.9181C41.9447 28.5795 47.1975 18.4324 47.1975 18.4324C47.1975 18.4324 31.5983 15.3341 22.4456 2.24365C22.4456 2.24365 16.7949 -4.18544 8.5177 4.72228Z" style="fill:var(--l3-content-accent-brand-default);fill-opacity:1;"/>
+<path id="B_x5F_2_00000040542576470013807900000011566883152271610266_" d="M0 28.2692C0 28.2692 8.27716 38.3388 19.1011 41.747C33.5862 46.2396 39.5553 39.3458 39.5553 39.3458C39.5553 39.3458 24.8315 36.7122 15.1217 24.5512C15.1217 24.4738 8.27716 19.3615 0 28.2692Z" style="fill:var(--l3-content-accent-brand-default);fill-opacity:1;"/>
+<path id="B_x5F_3_00000013155029785668711730000010440573804295045286_" d="M7.797 47.866C11.856 52.5135 15.7558 55.2246 22.4412 57.7807C30.2409 60.8016 39.0751 59.6397 43.1341 58.5553C40.1894 57.9356 28.3307 55.3021 19.576 45.4648C19.4964 45.4648 12.811 43.7607 7.797 47.866Z" style="fill:var(--l3-content-accent-brand-default);fill-opacity:1;"/>
 </g>
 </svg>
 ```
@@ -4682,11 +4566,11 @@ h��ha�E�  @����=O������S��m���㡦8�
 ```tsx
 <svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="83.1678" height="95.6613" viewBox="0 0 83.1678 95.6613" fill="none" xmlns="http://www.w3.org/2000/svg">
 <g id="Group">
-<path id="F_x5F_3_00000095309742909720062020000005810016299112021911_" d="M7.87312 89.1548C9.70364 88.6901 17.0258 87.4507 31.1129 89.697C41.3797 91.3236 48.861 94.2671 51.4078 95.5064C51.567 95.5839 51.7262 95.6613 51.8853 95.6613C52.2037 95.6613 52.4425 95.5839 52.6812 95.429C55.7056 93.4925 58.8891 90.5491 60.4013 88.5351C60.4809 88.3802 60.4808 88.2253 60.4808 88.1479C60.4808 88.0704 60.4013 87.9929 60.2421 87.9155C56.8198 86.0565 44.4836 80.4795 30.9537 78.8528C15.7523 77.0713 6.59971 78.3106 2.46113 79.3176C2.38155 79.3176 2.30197 79.395 2.22238 79.4725C2.14279 79.55 2.14276 79.7049 2.14276 79.8598C2.93864 81.7188 5.08753 86.0565 7.87312 89.1548Z" fill="#A1E600" style="fill:#A1E600;fill:color(display-p3 0.6314 0.9020 0.0000);fill-opacity:1;"/>
-<path id="F_x5F_2_00000109748796385937076070000013382564408099140226_" d="M0.0778743 69.5585C3.97769 68.7064 20.532 65.5306 35.1762 68.0867C49.1041 70.488 61.5995 76.7621 65.4993 78.7761C65.5789 78.7761 65.5789 78.8535 65.6584 78.8535C65.8176 78.8535 65.9768 78.776 66.0564 78.5436C67.1706 75.2129 67.8074 71.1076 67.887 68.3966C67.887 68.3191 67.8869 68.2417 67.8073 68.1642C67.8073 68.0868 67.7277 68.0093 67.6481 68.0093C65.1013 66.3827 52.7652 59.7213 35.017 56.9327C19.5769 54.5315 4.69396 57.8622 1.59002 58.7917C1.51043 58.7917 1.43085 58.8692 1.35126 58.9466C1.27168 59.0241 1.19208 59.1016 1.19208 59.2565C0.475786 61.8126 -0.240478 65.9179 0.0778743 69.5585Z" fill="#A1E600" style="fill:#A1E600;fill:color(display-p3 0.6314 0.9020 0.0000);fill-opacity:1;"/>
-<path id="F_x5F_1_00000158022615378600884930000000580712639208632724_" d="M8.59375 46.01C8.59375 46.01 17.9056 43.3764 32.4702 45.3129C51.9693 47.9465 54.3569 41.7498 54.3569 41.7498C54.3569 41.7498 45.3634 33.849 30.56 35.1658C21.4074 35.9404 13.6874 40.5879 8.59375 46.01Z" fill="#A1E600" style="fill:#A1E600;fill:color(display-p3 0.6314 0.9020 0.0000);fill-opacity:1;"/>
-<path id="Big_leaf_00000052817416241482779350000003325489541389591972_" d="M44.2488 0L43.3733 1.62661C40.5878 6.73887 39.5531 12.3934 40.1102 17.738C41.0653 26.7232 46.4773 35.0887 55.232 39.6587L56.1074 38.0321C59.6889 31.603 60.3256 24.3994 58.6543 17.8154C56.6646 10.5344 51.7301 3.87292 44.2488 0Z" fill="#A1E600" style="fill:#A1E600;fill:color(display-p3 0.6314 0.9020 0.0000);fill-opacity:1;"/>
-<path id="Small_leaf_00000086657169406454258550000009755690847739837326_" d="M83.1678 31.5268C80.5414 36.2518 76.3233 39.5825 71.4684 41.1316C66.2952 42.8357 60.4056 42.4484 55.2324 39.8148C57.8588 35.0899 62.1566 31.7592 67.0115 30.21C72.1051 28.5059 77.9946 28.8158 83.1678 31.5268Z" fill="#A1E600" style="fill:#A1E600;fill:color(display-p3 0.6314 0.9020 0.0000);fill-opacity:1;"/>
+<path id="F_x5F_3_00000095309742909720062020000005810016299112021911_" d="M7.87312 89.1548C9.70364 88.6901 17.0258 87.4507 31.1129 89.697C41.3797 91.3236 48.861 94.2671 51.4078 95.5064C51.567 95.5839 51.7262 95.6613 51.8853 95.6613C52.2037 95.6613 52.4425 95.5839 52.6812 95.429C55.7056 93.4925 58.8891 90.5491 60.4013 88.5351C60.4809 88.3802 60.4808 88.2253 60.4808 88.1479C60.4808 88.0704 60.4013 87.9929 60.2421 87.9155C56.8198 86.0565 44.4836 80.4795 30.9537 78.8528C15.7523 77.0713 6.59971 78.3106 2.46113 79.3176C2.38155 79.3176 2.30197 79.395 2.22238 79.4725C2.14279 79.55 2.14276 79.7049 2.14276 79.8598C2.93864 81.7188 5.08753 86.0565 7.87312 89.1548Z" style="fill:var(--l3-surface-accent-brand-default);fill-opacity:1;"/>
+<path id="F_x5F_2_00000109748796385937076070000013382564408099140226_" d="M0.0778743 69.5585C3.97769 68.7064 20.532 65.5306 35.1762 68.0867C49.1041 70.488 61.5995 76.7621 65.4993 78.7761C65.5789 78.7761 65.5789 78.8535 65.6584 78.8535C65.8176 78.8535 65.9768 78.776 66.0564 78.5436C67.1706 75.2129 67.8074 71.1076 67.887 68.3966C67.887 68.3191 67.8869 68.2417 67.8073 68.1642C67.8073 68.0868 67.7277 68.0093 67.6481 68.0093C65.1013 66.3827 52.7652 59.7213 35.017 56.9327C19.5769 54.5315 4.69396 57.8622 1.59002 58.7917C1.51043 58.7917 1.43085 58.8692 1.35126 58.9466C1.27168 59.0241 1.19208 59.1016 1.19208 59.2565C0.475786 61.8126 -0.240478 65.9179 0.0778743 69.5585Z" style="fill:var(--l3-surface-accent-brand-default);fill-opacity:1;"/>
+<path id="F_x5F_1_00000158022615378600884930000000580712639208632724_" d="M8.59375 46.01C8.59375 46.01 17.9056 43.3764 32.4702 45.3129C51.9693 47.9465 54.3569 41.7498 54.3569 41.7498C54.3569 41.7498 45.3634 33.849 30.56 35.1658C21.4074 35.9404 13.6874 40.5879 8.59375 46.01Z" style="fill:var(--l3-surface-accent-brand-default);fill-opacity:1;"/>
+<path id="Big_leaf_00000052817416241482779350000003325489541389591972_" d="M44.2488 0L43.3733 1.62661C40.5878 6.73887 39.5531 12.3934 40.1102 17.738C41.0653 26.7232 46.4773 35.0887 55.232 39.6587L56.1074 38.0321C59.6889 31.603 60.3256 24.3994 58.6543 17.8154C56.6646 10.5344 51.7301 3.87292 44.2488 0Z" style="fill:var(--l3-surface-accent-brand-default);fill-opacity:1;"/>
+<path id="Small_leaf_00000086657169406454258550000009755690847739837326_" d="M83.1678 31.5268C80.5414 36.2518 76.3233 39.5825 71.4684 41.1316C66.2952 42.8357 60.4056 42.4484 55.2324 39.8148C57.8588 35.0899 62.1566 31.7592 67.0115 30.21C72.1051 28.5059 77.9946 28.8158 83.1678 31.5268Z" style="fill:var(--l3-surface-accent-brand-default);fill-opacity:1;"/>
 </g>
 </svg>
 ```
@@ -4697,17 +4581,6 @@ h��ha�E�  @����=O������S��m���㡦8�
 <svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
 <g id="refresh">
 <path id="Vector" d="M5.98632 10.5C4.73708 10.5 3.67714 10.0632 2.8065 9.18951C1.9355 8.31622 1.5 7.25305 1.5 6C1.5 4.74695 1.9355 3.6836 2.8065 2.80994C3.67714 1.93665 4.73708 1.5 5.98632 1.5C6.63374 1.5 7.25161 1.63262 7.83994 1.89787C8.4279 2.16311 8.93161 2.54726 9.35106 3.0503V2.07622C9.35106 1.91159 9.40578 1.77439 9.5152 1.66463C9.62462 1.55488 9.7614 1.5 9.92553 1.5C10.0897 1.5 10.2264 1.55488 10.3359 1.66463C10.4453 1.77439 10.5 1.91159 10.5 2.07622V4.875C10.5 5.04878 10.4407 5.19732 10.3222 5.32061C10.2036 5.44427 10.0578 5.5061 9.8845 5.5061H7.08055C6.91641 5.5061 6.77964 5.45122 6.67021 5.34146C6.56079 5.23171 6.50608 5.09451 6.50608 4.92988C6.50608 4.76524 6.56079 4.62805 6.67021 4.51829C6.77964 4.40854 6.91641 4.35366 7.08055 4.35366H8.79027C8.49848 3.85061 8.10419 3.45732 7.60742 3.17378C7.11027 2.89024 6.56991 2.74848 5.98632 2.74848C5.08359 2.74848 4.31763 3.06402 3.68845 3.69512C3.05927 4.32622 2.74468 5.09451 2.74468 6C2.74468 6.90549 3.05927 7.67378 3.68845 8.30488C4.31763 8.93597 5.08359 9.25152 5.98632 9.25152C6.59726 9.25152 7.16261 9.09146 7.68237 8.77134C8.20213 8.45122 8.59423 8.02134 8.85866 7.48171C8.91337 7.37195 9 7.28049 9.11854 7.20732C9.23708 7.13415 9.35562 7.09756 9.47416 7.09756C9.72037 7.09756 9.90274 7.18207 10.0213 7.3511C10.1398 7.52049 10.1489 7.71036 10.0486 7.92073C9.68389 8.69817 9.13678 9.3225 8.40729 9.79372C7.67781 10.2646 6.87082 10.5 5.98632 10.5V10.5Z" fill="#E8E8E8" style="fill:#E8E8E8;fill:color(display-p3 0.9098 0.9098 0.9098);fill-opacity:1;"/>
-</g>
-</svg>
-```
-
-### `src/flows/us-stocks/assets/entry/portfolio/rupee-coin.svg`
-
-```tsx
-<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="17.8331" height="25.2741" viewBox="0 0 17.8331 25.2741" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g id="Group 1000001853">
-<path id="Vector" d="M14.8716 0.751058C15.653 0.749497 16.2878 1.38173 16.2894 2.16319C16.291 2.94466 15.6587 3.57945 14.8772 3.58101L10.8414 3.58907C11.7682 4.50861 12.3983 5.69198 12.6653 7.07352L14.8843 7.0691C15.6657 7.06754 16.3005 7.69977 16.3021 8.48123C16.3037 9.2627 15.6714 9.89749 14.8899 9.89905L12.7371 9.90336C12.2477 12.9317 9.74154 15.2073 5.41494 15.7424L12.639 22.0281C13.103 22.4317 13.1372 23.1406 12.7143 23.587L11.8459 24.5038C11.4407 24.9314 10.7677 24.956 10.3325 24.559L1.27282 16.2944C0.77317 15.8387 0.641231 15.1044 0.950928 14.5032L1.09504 14.2234C1.35121 13.7261 1.8633 13.4132 2.4227 13.4121L3.19687 13.4105C6.4674 13.404 8.57916 12.1493 9.10322 9.91061L1.43338 9.92593C0.651919 9.92749 0.0171514 9.29526 0.0155785 8.5138C0.0140055 7.73232 0.64625 7.09754 1.42773 7.09598L9.09752 7.08066C8.63051 4.84395 7.00926 3.59673 4.43249 3.60188L1.42068 3.6079C0.639214 3.60947 0.00444504 2.97724 0.00287214 2.19578C0.00129921 1.4143 0.633542 0.779515 1.41502 0.777953L14.8716 0.751058Z" fill="#042918" style="fill:#042918;fill:color(display-p3 0.0157 0.1608 0.0941);fill-opacity:1;"/>
-<path id="Vector_2" d="M16.3998 0.00265657C17.1813 0.00109472 17.816 0.633323 17.8176 1.41479C17.8192 2.19626 17.1869 2.83105 16.4055 2.83261L12.3696 2.84067C13.2964 3.76021 13.9265 4.94358 14.1936 6.32512L16.4125 6.32069C17.194 6.31913 17.8287 6.95136 17.8303 7.73283C17.8319 8.5143 17.1996 9.14909 16.4182 9.15065L14.2653 9.15496C13.7759 12.1833 11.2698 14.4589 6.94317 14.994L14.1673 21.2797C14.6312 21.6833 14.6654 22.3922 14.2425 22.8386L13.3741 23.7554C12.9689 24.183 12.296 24.2076 11.8607 23.8106L2.80105 15.546C2.3014 15.0903 2.16946 14.356 2.47916 13.7548L2.62328 13.475C2.87944 12.9777 3.39153 12.6648 3.95093 12.6636L4.7251 12.6621C7.99563 12.6556 10.1074 11.4009 10.6314 9.16221L2.96161 9.17753C2.18015 9.17909 1.54538 8.54686 1.54381 7.7654C1.54224 6.98392 2.17448 6.34914 2.95596 6.34758L10.6257 6.33226C10.1587 4.09555 8.53749 2.84833 5.96072 2.85348L2.94891 2.8595C2.16745 2.86106 1.53268 2.22884 1.5311 1.44737C1.52953 0.665898 2.16177 0.031113 2.94325 0.0295511L16.3998 0.00265657Z" fill="#37AD75" style="fill:#37AD75;fill:color(display-p3 0.2157 0.6784 0.4588);fill-opacity:1;"/>
 </g>
 </svg>
 ```
@@ -20099,16 +19972,6 @@ mp�&[>@�o��Q�Qfo��C<Dn+�R��#�'Au�s��LZ�
 </svg>
 ```
 
-### `src/flows/us-stocks/assets/entry/search/account-balance.svg`
-
-```tsx
-<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g id="D2 &#226;&#134;&#146; account_balance">
-<path id="Vector" d="M2.66667 7.66667V10.3333C2.66667 10.8867 3.11333 11.3333 3.66667 11.3333C4.22 11.3333 4.66667 10.8867 4.66667 10.3333V7.66667C4.66667 7.11333 4.22 6.66667 3.66667 6.66667C3.11333 6.66667 2.66667 7.11333 2.66667 7.66667ZM6.66667 7.66667V10.3333C6.66667 10.8867 7.11333 11.3333 7.66667 11.3333C8.22 11.3333 8.66667 10.8867 8.66667 10.3333V7.66667C8.66667 7.11333 8.22 6.66667 7.66667 6.66667C7.11333 6.66667 6.66667 7.11333 6.66667 7.66667ZM2.33333 14.6667H13C13.5533 14.6667 14 14.22 14 13.6667C14 13.1133 13.5533 12.6667 13 12.6667H2.33333C1.78 12.6667 1.33333 13.1133 1.33333 13.6667C1.33333 14.22 1.78 14.6667 2.33333 14.6667ZM10.6667 7.66667V10.3333C10.6667 10.8867 11.1133 11.3333 11.6667 11.3333C12.22 11.3333 12.6667 10.8867 12.6667 10.3333V7.66667C12.6667 7.11333 12.22 6.66667 11.6667 6.66667C11.1133 6.66667 10.6667 7.11333 10.6667 7.66667ZM7.04667 0.993333L1.78 3.76667C1.50667 3.90667 1.33333 4.19333 1.33333 4.5C1.33333 4.96 1.70667 5.33333 2.16667 5.33333H13.1733C13.6267 5.33333 14 4.96 14 4.5C14 4.19333 13.8267 3.90667 13.5533 3.76667L8.28667 0.993333C7.9 0.786667 7.43333 0.786667 7.04667 0.993333Z" fill="#4FD1C5" style="fill:#4FD1C5;fill:color(display-p3 0.3098 0.8196 0.7725);fill-opacity:1;"/>
-</g>
-</svg>
-```
-
 ### `src/flows/us-stocks/assets/entry/search/amzn.svg`
 
 ```tsx
@@ -20127,16 +19990,6 @@ mp�&[>@�o��Q�Qfo��C<Dn+�R��#�'Au�s��LZ�
 <rect width="13.2" height="13.2" fill="white" style="fill:white;fill-opacity:1;" transform="translate(5.4 5.4)"/>
 </clipPath>
 </defs>
-</svg>
-```
-
-### `src/flows/us-stocks/assets/entry/search/emoji-events.svg`
-
-```tsx
-<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g id="D2 &#226;&#134;&#146; emoji_events">
-<path id="Vector" d="M12.6667 3.33333H11.3333V2.66667C11.3333 2.3 11.0333 2 10.6667 2H5.33333C4.96667 2 4.66667 2.3 4.66667 2.66667V3.33333H3.33333C2.6 3.33333 2 3.93333 2 4.66667V5.33333C2 7.03333 3.28 8.42 4.92667 8.62667C5.34667 9.62667 6.24667 10.38 7.33333 10.6V12.6667H5.33333C4.96667 12.6667 4.66667 12.9667 4.66667 13.3333C4.66667 13.7 4.96667 14 5.33333 14H10.6667C11.0333 14 11.3333 13.7 11.3333 13.3333C11.3333 12.9667 11.0333 12.6667 10.6667 12.6667H8.66667V10.6C9.75333 10.38 10.6533 9.62667 11.0733 8.62667C12.72 8.42 14 7.03333 14 5.33333V4.66667C14 3.93333 13.4 3.33333 12.6667 3.33333ZM3.33333 5.33333V4.66667H4.66667V7.21333C3.89333 6.93333 3.33333 6.2 3.33333 5.33333ZM12.6667 5.33333C12.6667 6.2 12.1067 6.93333 11.3333 7.21333V4.66667H12.6667V5.33333Z" fill="#F5C451" style="fill:#F5C451;fill:color(display-p3 0.9608 0.7686 0.3176);fill-opacity:1;"/>
-</g>
 </svg>
 ```
 
@@ -20161,16 +20014,6 @@ mp�&[>@�o��Q�Qfo��C<Dn+�R��#�'Au�s��LZ�
 <rect width="12" height="12" fill="white" style="fill:white;fill-opacity:1;" transform="translate(6 6)"/>
 </clipPath>
 </defs>
-</svg>
-```
-
-### `src/flows/us-stocks/assets/entry/search/memory.svg`
-
-```tsx
-<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g id="D2 &#226;&#134;&#146; memory">
-<path id="Vector" d="M9.33333 6H6.66667C6.3 6 6 6.3 6 6.66667V9.33333C6 9.7 6.3 10 6.66667 10H9.33333C9.7 10 10 9.7 10 9.33333V6.66667C10 6.3 9.7 6 9.33333 6ZM8.66667 8.66667H7.33333V7.33333H8.66667V8.66667ZM14 6.66667C14 6.3 13.7 6 13.3333 6H12.6667V4.66667C12.6667 3.93333 12.0667 3.33333 11.3333 3.33333H10V2.66667C10 2.3 9.7 2 9.33333 2C8.96667 2 8.66667 2.3 8.66667 2.66667V3.33333H7.33333V2.66667C7.33333 2.3 7.03333 2 6.66667 2C6.3 2 6 2.3 6 2.66667V3.33333H4.66667C3.93333 3.33333 3.33333 3.93333 3.33333 4.66667V6H2.66667C2.3 6 2 6.3 2 6.66667C2 7.03333 2.3 7.33333 2.66667 7.33333H3.33333V8.66667H2.66667C2.3 8.66667 2 8.96667 2 9.33333C2 9.7 2.3 10 2.66667 10H3.33333V11.3333C3.33333 12.0667 3.93333 12.6667 4.66667 12.6667H6V13.3333C6 13.7 6.3 14 6.66667 14C7.03333 14 7.33333 13.7 7.33333 13.3333V12.6667H8.66667V13.3333C8.66667 13.7 8.96667 14 9.33333 14C9.7 14 10 13.7 10 13.3333V12.6667H11.3333C12.0667 12.6667 12.6667 12.0667 12.6667 11.3333V10H13.3333C13.7 10 14 9.7 14 9.33333C14 8.96667 13.7 8.66667 13.3333 8.66667H12.6667V7.33333H13.3333C13.7 7.33333 14 7.03333 14 6.66667ZM10.6667 11.3333H5.33333C4.96667 11.3333 4.66667 11.0333 4.66667 10.6667V5.33333C4.66667 4.96667 4.96667 4.66667 5.33333 4.66667H10.6667C11.0333 4.66667 11.3333 4.96667 11.3333 5.33333V10.6667C11.3333 11.0333 11.0333 11.3333 10.6667 11.3333Z" fill="#A78BFA" style="fill:#A78BFA;fill:color(display-p3 0.6549 0.5451 0.9804);fill-opacity:1;"/>
-</g>
 </svg>
 ```
 
@@ -20279,14 +20122,6 @@ f��G�6{�3Z��A4u��I5q�A	�z�B�4�_ZY�1Pp_��
 </svg>
 ```
 
-### `src/flows/us-stocks/assets/entry/search/tri.svg`
-
-```tsx
-<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="7.71756" height="3.95858" viewBox="0 0 7.71756 3.95858" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path id="Up" d="M3.78807 3.92929L0.0294898 0.170711C-0.0335067 0.107714 0.0111099 0 0.1002 0H7.61736C7.70645 0 7.75107 0.107714 7.68807 0.17071L3.92949 3.92929C3.89044 3.96834 3.82712 3.96834 3.78807 3.92929Z" fill="#E5505F" style="fill:#E5505F;fill:color(display-p3 0.8980 0.3137 0.3725);fill-opacity:1;"/>
-</svg>
-```
-
 ### `src/flows/us-stocks/assets/entry/search/tsla.png`
 
 ```tsx
@@ -20360,52 +20195,12 @@ dr����I�������S"�yoz�J��{��W���HO�
 </svg>
 ```
 
-### `src/flows/us-stocks/assets/entry/ushome/arrow-down.svg`
-
-```tsx
-<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g id="arrow">
-<path id="Vector" d="M4.94447 7.6532L7.34914 10.0579C7.71123 10.42 8.29615 10.42 8.65824 10.0579L11.0629 7.6532C11.6478 7.06828 11.23 6.06557 10.4037 6.06557H5.59438C4.76807 6.06557 4.35956 7.06828 4.94447 7.6532Z" fill="#E5505F" style="fill:#E5505F;fill:color(display-p3 0.8980 0.3137 0.3725);fill-opacity:1;"/>
-</g>
-</svg>
-```
-
-### `src/flows/us-stocks/assets/entry/ushome/arrow-up.svg`
-
-```tsx
-<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g id="arrow">
-<path id="Vector" d="M4.94447 8.34678L7.34914 5.94211C7.71123 5.58002 8.29615 5.58002 8.65824 5.94211L11.0629 8.34678C11.6478 8.9317 11.23 9.93442 10.4037 9.93442H5.59438C4.76807 9.93442 4.35956 8.9317 4.94447 8.34678Z" fill="#0F9958" style="fill:#0F9958;fill:color(display-p3 0.0588 0.6000 0.3451);fill-opacity:1;"/>
-</g>
-</svg>
-```
-
 ### `src/flows/us-stocks/assets/entry/ushome/check.svg`
 
 ```tsx
 <svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
 <g id="D2 &#226;&#134;&#146; check">
 <path id="Vector" d="M6.75 12.1275L4.1475 9.525C3.855 9.2325 3.3825 9.2325 3.09 9.525C2.7975 9.8175 2.7975 10.29 3.09 10.5825L6.225 13.7175C6.5175 14.01 6.99 14.01 7.2825 13.7175L15.2175 5.7825C15.51 5.49 15.51 5.0175 15.2175 4.725C14.925 4.4325 14.4525 4.4325 14.16 4.725L6.75 12.1275Z" fill="#0D1F14" style="fill:#0D1F14;fill:color(display-p3 0.0500 0.1200 0.0800);fill-opacity:1;"/>
-</g>
-</svg>
-```
-
-### `src/flows/us-stocks/assets/entry/ushome/chevron-right.svg`
-
-```tsx
-<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g id="D2 &#226;&#134;&#146; chevron_right">
-<path id="Vector" d="M6.19333 4.47333C5.93333 4.73333 5.93333 5.15333 6.19333 5.41333L8.78 8L6.19333 10.5867C5.93333 10.8467 5.93333 11.2667 6.19333 11.5267C6.45333 11.7867 6.87333 11.7867 7.13333 11.5267L10.1933 8.46667C10.4533 8.20667 10.4533 7.78667 10.1933 7.52667L7.13333 4.46667C6.88 4.21333 6.45333 4.21333 6.19333 4.47333Z" fill="#E8E8E8" style="fill:#E8E8E8;fill:color(display-p3 0.9098 0.9098 0.9098);fill-opacity:1;"/>
-</g>
-</svg>
-```
-
-### `src/flows/us-stocks/assets/entry/ushome/error.svg`
-
-```tsx
-<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g id="D2 &#226;&#134;&#146; error">
-<path id="Vector" d="M14 2.33333C7.56 2.33333 2.33333 7.56 2.33333 14C2.33333 20.44 7.56 25.6667 14 25.6667C20.44 25.6667 25.6667 20.44 25.6667 14C25.6667 7.56 20.44 2.33333 14 2.33333ZM14 15.1667C13.3583 15.1667 12.8333 14.6417 12.8333 14V9.33333C12.8333 8.69167 13.3583 8.16667 14 8.16667C14.6417 8.16667 15.1667 8.69167 15.1667 9.33333V14C15.1667 14.6417 14.6417 15.1667 14 15.1667ZM15.1667 19.8333H12.8333V17.5H15.1667V19.8333Z" fill="#E8E8E8" style="fill:#E8E8E8;fill:color(display-p3 0.9098 0.9098 0.9098);fill-opacity:1;"/>
 </g>
 </svg>
 ```
@@ -20431,26 +20226,6 @@ dr����I�������S"�yoz�J��{��W���HO�
 <rect width="20" height="20" fill="white" style="fill:white;fill-opacity:1;" transform="translate(10 10)"/>
 </clipPath>
 </defs>
-</svg>
-```
-
-### `src/flows/us-stocks/assets/entry/ushome/hourglass.svg`
-
-```tsx
-<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g id="D2 &#226;&#134;&#146; hourglass_top">
-<path id="Vector" d="M9.33333 2.33333C8.05 2.33333 7 3.38333 7 4.66667L7.01167 8.37667C7.01167 8.995 7.25667 9.57833 7.68833 10.0217L11.6667 14L7.68833 18.0017C7.25667 18.4333 7.01167 19.0283 7.01167 19.6467L7 23.3333C7 24.6167 8.05 25.6667 9.33333 25.6667H18.6667C19.95 25.6667 21 24.6167 21 23.3333V19.6467C21 19.0283 20.755 18.4333 20.3233 18.0017L16.3333 14L20.3117 10.0333C20.755 9.59 21 8.995 21 8.37667V4.66667C21 3.38333 19.95 2.33333 18.6667 2.33333H9.33333ZM18.6667 19.7283V22.1667C18.6667 22.8083 18.1417 23.3333 17.5 23.3333H10.5C9.85833 23.3333 9.33333 22.8083 9.33333 22.1667V19.7283C9.33333 19.4133 9.46167 19.1217 9.67167 18.9L14 14.5833L18.3283 18.9117C18.5383 19.1217 18.6667 19.425 18.6667 19.7283Z" fill="#E8E8E8" style="fill:#E8E8E8;fill:color(display-p3 0.9098 0.9098 0.9098);fill-opacity:1;"/>
-</g>
-</svg>
-```
-
-### `src/flows/us-stocks/assets/entry/ushome/locked.svg`
-
-```tsx
-<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g id="locked">
-<path id="Vector" d="M3 11C2.725 11 2.48958 10.9021 2.29375 10.7063C2.09792 10.5104 2 10.275 2 10V5C2 4.725 2.09792 4.48958 2.29375 4.29375C2.48958 4.09792 2.725 4 3 4H3.5V3C3.5 2.30833 3.74375 1.71875 4.23125 1.23125C4.71875 0.74375 5.30833 0.5 6 0.5C6.69167 0.5 7.28125 0.74375 7.76875 1.23125C8.25625 1.71875 8.5 2.30833 8.5 3V4H9C9.275 4 9.51042 4.09792 9.70625 4.29375C9.90208 4.48958 10 4.725 10 5V10C10 10.275 9.90208 10.5104 9.70625 10.7063C9.51042 10.9021 9.275 11 9 11H3ZM6 8.5C6.275 8.5 6.51042 8.40208 6.70625 8.20625C6.90208 8.01042 7 7.775 7 7.5C7 7.225 6.90208 6.98958 6.70625 6.79375C6.51042 6.59792 6.275 6.5 6 6.5C5.725 6.5 5.48958 6.59792 5.29375 6.79375C5.09792 6.98958 5 7.225 5 7.5C5 7.775 5.09792 8.01042 5.29375 8.20625C5.48958 8.40208 5.725 8.5 6 8.5ZM4.5 4H7.5V3C7.5 2.58333 7.35417 2.22917 7.0625 1.9375C6.77083 1.64583 6.41667 1.5 6 1.5C5.58333 1.5 5.22917 1.64583 4.9375 1.9375C4.64583 2.22917 4.5 2.58333 4.5 3V4Z" fill="#E8E8E8" style="fill:#E8E8E8;fill:color(display-p3 0.9098 0.9098 0.9098);fill-opacity:1;"/>
-</g>
 </svg>
 ```
 
@@ -20553,26 +20328,6 @@ f��G�6{�3Z��A4u��I5q�A	�z�B�4�_ZY�1Pp_��
 <rect width="40" height="40" fill="white" style="fill:white;fill-opacity:1;"/>
 </clipPath>
 </defs>
-</svg>
-```
-
-### `src/flows/us-stocks/assets/entry/ushome/schedule.svg`
-
-```tsx
-<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g id="D2 &#226;&#134;&#146; schedule">
-<path id="Vector" d="M13.9883 2.33333C7.54833 2.33333 2.33333 7.56 2.33333 14C2.33333 20.44 7.54833 25.6667 13.9883 25.6667C20.44 25.6667 25.6667 20.44 25.6667 14C25.6667 7.56 20.44 2.33333 13.9883 2.33333ZM14 23.3333C8.84333 23.3333 4.66667 19.1567 4.66667 14C4.66667 8.84333 8.84333 4.66667 14 4.66667C19.1567 4.66667 23.3333 8.84333 23.3333 14C23.3333 19.1567 19.1567 23.3333 14 23.3333ZM13.7433 8.16667H13.6733C13.2067 8.16667 12.8333 8.54 12.8333 9.00667V14.5133C12.8333 14.9217 13.0433 15.3067 13.405 15.5167L18.2467 18.4217C18.6433 18.655 19.1567 18.5383 19.39 18.1417C19.635 17.745 19.5067 17.22 19.0983 16.9867L14.5833 14.3033V9.00667C14.5833 8.54 14.21 8.16667 13.7433 8.16667Z" fill="#E8E8E8" style="fill:#E8E8E8;fill:color(display-p3 0.9098 0.9098 0.9098);fill-opacity:1;"/>
-</g>
-</svg>
-```
-
-### `src/flows/us-stocks/assets/entry/ushome/trend-down.svg`
-
-```tsx
-<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g id="Icon - l">
-<path id="Vector" d="M11.2333 11.4333L12.1933 10.4733L8.94 7.22L6.74667 9.41333C6.48667 9.67333 6.06667 9.67333 5.80667 9.41333L1.80667 5.40667C1.54667 5.14667 1.54667 4.72667 1.80667 4.46667C2.06667 4.20667 2.48667 4.20667 2.74667 4.46667L6.27333 8L8.46667 5.80667C8.72667 5.54667 9.14667 5.54667 9.40667 5.80667L13.1333 9.52667L14.0933 8.56667C14.3 8.36 14.66 8.50667 14.66 8.8V11.66C14.66 11.8467 14.5133 11.9933 14.3267 11.9933H11.4667C11.1733 12 11.0267 11.64 11.2333 11.4333Z" fill="#E8E8E8" style="fill:#E8E8E8;fill:color(display-p3 0.9098 0.9098 0.9098);fill-opacity:1;"/>
-</g>
 </svg>
 ```
 
@@ -21127,6 +20882,397 @@ h��ha�E�  @����=O������S��m���㡦8�
 </svg>
 ```
 
+### `src/flows/us-stocks/assets/etf/direxion.png`
+
+```tsx
+�PNG
+
+   IHDR   �   �   �F�   	pHYs  !8  !8E�1`   sRGB ���   gAMA  ���a  	�IDATx�KLTW�M��M��&��>bm m"�T|�Ǣ@���� \؅Mդ&]U�ʦM�E����1Qqam�H$U�h�����G�@�]��?��\�<?�
+����ܹ�3���;�N�s�"$C^R��@D""(A��
+DDP "����@D""(A��
+DDP "����@D""(A��
+DDP "����@D""(A��
+DDP "����@D""(A��
+DDP "����@D""(A��
+DDP "����@D""(A��
+DDP "�/�4�=Ӧ��y�N��T�~���_Q�oE��~�T=WY*g����y�d�L5w�������U'N��nvv���E���H�v._�C��/���o�O�?R�����N�s�ʐ]�/�-�;m�j���w;�v����{�Z9��S�~B�N�ڤZ.�F��b��Q��ngp��;KUl�D�vDC��3R��T�֯7�Ȕ�U���p%��^Y&M��F#��Б��z�Ul�ב���0��z�JsuUE*����n�j��h�e��B���k>����I�F_��܏?�V��@_���[U__�Z��D�DC��Uߝ5�a��W�y�ڱv�KXy�6�3��X&�*C_({�y�H�&�c�ǉ< �2��`�y�~��Tv/2�(���ե����<�@��E�B ʁ$��Q�B�y^��٨d#nf��}=�z*ۜk�c�1���|ϡ��3u��Sݼ�м/?7GGǙ1��Բܾwϔ�w��3�C2��Л��T���c�����ǏH�z'�����쉺MB1ۄ;�5�Ea��9$#0��3Yp�0\�w��?C���+�HoӤs��3�LÀ�ݫ�>�4)-2w�q���T��������j�������Ū��m��ٳ�/�8t�������c����B��d�����sf���'�Ý�	��y��C�x�/��6��;�߃�Q�Z_�m+{�>_#Y�6�y+�˝��^��(�4^ۣ�rylCB4.�sD��C,��n�.Ӹ�O�7�PǶ��L9Ե�N3��Ɩ��ɓ��kM�M��J��La�������(��S�����&�6�߮��U�{-���T���,�����r�J��
+y�y�F����Jh|�v����AC�������2]*��G$�>b���s��d����Mv�R��ԕu�*4�s~~ ��k�9s}�D�8�$-�V��d�׋��\;?z�hwD�L	N���P3����몖�^�����F*��|����˲
+c��������{2eבK���	�9$�J��Q=K������]R&§K(�II?�C���!�F�������;�Y ���2�.�R"�� ������ퟐ��4^G�;���s��*�%�^�0\I�nO��s�m��[�L�BZ��;J�[0$kwx��A�@=�rs�prYW(�d�n���Vl~�(��x+�Lpe���\��M��_�A`�f+����H�S���YB�Ԛ�P�CE`9P뭁��-Ň��ntD��"C�[���jo��P�	�t=��F&���p��~�q:�lG�~����w^(]p���'IR��,H��y�I �	m�|c�p�g�ɧ�qƝ�� �F�2g�%ٹ�ñwFz�	D���H�YӑJ��w�]����kI��7���J �E�0�c�"<(��Dkd1��.J�K���xQ�0���o�!�T����C���	ke���ZT�g��.�8!
+�͍|��B�2˄c�?4Q:���pD ,uU}YDa�10\���T�^1ǚL*UЃ���$K>��\mt,W`�ծ��z�<��=p�����-��p�a&`*�ES�bL��%�����^�~`�p����M����X�I����&�[�u�l���Ӡ������a��P0U����&<އ��c�Y2�,e�ߴdP���(�m���7|��y���W�;MT����\��&�c���7i�#miW�pg����=��C����"��Z���w��6���r0w�T��:p74�o6�~�g�I���d��D��χD�7S5�*'�<�:�)۰N^��Ԡ����	�&��2���������b\�ݨ�N76��z���ߐg,|�x8�C��mQ�MR�Y�ʓ�>��0�ᪧ�ה�(�Γ��3^`FD�
+#"(A��
+DDP "����@D""(A��
+DDP "����@D""(A��
+DDP "����@D""(A��
+DDP "����@D""(A��
+DDP "����@D""(A��
+DDP "����@D""(A��
+DDP "����@D�������^��    IEND�B`�
+```
+
+### `src/flows/us-stocks/assets/etf/globalx.png`
+
+```tsx
+�PNG
+
+   IHDR   �   �   �F�   	pHYs  !8  !8E�1`   sRGB ���   gAMA  ���a  fIDATx�O�_U��u��tҐf$mc����q��q�]a@Y����llڨ���$,����"���q+e��������4�0m��)�������;s�}�߻��If������̽�{�s_L0�R�y�(5P��Z�@J-T �*�RH��
+��BRj�)�P��Z�@J-T��}�ss������q3t��3n�����ǻf{�ӯA��;����u Ĺ��˓�~����?k�}��%0�@���^O>v�Hu��anm^�LS�8��t�����5�4�n^��,��3DT���MS`�����#f��ϯ��`*>�@sZ�Xp�����'��Ǟ2{�?��+g�'S����{V�ï���*��`�Z~��Ɉ�p"��D$Э���dC@*��7_J�O���4wiY�>�Q ��J y�H\�T���Ӝd���4CCG����Y��#I`\VH�Q�/#��1� R�w��R+�"q��k[fh�@9 �C�.(+O�8��ǟ!�1P0�\~�g��E�)"N��)4T r���<y��l���ɽ����Q�,@�8w�8��B��E2�eF�U�H��>���g�	H@� �0⬜z���\�{����ؓ΄��)��k�ʏ�CB@b`�����k�����&�26�Od�V&�h��Oͥ���{�Ȅ����������C[9�B&��U]q�`���`J�|ThI�R�گ�$��w��T2]Ց')a����z��s���	�}�y ���_�SD�< �Y�=������w0�-�J�?�Aj {gӟ�cE���<��N?�� �(�&��	q�12`��F>�aj��7����Ũ�0)D@�#� ��𐯼z:�o \ ��D�k�_�.�@���<�J��0P�r��i��Q�%�"�u�h�}m[|en珟;q2��6�J1\�ߗ�����F+D��'^�$���w����7_�Lk�|�A��`��;F��u��_J��+D�$����*�؇�88�8{���}HJ��P$l��UY���}_���CaF�D��W"������8���D����.f>�$bu%�8��k��K��ҝ�{>�Ȓ~�z�D����c!�����#�Vi�
+�g��f�Օg��vKt�Íd*�aں���I��q�t��=�S���n@�ٿ�-�ÒD�F��0� n��!.�9�,��ü������5Br�ߛ�2 ��N<��������+7!1:�l+�&���	�?|����O�����������֕<�w��~f^0���N��JY��d��J7�Z�$B�������{l���}3�)�'O�	��G�}�%8����~��x���U�>�[���U�
+-��D=��,�� �a���A��< Z�B��F��3�x_ߚ�K�;D�������A���4�����9m��5Rg�6�	$�j��b��Z�]L(D5��"F>_�+��m���#!�@6y����e�[�u��1_I��sfhD1����iή�6Jy|�� +m��b��G��䱕n ���b�z
+M�>8$�߱�<`��7EY!�)��e���%��Q�;�����!Ƀ���,ԏM0��
+�������}�~,������Tl�`����$QL� �$Uc/�03&��b���g����`����-c�G�A	D͹�7q��%DcEZ]��Ƀ����}͌� �뱜G���Vϋ˶�!�uI�����G1��_���)�ޘ�M W���sc�1=K��3)��h4i�d��:��(^�I�E [�o���d�x���^S��d>:�uh�t.�M�88�Y�aS�9>�!Ȯ� S^_����T��w�mm�|	>*Oq:�k{'�	�%M���*O9:����Y��Y��,��O���䵑e:�SF��"���P@���������.�E[Wr�1�龫��Z�a�*���.�M�Sy��d*�$�m���x "V\8[�+Z��F!��@��72������/KL�������34Z�S�{�T��t �LL9��&i���GW.��Õ-ސD�	�_���8�oK`W]�)G�}<{��B�|�d���ĩ��8��C��Nx,��dc��=HACnb*���q���#�+3��WY��|�l�����)�i]�l;9w�̓}���a�+{��y�k��-�
+P��i&��6�P�#ս�����M�EȻ�G)G�zn_�2]��)Js�.P��~r3�s��Dv[-�~U�&�T �H×ϲ�ǆ�?�Og�hJi��B�9��נ&��ΗeF#��\�%�F<���fi] #'�Z!�ç!�2ˠ�5�P���{�W�_"��:5J�ex�����s_�ZL58�'��/�+��&ِ�F"Ri��G �%o��`t�.��Q���<EoBV���2^�G�*� �V��Z��@�d�*���h��A!}�x���j�Q~A�LZz�vn�9=���4ˌDd��d���՜��i�hP�t&F�juNL�M��?�����,�e�!�BU�g�m�}1u	��������7�N�[�2	Ý�i�ڟJ��|t�]Es?xo��J�󃅶�[x����j=��}Փ�k�u:����f�D +0�r��%8t���%>�б�*6��J����oϬ[��(w����S6���$W%9+ �A.���sLwZ�E���lgګB�Q��.��&���D3��PVU$j� ���R�$�~�J�\�D�T���'ֽ/�d���&�m��*��໴�rWٱ�K�D����Ŋ�bD���D%�2�{�BRcA��J4C��J�28��^CgM�D�t�Z�P�� �#�D��
+T�*WC}"7Z�$Ѡ����Ё�Z�$B�J�g�%r.��^^j�'R"[O��\M'78�M����٤*v���OM�;��pPJ�!��R��E)�`�@�*B]B�6Zq�d��	�N$��0!��'����n���$f�����g�]y� $ZZN$�+G��I�(�2���9xa��.Q4{a8�%��"ўo�V�h�]��v�#[�h���ڍ�w![�w%BW�$
+iK�
+QV$"��'TC:x����ˤ���!�z ��G(��F�h�l��C�!�E��+1eq�0��D�}I+�V%B�ՁD+'_�^3 �FQm���Vg�{��h����^ny ��D���(��D�:���<o��V����$
+�������/��! с_f[�,�W~7���������{I!�����9S��U�|��=�ʌ�񊏑�
+���(�����~<�r��|�����\A��mVj�)�P��Z�@J-T �*�RH��
+��BRj�)�P��Z|	qk�л?s    IEND�B`�
+```
+
+### `src/flows/us-stocks/assets/etf/graniteshares.png`
+
+```tsx
+�PNG
+
+   IHDR   d   d   p�T   bKGD � � �����  
+JIDATx���s�ǿ+Y��m�m�Ʋ-�i�^I��!��pBl�63!	I��$4G����δ�JiH2�f�B|�1`�aNChb�[�-˒�C���ծ,���l�.�g��վ�W����y�w50N���ds��*�0� B�
+!*�0� B�
+!*�0� B�
+!*�0� B�
+!*�0� B�
+!*�0� B�
+!��ZH ��.L���y񏽻�+Z!�;����;�p��\wE�C)dx؅�S� ��m����y(�km��� ����x��9�Q�y-�
+%ݦ�jAו˂cΟ���-Uݚ�V�Y�{M���575 !2���!U]��RH�e���������$��֭nܾ}3�k���w��NU%3/������ϲ�m0&�&
+M���)��O�{f�y'd8�Gf3w8�f��ݕ���g���G��/����;f�Zp����v8I材�f�#*��~(��z�v�3�6�al��0ýv���$��T3gB>�Z1��'�����P���7GF�f��]ǩ���ʪe(.) ��-�Ҋ*�5�ۍ��mI�+�̉���Lf��M=����?�^�c4FM�].'Μn�b�B����Ω���B��gϜ��1�T�RŜ�pb�m	gI_����Kd`�&��m>�e�Ү�h|>���*���
+�Q��f�.�hinL��Y�͛^,�O-�8- ��^����z=���#]�"�A�Ō�]�"033���F}����H�����|���{	}�T2�BX �~/�B,����5:��O��X�V�P�ċ�"��X0���p�x�f7X����YdddD}�R�����cM��g�Y�~7��u����i�`ydo�����:.ަ�"O�����O,>�b%2��  M>�zz��{UV-�NN��F��֕�'K�&�
+a�1\�� �[����Պ�w����h�.^ ����\bYnzKO�@m�z @]�F��r��b�7��G��A3ͬ	���}^/�/��O23E����p��E�)���Ғ)����<3,������! ��V�zٓx�	�S_��4��t�tG�H��2+B�~��w�\�7yձ�k2c����jq1r�)����w��#�,�\��/nK��u6A����N��r&u�̊��M��V�G������\\�Rᅢ�1ϯ^�+rr��w|_�,��DP�s��f-�|>=Ҝ�5�2�B
+v�J%Ȍb��`@���l�頒�w�-�i����ٌ���=��k��e�׮^�ɔ�B�t�q!;{��#����U������Z^}F�r���ǖ�V&Q*�x�n�,���C���3*�Ák�5�ǳ����^�$�w�z�M:��n�� ��� ;-�{�~,o���TVUC�K���n\�ZҵeƄ���e� 67� �F��ǳ�c��מ^��� �(-�+.�^�E����06E��-͍3�<׌	���{&_��Oi�p�g
+O1J�;t:��*���B������$=�;�cPX�&��l	**��xp�>Ν=-�Z�0#B�� �[,\�.�a{����-�x}/-F�J���`PP��2bY(;x�|�%�d���(H�O�h�Ȉ4��!��&�y��V��8i������'?r
+��7�D〵v^]�p!d�KMn.�.Ou�##8q?����i��3�c�GDZH'�Bz���`���ۊ�q�}`4����x���"K6��ŦNXlF&M�J�3���˗.��/�Ju��\�N�A^���N'X"�F�e�*7�?������˱��@���pCj�V�����YYx&_���^/>g�J�u����P(���Ò�%FJ�\t:q�^b�YV��H,���o�&r��{dm��P��K1����Z�p$�u<IE�0�}�nv+�Z�H�� o�H<�M�h_�;D�h{&�&��-��দ��>A�2!_�l���yyxB�~�J{D
+�Xv�i���W"��Z�'�k��L���q�B��kE#%B"��L&H;S�/<� �SYYܻ0C.��e� �b�� �B��z�j��){�>%B>2뇭EE���T"�Tj5��I"�L.;]�蔶��V�Q�:�������VI׊d�B"���S*�jin��������h�9I�=�]�0V����ga���H�������`<+U�J��(��L�n�`O�e��*�b3��=�Ή�Ğ�q4���ŅqZNe2���' �O����7���i	��r�cHp�ۍ�׍%?�b3o�u��t"0�G��lFm�Yq�ۣQQY��γ0��  ����޽���G%��Ɣ�Hsg���Ҹ�f,"�L��~|b����M����C�z�^���w��y���i]#r������d!��2TV��`�ł�+�$����?���m?��d2(%�|"��.�C!�V��A�7�  �ˡTJ�2%�����!��P!�A�BTaP!�A�BTaP!�A�BTaP!�A�BTaP!�A�BTaP!�A�BTaP!�A�BTaP!�A�B�2��ܰ(�u    IEND�B`�
+```
+
+### `src/flows/us-stocks/assets/etf/invesco.png`
+
+```tsx
+�PNG
+
+   IHDR   �   �   ��Z=   sRGB ���    IDATx^�}�mGY�Z���H�Z�B(5��$ԐE��?zMJ衇��H���
+�4)����Y��.���g����>�y���M�=3{ͬ=3％	�� w��� ��1	�@ �����c�@}9^1��6 � �r�b D�9l A��x�@ �s � ��0��@=�@ ��7`��� ź@`�o� �+A���� D߀A�W��1�@ �����7tH���8_?&���rQd��':0��%� .�r �p 8WA_!y��Qtb�'6 }�#�, .	�R ��& nѧ��l����"��J�{�-�� �p�B߬G����X���B�g;�.� n� ������ z	Z,D���wIқ �i�]���M�k�8`�.�l"�� zJ.D���H:�_O��A�	B�.���7���䁛ɩ>���҄��':8���� ���Z~I�l��D��� zw�}Rҩ n=h#e��F��e�D� D��H��CҾ >?��	�[H�R�?1H֧;A�U�n���N�k������`ߢKK�OlzHz�M�[��1�O!y�	�1�6�@}BSB�%ҝ��_&��I:!��+������F �R��o pw���	#+�DG�M�6��t�U �Kr
+�=%�ި�A�	wR�}��&Н.]x�Â�]�� �88/mep9(=����9P�_&�>>�{���O��0�˘����y n��-��p��3f��v���ZBҫ�s�F�Wn�M�xI���fY��|x��;�C<D��:% ����c�M�%��oST� ��#ң� z��<*�L >��5��j�g�H�Ϟ�\҅ |	�[��}���Xg�#p}�t�g��g��M�cI6�M�CD���g��
+�F��� z!`5�Kr�o8w��*�a�C�:%�z�{J��Ʒ�9��A�@^��}�ۮ��eM��G�|aI�$}�^-��={	��� �*%]�gFn��9�����%m��Iv[��;�e� ��� z�j��;�Y����,z��~���=ɻ�i'��@�n���tXrA����b}W�tf�N���7$�"*dd�4�F~�����m�ƛ[�4I�d�-I���ˮޮF��s!#"D	lI `ѩI5����=��`9U�"	��`�G]�?g���ԛ=��J�Dv[�Y�脏�D_�(�G =��O��.MT'z"�`�.��eT*?D���$}{���ݡ���?p�9LbEa��7DtI����S�PDo�2D�3Z��w.��Lc���(7�����ub�����c���$��6����NtI�Lv�g��fPc�>"�~�#6٥�!�~ ;�,�غw���Ċ����%�����f�C�o �0�^s���D�_�Ӓ�%�yU�K�v�mM;�X��s˪� ��� �w�����6��K:Db[��W]��6��r�CVW��p� ��CV^w���OH:��*W;duՈ�Q��"m��;Ċ>�h6�D�z�迬X�U�$���E�	��1�sm�+�.�` �X�U�$zNP��I�`��6~�@��l�d��_T�n�j>E�5���m���,IG�� z%�%=��8蕪��'�|J�$��bg�e�T�O��^ԑ�@=�ƒ���� ��W\�V��L#!g�9��*@Ud"�n3��+�"ǼxI� ���UM�$9�[[���=�� zHME$��c���G5�xt�o���;xsˋ9��I� lZ�A�#.�� 5fݢ�����^��a�tg ol�׻�C��'a�cA��fV,�m��纑ܙP�Mr�=I�xC��~p��;LĂG��`��$�r�s�Hn���E������᱂�����3�J$(��!�~�������**)��.z��Ɨ��W>����'������ �_�gV��x]�A��J��3���+��g�$�!{��VQo��2ch�H&A����L��f'��g�|���W8�jFC�"� �!�/1%^XG���[���Wӕ�$�R��˲�l[��6~]x��e�7�����M�}<�#�0%����}�Q�{2�F����Io/]C�[�D?��Qm���]�g:�f��sPZR&�>N�]��ۺ���N� <�o>��ƚʥ-��jΟYW�=�Eł�3���Z�8��$�\�2�t )�@����-DOh$G�7��Zǡǳ 5����N0���\�f��k�u �t�o�1�C�7�zI�J��VЇ�g/ �E7��.`�C=���<�K�} _.��aAW X]r�'���dy&�Ǯ I�8��7G�<Ă�A����\�ϛ6Ô�.9�x�=c8��A��i���g̛A�H�b��+��vq��.b�-�@�UW� ����\V�����p^DX����A�ES�D�κ2�H���� �]�x�����X��9��#�V���� xg�ʼ�GX��Ŋ+�2>=��Jn$$��;�=�Rѷ#+z+�N"�`��J2��:�ul8��3�Ŋ�}��8���l�3�A,�>$�S�倔vz��.� ���+ﭰ	�S���� �}�����?�Q��?��D�t��^�|
+�䇑|��f�������w <��=�X�G7��n �����A$�rj����%��Αw4���Ie6����4����Խ�l%�'I� p�
+��-��4K��"z�N�y6�*V�]_��� prȜ��9 ;T��H~/����ɳ��I��
+�ɉ��$�}��=I��~G�F=��Ys�����|UV���(@w���I �!�;Rv<�C��5oM�{�|mV��tQ N���45�� nC�5+�J]kItI��9��F%�@d�h�mw!ٖ˼���J�c�W�3Ф�|۰���׊��O�TRʜ��/lI����g�J}�B)K�! �g;G%f��/ ����oG�Z=�� >�"s��M���&�� 6�8��̼3IGd]+�t�d�X{+o��P�v�]k�<�%].��^�ܰ��a�k>ޕ�zհ��%9X��V��D\��7kW<f}�%z
++���%2�����{ ��K �:&�;�-�}�1ɫ��$9�ε|�r��t=V֭4�E����%��y�._��엩�
+�����s�4�)R��W�� ���ٖ�?p�u<�O���� W-$x�q�����;��x��Igp �=��R�^�_���fu_9�%]��]'^i*֩�ǡL݀&�U%yU� ;���LF'����e�]y��=e簽��~ƕ#X����p��.���Vxk�=�.Vᅼ����$����NtIޚ?��������Qd���ޮ��*�\}� ;��ш��~�B��;���9��V�����H��R�U��蒮	�O*�Wy騤&��$�0�Q"�I �\񥌕��mp��)��FtI��<��*U����_� d�j��x[tZ��f�v�]�]�5 <�g@�с���jeO����[�����{uJl��a ���0I{�"Ո�L[�Q�mՍب���kiA�B�c <c$�}5���G�n�7ѓ������٨Rxur��!(ɹ�>������+;=��>Ӄ= ��4��+�د.ɻӧ���$?8d[�D�te �&�92�U�H~l����[IOs ����KX3�޵,� ���f���١�{m8p'�P�����C�#&-�R��V�K�m��]�F�QǎF��$��%�GFrE�{rB��E�q ��/=:s#�����Gv<Et�$ ��WYH ����J��SpYI�tŖz|�w���B}�nz^���|n����b��b׹�[B6Շ�w� P���/mjz�����g#�
+�e7�%yw�Ů���w.*\;��o-�A�|�N�c�$���6BnF��!*f�wD�K�-��Q���I�/� $mo�|�G�����
+����&�]F�	DԵ��$�� r�lLҩ�G���޼m?�Qg��N��XM�[���)��@�$�Q�jIOI�[5�=����W� zU87��jDO�t��\���d�y~���\��$�W��A�ڈnv}����}7�/%��U�/��#���\�vh� �*f�xmz�������n���R$�%�p[9I�%h�m�Fo����i�q4 �~Ԑץ�����k�t�8��/�$�J:�@9���Ȫ�$mp|�9��a9�(S9x�CQ��љHz��%A�^�M��+�7�L���j�`��jf~Fr�l�]��n��6�}ɟfwd�`�+r��$�����DwsG�<�����%� �f��^�~�} �������9څ�A���~�>Oҁ9�� D��~����$��9���%��+�+Ͻ'�Q �}�f��nϱ>�$XE=s��a���l�9 ��SHV3�d��p��q8��3�V,g���
+��bI_��QpN ��m��Z�߳��ݨ]��ւO�� � ˶��.�E��nn�L� ��}e��F�ы�l�
+_��SH��u�j�x�N�PM$Y�����@omM�ɉ$��qfV {U젯������:��Q�PU���Wt�qq�߮������U�`0��Z�$�!��At��+�ks�א��V}A�J�N��ϐtv�V�����4D^�g��R��H�MZ���Ö�D���~�t3 �2�풕v����>6��[�Q��
+CE��Һ?�V�w�}	I�A�H ���@M�um�X����d�9bm�iօ��՜k)�P7&i��"��\������I���R��ß-ݗ:�uHw�q���d�?�#����XG���'ӝ�'�~a}kCvI5��i �̻;���D���t��,I�r㳋�hξzf �Zz�MF�Z�N#��k=�6�C�i����}c���|���t ���!�{��-�ko��[XI����v���k
+��v2���
+�Z�;��!��$�CkM��5J��$���H�v֫]q����`�g{ݹܮ:Or��D��u�:Oph���m���g'��w�Y���=�"�+)��w\%�^m�yA�����ܰRmu��~ؔS?� �#����f�6Xҹ8�3St����Ȯ���$k��r���$��T
+�M�;e�P$���Z�C�;g�$_X��jUu$�R��s���8`7?��Wp+;��J�f}�p=�d��u�x�*�������>%��$oE��Qwi����.���XT��MrG�Ү7IS��\�w�M򮤝��*	�չ ��a���k��io�=���U2�8�ֳ���~,ɱR$g�����^='��R�$�u�jd6���39��W�@� ���s֜�Ϛu-�$��%�?q��=�q��}��4ܗ��ǖ:Lv�ٝSp"ɱ���&����J�UI�UUJ��($_'�����	���*�`�j6�޺k%̾L2א�w���u��!��z����7xE����F�ٍm����#�dKѳk[a���$��X*��?�䝊;��I?v,�U���ƯN�nu��cC�D��H:_'�Lt�9�ܜ��$�Fm���&�A�UI���6&_<��o�z��MW&�`���`Jk�e��T��H���_'b;����9^��c�D�rok��n��KFI�p�Qݳ1�	��s��Ce$]���n:���*$��[�uъ�ﶲ;�[|�릡�tY�SA��1�F���1�7(�~OH�ס��Ck߭�(�S �\#�y�7_����ec��L>�\�3���0��({���%��}��5m����lҖ;j���C
+����
+mY�|�^3��(&�>X��R+F��[�`'�Wř;�6���a8ɽ�����u#��|8b��R)���:۟�w���p�A����nZ���=���%zz(n1=����a�.�k�ٵ���\}����N���p��&�cH�ؠW�BG�۽����W}�5�,��<xvctD�AD�C4�0H��GI:,�ʤ0X��I�faY�;�s�;���a�eG��+��+�6,�YL�Xͷ�p.�+u֐d��@�A��Iӣ܎!�1H�T�o��u�e���o��W�}�G�i
+��3���v��L-xlG}���؉��K��928�<�kj��ۧI���C�I��,�?�v�*�x��սc�>Gz�*�-���5e�������~��#Hg�TM	"l������Ga��^��7��H�D���U�͵_#lq��?��3sY.Ř�`J��$m22G�9�9�^$�e$��Gp0�+�О�����ߏ�VVie?S�<���6��U�̬L��O�?�xi1��q��IZ	�B ���� �1�\�i;�8b��5��@}"����m�{6o�{�dG��@`!A�MI���̠o\*��B�~>$hE ��
+�p
+�`m�	�O�߆�UԼ��xT%�@SZi't�k������(+~�h~*�W<)9�5��б%֞ �q$-$�@�|u��o`Wͷ8��F%��d�҄@+�%��=�tqծ�;y%�Z̚��@�:�D�d��;8f�V�$[?�{�@o�w���q�
+��"�����u ��](���t���@�3L~�7MJ o�%���x0X)&��s�Ӌ zJQ&�A��I�(��@�:�Qa 0=�����Q P� zuH��@`zѧ7&ѣ@�:A��F�����OoL�G�@u���!�
+��!P���S��,��$Ta�Hr~���.��p�-q�0g��g�H:�x�$ϻ�f~H�e��t ��|�$�Yvw1I� �- 'P�l��v�z���;;��;�
+c-��m]y=�Xp�Y��� �G��$�;�H:�����8y������Կo�y���y��%$��� 8��y�>盛��� >�T�?)m�6�@�j����J�w�щ���V>쀈$�e�H�/����K����.)�ɝ9���TD��/Igp|v  p} ��q�
+ctI��*�����'h�g��Ș���?����v.U&�F	�CS��f<��� ^1D�MI�H��0��n���� N"����[��&zn�>���]��<t� Hr&'g8Sf#'��̲��Ir��D	^�.���K�.�yνJvc�`�c�j<9?=��[ο�I�����]_r�9I�Y<	�W�Т�z>"��ڽ��OI��� �ܵ��缻=���w����m���ݤ���jz@һ��#�#����s�$;�$�����Z:�]K�����@�%yz�:%]����(�M9���H~��A�O!�w����Ї���.K�v�� L���E�Yy~�T����<�W ��6�too�
+�=cI����Pr�$}V](�������şoë��I�!���e$�>V��[�,�f#�����uC��|gI�����]B{�6儕4� �	D7�%��+�VG+~Ζ����;��:$Yy�Hܹ�_!�H`I��n=��C��I�-���Pe[�ѦϠ!����������+%r���Ss
+Jr�G�KnG�������WJIV���FҮ�Y"�A ^�Ux IoɷIJ@���u�-�tg�Uy�r����m0���H�efY��+�G$�V�Z�.�i�?��.��|>z�N"�i$��p�n�R9X:���g)^$��4��K5]yI� O��`�2޵\���3C�GxV�6۪y7�C�
+���װV��Jjr�k�s>�Y9�ફ�=>�;���w��lR��w6v�2�/�s�#��IG�3��'y��IqM �ͩd���ܿJWn��/�#I��P�?|�
+*v��/q�,�����M���Hz��*�\�wG�B]�|���y	7_�������<[xN������gL�0�^�m��x���+��dg�on+�� Ni+�~�բ��4a�:LdV�������g�2}t��� ���kd��1�Y����q ^3噌B��~�`e�N�k�!���]�"\����|�t��n�!��� Hr�\g��"6�r������}˵��o��$��\5��R����I�쫱}в����I�&��̺�Mҫ�R�d�̭�ʙ� �^I��  QIDATt�-��ɨc� <�e���v�Z�u:Y��u�IAn8���,X���9 Ε�=D�u��Ɉ���2�q��-�l���(I��oO��><�!�#�"̬��ba�͟���>>L��c�^%�}i_	����!i�F�� �/x��/�j��ך��ز\㒼�������$7�sdᮠ�^[�ٴ2GbVO��w'~��^
+���*(�����	["Y}̸a�&Ik�JG]˃H���e$9J������G���/"ٺ�N�h4w;���0��`��Y�}ON���W#���FS�5os�f#���Ov�}ϑk�ܦ#( �wfV`�(gp�d��s�&$m'�%ɢ���b{�.�^m��u@��l�e;�,�t ����^�$��J�&�$��|�̑}IZ�M
+MU?G�q�+�F86�ɑ��Ģ�D�>úS��<��&n��~�VY>���^�"� Pb�w/��H+�E��R�X�Tx���ܐ�G�:��q-1�v��Z%��Rp��3G. �����"�����L�?��c��M>��h���բ�X3k{�6���+��h��6��- �Mpm�^"����������sN#����r��z�+f�t�i��\O6I��龟��V��q��S��AZ�?Mr���L�6�f�l�[ҝ�1�����у�#�g}I^�g]r��3yl�S*�J�}sd�Vp�Iv��5M���E;�X��<������%�]���9ra���E$Y[���w|��9cn�t{9�?�"z��H������֪f���6-�$oO�6�&֤�o���$+���<�I�v�I�o�5[-��j� ���N�NmW�d2���5|��r�|�[�X�i�$s��&�G��J���VE�g�|l	��r�8K��&K�Fz��k1I��r0���Q�*��3٦�%Xu,��g��=�VDY#��u�\�6�ic�1PN%e
+w��"��46�Fd��o*�KAn6��Y8�}���m��d]��>��u�Ȑb�j�Z6:������	�?��$��"ǩeuJ�Ѩ5pŦ�Vw>���KHژb�Hz.�#2���&�D$=�R��6jYFt��XäӚ~o��VB���Jr�[+�H��G�óe$�=��3s#���S9vҾ��d�����(:�lTح��{�*�^}�W��sv��CHn��8�u�рr$�ބR�3z��W�͈����{K)������?׶�H����̊��4��s+��˼���sH����V	��V�,�J�KZ����ǭ:���{�cEF���$�&)����H�C�(�g���rQ}�~���q�|������v��~d6Zp�2�p�vdE
+?B��A[�#��q%�T~c��V�g 8&c&|���%�ǑE���6�K�N�,�����QS��I��-�臤��p���:%n����2$���,�^�)�=�rokza[x]�N�ث��#}�r$�V�t���;��W24��M2+؀$����n�g��p-$�c�T� ��D�A_��?"��ه$��:�3/+�@i���K��S�G�ؤykڷ|��^ae3+�G�BE��6k����	�a�&6��e[!�.��s��]b���c�2��ض�K�������$Ɂ2�#�#v׽QX��Ý�v*�a��'�#�}�s
+ϗ��� ��G7zEOd��Y��F���6yͲ���c��9r7��.������:�s:VR&9���,G7�y����[$9�I��󂾴�v[�I[�_���j�����$s|�袤]��}x�̯�mN�dn��.^HK}�|���W|��7�	����U�?d�LwS�����6����]{�9W�H�z�,I�G����<lk����$�X����)���.�MJ*�-r5�����=M;Y����#��-����J�\����m.�>��N�d��qS������U ����,���Şa�kN'�-x�$�1(ը۠�8�60Y()֛�6���/�5��Mo���h�U���/]�3}d�M�1(��|h��get�H	z��/�VS���$����¶���tM��/�Ȗ&�Ͽ6�h2l�!�CZ;R�H����\_Ο��Y�T)!���9�t����C�疯�r��w5[$��a�#�q�J��$ԎN~�E�{���4`�EW*�C��96�r�v���Ts�sܙmӋ������So��g���H:�C�H*	qU\��<�/��"�No�b��tU錷�>")@�Â9�a�\���R��$g��C#�[i�rv�u֛mQk%=!���T�j�HҶ+9	��,|���!�X��P,��d��ox��Qs�fI��<7%�W"����+�W6�L^5sBf�v�n�C7%���;�U�¸
+�`?~�"�J|�䤡��Ǌ��!]�gRM�{�e�����H�__�e]�U�9���nJҳS6��ͶV���',+��x̲�Z[,/И#���R�r���ܝ
+*�>�$�ˤ�$I�'�,ik�(,]��ܮS2��{����[_��鏟�*��ح!������w!�4R�$G�Yx��Չ�z��7��I��s ߉dn"��1NA}�:�S
+���Vh5���P��I�jʿV��겖����I%�k��>����(��'ѭŵT�
+�d��K��rG0��Wn���s��/��#o�Ò�����"�vm4�N)t���9Z�n4i]�|����F>�!˻��1�u}RI�6�\c����f��$p���f��x�~ ����)��5ɾ�J����P&����Ȗ��s��.׵y����݉)��$}�P��ۉ��D��+K����,���T�ԙL��W�}}0��pG��K[d�șRjI�~-��鷜��$�C���*�E��٪/%�X��r߷�{��L�m^z%Do�ʒ���%ֲ��7�"#I�9���q�sPMf�0'loV���v�ʤ��+$�l�GX�!�������$mh�[$9�w1�@z�£�V�v8��)�����{ ��g�{޶펕礑�J�RP%�M��=�}���v+~[n�&��$緪nx��csGg�hIN�X�m�/ЂAs�öć��g��]B.��$��*���km�����y�2�l�l�o��n���#>�z�~�I���Xf��at�~���t��d�x�+�O�?||�63���bI�`��b���jǐY��ָ9���g�x�Y�K�1n��JE���w�G5��[�t�ߖ�:��Q(��@}���� D�cTL� ���'zTA �^ƨ$�6A�i�O�.��@�
+�QI 0m�����] P� z��@`�ѧ=>ѻ@�
+A�*0F%����O{|�w�@��U`�J�i#D���D��*ѫ���F �>���U�W�1*	��@}���� D�cTL� ���'zTA�� ��(0���    IEND�B`�
+```
+
+### `src/flows/us-stocks/assets/etf/ishares.png`
+
+```tsx
+�PNG
+
+   IHDR   d   d   p�T   bKGD � � �����  
+�IDATx��yt��?3����n��)[�Z%@K��(�xT���PKk�RyrZ�Z�G�ȥX��'
+�5X9T��ܻ�+�3�ca�a�K���߳��_�����������9+�H�A�_ �"��"R�`H!�!��"R�`H!�!��"R�`H!�!��"R�`H!�!��"R�`H!�!��"R�`H!�!��"R�`H!�!��"R�`H!�!��"R�`H!�!��-Uf��)�j+pt�I�ML(����G�i:��W6��G�޸�BugZ��6���y���9hނ3q/�R
+	��J��V�H������
+��떡8�ɼ�N2��@��0��M�턃�!������'������e�(
+P��oT=~Ģ�����Bl�E�:t�֡ZN����6��7Zk6l�E��	����l˙��{N�!+��V���-��^�ɽ{.jf�1��6R��!bU߂f#g�l��.=sQ�:ъC��@Q�r
+���rf�7"w�tpz�՝��K1�s~��Z��(�}���U h��/@��oS�)��6`��7\HZ��=r�R.��Iq ���'CH;�B���7d�W����$%|`;���Q\n��뛰  �V|���|��_g��r
+q_~�׏Gq�[�B��Co��������R|kӸ�u�cx���3�V�lݒ�4}�?�{����>��_d���څ3�#�q���(*�^�ɺe"�.�)CJ!u�易��d �ǅ(�'�4}�G��453��?�ʩ�)�;+hx�)sE�8�񎙎����4ߚ��Q��H���j*hx�i�e�)��5�k�5��i�{���\L�|��K��~k�A#�o|�څ3��[����.*���	O��; =�H嬑I@:�O7���13�\���Ϣ]������f�tj�M"���z#m�Q�t��M�Ȁ���f���v�O�	�ܒTFK���K�&͏=��RKZ�5c�|���f&�a�R��}�j+ h|gEr-P4;���,�.!�ì	�N��T�����O�3�|�I��
+nې<�0��[Qɽ�q�㟼�[o�c o���f&�-o�C���A?�<�����/���W�ZV��.�<�O:�����ϣ�vl-؈oM|��-���=j
+EKwq��r�,�Y|1�*���������#吕g�KpA�;+�b����-ÿn��=�=��s�$oLU�:W�+1�M��/'�u���{��STg:y�- X�����	�3�V���y��ǈ|�gɀ�o������PN�@zc�����Aޤ�h���R+@����3�,ڶFޗ��� �*�˃���8{�'����2��B r�x�[����bD�Z-9���Y#�?���[-�5|���2���S��̈́�aF$����-�3$>� F�	ř����\=Ʋ��Ɵ{�������e2V��}��RǈZ|ӑ/!�ޱ�e�[����.���b�ŗ���6ɀ� E%k�p����� �����^���n	�'&��v�z�3� �1=V_�o�>ZG������7���z��X��� �m���[j��j������ނ�r�0�WK��M�o�����J�n�_���;.���u?�O�C��q�	gSF����@��5-1�V�b����.n�`��j*��ަ�����t�N���^ԍ�{����n��#��*���w+��!��KKE�ѽG��n�H�?�D��7̲�C{�KW Ծ0��jYy�����Eo�%r`{��49�aj�ȼ�ԕ4;��	��� :<�.�ͯ���}�	�J��*V��;nf�&�-ķz!���S0�elgu��)v���"�X�3��`��v�oI˻o�����Ⱦ�v9y�7���w-ZV�I���v޺�%͉�1x�������Kmo�;���)�8�!�0����-{�X�1*f�L`˛��ڈ��[n�f+<紻jI��t���V`m3�fO��h��s�C6��TϽ�h��fZ��a���@��/ՈF�z�wT�I��� P�3p]8��1Ӭ%Y ���戏�t3'��ߤ�''P�l�.=�|�I�������nW�o|��B|�K��Wh�(��7hX9�R���"��Gȼ��6t��f,�/=j&��n�Ȅ������hշf���53_Fuy�]0�� ����Eݱ��C׉���؋6-9m!Βx����� V}�`������u����ʂ��AZ�,_A㻯���I�D��#k���ж�֍�a=v8�lӡ�4nX���%֡h�fM��K�@Qp�2�v����f�}:��sʲ�� w�3r
+�=z*J���<ՓE��g,�W��b��7y!��M]P�ȼ�.2�����Q0k�9:$E��u?��~)���B��TOV�o��E�
+��Ɛ~�JW�QJ����髢�e�c���%י'�&�4��xÉ�bw�(��2�zS��J|��޻=؈�S���2<Wߎ��G~nG��E��|\�����r�m*��_$��!��g�-#��*"�?%Vw�<����c���[	��$�{+���%��<��U���H;��A���K�w�S�b!��D0���BC
+)D0���BC
+)D0���BC
+)D0���BC
+)D0���BC
+)D0���BC
+)D0���BC
+)D0���BC
+)D0���BC
+)D0���BC
+���1�@�p�    IEND�B`�
+```
+
+### `src/flows/us-stocks/assets/etf/kraneshares.png`
+
+```tsx
+�PNG
+
+   IHDR   d   d   p�T   bKGD � � �����  �IDATx���MHq��gvW���ڭt-� -HS�[���FB"Yװ�t�t�QAa����X�D�J�X"�-b�`�D/��ۡ��^����g��s\v���/�qew��c	��H*!� d����Q2
+BFA�(!� d����Q2
+BFA�(!� d���ʃ�\���耕K�.\4�7Zv|K����D��^+����ŖіEFA�(K�!�
+�0�{YS����uMۃ�߸��۽�)�N^��kl]S[!� d������.k*��>����3�^x=  � F���Z37���0�Z+Py�;��W��}���8Q����o������5�5Tb͒���Z!㶬m+
+p�nY��8y�����ΐ��.ı����b�n}����O�^d��0�n-K�8�0��Go�*�2"ȮUE8���[���78���١,B��1Rb��(������t���q��c���E�1  ���ZwEC�bi�:w���S2
+BFA�(!� d\$���ҹ3�#�k�̛���=�X0;��QR���n��|?.6V�$pz�_�.��99��XEwfLrU��P �P�� t��a 5��O��k�!�l/��V'ctF��t��F���vq���y��� x�7�W��s�+�3dRG/o�Eg ����k��%6��(D$O`ۙ���xcq�@I x����c��u�v
+BFA�P]Ch�-�u�b�������W���1�-����Q2
+BFA��~���ǝ��v/kJ$���5m��փ�6��8E[!� dy����������Avկ��eMA[!c閵a�jTT.Ny�fe��K�Uͪ�0~�������HC?��E[!� d����Q2
+BFA�(!� d����Q2
+BFA�(!� d��W�ǯ��mS&    IEND�B`�
+```
+
+### `src/flows/us-stocks/assets/etf/price-line-1d.svg`
+
+```tsx
+<svg width="293" height="163" viewBox="0 0 293 163" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0.750198 153.05L2.2502 156.65L3.7502 161.75L5.2502 147.05L6.7502 132.25L8.2502 117.25L9.7502 98.75L11.2502 78.75L12.7502 68.25L14.2502 71.95L15.7502 76.15L17.2502 81.25L18.6502 71.25L20.1502 59.55L21.6502 55.65L23.1502 50.35L24.6502 41.75L26.1502 37.75L27.6502 36.95L29.1502 35.75L30.6502 39.25L32.1502 37.65L33.6502 38.85L35.1502 40.55L36.6502 41.55L38.1502 39.05L39.6502 33.85L41.1502 29.15L42.6502 31.35L44.1502 35.25L45.6502 39.35L47.1502 37.35L48.6502 43.35L50.1502 38.35L51.6502 40.55L53.1502 46.45L54.6502 47.55L56.1502 43.05L57.6502 40.35L59.1502 36.55L60.6502 32.45L62.0502 32.55L63.5502 27.75L65.0502 34.45L66.5502 36.35L68.0502 34.85L69.5502 34.25L71.0502 31.15L72.5502 28.85L74.0502 24.55L75.5502 27.25L77.0502 24.45L78.5502 22.85L80.0502 21.65L81.5502 24.45L83.0502 24.65L84.5502 25.85L86.0502 32.25L87.5502 30.25L89.0502 28.85L90.5502 29.35L92.0502 32.75L93.5502 29.55L95.0502 27.05L96.5502 23.75L97.9502 25.95L99.5502 29.75L100.95 30.95L102.45 27.25L103.95 34.35L105.45 36.75L106.95 38.85L108.45 37.95L109.95 34.55L111.45 35.55L112.95 39.95L114.45 46.35L115.95 44.65L117.45 42.35L118.95 37.25L120.45 39.05L121.95 39.65L123.45 41.85L124.95 40.05L126.45 43.35L127.95 38.55L129.45 38.25L130.95 36.25L132.45 28.45L133.95 28.85L135.45 21.15L136.95 20.05L138.45 17.15L139.85 14.05L141.35 20.55L142.85 20.35L144.35 20.75L145.85 14.65L147.35 14.95L148.85 17.35L150.35 15.95L151.85 9.15L153.35 12.95L154.85 7.75L156.35 10.15L157.85 7.25L159.35 4.45L160.85 7.35L162.35 5.45L163.85 8.95L165.35 11.25L166.85 5.25L168.35 2.15L169.85 5.15L171.35 0.75L172.85 5.35L174.35 3.75L175.85 11.25L177.25 9.25L178.75 4.75L180.25 5.85L181.75 12.55L183.25 13.55L184.75 16.95L186.25 15.55L187.75 15.65L189.25 18.15L190.75 19.05L192.25 26.65L193.75 26.35L195.25 23.05L196.75 29.05L198.25 30.85L199.75 33.55L201.25 39.95L202.75 42.15L204.25 51.05L205.75 51.55L207.25 57.35L208.75 62.850L210.25 65.75L211.75 65.25L213.15 63.45L214.65 59.25L216.15 59.15L217.65 63.45L219.15 60.45L220.65 59.15L222.15 62.65L223.65 60.25L225.15 55.15L226.65 55.55L228.15 59.25L229.65 59.85L231.15 62.75L232.65 67.95L234.15 69.45L235.65 74.45L237.15 68.55L238.65 75.95L240.15 77.05L241.65 73.85L243.15 77.15L244.65 72.75L246.15 74.55L247.65 70.35L249.15 69.25L250.65 72.25L252.05 69.25L253.55 71.35L255.05 72.75L256.55 62.65L258.05 59.95L259.55 59.35L261.05 50.45L262.55 44.35L264.05 33.35L265.55 33.65L267.05 30.75L268.55 35.35L270.05 35.65L271.55 33.55L273.05 36.15L274.55 36.75L276.05 31.85L277.55 32.05L279.05 39.95L280.55 41.85L282.05 48.85L283.55 47.05L285.05 50.75L286.55 51.85L288.05 50.55L289.55 49.05L290.95 51.45L291.75 52.15" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+```
+
+### `src/flows/us-stocks/assets/etf/procure.png`
+
+```tsx
+�PNG
+
+   IHDR   d   d   p�T   bKGD � � �����  IDATx��yt����'y�IBvB !aT��+ZE�X��j���x��E=�H=V)գ�� eQ����""K4�����$$y�����!9	yI��d���zo������f�Ν{Mm�]@E1h;�ΨB�*Da�B�*Da�B�*Da�B�*Da�B�*Da�B�*Da�B�*Da�B�*Da�B�*Da�B�*Da�B�*Da�B�*Da�B�*Da���&�!���<RА��^3h��������;9T��(�X�I��@��#���Xv�	�M�����:��?`B��V����Z��	�7P�fB�d N�fr�6�xsw����!�H�~��jbK�F�T��-�;�K'�MAp������Oo&�7�sMg(n,��S˘6�{G>@�!�_�ѯ}H^}6�d.bw��.2t=�>�^��p;ȭ?�����}�7}�kG"}��l;T��g�>FNݩ~��(���eŉ�T�Tx�hB��Yn�8T����|�3�9���8S�͗���e���<n��[x�ĳ�z2����.wN���2�AT�w�ͣ�1�eǞ`u�
+R��\��mś�����;�Sp�v�j������}��e_�a�{�����=�ث��d�v�� ����Qg������h4>;�����"-x<������c�-7��μ����԰�b]L�
+9Zs�M�xU��Q�[pw{�
+5�	����22��_@@Z��*mTRA~Cy<����G�Z/�!o�N�O$���$Ǻ�>�eU�T�V��.�ww8'U-�{,cҚ�}���8Q{ԣ@1�5�xU�ᶳ6��]Ͳ�u�O������Q�
+��Z&�":�O�~���q1V{M�'JG*m|��-�[�D���8i�Yt�S�c���w~w���z�'.dz�5���m,��/D�p�6St���(hȓ�bdq
+N��/�nF���e�9�|z��n�7:���f�G�d��G�"�j&�N`s�r�D�t�j��:��6���	�B��F�%�����v�?�r�WK�m48�y��
+t-W���ɏ����൬�1����q�����;r��g��%��l!_I�5���x�n�+{e�u��}�q	.����ϲ��v~q -.��x{�V�}��-@������e%P�\�����<b���k�ױr�[����s �k3�1��<?�U����UE���?�W�t ������ڐ%�H�Y���un���{l��n�̍�O�)�`c���9�a�0�O\�����v�.wn�s3��̚#�ڐ%�X�O��w�ݼ78P�m�mѾ�L��cy�E��	�$����� ^�u�7HȺ+G-�$��j����q���o��ҏ;m�7�=�����ߔ^xEކ�����ߑ}��HV�	Y�%)n,��zB@`s�Vg���a ����/�3�SY�������e;�'�����f��>�;�%r`y1���>�LJ�㵙dZK�eͥ�؍���s"���~~z?*l���Kp�sMy���Ig���u'Y����2���H�@�o������lk��l/��q_�_<�C.!�o�@j�5�!�r����8����sW�_�QkB��=ʞ���Ys��*3��(e)	�Iݶu�!�/J>��]��SI	G�O$����s�%���ߙ�����g{}��bJ�>o-�V|�i[JP:w������n�*��Q�{X�^�3���2�J.����tZ��
+v�~ʷ�w�p�1�|xt̓L�� ��l�lS!���ɨ�AT�=9tw%�KTgzQc>��O�C��ϊ�����:VG$Y��
+���@��2/�~n��������N-��Ȩ5�0��A�<|��-E�s�����<���bm�+���h��.q!7D���:��c}�ZZ\6 �G���ɏ��2:��ѵV���OpS�m�� �!<��"Q���c��-dY��q�,��A6�cvܝ<���`cod�J�1��cn��="e L��Si/b�01fs5��ۆd!m?�qwK�53��yd�t��4��� �]Dqc/M|�1�i��~�Y�sH��u[Sæs�Hm$���Q��Z�'Y�Ak ޜ���s%�7'rM䍽�Ӡ!�H�1���x���ﲥh#�S�#%0��Eyx�R��a��<�kԚ���P�q@��K�].��S��:?f�݅V����-1s�S�uݖY�ό�k�<l*��ɘ����n�MiS1?Y��|g�����0i}xp�bVg���v�4}N�I��8{�w�Q}������7b�},s���Y�f��%���sr	3��4��&��-7E��������u)��h�3'gN��9l/����-�Bw���с�<0z1�-�C�k��ĸ�I�7�.w�M��mzs�zC�9A�@�q˚6���2b�:h��]Ƽ�?x�q1����w�8�Y�Zc���o���a٥�H�d^������c�X��>:�2�J�u%	5�I��Z#O�}^TG�Ƅ�Kyx̓h.��^��ݖ7�|X��WR��1&0Mrޞ����[��!����O\�㠲7.	�¬��ڿ����{.�F�#c�� =f_�!>:_fF�$��9q�2�+Bz�@43#b��}�b���s=���ڨY����N�P�o��ɤ�6��s��l3ϐ��ޱ�]�7�I!�:�=�dW"CV�^�*"�8l�3ǐRc� �7ș�cH
+��k���o���%1$��>���Ȁd��5ظ��>`f�^J+�!'d��7�#�7�+ï�tD3���֟f[�&t��59X!���:����}I��2�)I�3j<�����+6�G�͟�gz�5Z�e���sM��#ܗ�`�6��$Ӓ���8S�è�1ܟ�0q�A�T>�r�j?o� �g8M�J��ɮ;���LZ��>���K������u+�K���ہN�'��p�(�G�4}�`�٧(Z��#C�)k��
+Q���
+Q���
+Q���
+Q���
+Q���
+Q���
+Q���
+Q���
+Q���
+Q���
+Q�^%���K�    IEND�B`�
+```
+
+### `src/flows/us-stocks/assets/etf/proshares.png`
+
+```tsx
+�PNG
+
+   IHDR   �   �   ��Z=   sRGB ���    IDATx^�]	xT��~�wg� a�-�-.U�um]��d�q�HH`�	J+n�Kk���V�
+d2�(h���P�V�j�U[���B&l� �̽��**�������>}��s��~ߛ;�[�!����{��ɧ~�D_�C}$���@_L���i1h�� R8�e9 r@ � �@@�8�O'���D_1�K��$�g������N9���\��vE(����a{CCҞ�8�rh\��5�yx��x�a9�t����D�"�p@^�=���*^�3%�� �	8P3wXM��o�B���ޢk7���u`��{AsI5r���� � :����f����Y+v��̟�
+̟���e_x��gB�VW�i�A���ˀ+�g�U�����".�� ��ա�X�CVx1X���W����C��}X��w3�W��)� g$q*�p  �<�q�P����>�J��J�$��p��U��t�̀+t���8(����g0�2"��@R�,��� ��)35��OȐ?�
+yC�|C�K��d��K�G�~}�	%D��}�7��l��
+���h!�=E��k�cY6��ĂY�f�������{	:�A�h�YĻ~0og�s ��"��x{���gl��r�=Y!�����I���yDܗ�����c��~�.��X��
+�\���9�c'�U������L ����As~,3�o?MP�kۺfy�L�;?n�"t��K��'�q�t�����MC-3:�xN��
+Q�h]x��m��w�3��4�R��D8PO����`�`~Fa��>��SƨKH���5�>g	!���0��(���$��R۶ϟ�e�E�Z�m�^*�I���s��-1����`�������]���0�J��7���Ƃq�8՜��z�0��c k툽���=R���Ј�9��Ƞ�[c��e�)����)�����2�Lby���
+��D4�@�r]ی�`������-�YY|
+ϲBW����F��X��l6�\�c����"_��Oe��ZK
+]=�>�aL��~�b��7�8��\Cy`AE�<{��z�	���#�yf��j����� 3�� woKt-k��~�.N,d�2B/)�����; �� {�7��BQ�氢�����gl\��0�D�V�|^����= .v��ZaD�C���!��#展N��t�'������{N$؍�Vt2+�����Ӓc�*��ڂ�$!E �j:�`ˀze�ۊ�����%N	��WWC�*('�D���%�š0�.��{U�?��)B/���qE�8m8*��X���b��98Å^6�WN,j��G��e��'���ɝ�����P���#@��+rLo�`�6EN���Z����1L�e5#�A��LD}�F���e�kԼv\�F��h�Q�C�>iֈ�����s��ˀ`�����Ǿ�C<�}Jd�0��^p3��a:��a yQ��HŚ���gF[]�>���F�j h�{�Ռ�u}�@��(�m]{��jUZK>�
+}J�7C�Ψ���d��$�S���X�����,4����jFD�����2�0xY;�U��m�Z��]��~��p9@�X-`�ˀ�ВP:ϰZ�]�^VW0� -ғP׶ˀH��g|$��V��i��]M5�W�*@�X%H�ˀ�08��"�����;����w�~㮲[ax]&2��h)G����#�ZS�O|`Ȩܼ��0���\�.V`@�/Q�?7��u3�h*�)�A"i��67sH]�d�Y�S"�-/��MS����K���
+���2`U��I<!_�pz��f`�L��#΂��-b�v�ٝA��lgF�;��	B'@�A��l �&Vx�hSX�Cp\0'd&9���, �/)�?�� �g����"�� b�0!Ly �����l�������1o��(�z5D�oT#�	v��ـ��.��˜�T�I~�d�c�v(r�������oAgu5�8)yV#��E�7Bʃy���J� ����	D��V~�lg��7ֳ2fIEl��X5�Թ�G0��n.v#Go_;�oW�cL�[,%��$�+�^�D=E	�8�@'0�H�?9�x���#[Ǯj��_GF<�}Rm��9$^vS51d_��7
+�"��[<_�����qc�h�m�/��~C岷��� ����d�j�4K,˲<�>��>+��Մ����7D��q���XA�H(/���[׭��?�{�J�^�q��}#�@?�sAK���y4�r���	�Yf�G���o"q����'��l$�sr"~O���"�h_p�.0��i����͉ްv���:c�_1w����7"�7�l��P�6��8�ߵkRB��L-�-�t� �p�]?�S��	�t.霱�'�}c=$��k@��.����)KdObv���k�+��E[Z3�d��	�� ��z�wٕɑ@��z"�X�Sj}S�j��ɀf��)1�$���ʀ�����xy�z��ݔ�Yo�_��aK��#fl]�r�i6�X�eso!��Mӯ�|~
+׵��?eC�^��bJ�1�ҍ �w�q�1����ep���K:��I(��M�醐�';�{m ��W �򐔅}c��ು�;d�3꧵�3>s��>D�IVpKaS�7��P:g?���R�fG�^u/�z��`ƿڶ�>�a&ڵ
+-��J�Tk`N���-����W�}�i�Y=��5C��xr#ɣ�~����i��ZC�B��Dk`N����D��w�[�8��x�v,%���w5��K������	Z��Bw��{����@|}$������v�(���oAm�owu�0ɗ.���q-i�X��� �����bK��̉�cL�h��=N�=�8ԋX��]BD��=S�6̼Ճ�u��[�B�+�PU��9�����e����4�̎��~���/�E@��l,��ωK�W�i�
+W�B/�n'�Zr����YP�t��c4KC#K�$=`��2~<h)ъ���^^�+�櫄Zh�f�}[k�MV��e4'v�WV�S�Ϫ�MC,��yk��u�G�6o�O�B/�)8M�H���m��\X���-?�sٌ}rx��y�$�h+��̷F*Z��K�B/����R0v����ۺ��B=;ؙ�a�8wȨ\��3Dt�����-[[N�bNe,t������#Ƒ�c�����^���b�"�"����9���!���3���HUle��k#���>"q]�`lٟ9�O���mK�.��2P�rl*|D����{�H�_X�4�a�D襡�c�$��@R����?�]�r���5�	��55Jþ��	�d�JS�F���M�>qn�\�W)�j�3�T$����F��li&��{��/L�f_5?���L�j5�ZA�A��D�cK������[�ZfG�p\S{a��n�19/���D��,��XX���L|k"t@Y]�L�_&`�җ�ϬG"��S��řSj}��E �gf)�ފ�-��5�����	}ҽ�3��K�r3d���?!R����uaj����H�}�t�h�����U��u�!�P���m�����o�LW�eP�z��(�űt�`VD*be���v[M�^Z;�|��ٮ�wS!�;�E�ũ�w�8���y����0*2/�Z.�ğ�B/�3,�7�}�Fe��}�p�v.{de~�m�߾��a�x����Z[�Τ��BW��R�B-rjA�2?���pF�p���]MD�7�5�����Ob-?Y^�Do)�d5D���:�����oG޷�H�Ű�xV�"�q�5��>J���悙�nkm99�5!텮n��^E�wZ,Y&���"���\׾�P�By��"�W_���A-'d��]�'����C$V/��C��O]���kY�T������'y~d�5 �Aϟ�}��3`��'��yd��f [:mh�@/���S����*. �M$�5,���?zI�w����B�x��q��4k}�� _=ALԏ �-o����a��l%���l y^Kь����lͶ7�䚂�<�X��K����k9�R�����9�FJޜ� j�y�[,��T����c�Q���C&A�� �u��] ��$���ny�1��WI	���}u�DF�Z�/s������t�F�𔹅��ÖM���lb�g�@�itqp�j��5U�n ߾졀�*��t.��H��D$C�LP����d��+b7e¡�BG5DyA�� :+�V�����@�>V�b�U� ��s.VnC���w��F�
+�/�YV����Į�BW���0J�g:&��Y��Y?�bɟ���!n ����C0�!+!,�Ӭ0�5H�F1iֈ������m��r�����O3�f��U�j:]�x�7���e�*'��W?}�SqXѹ���И_G{���K�gN��/��A�K��ۘ��HEK��Ԇ	*�;��Xzخ�^h�u�i���qBg[����y�=�Λ�t/�5��9_�`� ��߻����@�"���9�{ㄾǔpa� R�U��aN0��#�5��� �ŕ~��z%�G�KЕ�K�2ʞң#0hJ�o�&+��|_��=�i����Q}��Y�������Y9�-�h��Ѿm�O�^?l�b��M	��&ѧHt�����9xS��J$^L���4b�EI�(��sՅ�BW�^�?���L?ʔ��3��H�E�SPFG������C/�7u��9W!z!�>�nIeu�o臙���?�����D�N��]u~e���yR�; ��j�"3RS�������^v>:S둅�����sPZW8�r���9���:_� ����V=*�+��m��.t��ڂ�B,#�������b'LH]b�W	/H/�"s+�h��.��9�%����E��Y���l�6/���;9W�y�}D�8�R^�u��Y6C�A������HH}	D'���U�
+������k������ �c{�Y�;R��7}w��t����j�'!���V��l�+�;O�?}�c�4��_qHJ�X]�}�.>O�4)�yl)T�ԉ��)6�F3��k^�M_�
+]vU��=��1":T���������M���Z�����۶^��n�Ut�i��Cs=�+ �����To�Eb-������}g�%�F�(o���!�G̛��~����?x7�z����U/���)�+\�4꭫��m�����o�2hK	]�44� !I������a��E-������� ʠ�z�U.Fc�v壬�p�ԋ?)=z�)�	}'��L���퉔XͰ��%�C
+~ْ�)gv?7P�~��{���c����aq��ǦlP�M'R�����9	�r�C:�ඬ�'�;�_N�j�+�eg�m������I��Z�;��5�d`ô���#/�'�_5�(�F*c7�ֲB�,��
+�
+!~MD�� @�2��Z���-���W]½Ǖ�O����1�@������zK��?^T��U�Vz2��y��,^�?�no)�흢�����m�a���B���{f󣈆��̈��5'I��ɳއ�l!t��+���x�D��s6���������u�����a�&e��	Y9�k����;w']��ܪG]	����bW���uyl#���O��M!�f_�>��=?��gZ�����M2�O�5:�w�|<ެ�[?�n��@�/oԞ3��L�����?�3&�	]%��v�Xx�%�lk�ʳ������Y�z�Y����5�.�$�s�8�7=E����p�6����SWٙ�KL�5k����l)t5��j���
+~! �l����4lipb��^M��F �4S�Wx!�BW���*m��F}�;頌<]i[��D�\S�CI��(�,3ڙ�+T����*1�Gqp@�`U����v�JS^�[�o�Sg�{ʶm��_��W��҃�=�Z����k�p���{喱�)>)X�W#��>��{At�f��A4�?����Pw���o�I��K���0�v���w����hL5�Y�	:�(��G�#%~��ʵ�Z�i��� �]"H�[ش�'Xޠ�yp=�Q;��o��6+	�O03t��QB���>��p���p����M�pudZK���'�`2���rHhw��y;�8ѹ�1<�4��v��+��&�\^_�F]�1�q��wa��¾�@�j�}f.��X��򈖇�*`��!�fbQ0 Aa�쩆X��Z�3h�mce��3��9��*
+�XP[�����u��ոiRط��ADצ{/X�Q�CQ��-���ք�H�m�-�z|�(�����paP�(�<iAe�"����B�/���F~����Lt!�SZ���)(�ÝJ�z�i�%4}��4Ws'r�4����v54X��G,/3{�&k���j�I�Q^�,���x�eJM�'s��+�}�VG�6.��0G{�|+CwioW;�2���hg�w��K�p49�;�#��"3r�1c#�m�V�.EW��&����p��h�#ZS��]�Z����Р�ԯ� r�^�cEy����R+���m~��6��3�@4�}��:�`�]ӒH�g�<��3�o"��nZ�1Q��v �3+�YPѪ��t8tm���t�}���֬���5��0��п5���������h���$뺁SB�)R[�y�z}���yh�}�Q|��+�=�:qѐ��������p>p~��}=d����1����� �����G4����^p�����j���o�e �GH�?�M�[��$�x[hy������/��ڒ
+���D4ԫj(��wJW�i�di���	ʹ��x˃ye<�9���7X�����?��iR�Zs�lk�ٹ�Cj�f�*��N3F����(��}������t��X"�G����m`43�k"�����z��- ��mm�����O�E��h�C����c��[TkV�f�P�܏>���	T�,��az�����f^���j�9E���h���N��}>�N�iv��#'�1�B�'C�|�#1=�U��0b�(b� ])��A�^��� &�𯁕��W�>e�[q�`%�B)�ջFq�|��gz�=;z9_����ȹM�_=���=�c%H�A�1�P�p�X�[�B��+��[��|Qp1]�U̻���B��5ꢥ��g�_�}x,�����4s���İ�|��#���KH��{Vh�v��v�#7[���1>|+��ۥP�0MCS�|3���.�`�h��u˙ݛA.]�<��p��� :�G�.[hz�9���A`qWW��Ef�p�8pأ�Y�e^&=�m�ڹB����^ q0�t)s��HWC�q&$��@��`/(��;�1�$ɷH��W]k��М�E�"�j�ӷ�r��������)�	G@H/�wx6��A��]�ͅ(P
+ :
+������t�h0�Vih�'9_�Z�� ��)������:I�V{ њ������'���@�5���P���T����g��'=�~��w��q,�8�C�DD ��@>���7��?|�2+��EEN���Z�V��{�� ��?�\��P��~���iB(� 
+��Clz���Xz�TZ��m]�s�\%�A�w�G��$F�pf|��$�a;t���8��0cp�D��i��W�g����n*�hΥ�:h�A�%t� �����'�)dZ�.�2U�" m2L��� !�x H�4 �jz╂�oi_�q�L��_y9H�1U\�cn@4tiF6��9B/�2r� ^ �ѥ�����w3����q�܈h�bC|�ԉs�^CP 9�����B�.��t.}{����`�!��o�iv�Ћc!<� �d�E���'{��m��~��(G߲�X�h�$C|�ԉ��>n�(�y_�;��#l\qxV,�Yuҩ�ր�@d��b��hh�U�.cB�H������R��`��������I�/
+�ǳ
+���1�w���4ƙ=��[��+O��^��i���|4��
+�f��	�+!�Æ�g�ѐ�sJ[g�z��!��+��� :�9_jK�k-%��Σ � ��Z5R�Z4�ՕA�  �IDAT~��9'ڱ�Ћ*KA��w 󣈆��6����:��e>xr�������5��D�B��q�={
+�?m4�}=y3m�'���ŵ�֝v�d�8� ����2\��PS��l��B���w�wy��!�౲vhc��1�� W����B�����M����'��!���>�:�A�f��tf�w�D�0��1w�����������>vR?���u�9�E4tc���a�\��1�W��Е8K��L@iBXں���/�� ���.�i_���eh��+���N�.��@x���'�6#��aI�v�]�ǣ}�^R"!1�UP�R�w��8Kf���A��R/�ďL���_���2ŷ���G��� ��s�k�*��΁Z\q: �1�\���s���4��!���!�s� p�n�b^�hȽԐҐk��T��'���K�2M��G�8s�zQE9�T��o@�RDC:nt�P���@9���1�z�!.�.��̾��^R��W4p�(Ht��g��y��m��6�,�,��F4�t�yg^dZ{����U����*+�/щ#�d���q��թ �9 t(9�"��o":>��Y���BW�������<J�!:q�Y�:I6L����C_�h���k.7�-�[[�EU���y7ůck�n}l盿b&H�?=��կ�XSm��`]����g{�6�&��,>O�Ûuq˳����E��{ }��p�b4��_	��@3F`]�O��
+���J:#�hMq�L�Rc���ܴ��]Qv)��L���u��>�3{���P��vn��_q:<�����������RV�����W��zJ#��o��%��n�����5n*ʝh��efeOo�	�;��6O-��[2ט�ZTu#~c�ŕo��H .�����T�zB�W� �����1{�H�h
+�J5`�]/P3���F{a��]>�qnn��ٳ��+o�Δ{dLGsMM�!�-�d�P\��S�4�ݜy9Vn8+���%��̮�hߔ�CQ��TJ���0&��o:�to�wN�bk	]�	.�(�7��k�T3;���=30.p0�<o�0����P�Ǣi�?�h{W��%98tX3�Ū��])7�Nݼ�c���4֨�j�r,nCXG�ɉ����N���;�T�n�h;�	��Z`GuZmm�ޚz-�q����>���?X	�&���j��s]�~�n�=2��>��ȳK�N�|���Z
+��XC��m��Е�TDM�:��֔���m�W�*�IO��kA�Z��1�֮� 6KC��Ћ�� �zH�x�����8�L����`��� �׻�� ��L��GDk��ً#��BX:�PTu���7��m�{M�����6n� �l47c�^c�ѕ8K���0Ҭ�n�W���{�)�?�������Y9�Z��Ҏ��R-��b��uDC'�b;��/��@س��߄�m��ðxv,�K���������3b�oASH=k�>�`�|�U�!~��t�����2����K$�s1H<lZ&�ThW��d�D,�)�ݧ�+�1�y��eV|A�����7~/hsH�U �[Z�*�j5φc�� ;�y��0W�EU�@�� e�_��	�!5��b8��tH(
+L���-t#mOL* ��ZlO����d�WN�j��̊�%�u��vOqRM��1$<�_�=�k��!�1n�̆�\���� ��Y;z��t4���=�9>X����R�`6kf�g�{ؽ�w3�N�?K�J��ban@4tift8�7�x����~��������mG����'���v[:܊�P�����_y9 �)g�1`���ьhMQ���=2`�Ћ�7C�]="L�s���tq|[5�(������W������%sSKj���j����Ot��as��hw�fV�*���A��\�l��?H�Ǻc������!��w �i���!�Eh?��]��S��A|'�Y��j�=s�P������y^a��2/C4tAV����KKAt���a�y����*[|�$��gA����Û�e0�@4Ԑ-���8�t�$ t�M�W��D�F-��>1`�е8߾W>B�t��ڢO60S"a�>%�����j�_b�|��k5�cV�1G���K :EG��r+��w���:�K���_��qb��r�w�2�}ܸ\�9p�>�D�_��\4�<��S�&O��߂q�vgL��y%��óz}E'����Q�<���7ͪ��6�������3�	�_yH�pu��iP`�r�k�U, ��vc���Z$��w`_���9tm�O<���p£��ς�/S.Di�������c�LA���B/��BT�����g��x�.n�_m����D���5n�5�:�"�9��D�vm�е����Ш��[ۮ�iIp�n ���e~q�L�\�:�v&�jY�e�ҏkw=���G�H\�%u�1����k� ޮ.�U��':{3ɼz�A��p�I �­B�LaWMP��υX6k�)RuzA����Q�"��q�XL!�H�ގE��7;�6t�Ɋ	B~����G���4%�['��Zh�!�1	P�MRN��ع�����4�qs��<�&�j�"�M��7E��W�%$\�I��Xgnt�x�.�ASh�ޮ\�0���Z�� �\�T�*�'����Ћ�M
+��\װs!�ƀ�����C�zq�cˏ���,:��Aڶ5��~~�H���g��_���+�b�M��j�@���D�����ۥQ�J4��;O��nlg�X�_4�x��Y�%�k��$�'��ne��e&Ϡ˧��98L# �|u��UH�OGCC���\*�b�R���W�%�ւ�>�� � ^�m`�A�`� ��G T��3G t��o��1P���NĒ٫�0���=�
+�(���;Y� ����Uu����F�ct��?�0��r`�D��"����B/�����ܳf0-(�v�Ec��+�}f����g�;�g��gb��D�r`b��
+�(x�ib��kspW�����^��?x��#���k)�	�T,v��9&��Z�73`׷��P�h
+�$��D�zQ  �q��LpC]w��?�P����2`��'T\Iz��,` y0F>K�>Ȃh-��B8�s�g��)� c,�k���!��6+����Q����� �~=Pm���N�;���E}��5��c�0�i�����L����83(݁+t�cq�V �ƣ�� +k�)���5k\B�ŀ�B�W}�(k��ɘ�:0���Л�rh΀�B/�z�њG�4�2W�94�L��=3`����gAt�;(�a@�,߄�+�c� ��G@�º����c�b��e���c���f�� �%����0��m[϶i����~�,�ci�t[�5�k\��u�[����� ���w/�Ɠ�y��c�8�qY�x��D�XjFT��q0�D��%�A�^�&�U�w�5��7B��T�\C��)0G�*��D��.�d@��h����&][�0`�Ћ�<o�0Ș0]/2��|��2��v7�s�>n� �|	��L��u�$��!�.n[k1`��U��� ��Zt�h�� w�q-��Z�{3`���U��7w�Ͳh+d��=�n��I�yB��f[�����g Y�\LFӜ��;s=���BW�W���ܷ�C������
+4�FS��6�<�
+}B�$� �Z��� �~�+g"~9+�͢ ���kr��xD��t�'���Z�ׯ7�);0W�*c�gC���:�&N��J��S��#�LD�֑���
+�u��5�;��nhq���\��ˀ5�^Ty5���\�-Y
+�h��ƒ�\P�2`�������Ѿ�F��=j�rV�»��hh�rir>�z����s@����i7)B��:�0_���2�P�nM`�:B?.�žғt�	<d�K�O��O����N�#tQѴc �jB����sT�H�w`I�vmM�������޽?��$ف@�cd��RDk�▖,� ZO�����s :N����r��x]�aɼUY��^���U���Wz�]����U�72f��������V�nb��BW	� Z� ��	E�J�]�ܷ�1t�ŋu��Vz���k�؅Pq�+w���hh�M�Ặ V�J������{�u��� �M�2�=�jA�Y�Յ���F�%7 pW�9qVA��е�i,[�i�9�° ��Jڸq��s���l" �y4R�jz+��qŭnqC㨷�'{]e���:�~��ov�y��wbi� �Γ��n�z��j�	k'C�� �4�&�=1��h
+�i2׽���w0<>x4$��6�<]ȯ��'��'�vtۻ�d��BWя�:��_� ��!e|V���h����`La��B�I���J� m���q�[�x]��r�:���:���ա�O�,_
+!��~��Y���Ab6��ױ8��.�9Vo����/)x�v\ �N8����$�z,�{˴�:�
+�%��CvQ�/$q!(�:�uN��z(<	e�lZ�q�
+�Y"Hg
+}'�cJ�0��� �<�N�H�E�z�|�����2:��`�,��%�~v�p�п=��C^�� .x4�� {��z뫧Ԉ`��y@��3|)�Q��Q���ˀ�d��w�{L� �ӯ�<�@�� �4$���]*��.��A�f5��:b`e5��L ���[���MU������{���0;    IEND�B`�
+```
+
+### `src/flows/us-stocks/assets/etf/spdr.png`
+
+```tsx
+�PNG
+
+   IHDR   �   �   ��Z=   bKGD � � �����  �IDATx���w�]U�����)S�`��RU����  �A,	�LH�I@�^)! ���Kϙ��KDDDz�&��2!$�v�^��c&1@�df�i��y��yȜ��:g��{�w��1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�cL��;�}�6[��T�]P�	�F^�W�I�LIKN���RP(��T!��-��L��Y�ڝu3fK�XCwݸtUYz��S����%нT��l2 4��P�����K<��)���b:S|�U���ݚT]����j��=;.�֛�aA�n?�}��*2@�Ţ=P ZY�^_�N�㩖5��j�a.̔h�&�m�Dy]��{%ZPht4x_ZV����R����x)Ud���/"c�(o�_7�:W"҂4Jɯ
+�5D�����hYU����W���>���y���R��W�TO�^GT�*Z%���Ԋ �Eߐ�LUkX�N���ܔ��{:�A� �GȠ�:(�<��w�)��뎭[���Z;��a���`=;O��WT �yO��}֫{!@�[5@�\W�����U���K���$��F�{��moD��*�/��^t�x�r�K-\=8J軣:��L�Ad6Bew���>��(x�H�Q�(�"�ϦD�_Z^xk�s�Zð�I���f�����ȏ���<:B�n�w`%�W�_�i}x�nl����[k2:8(�&IP��e����(��G�=�����\u����TT'uWu���"��'"S�S���կ^��[�%�y�sr�R�z��o
+!��"/�����Ƹ%���D��m���5e祍\�w�ȱ
+#{��l|Cp7��_?��S��z􌶞RȎ(G;u��)K�[�c��g�����%E�n<�����uD. �{3eC�x���Nު���+�,����T�Y��/0��s�8e���m�ἰ���p(��v���H�˴2�a�!׬��'��;zG��(OH����C��)���|G߈���1[ѽ3�������;��E�fZ����K�:z`���|l�=;7np���LU�SM�l� �"�4�uW�v�]��d�)n)64�o�AYoW��#��(W�Tp��گT窻:ٻ9��6S�����Ӈv��숡6�i��a)�\�2���r�&�U8!���N�doקG)�)2�XY9���~8������U8LT����Ӷ���:2��Bk�sr'm��G�6F-l�Sr?�Z��R� ��Z�d���y����Sv����(Ձ g��)���}�X~��������jo��T�TI�8}w��^��#����l������@�G��,|��f��L�ە�Im�2�0���0��0+Ie �����Mܱ�+����ֳٖ�\���/?�e���G��$�ם���;�B��+j��]��^�+|b鞽]��R80Rfoq���*9�(��C=�4�����
+r���F�V �����W�9���v"p�l�]��8p�.����uoW��U��i�o?u�������7���n����zEE� ,^�'�}���ܫ�����
+Q��Y��2y��'oQ]x��pD��⳽]� |�B���\G�� :"������F���ǧ�����o��=�����e�F�����k�U��V�m#��Q��gQ*��@�/�tz�^�=�_��Pu����T�|?�V�S��<��w������2�~�����
+X���~t�&/W	2��Z\�o���\�fݷ���`Iu�����;ܖoi=�!�+�I��P�⏛���Ь�Y-��ꀢ*"�P:�!C!%�hH%I�)N��K�m��X��� �0P�?U!@I#�E(Se m���RQ����}
+X�������;�CH�
+���~�|�S�n0��Y��p��9,���办�be����g;�������[��q��
+���X��%�~������Ҫ*�h,�M}N@E�,_h�v��9DV�7�9��Udo����RR��c�|dS�[�\u�Bj�-�����Y�S�3
+���'�չ�K�y7�G�iMA~֙'Uk\>S���F�AR�aH"sJ� !ڟ�z��~V`��E��rQv��;f���*��޵�<��N˔�Ө�%��n��җ覆��^]c�q����3Wˀ7�s��F�v���.��SvI�f�ɗ�(�#�:��9��+����[��^N>�9W��#J�jiD~8ZGͩ��	��Q
+�ꎻ�����wT�Ͽ�m�m��|ѫ��y��)�Ka�0�SEP�7;��B�xK���K��v����^�YTZD�lh}�������c~Րym�	��mÙ$���wx@X�q�5+gY�hf����8����d���.�#�C<��hx\���j�xH��B2%��l8��E}����XW��O��^2����o�rm�ѻNى>?��oXQx̉\O��(��e}z�)< l;:�7�8AD�Jh�%�ȡ��~R����_�:�	�&nY",�`G ���)�1�T�-}m�k��r�a��Q��S��+|����=~v��6�$.��K.�����0�珽�9Q7���:���n���C�0���#�o�-K�r��^�� Ab/e9�ft��&
+H/R���u����n�V����w���.H)��|O���_]���\���]q��7�,><tv3�_b�� �Z
+dET5���!���k<�����Y+g��SZ��.ߑ[h�ʟ�;�S�C�L���wD�4�w�u�����s-��H��Fi۫�o8/̆��*���N)����U���%��Ǝ��W��N�����H2X�-���~�H���y�p�lS�0�|?����aڜ�9�|�#Y�;K�34� ���.�9޴ ����ݧvn*!ni��!
+_Q�9��5���7MNf=p���կ	O���[�M��ݞu��F���]�o+����ADao�zmEe��i�o
+�����%)�T���#�N��[N֡�Ts<�`�����A �
+P�lx}z}�R�ǋ�'�Nsg�W��J��}�+�W�]�L��o0�J_�U��N����=���̋
+���0 �Ջ|���|s��:b�9w���Y7l�)�b��(!���%�} @Ok�ֆDh��2�A{U�"⚠=vVͬ��s'֫g�ă��#F(H��U�9=W�$^�9�멦��`�BW��o�V�*�P��/I�h����y�hF�M㔣��w�^F&PL�h�֋�u��F��
+�"��a�~�L�z�w���[
+�Z�ßΝ0:��v�l�3iAk�@��I.mHb���&#{���.	5t����j�Ҷ�i]� �RՂ��˯��l���'�O�����e��i��B�#��o�3bUw��')���B�&vQ*o�5Wot+��;
+s��C��;hX^����~��0,e���w�e��Y�W�,�-�Q��xy¥���6�������C��&����~�N��)3bQP�'���#�g�	�$�uW�鵉^>0���[=��S~�nW`_z���4�y��IIN.RzQw_����)���si��}:��/��U;�a�pΝ���q�����T��$R9ӭ�0t�iZ(�NE�&�е �?����������oM�s�Op�Z��~c�0T�@D�w�S�����;koO�T�����4Q�H:�ӝ��b�
+�*����K˃l��"���(�?w���J���Y�鈀₮l^�d�T\#�[�t��ܾD�|I~��q��y+*��]�7T�^p��M�c�%�BD�;1Y)ڎi��hu����i���ê���h��E.*hC������r�`[�u8P��G�
+7ܙ\&6�FA:>�G�*0`p:�Hŏ�"CQM*5y�p�{�������+��r��g�|��t68Չ�h��L7��8�E��²川{g�5�U�vO�I	�#;��Z����"�����#	j>HF#t9sr�W@�)w����c������C�]���vvu�Ҷd7�)^��S�r̔ܔ�!/}+U�KÚY�'1}^ID�*�?�Y�6:�=~v����=��>d�$����ݝ�U�Z����O��L��������횘�G|���Ág�<�~s�{��U7gJ��E8�-����>D��F*��;&�����0�[�]�]��M�6\}>*��p�Gv�ujf7C3����W�͔j4��3iK6��v�%BHG�R2�ܔ~���+�v�o��3/��[���1=ʣ�$��^����o�][�4<tv�G^�dz�ПR
+A9J�_	��~Sos�~W�����q����g��D�R'�wt�۽]�s�7���;�a����v4{��}Ik)�pu���][��t��^ �� �#d�D�;#�ȱ���3չ�_ws2���A�j]6��1<b���]!�3�!+P�o��e3��[����'���?����)�)�Aa����H�S��
+��22fz�� �������k�����`Jܬ`��/��s���VJ��Y�z�nR�Fiv��}Bh����ꇷm�XQ>h;	����k8����Fpݘzj��~8/���8���J�(I��~C�ū'\��tx�Y'r��Mi���}A멏���^��L�/wu_�0eX�w{%%�a�����aF�6�Y"*ψ㱨=S�����}��QTbI_[J�.%� 61%xo�����������lv��A�i��� 5��&�ae��I�� �G�i���aE�P$x���Ъ�kP�T�/�e�h���F�j���+
+[�Q�a��4A��%����]��� �|�����SBף��7v�u�n�=~�F�w}"�w{�5�����M�늕�q��v'��oiOk��pWW�|I��/�������������V��"�,+(�=��"z�5W�ՙ�M�M�ȭ�qө}f��̾��l�;��;�6 <���f�5ι朗⏫��x�-̅��X�-]zH�֠;&Q��8'��=�a�����ڍn:����獽�MDNU��Qa,�K;�L�K۲l|�"����q��9b��]č*U���u��=4uf��]�O�pޫw���#"���g�&^�`��g�ke�n9�$����,k�.���Px3jѮ�_�-�0��s���$��.l^���7A�J!��E�~>����_����A)�具�-�W5vC�2&�����W=D�q��a��e�͔7��o�<#�E�9�e��7���ANڎ~�B��EG	|u����3�=dT�o���E�5��A�r}K1��	U�OKw,<Y��M[k�I??�Q�I��X`��?�Ήk��b����V��=N9z`q���>��x�?W��8|�S8y+��`�$�S�=���I��4�|I�x=����qy\�.��	�Ut����\u�c��F7d��Ŕ�ɛ�g�0}�L�e�6Asp1��iK
+�Px*�J}6g�%�\�������(u8)��`1���$���ve�1]I�ב0]���{��)B^L�R&��n����ϝTMY4W��d���s�꾛�^Dԋ����������ҡ��˚�h��2dfAj�����\��=-�(�E���&Q'��{/t!-q탵��ɟ.�m� %�]�vrO�\�K�������>[p����� q��Ǫ!�}j����s�Lx@��� ����+vc��s﬽.�zՂ.쬒3n>�"]�r�x���Gy��+��1�1�Dp=����}6�,����Rt{i�]!�� ��o�V��Y�7�������VO�;!���b��uL��~�=�M
+`�]�O-x;�g�O����"�EN���Xq˴\�o[I����Fa��'V#�{��Op*�V�:������£�m".9�
+'����p]�ӵ��n��
+��p�mz������^�wb�C)Z�ʱ�M?�]x�[��]
+`�>����L�ND��୿����z���r)�9�~���yѥA��V�*qn��6��gg$��
+xT��6W=�@Y��������n�sk�)c���Oѝ��6O��-�v^Y�w��D�|����ݨ�@�G'��P���J[����?�}��dONy��\��n����[��~6����G{�Ú�0m΄�D�X ��U�r�*��z=�uw�K����E�%|�J��5�<���I�U���Iaf���Џ�Z�t�,�;v�p�9���@�����}�ߜ��
+�y��U�o����5���T��� �֞��<��>٩�c(K離�����V=L��3�轙T���|��B���}պI}0�uS�a���#9�;M$�r�����.��Gzx@Xʲ�A��]~p�"���i�w/�z&fü�k�?iǝ�W]]su��|�H� �B�cE�"_H�[�\���k�;��z�('�����i��(5���]ݧ� ��4����?����la�uߪ�{���ؽP�a.��������3�����{ĹA��)��BD���s�1�����s� R���-�Ϋ���[�� ��$R���|g��r��!�9�grM�P������4��>$��2s�W/���oP`��_�U�~?�k�|�[W�˗���8k� 
+�I�th�7nR�������a�B9��A�7ڻ)tUiR��?����^�rh�|s+^Rd��Q�b�y�u�͹�C۰��w���S ����b�&o"h_�z����S����գU%�̶�M�i;���@�&��t�+���:��P�u	���E��D��(�W�[]�vyt&3{��=$-y>ψ�%�}���[t�N�j�����gǽ2lA�"w �A��
+�Pd���j�5
+�8�q�4�����&���KҜ~Z%桐J����2������G�k�v�u���E�f��a���dQ���J�%�t���F�v��ۋ,Շ ƶXQ�"K�Vm���9��A|�-��^��J$�tJnJyE��S��x�,"�vUe{�N���������N��K�N��KCV'��KsSʖdW��Y�/S�o�/CW<X��W��ǳ�V�˔�_d��4.)��⡗�0��ee��֮��h٦�����ya�y��3�tF�{��g�Ix���Ԡ��A���"��N�N�	:X�2PQ���a�D,'����|>z��5�fQ�5��	��c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1�c�1Ƙ���.������    IEND�B`�
+```
+
+### `src/flows/us-stocks/assets/etf/vaneck.png`
+
+```tsx
+�PNG
+
+   IHDR   �   �   ��Z=   sRGB ���  �IDATx^�	�=GU��ǾE�� *cT@����C AAB��qGq�I��E$P�B@�
+*&($lQ�b�� &�;�����cOO/U��޼���9�cd�U����uU�r�"���W ��B(��	t���@�d�(�b@
+P@�p�L�]1 ( �8Y&J�����,��@WH� 
+� N��R@�+�@ z '�D) �R �=��e��)@���2Q
+tŀ��@�d�(�b@
+P@�p�L�]1 ( �8Y&J�����,��@WH� 
+� N��R@�+�@ z '�D) �R �=��e��)@���2Q
+tŀ��@�d�(�b@
+P@�p�L�]1 ( �8Y&J�����,��@WH� 
+� N��R@�+�@ z '�D) �R �=��e��)@���2Q
+tŀ��@�d�(�b@
+P@�p�L�]1 ( �8Y&J�����,��@WH� 
+� N��R@�+�@ z '�D) �R �=��e��)@���2Q
+tŀ��@�d�(�b@
+P@�p�L�]1 ( �8Y&J�����,��@WH� 
+� N��R@�+�@ z '�D) �R �=��e��)@���2Q
+tŀ��@�d�(�b@
+P@�p�L�]1 ( �8Y&J�����,��@WH� 
+� N��R@�+��p�S�� Z�m&���)P���if/1�ۛ����\UVKݫz]=U[P���fv��}M��VB���}�H`���mf�5�댘������z� >;��Ξ�p�� W���S��T�oy��ߠu�� �w�o�u�~m3�v��w�6v�o��S |���Q��^��3���ߌ�o/�+@ߴ��	�EcB� �D��S��	଩����}�~�%͛|}���U�����S��� ���o%wU�fvO � �o�s��*=�ܩR][Q����Eߊg�x���fv�J��?詛ˑ�����S���}�j��̞cfgO޽i�b���@?V�Pl���������-�/��� ����gf�L�5�	�O���f�z @O\|m��c3��L{��� �1�ݏ23vYآ�(���R��n��_ff���u3� �̸�P]��̷V0�| 'L��nbfw1�;��f�;�s`@o�����b���zz��}�L��?{%�o�T�nlfS.p�Z�<h��;{e�]�ܓ�w  ����3�?��/y�n�	�K����??�/W�g�
+w�3���:_�n5�w�0PWz�Gx�4����$��gsr�ckA���]�k��u��
+��A�r3{gO���5�uP��/�[�Q����햃���lN�m-�\���
+��o��B�J��LA�|�� .�v�\�~���-�:R
+�}���w?��~n�3qqĜ���m@�]�k[@O��Ǚٯ��Q�/�j���@�:3��9�v~s<�?�PϪ�Я�]!V�v��m=���h�}���)w�[3�����j ߼�������ּ#����f��4@'�k�PP��?jf�QP_ߥU���Α��J7��Zs��ܞ�o�U�l�k�L��C�L��7��+<�� �e�z�u�*����>��*-��;W+
+�}����L���i!Ēǻ�m�T����_nf�"�����::��-�Ⴂ���<k}JCw?������M-}����^k���6���r���?�F�`k�A7n�`y/��-��0�����o�ls�6�_�٦�Ч�g��~�AO]��r�Wɹ{{��E ���q�/�݂M�=�� �Vt�[�v&X���r8ۊgt�;�{L� Ѓ��f���	`rL`��n�U 8��RQw������B �SR��s������]r��\{�[���� �<�+�n��X:n0�1���}��c��|�ōz�A�+|����۞�v6��)�[���rMZ�'�W~nw�� .^���4L	#�1��{��������s�������$����L���O�l=�S���96L]�.�ݝ���՗�Lo�z���ݝ{IV����,�JW����| .��.��p����;7[�t7\�>�S` ���0}��>���=�Ub���R�S����`+��\���ܝ@�6�w��I ����tw�3{p���`�E[�wgb�-)�4E%�{;��y��ym��ߏ���-�`7�u�R�C��> ��fwd'a�{@�x�y��Y�Tl��?+eJe�RS�7swn�>}�>Ϳ�sLh�8��R��:���yP�םgfd�}/r�����.[�@pDI���� ��q�n�����Y��LG�`p������~jf�g�詋��o��%�V��ݚ��u������]p}�� �R�����^�$����cd�GwwfG~h�/2���@�h)=	�3��쒒�}ww~�pC�o����L���w{�P0�;�T1]Ui�)�ޥ�	�6�/-�t���	r:�V)Δ��_af��~����;Y1c�M��<t^r Y�4�zz^.�τS�w�`&E5����O�uIy�����?73*1v��y����;��~:,H��d ?3&��s������'v���F+�}�� ������������c�)�@O]u.9+��	���̦vOf��!Чr�=*��j2�v;C�꾧Sd�cz�����~���u�����g$����Q������ 09N1��[�LȳR��{���t3���&@�ݝٝ���� ���b�Ӄ��{ �փ�3w>:�Zv��ʺ@���M�<�w	gr���.C]7w禕Wͩ�8��},=r�6ٚ'�KN�����A�G3�M�/0�	i��sA�H��ݹ3�f�I ����V��1�o����}���<C�n���w�/`�n ��m�%Y��z�`�WT�9�tw���&o�3{	t���B�}}1�m��M��l*"�^�����c>��6��&���̃Xݺ@�/Ʌ�ݙɖ�tJ��<z���$3;��r3���r��N�gU�t��H��m�Ѣ�'���Ag�S�ñ0n�������k$�� �w��+���1���p��Ȩ��@��=JA�m��r�����e`����V�΀�Ԇ�F�\��n�7����V �} &׾�������K[�vJ�)��}p����c���@��JZ�}�r�}�]O�{���s�	[���~��宑(��-mO�e�{ʺ[tw�J3�����۫�����=u�^hf_�0���cO��G��D �~��>�ɑww�j����Z2tw���r�ѹ���h���7 :��7'�	�7�
+2u�R�9��4�� ������$��;w��2�S����vX�Y:�ԩ��t�'AO/yΣ�]�����C4�J�=f�>��o���;����$�\\������ �z�]Yb����,�p�!+�8����7��J�,Ї`/�0Ցsp�(�ǜ���} r�\�U_zr�q?y�+�W �l��}p�����/���G �f_����/���U)�0����[?%���+ �.A]G�>y#�I ~�D��kk�^#%�; ��C�8�] n9f`�Vd�'�L,Ѩ{A�ވ�$��	:9�3��� ��Nw��eO{�����ڠg@N��� ��<�AOpvW�L:�s��Fg��B �N�Ω�9���j�W2fw�[�gf�c�JZ�;����Yɨ;gn�O��8\
+[tw熔;�<� X�k�:7,4`���蒕O\1�9驍�h������ff<+S��e���ƻ;s������>��p���e�Y�ݯ4�����eo�z���������[�Z��H�%�|�����و�hf�S�]�͝rc�s�	��ٞ�~����[�B��b}{��/*>�'� ����R	��͌��%{�u_�U@O�f����Qfm�˽qZ�ɬ(\#�h�U.P���#:�/���Ο7.���؍wNjNh��=�gv�r��R%Йn��x��u��>\!����>`i뺧^w�+��L3cR�v9��F_IR���^����O\��UܽxĽ��䅒�0U���gܮ�٭z�=9{�jנ�h2������j�o�S�f���n-�>�9�Z����V2��k���lI�~k 9۱w�TtN�fd�iv M��̟�,e�azdf���������"�7���̏�Ǎ������Ո �����}�\� \T��3{�૟�u���A�;׸�f ��e#��U�[�kGq�ު�'؊�f���\ E[N��ҹ��9z�4 {��΄��9�&"-�9C��:��=��� �2���s�Y��NH�t�����{mT�Y�q����o΂�v5����%�p] �UV��(.ɨ| ��5z�s�S��fOy ��f�9����"�7��s�{R�6��C���\�#������F���cx�r�Пaf�f����ի����FLeTR������rV.��tn~�ʳ���p佩j1��μ�ܷ1x�Nm�+\(6�q�c�z�߭t���lb͊�AN�y�}�=v.�����=�/�N_���wAn4���o�U_��M�<ԫi�� �q��%��đ��W��Ao�2�=���e�]C��; �$7�ܝ�ߺ����y|��YG�^�U�Z��N��#���9�#4GO��s����{�1�03�Y����m~i���<���ǵ
+��:�+���w��q6B<���m~��Kb�����=z��ܙ�i�&cro5�=wi��I����=���A�k���Z5���V/Ό���}�ub.�G.�flv{<�cpK�A�.���wMi0�3�?^��y�s��S�8 �l�.�\�׺�6 xP��R{=�0�"����k[�=Wi��˘�BxcSz[�+��J̉��&S�ݯ�d��ى3~�U_7����C�j �����ݧ���� ���8�C�)���k����.��~ '�/�C��sw3�4-�$�)ع��y6]FS�5�fй��/�+�������d�C)�O`3x�7z�{��e�ε�Krs�:��ݛ�{�Y']��~��q��� �`�ނ�GM��^ �� �=���=�����{�o�M�>�� �� sw�������{�PseV��� eK�9�����}��q�GooԷI�ݙ=+�:�r��U�c'�N�V�uO�?&#Ih��~���&`φ<��O0��^Z��#�F��?��~r꺑�? ���lt��9 �-W �����+���)O��"��Qn�nE�[�;��qӳ L����s���U�<��;��S��|f��'�;s��MА!�]��9�gZ��S~;�r��Yz��@=� �=���AO"���5�7��b�Z6G[�lwUܝ�6�=�b�����4��n�gmny��e��γ��l�)�����;�$]�K������iт:yi�-?���v6���^�0 �1��;��YhKf��҉x��G�f=���lo
+tH3��g�N�8e�B��j0u���A$~R̙�����������Lt�īQ�2�*�\���.&|s�c���KK9?[��p̶"��˅�R/�Ժ3��Ff��ђV^r`�鮺��S?�;.��.͝S��g�i3�m�Yؓ�no���a�Zb��E�FS��;w�����9��� h�w��Խ憋��~��[�]�rwg�ܩ,�9��w�c<�B+>��%�+��<��,�E�̌>f��s���C�;?�y��Ҭ�t���=s�kuL�&Ao'�< �V��`��&}�w�1fƷ(�<�u�4
+�u�.�~Tʚ�:Y���쥓���N~[g?��]�n�yܹ��<q�}� ��^TXߺ/��[K���1˕t�M~��	�9�P��֋���/~ReQ��-��J�4��\����μ?7|��\�I�����	��2Ų��R`c�o��F
+H���B
+P@�p�L�]1 ( �8Y&J�����,��@WH� 
+� N��R@�+�@ z '�D) �R �=��e��)@���2Q
+tŀ��@�d�(�b@
+P@�p�L�]1 ( �8Y&J�����,��@WH� 
+� N��R@�+�@ z '�D) �R �=��e��)@���2Q
+tŀ��@�d�(�b@
+P@�p�L�]1 ( �8Y&J�����,��@WH� 
+� N��R@�+�@ z '�D) �R �=��e��)@���2Q
+tŀ��@�d�(�b@
+P@�p�L�]1 ( �8Y&J�����,��@WH� 
+� N��R@�+�@ z '�D) �R �=��e��)@���2Q
+tŀ��@�d�(�b@
+P@�p�L�]1 ( �8Y&J�����,��@WH� 
+� N��R@�+�@ z '�D) �R �=��e��)@���2Q
+tŀ��@�d�(�b@
+P@�p�L�]1 ( �8Y&J�����,��@WH� 
+� N��R@�+�@ z '�D)�	�%��O��    IEND�B`�
+```
+
+### `src/flows/us-stocks/assets/etf/vanguard.png`
+
+```tsx
+�PNG
+
+   IHDR   �   �   �F�   	pHYs  !8  !8E�1`   sRGB ���   gAMA  ���a  �IDATx��1L]U�SӴ�XK�0XYڤ����Ё�BL܌��&nm��S	�:uh�Fyn�9��jQ��IKq�.������{�w�{�w����8�x�����~��#�[QI/9"�D a�H�"�D a�H�"�D a�H�"�D a�H�"�D a�H�"�D a�H�"�D a�H�"�D a�H�"�D 9��{�W��~�δ���F�龹<����֐���[�`G��7���S�\6���n=CCn`j�Ui`�ڿ�
+GB>��ٓ'n�O�z�G�mz�Am��o�ъ[|����*�g8H�5~�_��R/���w!�h�Υ�w�<�+��@�h�Qޞ}�i
+Qc{��P�o:���9{������9�e��S%5R�D�5Q��E��N�/|v���rZB�؞��G�X��
+~I�gg���5��#�������b�F���^ףƶVV\HǺ_v��XE �4�B��[U�=m}A��2��ǜ���� ߅|�g_{��f������_1�D�c����!l,�}�����?xy�i	Uc�����P��E�=�5���{{}A�B��:�����R�/�z�lX����[�]�V�-x}������-|��{{��k���(�������[L�5��TL�� ���1���u���7^_o�� � �� YD]5��� +�&��мB�]c�}��~V��1�c���D�zw��k�wI��5�P�~bh�iЮ1�t��dfn,��Ԫ����g�������<-1 �+�Z5�z}�� i�i�X�����4���|/��k��d��|G7�#�m�0��9hVu��yl����W_`��.��fU�X{����i�7a.@��fU՘���j}�� i�UUc>�?��L>�Ls���Q�w��r}�� i���i����<Ͼޜ�3�щ� i���ף�?��n�n������C65��%5��q���Q�)�����Y���s�g���~̯֠Y��]M���t�4��Ԙ��O
+���8h�[c]���I�������QPc>D}fR�/0 �+�=v�s�/0 �A��+��1���T��xي֠Y�˵� � ���\�����a5�;��R}A�A��j��L-���d�9hvP����Z��$� ��^Q�T���:՘���`b���*�6�ә������kRR�4�oU����X_�T�4�^�1�׮���f�k���+� ��5:��a���Rr�k�y܄�����v���W�o��Q� �>4�w����^+KO\-#�#(�����3�}�/� i~pE�H�� � ��N�5�9VD�/˭J��������p��KﻐH:@گ�<H�g_{����C}A���(�K}A��9�Nr�/�"@��:/h�R_�E� G�:j%���l�3�Kw嗀z�ɩ� � ��o\w�r�/�*@���^��iȭ� � ���;�pf�[}A�,���oV�&ʭ� � �l��*�k/˭J�|��KZ��k� X|�`�<oq�/�,���_x��^���/��b�����W_����E}��Ϲ1@���޺��<੭���)���Ō*h�����[]��6_��'�����6���0a�}Ayw;f�dO2�0@$� �D"�0@$� �D"�0@$� �D"�0@$� �D"�0@$� �D"�0@$� �D"����`3(��C    IEND�B`�
+```
+
+### `src/flows/us-stocks/assets/etf/watchlist.svg`
+
+```tsx
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+```
+
+### `src/flows/us-stocks/assets/etf/wisdomtree.png`
+
+```tsx
+�PNG
+
+   IHDR   �   �   �F�   	pHYs  !8  !8E�1`   sRGB ���   gAMA  ���a  �IDATx��u�<����B@@@@@@@@@@@�
+�
+�����3$[�x�^�>�(��W��F���=ڴ4B��F� �!��!��!��!��!��!��!��!��!��!��!��!��!��!��!��q�Y!��i~���ܼy��
+�����ݹ�<y�|���999i�?�\j6+�޽{�����{m�o��Β�����K||�;�]H�^��\vV)�G�u~���Mk!�����cW�w��鞿}��;�ݻw�ϟ?w�C�s�[�3x�۷o���A�@mE7GGG]W���
+�t5�`���
+�^���C������s��Vp�ݻw�c��>}���~�z�:�{�M>{����(���*�0� l���B˃d��VP���:/S�g]�L���m�Y߅���*��ŋ�sto�]��;z��u�:���4�]!��vo<�cv�6�.�~�,Z@(`����r�q@$}#8���X�~�A�ae�s	��~��������h=|�p+T�*��_�>��*�T<8�����/�Ġ{?�#�y�#5܆�J�QS������&ts�:q��Ե��l����&;�FhJ�̕ Jv���} @���;� 0t{|�ca%�Hi�	]0,�k<�n� Fa^ ȍ�8Lf���OD��s%^E�d���8��Q���K����6~�V����^3��:1��^�����9�5b��\��f}��][!^3�k���㢦2^�|�|��i����@*3� �)LC �<}`Z���mƂ�|��w�2���G�
+��{���[�n]����, �8�� Y 3�9KD��	���q�~S��|��S't�K>ˀ��iQ[R����3�(,���A��$yA�/�]" ��!��$���u-it����@˄@�|,B�H�rf!T��)Y?�O=���0#�x�6����1~�c_��F�Q��>�� �TQe�򬀬�:�;� [�_Z ��n�Iht>���ss��~74����[(*�d�?�v�2Y�~�dH԰:����\�[�p��-g�l�K-����+���e�L7��c�nV��u}�������q������b��[���AYA�l ��P��fP_,�ࡑ
++Z[1�<���u`s�î�v��]�wz����~|޶|� �K3rsv���}� ��|�!��	�ֆ�^R-�-��V)aqh�D��x|��V���5������ؼ{r���Z��o(Q�}�1���.����Ė8TH6���N�b~%�o}8'
+~hy��f>?�H��v� ���w�z�H4"�%�R{�o�h3��8i,nGBD�]�s{��_�6<��mԽ��9Z˴}̈5"���ի��Q�)(��c��P9�<v� x��MW�����
+R��lX��3�ܤ��~��w����uX'�1��k���Sv��s1��B���
+	�CX�!�>E�����K}>�MtHqM%��$;R��~Rnꅂ������8k���c#��FWv)Ü�Ɯb�����0��q�K��0�S���N����D��d���w��*��bX�<x�����E�8�_����>yM]�c��cʕKd�w������F��_�\�R�x�S8�J�S�	Ȯױ	V��n���3�b��s�a֘h����/P�le�q�����mV \���L�"18:����ᯥH@%az^�T]o��"*XJb�KU0��og�}�,~��@��*ЮG%�LJ�[,=qM!xN���%N�r��G�n��6�V�"�Y�����r�q�5�g.̚c�2UZ�p�=�7,�Nsu&��͕5�`w���M�\S=Y��8�K+���c;Sƥ��A��4M�b�FC�RKAlx�k�����K_���C��-���p���E����:�v#���c�X/�-�4�c��ߟ�E��5�{���gn4ȕ��?@nP2UJU/Ə�Xh\���C�f�l��}����x�R���]�#��k������毬R�ͺ��xީ�?�<��+<��]��
+C*/�sg%���4�:�,����6;���%^_�@�_�!� �F!xkk��a-p�E1��	�]Mk��Zvj+����@?�KV-I�}���ء/�ɻqX�r#Sl��k�3�ˁ>+D��&#_��.�h��X�h��L��y�Ȋ���� �sZd�R�ٲٽ٘���c�i}.G��iZG�t���j��v�8��Z_��%�Kh�l�P�eA���B��Ҝ#�J�{�(:��;�P<�dM6�ۉC.T��Ԉ��'�� y��p1���)�1��Z@���u��x���3��R�خbL܂�&�;ԓr�s�KY��M@���A<�J@}�Ե����ݚ�AJ���X����i��R4n��u�Vh��ZŸ�*��4�eX�6�g�&?�&�܌?��� ����@$$����D�F�w�MXY�7c���S݅�����a6�o���2@l~���ȏ>,o�K���-���濒d�k�����J�iZQl�[S�}7ej���`������x��S�o���E�����������>��k� 7�µ�����[��.}?�ԇ=�P��]�ﮦ\W�mԻ�	�$f�@s�_�!�8�6v3,��ǦAZ�Z`m���[񭆍�2fS@���Z�o��`�]C��kCrp/|)���2H@���6�	(Ȣ�ټ$� ��#
+P��.�+��Bt����������>��ׯ_���呮]�����o|���݌C��
+G$�%[�|Ϧ%��C|��%_:��G;�����r���?Ǖ�
+�'ҩ�"�	���NNN�7nl�O��* ΠC�|eؖh+׶`�|�&���������վ����A!1Q`��N���K-hAhE���k�Y�K��%��Q���3Ѿo���?|5�k*a��▸��6\�e�fW��/~�@��.��5FT���: �ZJ!�!$ B!$ B!$ B!$ B!$ B!$ B!$ B!$ B!$ B!$ B!$ B!$ B!$ B!$ B!$ B!$ B!$ B!$ B!$ B!$ B!$ B!$ B!�F���e    IEND�B`�
+```
+
 ### `src/flows/us-stocks/assets/home/in-irfc.png`
 
 ```tsx
@@ -21644,7 +21790,7 @@ j��I,�;�|��e����ޟ�W���Q�a&�PQ���ӎ
 ### `src/flows/us-stocks/assets/trade/error.svg`
 
 ```tsx
-<svg width="72" height="72" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="36" cy="36" r="36" fill="#E5505F"/><path d="M27 27L45 45M45 27L27 45" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+<svg width="72" height="72" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="36" cy="36" r="36" style="fill:var(--l3-content-accent-error-default)"/><path d="M27 27L45 45M45 27L27 45" style="stroke:var(--l3-static-white)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>
 ```
 
 ### `src/flows/us-stocks/assets/trade/loading-arc.svg`
@@ -21656,35 +21802,13 @@ j��I,�;�|��e����ޟ�W���Q�a&�PQ���ӎ
 ### `src/flows/us-stocks/assets/trade/success.svg`
 
 ```tsx
-<svg width="72" height="72" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="36" cy="36" r="36" fill="#0F9958"/><path d="M22 37L32 47L51 27" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+<svg width="72" height="72" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="36" cy="36" r="36" style="fill:var(--l3-content-accent-success-default)"/><path d="M22 37L32 47L51 27" style="stroke:var(--l3-static-white)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>
 ```
 
 ### `src/flows/us-stocks/assets/trade/switch-toggle.svg`
 
 ```tsx
 <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M8.2944 5.00035H3.7094C3.2644 5.00035 3.0444 4.46035 3.3544 4.14535L5.6494 1.85035C5.8444 1.65535 6.1594 1.65535 6.3544 1.85035L8.6494 4.14535C8.9644 4.46035 8.7394 5.00035 8.2944 5.00035Z" fill="black"/><path d="M5.6494 10.1454C5.8444 10.3404 6.1594 10.3404 6.3544 10.1454L8.6494 7.85035C8.9644 7.54035 8.7444 7.00035 8.2994 7.00035H3.7094C3.2644 7.00035 3.0394 7.54035 3.3544 7.85535L5.6494 10.1454Z" fill="black"/></svg>
-```
-
-### `src/flows/us-stocks/assets/wallet/benefit-trend.svg`
-
-```tsx
-<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-<!-- Trending up in the "benefit icon" style (Figma 6042:19437): a deep-green offset shadow under a lime → mint face. -->
-<g stroke="#048245" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">
-<path d="M6 24L13 17L18 21L27 11"/>
-<path d="M20.5 11H27V17.5"/>
-</g>
-<g stroke="url(#face)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">
-<path d="M4 22L11 15L16 19L25 9"/>
-<path d="M18.5 9H25V15.5"/>
-</g>
-<defs>
-<linearGradient id="face" x1="2" y1="7" x2="22" y2="27" gradientUnits="userSpaceOnUse">
-<stop stop-color="#D4FC79"/>
-<stop offset="1" stop-color="#96E6A1"/>
-</linearGradient>
-</defs>
-</svg>
 ```
 
 ### `src/flows/us-stocks/assets/wallet/lemon-note.png`
@@ -21763,32 +21887,41 @@ pY�)H�R���9rtX�$u�q3[�ג[��8�r�T$3,.�e�B��K�
 �«�ׂ��K9%��j    IEND�B`�
 ```
 
-### `src/flows/us-stocks/assets/wallet/separator.svg`
+### `src/flows/us-stocks/components/InlineSvg.module.css`
 
-```tsx
-<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="329" height="11.945" viewBox="0 0 329 11.945" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g id="Separator">
-<path id="Line 391" d="M154.793 5.97234L0.500003 5.47463" stroke-linecap="round" stroke="url(#paint0_linear_0_816)"/>
-<path id="&#60;Path&#62;" d="M164.253 0C163.625 4.83506 163.115 5.34397 158.28 5.97212C163.115 6.60106 163.625 7.10997 164.253 11.945C164.881 7.10997 165.391 6.60106 170.225 5.97212C165.391 5.34397 164.881 4.83506 164.253 0Z" fill="#525252" style="fill:#525252;fill:color(display-p3 0.3216 0.3216 0.3216);fill-opacity:1;"/>
-<path id="Line 389" d="M173.211 5.97251H328.5" stroke-linecap="round" stroke="url(#paint1_linear_0_816)"/>
-</g>
-<defs>
-<linearGradient id="paint0_linear_0_816" x1="154.793" y1="5.97234" x2="0.500003" y2="5.97234" gradientUnits="userSpaceOnUse">
-<stop stop-color="#393939" style="stop-color:#393939;stop-color:color(display-p3 0.2235 0.2235 0.2235);stop-opacity:1;"/>
-<stop offset="1" stop-color="#122340" style="stop-color:#122340;stop-color:color(display-p3 0.0706 0.1373 0.2510);stop-opacity:1;"/>
-</linearGradient>
-<linearGradient id="paint1_linear_0_816" x1="173.211" y1="6.97251" x2="328.5" y2="6.97251" gradientUnits="userSpaceOnUse">
-<stop stop-color="#393939" style="stop-color:#393939;stop-color:color(display-p3 0.2235 0.2235 0.2235);stop-opacity:1;"/>
-<stop offset="1" stop-color="#122340" style="stop-color:#122340;stop-color:color(display-p3 0.0706 0.1373 0.2510);stop-opacity:1;"/>
-</linearGradient>
-</defs>
-</svg>
+```css
+.svg {
+  flex: none;
+  display: inline-block;
+}
+
+.svg > svg {
+  width: 100%;
+  height: 100%;
+}
 ```
 
-### `src/flows/us-stocks/assets/wallet/wallet-bold.svg`
+### `src/flows/us-stocks/components/InlineSvg.tsx`
 
 ```tsx
-<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M15.3135 10.625C15.3135 10.8722 15.2402 11.1139 15.1029 11.3195C14.9655 11.525 14.7703 11.6852 14.5419 11.7799C14.3135 11.8745 14.0621 11.8992 13.8197 11.851C13.5772 11.8028 13.3545 11.6837 13.1797 11.5089C13.0048 11.3341 12.8858 11.1113 12.8376 10.8689C12.7893 10.6264 12.8141 10.3751 12.9087 10.1466C13.0033 9.91824 13.1635 9.72301 13.3691 9.58566C13.5746 9.44831 13.8163 9.375 14.0635 9.375C14.3951 9.375 14.713 9.5067 14.9474 9.74112C15.1818 9.97554 15.3135 10.2935 15.3135 10.625ZM18.4385 7.8125V14.0625C18.4385 14.7255 18.1751 15.3614 17.7063 15.8303C17.2375 16.2991 16.6016 16.5625 15.9385 16.5625H4.68853C4.02549 16.5625 3.38961 16.2991 2.92077 15.8303C2.45193 15.3614 2.18853 14.7255 2.18853 14.0625V4.75938C2.17892 4.42507 2.23648 4.09224 2.3578 3.78058C2.47913 3.46892 2.66175 3.18477 2.89486 2.94496C3.12797 2.70515 3.40683 2.51454 3.71493 2.38444C4.02302 2.25433 4.35409 2.18736 4.68853 2.1875H15.001C15.2497 2.1875 15.4881 2.28627 15.6639 2.46209C15.8398 2.6379 15.9385 2.87636 15.9385 3.125C15.9385 3.37364 15.8398 3.6121 15.6639 3.78791C15.4881 3.96373 15.2497 4.0625 15.001 4.0625H4.68853C4.60472 4.06246 4.52175 4.07927 4.44457 4.11194C4.36739 4.14461 4.29756 4.19248 4.23925 4.25268C4.18094 4.31289 4.13534 4.3842 4.10515 4.46239C4.07496 4.54058 4.06081 4.62404 4.06353 4.70781V4.71406C4.07666 4.87955 4.15261 5.03374 4.27579 5.14501C4.39898 5.25629 4.56007 5.31621 4.72603 5.3125H15.9385C16.6016 5.3125 17.2375 5.57589 17.7063 6.04473C18.1751 6.51357 18.4385 7.14946 18.4385 7.8125ZM16.5635 7.8125C16.5635 7.64674 16.4977 7.48777 16.3805 7.37056C16.2633 7.25335 16.1043 7.1875 15.9385 7.1875H4.72603C4.50251 7.18759 4.27989 7.15924 4.06353 7.10313V14.0625C4.06353 14.2283 4.12938 14.3872 4.24659 14.5044C4.3638 14.6217 4.52277 14.6875 4.68853 14.6875H15.9385C16.1043 14.6875 16.2633 14.6217 16.3805 14.5044C16.4977 14.3872 16.5635 14.2283 16.5635 14.0625V7.8125Z" fill="#000"/></svg>
+// An SVG drawn inline instead of as an <img>, so the L3 colour tokens inside it (style="fill:var(--l3-…)") follow
+// light / dark. For the flow's two-tone icons and art, which a single-colour MaskImg can't draw.
+import type { CSSProperties } from 'react'
+import { svgMarkup } from '../asset'
+import styles from './InlineSvg.module.css'
+
+export function InlineSvg({ src, w, h = w, className }: { src: string; w?: number; h?: number; className?: string }) {
+  // FLAG: raw inline px size (the art's own Figma size), like MaskImg.
+  const size: CSSProperties | undefined = w === undefined ? undefined : { width: w, height: h }
+  return (
+    <span
+      className={[styles.svg, className].filter(Boolean).join(' ')}
+      style={size}
+      aria-hidden="true"
+      dangerouslySetInnerHTML={{ __html: svgMarkup(src) }}
+    />
+  )
+}
 ```
 
 ### `src/flows/us-stocks/components/Phone.module.css`
@@ -21820,6 +21953,8 @@ pY�)H�R���9rtX�$u�q3[�ג[��8�r�T$3,.�e�B��K�
 .art { position: absolute; inset: 0 0 auto; z-index: 0; pointer-events: none; }
 
 .top { position: relative; z-index: 2; flex: none; }
+/* FLAG (L3 gap): L3 Actionbar always draws its 1px line below; here it shows only once the page has scrolled under it. */
+.top:not([data-scrolled]) > header { box-shadow: none; }
 
 .body {
   position: relative;
@@ -21884,6 +22019,8 @@ export function Phone({
   style?: CSSProperties
 }) {
   const [layer, setLayer] = useState<HTMLDivElement | null>(null)
+  // The top bar's line shows only once the page has scrolled under it.
+  const [scrolled, setScrolled] = useState(false)
   return (
     <SheetLayer.Provider value={layer}>
       <section className={[styles.phone, className].filter(Boolean).join(' ')} data-surface={surface} aria-label={label} style={style}>
@@ -21892,8 +22029,8 @@ export function Phone({
           {layer && (
             <>
               {backdropArt && <div className={styles.art} aria-hidden="true">{backdropArt}</div>}
-              <header className={styles.top} data-statusbar={statusbar ?? surface}>{header}</header>
-              <div className={styles.body} ref={bodyRef}>{children}</div>
+              <header className={styles.top} data-statusbar={statusbar ?? surface} data-scrolled={scrolled || undefined}>{header}</header>
+              <div className={styles.body} ref={bodyRef} onScroll={(e) => setScrolled(e.currentTarget.scrollTop > 0)}>{children}</div>
               {overlay}
               {footer && <footer className={styles.footer} data-surface={surface === 'default' ? undefined : surface}>{footer}</footer>}
             </>
@@ -21992,8 +22129,8 @@ export function openStock(go: (figma: string) => void, stock: UsStock) {
 export const logoFor = (sym: string) => usLogo(sym)
 
 const ON_BLACK = new Set('BA DIS IRBT NKE SNBR SONO UBER UNH V'.split(' '))
-/** Plate behind a logo. FLAG: raw black / white — no L3 token for a logo plate. */
-export const plateFor = (sym: string) => (ON_BLACK.has(sym) ? '#000000' : '#ffffff')
+/** Plate behind a logo: L3 static black or white (the same in light and dark, like the logo). */
+export const plateFor = (sym: string) => (ON_BLACK.has(sym) ? 'var(--l3-static-black)' : 'var(--l3-static-white)')
 
 const US_HOME_LOGOS: Record<string, string> = {
   TSLA: 'assets/entry/ushome/tsla.png', GOGL: 'assets/entry/ushome/googl.svg', GOOGL: 'assets/entry/ushome/googl.svg',
@@ -22039,6 +22176,8 @@ export const usStocks: Flow = {
     note: s.note,
     section: s.section,
     tab: s.tab,
+    badge: s.badge,
+    badgeNote: s.badgeNote,
     render: (go) => {
       const Screen = allScreens[s.figma]
       return (
@@ -22069,6 +22208,7 @@ export const FIGMA_IN_OTHER_FLOWS: Record<string, string> = {
   '5796:88869': 'market-10', // E3 · Market tab · S&P 500 filter → Market flow, US list with the S&P 500 filter
   // Home (Stocks tab, IND / US) is the app's own Stocks flow (src/flows/stocks), in every US activation state.
   '5796:91576': 'stocks-09', // Home · US tab · Entry points
+  '5796:89230': 'search-29', // E2a · Search · US tab · idle (the Search flow's US tab)
   '5714:64982': 'stocks-01', // Home · IND tab · FTUX closed
   '5714:65691': 'stocks-02', // Home · Scrolled down
   '5740:67333': 'stocks-02', // Home · Scrolled down then up
@@ -22137,28 +22277,27 @@ export type UsScreenEntry = {
   figma: string
   /** Main-navbar tab the screen belongs to (it shows the bottom navbar): moving between tabs is a tab switch. */
   tab?: 'stocks' | 'market' | 'portfolio' | 'mutualFund'
-  id: string; section: 'entry' | 'ftux' | 'activated' | 'wallet'; name: string; note: string }
+  id: string; section: 'entry' | 'ftux' | 'activated' | 'wallet'; name: string; note: string; badge?: 'new' | 'changed'; badgeNote?: string }
 
 export const registry: UsScreenEntry[] = [
   { figma: '5796:89422', id: 'us-stocks-02', section: 'entry', name: "E1a · S&P 500 index · market open", note: "S&P 500 index page while the US market is open." },
-  { figma: '5796:89230', id: 'us-stocks-03', section: 'entry', name: "E2a · Search · US tab · idle", note: "Search on the US tab, idle: recent and popular searches plus collections." },
-  { figma: '5796:88668', tab: 'portfolio', id: 'us-stocks-05', section: 'entry', name: "E4 · Portfolio · US market banner", note: "Portfolio before 8 PM IST. Banner says US markets open tonight." },
-  { figma: '5796:92301', tab: 'portfolio', id: 'us-stocks-06', section: 'entry', name: "E4 · Portfolio · US market banner · live", note: "Portfolio after 8 PM IST. Banner turns LIVE till 2:30 AM IST." },
+  { figma: '5796:88668', tab: 'portfolio', id: 'us-stocks-05', badge: 'changed', badgeNote: "Empty states: L3 Empty state with its default illustration, centred", section: 'entry', name: "E4 · Portfolio · US market banner", note: "Portfolio before 8 PM IST. Banner says US markets open tonight." },
+  { figma: '5796:92301', tab: 'portfolio', id: 'us-stocks-06', badge: 'changed', badgeNote: "Empty states: L3 Empty state with its default illustration, centred", section: 'entry', name: "E4 · Portfolio · US market banner · live", note: "Portfolio after 8 PM IST. Banner turns LIVE till 2:30 AM IST." },
   { figma: '5796:88163', tab: 'mutualFund', id: 'us-stocks-07', section: 'entry', name: "E5 · Mutual Fund home · US banner", note: "Mutual Fund home with a US Stocks on Lemonn banner." },
-  { figma: '5826:93627', id: 'us-stocks-13', section: 'ftux', name: "S03a · Stock page · not activated", note: "Stock page for a user who hasn't activated. Shows Activate instead of Buy/Sell." },
+  { figma: '5826:93627', id: 'us-stocks-13', badge: 'changed', badgeNote: "Overview / News & Events tabs; Related ETFs and Key Holders sections", section: 'ftux', name: "S03a · Stock page · not activated", note: "Stock page for a user who hasn't activated. Shows Activate instead of Buy/Sell." },
   { figma: '5756:71475', id: 'us-stocks-14', section: 'ftux', name: "Risk disclosure sheet", note: "Risk disclosure sheet. Agree and Continue submits the activation and lands on the under-review home (or wallet); Confirm Details and the result sheet are skipped." },
   { figma: '5756:72486', id: 'us-stocks-15', section: 'ftux', name: "Confirm details", note: "Confirm KYC details and accept the declarations before activating." },
-  { figma: '5776:83524', id: 'us-stocks-20', section: 'ftux', name: "W1 · Wallet · US tab · $0 balance", note: "USD Wallet with $0 balance. Add Money and Withdraw." },
-  { figma: '5776:84630', id: 'us-stocks-21', section: 'ftux', name: "M01 · Add money · enter ₹", note: "Add money: enter a ₹ amount, see the $ estimate and charges." },
-  { figma: '5776:85779', id: 'us-stocks-22', section: 'ftux', name: "M02 · Add money · charges breakdown", note: "Charges breakdown expanded before confirming the amount." },
-  { figma: '5776:84513', id: 'us-stocks-23', section: 'ftux', name: "M03 · Add money · below minimum", note: "Error: amount is below the first-deposit minimum of ₹4,815 ($50)." },
-  { figma: '5796:86175', id: 'us-stocks-24', section: 'ftux', name: "M07 · Add money · above LRS limit", note: "Error: amount is above the LRS limit of $250,000 per year." },
-  { figma: '5796:86009', id: 'us-stocks-25', section: 'ftux', name: "M05 · Add money · bank name mismatch", note: "Edge case: bank account name doesn't match KYC. Prompts a bank update." },
-  { figma: '5776:84258', id: 'us-stocks-26', section: 'ftux', name: "M08 · Add money · pay on bank page sheet", note: "Sheet explaining the user will pay on their bank’s page." },
+  { figma: '5776:83524', id: 'us-stocks-20', badge: 'changed', badgeNote: "Nudge copy: the dollar has historically gained against the rupee", section: 'ftux', name: "W1 · Wallet · US tab · $0 balance", note: "USD Wallet with $0 balance. Add Money and Withdraw." },
+  { figma: '5776:84630', id: 'us-stocks-21', badge: 'changed', badgeNote: "Dock note: “arrives in your wallet by Thu 8 PM”", section: 'ftux', name: "M01 · Add money · enter ₹", note: "Add money: enter a ₹ amount, see the $ estimate and charges." },
+  { figma: '5776:85779', id: 'us-stocks-22', badge: 'changed', badgeNote: "Dock note: “arrives in your wallet by Thu 8 PM”", section: 'ftux', name: "M02 · Add money · charges breakdown", note: "Charges breakdown expanded before confirming the amount." },
+  { figma: '5776:84513', id: 'us-stocks-23', badge: 'changed', badgeNote: "Dock note: “arrives in your wallet by Thu 8 PM”", section: 'ftux', name: "M03 · Add money · below minimum", note: "Error: amount is below the first-deposit minimum of ₹4,815 ($50)." },
+  { figma: '5796:86175', id: 'us-stocks-24', badge: 'changed', badgeNote: "Dock note: “arrives in your wallet by Thu 8 PM”", section: 'ftux', name: "M07 · Add money · above LRS limit", note: "Error: amount is above the LRS limit of $250,000 per year." },
+  { figma: '5796:86009', id: 'us-stocks-25', badge: 'changed', badgeNote: "Dock note: “arrives in your wallet by Thu 8 PM”", section: 'ftux', name: "M05 · Add money · bank name mismatch", note: "Edge case: bank account name doesn't match KYC. Prompts a bank update." },
+  { figma: '5776:84258', id: 'us-stocks-26', badge: 'changed', badgeNote: "Dock note: “arrives in your wallet by Thu 8 PM”", section: 'ftux', name: "M08 · Add money · pay on bank page sheet", note: "Sheet explaining the user will pay on their bank’s page." },
   { figma: '5796:86336', id: 'us-stocks-27', section: 'ftux', name: "Bank app (placeholder)", note: "Placeholder for the bank's payment page." },
-  { figma: '5776:84195', id: 'us-stocks-28', section: 'ftux', name: "Wallet · US tab · Add money transfer in progress", note: "Back from the bank. USD Wallet shows the transfer status." },
-  { figma: '5826:94125', id: 'us-stocks-31', section: 'activated', name: "S03b · Stock page · activated · no holdings", note: "Stock page, activated with no holdings. Buy only." },
-  { figma: '5837:94648', id: 'us-stocks-32', section: 'activated', name: "S03c · Stock page · holding", note: "Stock page when the user already holds the stock. Buy and Sell." },
+  { figma: '5776:84195', id: 'us-stocks-28', badge: 'changed', badgeNote: "Pending card: “Arrives in your wallet by Thu 8 PM”", section: 'ftux', name: "Wallet · US tab · Add money transfer in progress", note: "Back from the bank. USD Wallet shows the transfer status." },
+  { figma: '5826:94125', id: 'us-stocks-31', badge: 'changed', badgeNote: "Overview / News & Events tabs; Related ETFs and Key Holders sections", section: 'activated', name: "S03b · Stock page · activated · no holdings", note: "Stock page, activated with no holdings. Buy only." },
+  { figma: '5837:94648', id: 'us-stocks-32', badge: 'changed', badgeNote: "Overview / News & Events tabs; Related ETFs and Key Holders sections", section: 'activated', name: "S03c · Stock page · holding", note: "Stock page when the user already holds the stock. Buy and Sell." },
   { figma: '5837:95201', id: 'us-stocks-33', section: 'activated', name: "T01 · Buy · Amount (default)", note: "Buy sheet default: enter amount in $, see shares and ₹ estimate." },
   { figma: '5837:96215', id: 'us-stocks-34', section: 'activated', name: "T02 · Buy · Shares", note: "Buy by number of shares instead of amount." },
   { figma: '5837:96155', id: 'us-stocks-35', section: 'activated', name: "T03 · Buy · Empty US wallet", note: "US wallet is empty. Orders start at $1." },
@@ -22180,11 +22319,11 @@ export const registry: UsScreenEntry[] = [
   { figma: '5837:95371', id: 'us-stocks-51', section: 'activated', name: "H06 · Sell result · executed", note: "Sell order executed. Proceeds withdrawable after 1 working day." },
   { figma: '5837:95352', id: 'us-stocks-52', section: 'activated', name: "H07 · Sell result · rejected", note: "Sell order rejected." },
   { figma: '5852:99084', id: 'us-stocks-53', section: 'wallet', name: "W0 · Wallet · Indian tab", note: "Wallet opens on the INR tab. USD Wallet tab is marked NEW." },
-  { figma: '5852:99057', id: 'us-stocks-54', section: 'wallet', name: "W0 · Wallet · US tab · Activate US Stocks", note: "USD Wallet before activation. Activate US Stocks card." },
-  { figma: '5852:99028', id: 'us-stocks-55', section: 'wallet', name: "W0 · Wallet · US tab · Activation under review", note: "Activation under review, up to 1 working day." },
-  { figma: '5852:98999', id: 'us-stocks-56', section: 'wallet', name: "W0 · Wallet · US tab · Activation failed", note: "Activation failed: PAN couldn't be verified. Retry Activation." },
-  { figma: '5852:98970', id: 'us-stocks-57', section: 'wallet', name: "W0 · Wallet · US tab · Under review · Contact Support", note: "Review taking longer than 1 day. Contact Support." },
-  { figma: '5852:98939', id: 'us-stocks-58', section: 'wallet', name: "W1 · Wallet · US tab · $0 balance", note: "Activation approved. USD wallet at $0." },
+  { figma: '5852:99057', id: 'us-stocks-54', badge: 'changed', badgeNote: "Nudge copy: the dollar has historically gained against the rupee", section: 'wallet', name: "W0 · Wallet · US tab · Activate US Stocks", note: "USD Wallet before activation. Activate US Stocks card." },
+  { figma: '5852:99028', id: 'us-stocks-55', badge: 'changed', badgeNote: "Nudge copy: the dollar has historically gained against the rupee", section: 'wallet', name: "W0 · Wallet · US tab · Activation under review", note: "Activation under review, up to 1 working day." },
+  { figma: '5852:98999', id: 'us-stocks-56', badge: 'changed', badgeNote: "Nudge copy: the dollar has historically gained against the rupee", section: 'wallet', name: "W0 · Wallet · US tab · Activation failed", note: "Activation failed: PAN couldn't be verified. Retry Activation." },
+  { figma: '5852:98970', id: 'us-stocks-57', badge: 'changed', badgeNote: "Nudge copy: the dollar has historically gained against the rupee", section: 'wallet', name: "W0 · Wallet · US tab · Under review · Contact Support", note: "Review taking longer than 1 day. Contact Support." },
+  { figma: '5852:98939', id: 'us-stocks-58', badge: 'changed', badgeNote: "Nudge copy: the dollar has historically gained against the rupee", section: 'wallet', name: "W1 · Wallet · US tab · $0 balance", note: "Activation approved. USD wallet at $0." },
   { figma: '5852:98908', id: 'us-stocks-59', section: 'wallet', name: "W2 · Wallet · US tab · Funded", note: "Wallet after adding money: total and withdrawable balance." },
   { figma: '5852:98888', id: 'us-stocks-60', section: 'wallet', name: "W2d · Balance Details", note: "Balance details: opening, credits, debits, withdrawable, pending settlement." },
   { figma: '5852:98862', id: 'us-stocks-61', section: 'wallet', name: "W2d-x · Balance Details · expanded", note: "Credits & Debits expanded: deposits, stock sells, dividends." },
@@ -22197,6 +22336,9 @@ export const registry: UsScreenEntry[] = [
   { figma: '5852:98614', id: 'us-stocks-68', section: 'wallet', name: "W3b · 2 withdrawals pending", note: "Two or more withdrawals pending, grouped in one tracker." },
   { figma: '5852:98522', id: 'us-stocks-69', section: 'wallet', name: "W3c · Withdrawal requests sheet", note: "Sheet listing each pending withdrawal request." },
   { figma: '5852:98459', id: 'us-stocks-70', section: 'wallet', name: "W3d · Withdrawal taking longer", note: "Transfer delayed: taking longer than usual." },
+  { figma: '9001:1', id: 'us-stocks-71', badge: 'new', badgeNote: "ETF list: Regular / Leveraged tabs, region chips", section: 'activated', name: "ETFs · Regular & Leveraged", note: "The ETF list from the ETFs quick action: Regular and Leveraged tabs; leveraged ETFs come in long and short." },
+  { figma: '9001:2', id: 'us-stocks-72', badge: 'new', badgeNote: "ETF page: price, chart, Overview / Events, Buy / Sell", section: 'activated', name: "ETF page", note: "An ETF in the stock page layout: price and chart, Overview (1D and 52W range, fund details) and Events. Leveraged ETFs trade long or short." },
+  { figma: '9001:6', id: 'us-stocks-73', badge: 'new', badgeNote: "Jojo's first ETF page, kept to compare", section: 'activated', name: "ETF page · previous", note: "The first ETF page (31 Oct): price line, about, opposite side and holdings, kept to compare." },
 ]
 
 export const idForFigma = new Map(registry.map((s) => [s.figma, s.id]))
@@ -22211,100 +22353,6 @@ export const idForFigma = new Map(registry.map((s) => [s.figma, s.id]))
   animation: none !important;
 }
 
-.header {
-  height: var(--l3-size-56);
-  padding: 0 var(--l3-spacing-16);
-  color: var(--l3-content-primary);
-  justify-content: space-between;
-  align-items: center;
-  display: flex;
-  position: relative;
-}
-
-/* FLAG: hand-made collapsed header (price + change triangle) — L3 Actionbar title/description */
-.mini {
-  justify-content: center;
-  align-items: center;
-  gap: var(--l3-spacing-04);
-  opacity: 0;
-  pointer-events: none;
-  transition:
-    opacity 0.2s var(--l3-motion-easing-standard),
-    translate 0.2s var(--l3-motion-easing-standard);
-  flex-direction: column;
-  display: flex;
-  position: absolute;
-  inset: 0 64px; /* FLAG: raw px */
-  translate: 0 6px; /* FLAG: raw px */
-}
-
-.mini[data-shown] {
-  opacity: 1;
-  translate: 0;
-}
-
-.miniName {
-  max-width: 100%;
-  font: var(--l3-text-heading-16);
-  color: var(--l3-content-primary);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  overflow: hidden;
-}
-
-.miniPrice {
-  align-items: center;
-  gap: var(--l3-spacing-08);
-  font: var(--l3-text-label-14);
-  color: var(--l3-content-primary);
-  line-height: 20px; /* FLAG: raw px */
-  display: inline-flex;
-}
-
-.miniMove {
-  align-items: center;
-  gap: var(--l3-spacing-04);
-  font: var(--l3-text-label-12);
-  color: var(--l3-content-accent-indicator-down-default);
-  line-height: 20px; /* FLAG: raw px */
-  display: inline-flex;
-}
-
-.miniMove[data-up] {
-  color: var(--l3-content-accent-indicator-up-default);
-}
-
-.miniTri {
-  border-top: 4px solid; /* FLAG: raw px */
-  border-left: 3px solid transparent; /* FLAG: raw px */
-  border-right: 3px solid transparent; /* FLAG: raw px */
-  width: 0;
-  height: 0;
-}
-
-.miniMove[data-up] .miniTri {
-  border-top: 0;
-  border-bottom: 4px solid; /* FLAG: raw px */
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .mini {
-    transition: none;
-  }
-}
-
-/* FLAG: hand-made icon button (not L3 Button ghost/tertiary) */
-.watchlist {
-  color: var(--l3-content-primary);
-  cursor: pointer;
-  background: 0 0;
-  border: 0;
-  padding: 0;
-  display: inline-flex;
-  position: relative;
-}
-
-.watchlist:after,
 .info:after,
 .tradingView:after {
   content: "";
@@ -23113,32 +23161,6 @@ export const idForFigma = new Map(registry.map((s) => [s.figma, s.id]))
   color: var(--l3-content-accent-discover-default);
 }
 
-/* FLAG: reaches into L3 Tabs internals ([role=tab]) to restyle */
-.periods[role="tablist"] {
-  height: var(--l3-size-28);
-  border-radius: var(--l3-radius-08);
-  padding: 0;
-}
-
-.periods [role="tab"][data-appearance] {
-  --tab-height: var(--l3-size-28);
-  --tab-font: var(--l3-text-heading-12);
-  --tab-surface: transparent;
-  --tab-content: var(--l3-content-secondary);
-  border-radius: var(--l3-radius-08);
-  box-shadow: none;
-}
-
-.periods [role="tab"][data-appearance][aria-selected="true"] {
-  --tab-surface: transparent;
-  --tab-content: var(--l3-content-accent-discover-default);
-  background: 0 0;
-}
-
-.periodDefault [role="tab"]:first-child {
-  color: var(--l3-content-accent-discover-default);
-}
-
 /* FLAG: hand-made exchange picker (L3 Select / Tag) */
 .exchange {
   align-items: center;
@@ -23317,6 +23339,167 @@ export const idForFigma = new Map(registry.map((s) => [s.figma, s.id]))
   color: var(--l3-content-primary);
   margin: 0;
 }
+
+/* News & Events tab: toggle + events list + impact line (his newest prototype). */
+.feed {
+  gap: var(--l3-spacing-24);
+  flex-direction: column;
+  display: flex;
+}
+
+.news li,
+.events li {
+  align-items: stretch;
+}
+
+.why {
+  align-items: center;
+  gap: var(--l3-spacing-04);
+  margin: var(--l3-spacing-04) 0 0;
+  font: var(--l3-text-label-12);
+  color: var(--l3-content-accent-indicator-up-default);
+  display: flex;
+}
+
+.why[data-down] {
+  color: var(--l3-content-accent-indicator-down-default);
+}
+
+.why > span {
+  font-size: 8px; /* FLAG: raw px, the ▲/▼ glyph size from his CSS */
+}
+
+.events {
+  gap: var(--l3-spacing-16);
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+}
+
+.events li {
+  gap: var(--l3-spacing-12);
+  display: flex;
+}
+
+.events li > div {
+  gap: var(--l3-spacing-04);
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+}
+
+.impact {
+  margin-top: var(--l3-spacing-04);
+  align-self: flex-start;
+}
+
+/* FLAG: hand-made date tile */
+.eventDate {
+  width: var(--l3-size-56);
+  min-height: var(--l3-size-56);
+  border-radius: var(--l3-radius-08);
+  background: var(--l3-surface-primary);
+  box-shadow: inset 0 0 0 1px var(--l3-border-light);
+  font: var(--l3-text-label-10);
+  color: var(--l3-content-secondary);
+  flex-direction: column;
+  flex: none;
+  justify-content: center;
+  align-items: center;
+  display: flex;
+}
+
+.eventDate b {
+  font: var(--l3-text-heading-14);
+  color: var(--l3-content-primary);
+}
+
+/* Related ETFs: a row of 160px cards that scrolls sideways. */
+.etfs {
+  gap: var(--l3-spacing-08);
+  margin-inline: calc(-1 * var(--l3-spacing-16));
+  padding-inline: var(--l3-spacing-16);
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  display: flex;
+  overflow-x: auto;
+}
+
+.etfs::-webkit-scrollbar {
+  display: none;
+}
+
+.etfs > * {
+  flex: none;
+  width: 160px; /* FLAG: raw px, card width from his CSS */
+}
+
+.etf {
+  gap: var(--l3-spacing-08);
+  padding: var(--l3-spacing-12);
+  border-radius: var(--l3-radius-12);
+  box-shadow: inset 0 0 0 1px var(--l3-border-light);
+  flex-direction: column;
+  display: flex;
+}
+
+.etfTop {
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--l3-spacing-08);
+  display: flex;
+}
+
+.etfTop b {
+  font: var(--l3-text-heading-14);
+  color: var(--l3-content-primary);
+}
+
+.etfSym {
+  align-items: center;
+  gap: var(--l3-spacing-08);
+  min-width: 0;
+  display: flex;
+}
+
+.etfDisc {
+  width: var(--l3-size-24);
+  height: var(--l3-size-24);
+  border-radius: var(--l3-radius-full);
+  background: var(--l3-surface-secondary);
+  font: var(--l3-text-label-10);
+  color: var(--l3-content-primary);
+  flex: none;
+  justify-content: center;
+  align-items: center;
+  display: flex;
+}
+
+.etfName {
+  font: var(--l3-text-label-12);
+  color: var(--l3-content-secondary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.etfPrice {
+  gap: var(--l3-spacing-08);
+  font: var(--l3-text-heading-12);
+  color: var(--l3-content-primary);
+  display: flex;
+}
+
+.etfPrice span {
+  color: var(--l3-content-accent-indicator-down-default);
+}
+
+.etfPrice span[data-up] {
+  color: var(--l3-content-accent-indicator-up-default);
+}
 ```
 
 ### `src/flows/us-stocks/screens/activation/StockPage.tsx`
@@ -23326,8 +23509,9 @@ export const idForFigma = new Map(registry.map((s) => [s.figma, s.id]))
 // holding (Buy / Sell footer, "Your Holdings" section). One component, `state` picks the variant; the data is the
 // stock tapped last (currentStock()), scaled from the NVIDIA sample numbers.
 // FLAG: copy not in copy.json yet (all UI text in this part is hard-coded).
-// FLAG: header, price block, chart and period picker are hand-made (module CSS) instead of L3 Actionbar / Chart; see StockPage.module.css.
+// FLAG: price block, chart and period picker are hand-made (module CSS) instead of L3 Chart; see StockPage.module.css.
 import { useEffect, useState, type CSSProperties } from 'react'
+import { Actionbar, ActionbarAction } from '@l3/components/Actionbar'
 import { Button } from '@l3/components/Button'
 import { ButtonGroup } from '@l3/components/ButtonGroup'
 import { Icon } from '@l3/components/Icon'
@@ -23341,13 +23525,14 @@ import { currentStock } from '../../data'
 import { useUsNav } from '../../nav'
 import { ImgIcon } from './components/ImgIcon'
 import { NEWS, PERIODS, Y_AXIS, type NewsItem } from './data'
-import { backIcon, swapIcon } from './icons'
+import { swapIcon } from './icons'
 import {
-  AboutCompany, AnalystRatings, DailyPerformance, Financials, Fundamentals, HoldingsSection, News, Peers, Shareholding, money,
+  AboutCompany, AnalystRatings, DailyPerformance, Events, Financials, Fundamentals, HoldingsSection, KeyHolders, News, Peers, RelatedEtfs, money,
 } from './sections'
 import {
   BUY_PAD, HOME_ACTIVATED, HOME_NOT_ACTIVATED, RISK_DISCLOSURE, SELL_PAD_HOLDING, SELL_PAD_NO_HOLDINGS,
 } from './ids'
+import { EtfMove } from '../etf/parts'
 import styles from './StockPage.module.css'
 
 export type StockState = 'not-activated' | 'no-holdings' | 'holding'
@@ -23366,14 +23551,16 @@ export function StockPage({ state, backdrop }: { state: StockState; backdrop?: b
   const news: NewsItem[] = isNvda
     ? NEWS
     : [
-        { ...NEWS[0], title: `${shortName} shares move as US markets open` },
-        { ...NEWS[1], title: `${shortName} to report quarterly results next month` },
-        { ...NEWS[2], title: 'US stocks rally on fresh spending data' },
+        { ...NEWS[0], title: `${shortName} shares move as US markets open`, why: 'Buyers stepping in early' },
+        { ...NEWS[1], title: `${shortName} faces tougher rules in a key market`, why: 'Could hurt sales there' },
+        { ...NEWS[2], title: 'US stocks rally on fresh spending data', why: 'Lifts the whole market' },
         { ...NEWS[3], title: `What analysts expect from ${shortName} this quarter` },
       ]
-  const [period, setPeriod] = useState('')
+  const [tab, setTab] = useState('overview')
+  const [feed, setFeed] = useState('events')
+  const [period, setPeriod] = useState('1D')
   const [body, setBody] = useState<HTMLDivElement | null>(null)
-  // The mini price in the header fades in once the big price has scrolled away.
+  // The Actionbar shows symbol + price once the big price has scrolled away.
   const [scrolled, setScrolled] = useState(false)
   useEffect(() => {
     if (!body) return
@@ -23384,29 +23571,12 @@ export function StockPage({ state, backdrop }: { state: StockState; backdrop?: b
   }, [body])
 
   const header = (
-    <div className={styles.header}>
-      <Button
-        variant="ghost"
-        size="lg"
-        aria-label="Back"
-        iconLeft={<Icon icon={backIcon} size={24} />}
-        onClick={() => back(state === 'not-activated' ? HOME_NOT_ACTIVATED : HOME_ACTIVATED)}
-      />
-      <div className={styles.mini} data-shown={scrolled || undefined} aria-hidden={!scrolled || undefined}>
-        <span className={styles.miniName}>{stock.sym}</span>
-        <span className={styles.miniPrice}>
-          ${money(stock.price)}
-          <span className={styles.miniMove} data-up={stock.change >= 0 || undefined}>
-            <span className={styles.miniTri} aria-hidden="true" />
-            {stock.change >= 0 ? '+' : '−'}
-            {Math.abs(stock.change).toFixed(2)}%
-          </span>
-        </span>
-      </div>
-      <button type="button" className={styles.watchlist} aria-label={`Add ${shortName} to watchlist`}>
-        <ImgIcon src="assets/activation/watchlist.svg" w={20} />
-      </button>
-    </div>
+    <Actionbar
+      onBack={() => back(state === 'not-activated' ? HOME_NOT_ACTIVATED : HOME_ACTIVATED)}
+      title={scrolled ? stock.sym : undefined}
+      description={scrolled ? <>${money(stock.price)} <EtfMove change={stock.change} /></> : undefined}
+      actions={<ActionbarAction icon={asset('assets/activation/watchlist.svg')} label={`Add ${stock.sym} to watchlist`} onClick={() => {}} />}
+    />
   )
 
   const footer =
@@ -23416,7 +23586,7 @@ export function StockPage({ state, backdrop }: { state: StockState; backdrop?: b
       </ButtonGroup>
     ) : (
       <ButtonGroup aria-label={`Trade ${shortName}`} direction="horizontal" scrollIndicator>
-        <Button variant="primary" size="lg" onClick={() => go(BUY_PAD)}>Buy</Button>
+        <Button variant="brand" size="lg" onClick={() => go(BUY_PAD)}>Buy</Button>
         <Button variant="secondary" size="lg" onClick={() => go(state === 'holding' ? SELL_PAD_HOLDING : SELL_PAD_NO_HOLDINGS)}>
           Sell
         </Button>
@@ -23489,8 +23659,7 @@ export function StockPage({ state, backdrop }: { state: StockState; backdrop?: b
 
       <div className={styles.tabsAndContent}>
         <Tabs
-          className={[styles.periods, period ? undefined : styles.periodDefault].filter(Boolean).join(' ')}
-          appearance="pill-group"
+                    appearance="pill-group"
           size="sm"
           width="fill"
           aria-label="Chart period"
@@ -23499,17 +23668,46 @@ export function StockPage({ state, backdrop }: { state: StockState; backdrop?: b
           items={PERIODS.map((p) => ({ value: p, label: p }))}
         />
         <div className={styles.tabsBlock}>
-          <div className={styles.overview}>
-            {state === 'holding' && <HoldingsSection />}
-            <DailyPerformance stock={stock} low={low} high={high} />
-            <AnalystRatings />
-            <Fundamentals />
-            <AboutCompany stock={stock} />
-            <Peers sym={stock.sym} />
-            <Shareholding />
-            <Financials />
-            <News items={news} />
-          </div>
+          <Tabs
+            appearance="underline"
+            width="fill"
+            aria-label="Stock sections"
+            className={styles.flatTabs}
+            value={tab}
+            onChange={setTab}
+            items={[
+              { value: 'overview', label: 'Overview' },
+              { value: 'news', label: 'News & Events' },
+            ]}
+          />
+          {tab === 'news' ? (
+            <div className={styles.feed}>
+              <Tabs
+                appearance="pill"
+                size="sm"
+                aria-label="Show"
+                value={feed}
+                onChange={setFeed}
+                items={[
+                  { value: 'events', label: 'Events' },
+                  { value: 'news', label: 'News' },
+                ]}
+              />
+              {feed === 'events' ? <Events /> : <News items={news} stock={shortName} />}
+            </div>
+          ) : (
+            <div className={styles.overview}>
+              {state === 'holding' && <HoldingsSection />}
+              <DailyPerformance stock={stock} low={low} high={high} />
+              <AnalystRatings />
+              <Fundamentals />
+              <AboutCompany stock={stock} />
+              <Peers sym={stock.sym} />
+              <RelatedEtfs sym={stock.sym} />
+              <KeyHolders />
+              <Financials />
+            </div>
+          )}
         </div>
       </div>
     </Phone>
@@ -23896,7 +24094,7 @@ export function Stat({ label, value, end, up }: { label: string; value: string; 
 ```ts
 // Sample data of the stock page (NVIDIA, scaled to the stock being looked at) and of the activation sheets.
 
-/** Chart periods; none is selected by default (the "1D" look comes from periodDefault). */
+/** Chart periods (L3 pill group, small); 1D is selected first. */
 export const PERIODS = ['1D', '1W', '1M', '1Y', '3Y', '5Y']
 
 /** Y-axis prices of the 1D chart, for NVDA at $188.42 (scaled for other stocks). */
@@ -23966,13 +24164,48 @@ export const FINANCIAL_ROWS: [string, string, string][] = [
   ['Net profit margin', '55.8%', '+14.3%'],
 ]
 
-export type NewsItem = { title: string; source: string; time: string; img: string }
+export type NewsItem = {
+  title: string; source: string; time: string; img: string
+  /** Whether the story may lift or weigh on the stock; neutral shows no line. */
+  impact: 'positive' | 'negative' | 'neutral'
+  /** Plain-words reason shown under the story (impact line). */
+  why?: string
+}
 export const NEWS: NewsItem[] = [
-  { title: 'NVIDIA shares climb as AI chip demand stays strong', source: 'The Economic Times', time: '10m ago', img: 'news-1.png' },
-  { title: 'NVIDIA to report Q3 FY26 results on November 19', source: 'Investing.com', time: '4 days ago', img: 'news-2.png' },
-  { title: 'Chip stocks rally on fresh data-centre spending plans', source: 'Team Lemonn', time: '1h ago', img: 'news-1.png' },
-  { title: 'What the Blackwell ramp means for NVIDIA investors', source: 'Team Lemonn', time: '2 days ago', img: 'news-2.png' },
+  { title: 'NVIDIA shares climb as AI chip demand stays strong', source: 'The Economic Times', time: '10m ago', img: 'news-1.png', impact: 'positive', why: 'AI chip demand holding up' },
+  { title: 'US weighs tighter export rules on advanced AI chips to China', source: 'Reuters', time: '3h ago', img: 'news-2.png', impact: 'negative', why: 'Could hurt China sales' },
+  { title: 'Chip stocks rally on fresh data-centre spending plans', source: 'Team Lemonn', time: '1h ago', img: 'news-1.png', impact: 'positive', why: 'More data-centre orders ahead' },
+  { title: 'What the Blackwell ramp means for NVIDIA investors', source: 'Team Lemonn', time: '2 days ago', img: 'news-2.png', impact: 'neutral' },
 ]
+
+/** Events tab of News & Events. */
+export type EventItem = { day: string; month: string; title: string; detail: string; type: string }
+export const EVENTS: EventItem[] = [
+  { day: '19', month: 'Nov', title: 'Q3 FY26 results', detail: 'After the US close · 3:30 AM IST', type: 'Earnings' },
+  { day: '04', month: 'Dec', title: '$0.01 per share', detail: 'Ex-date · paid 26 Dec', type: 'Dividend' },
+  { day: '10', month: 'Jun', title: '10-for-1 stock split', detail: 'Completed in 2024 · more shares, same value', type: 'Split' },
+  { day: '25', month: 'Jun', title: 'Annual general meeting', detail: 'Virtual · shareholders vote on the board', type: 'Meeting' },
+]
+
+/** Leveraged ETFs shown under "Related ETFs" (his ETF catalogue, leveraged rows only). `tracks` links them to stocks. */
+export type RelatedEtf = { sym: string; name: string; tracks: string; side: 'long' | 'short'; lev: '2x' | '3x'; price: number; change: number }
+export const LEVERAGED_ETFS: RelatedEtf[] = [
+  { sym: 'TQQQ', name: 'ProShares UltraPro QQQ', tracks: 'Nasdaq 100', side: 'long', lev: '3x', price: 104.2, change: 1.58 },
+  { sym: 'SQQQ', name: 'ProShares UltraPro Short QQQ', tracks: 'Nasdaq 100', side: 'short', lev: '3x', price: 15.6, change: -1.6 },
+  { sym: 'SOXL', name: 'Direxion Semiconductor Bull 3X', tracks: 'Semiconductors', side: 'long', lev: '3x', price: 38.9, change: 5.42 },
+  { sym: 'SOXS', name: 'Direxion Semiconductor Bear 3X', tracks: 'Semiconductors', side: 'short', lev: '3x', price: 4.12, change: -5.38 },
+  { sym: 'NVDL', name: 'GraniteShares 2x Long NVDA', tracks: 'NVIDIA', side: 'long', lev: '2x', price: 92.7, change: 2.46 },
+  { sym: 'NVD', name: 'GraniteShares 2x Short NVDA', tracks: 'NVIDIA', side: 'short', lev: '2x', price: 6.84, change: -2.5 },
+  { sym: 'SPXL', name: 'Direxion S&P 500 Bull 3X', tracks: 'S&P 500', side: 'long', lev: '3x', price: 201.5, change: 1.02 },
+  { sym: 'SPXS', name: 'Direxion S&P 500 Bear 3X', tracks: 'S&P 500', side: 'short', lev: '3x', price: 4.37, change: -1.04 },
+]
+const CHIP_STOCKS = ['NVDA', 'AMD', 'AVGO', 'MU', 'QCOM', 'INTC']
+/** NVDA: its own 2x pair + the semiconductor ones; other chip stocks: semiconductor; everything else: Nasdaq 100. */
+export function relatedEtfs(sym: string): RelatedEtf[] {
+  const by = (t: string) => LEVERAGED_ETFS.filter((e) => e.tracks === t)
+  if (sym === 'NVDA') return [...by('NVIDIA'), ...by('Semiconductors')]
+  return CHIP_STOCKS.includes(sym) ? by('Semiconductors') : by('Nasdaq 100')
+}
 
 /** Peers of the peer comparison table. */
 export type Peer = {
@@ -24091,7 +24324,7 @@ export const screens: UsScreenMap = {
 
 ```tsx
 // The scrolling sections of the stock page, top to bottom: holdings (holding state only), daily performance, analyst
-// ratings, fundamentals, about, peers, shareholding, company financials, news.
+// ratings, fundamentals, about, peers, related ETFs, key holders, company financials; and the News & Events tab (events, news).
 // FLAG: layout is raw display:flex + gap/padding (module CSS) instead of L3 Stack/Section/Inset/Grid; panels, rows and bars are hand-made.
 import { useState, type CSSProperties } from 'react'
 import { Card } from '@l3/components/Card'
@@ -24099,15 +24332,17 @@ import { Icon } from '@l3/components/Icon'
 import { PriceChange } from '@l3/components/PriceChange'
 import { Select } from '@l3/components/Select'
 import { Tabs } from '@l3/components/Tabs'
+import { Tag } from '@l3/components/Tag'
 import { asset } from '../../asset'
 import { openStock, plateFor, stockFor, type UsStock } from '../../data'
 import { useUsNav } from '../../nav'
+import { setCurrentEtf } from '../etf/currentEtf'
 import { PeerTable } from './components/PeerTable'
 import { RatingRing } from './components/RatingRing'
 import { SectionTitle } from './components/SectionTitle'
 import { Stat } from './components/Stat'
 import {
-  DAY_STATS, FINANCIAL_ROWS, FUNDAMENTALS, FY_BARS, GRID_LINES, HOLDERS, QUARTERS, RATINGS, type NewsItem,
+  DAY_STATS, EVENTS, FINANCIAL_ROWS, FUNDAMENTALS, FY_BARS, GRID_LINES, HOLDERS, QUARTERS, RATINGS, relatedEtfs, type NewsItem,
 } from './data'
 import { boltIcon, chevronLeftIcon, chevronRightIcon, historyIcon, infoIcon } from './icons'
 import styles from './StockPage.module.css'
@@ -24283,11 +24518,11 @@ export function Peers({ sym }: { sym: string }) {
   )
 }
 
-export function Shareholding() {
+export function KeyHolders() {
   const [quarter, setQuarter] = useState(QUARTERS[0])
   return (
     <section className={styles.section}>
-      <SectionTitle title="Shareholding Pattern" />
+      <SectionTitle title="Key Holders" />
       <div className={styles.panel} data-gap="16">
         <Tabs
           appearance="pill"
@@ -24384,7 +24619,19 @@ export function Financials() {
   )
 }
 
-export function News({ items }: { items: NewsItem[] }) {
+/** Impact line under a news story ("▲ Could lift / ▼ weigh on"); neutral stories show none. */
+function Why({ item, stock }: { item: NewsItem; stock: string }) {
+  if (item.impact === 'neutral' || !item.why) return null
+  const up = item.impact === 'positive'
+  return (
+    <p className={styles.why} data-down={!up || undefined} aria-label={`May ${up ? 'lift' : 'weigh on'} ${stock}: ${item.why}`}>
+      <span aria-hidden="true">{up ? '▲' : '▼'}</span>
+      {item.why}
+    </p>
+  )
+}
+
+export function News({ items, stock }: { items: NewsItem[]; stock: string }) {
   return (
     <section className={styles.section}>
       <SectionTitle title="News" />
@@ -24399,10 +24646,75 @@ export function News({ items }: { items: NewsItem[] }) {
                 <span aria-hidden="true">•</span>
                 {n.time}
               </p>
+              <Why item={n} stock={stock} />
             </div>
           </li>
         ))}
       </ul>
+    </section>
+  )
+}
+
+export function Events() {
+  return (
+    <section className={styles.section}>
+      <SectionTitle title="Events" />
+      <ul className={styles.events}>
+        {EVENTS.map((e) => (
+          <li key={e.title}>
+            <span className={styles.eventDate} aria-hidden="true">
+              <b>{e.day}</b>
+              {e.month}
+            </span>
+            <div>
+              <p className={styles.newsTitle}>{e.title}</p>
+              <p className={styles.newsMeta}>{e.detail}</p>
+              <Tag variant="secondary" color="neutral" size="sm" className={styles.impact}>{e.type}</Tag>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}
+
+/** Leveraged ETFs that track this stock; a card opens the ETF page (9001:2). */
+// FLAG: the ETF logo disc is hand-made (his ETF logos are not in the repo yet: initials instead); the ETF page opens
+// without being told which ETF was tapped (no shared "current ETF" yet).
+export function RelatedEtfs({ sym }: { sym: string }) {
+  const { go } = useUsNav()
+  return (
+    <section className={styles.section}>
+      <SectionTitle title="Related ETFs" />
+      <div className={styles.etfs}>
+        {relatedEtfs(sym).map((e) => (
+          <Card
+            surface="primary"
+            key={e.sym}
+            className={styles.etf}
+            onClick={() => { setCurrentEtf(e.sym); go('9001:2') }}
+            aria-label={`${e.sym}, ${e.lev} ${e.side}, ${e.name}`}
+          >
+            <span className={styles.etfTop}>
+              <span className={styles.etfSym}>
+                <span className={styles.etfDisc} aria-hidden="true">{e.sym.slice(0, 2)}</span>
+                <b>{e.sym}</b>
+              </span>
+              <Tag variant="secondary" color={e.side === 'long' ? 'profit' : 'loss'} size="sm">
+                {e.lev} {e.side === 'long' ? 'Long' : 'Short'}
+              </Tag>
+            </span>
+            <span className={styles.etfName}>{e.name}</span>
+            <span className={styles.etfPrice}>
+              ${money(e.price)}
+              <span data-up={e.change >= 0 || undefined}>
+                {e.change >= 0 ? '+' : '−'}
+                {Math.abs(e.change).toFixed(2)}%
+              </span>
+            </span>
+          </Card>
+        ))}
+      </div>
     </section>
   )
 }
@@ -24657,11 +24969,6 @@ export function News({ items }: { items: NewsItem[] }) {
   margin: 0;
 }
 
-.centerTitle :is(h1, h2) {
-  padding-left: var(--l3-spacing-12);
-  text-align: center;
-}
-
 .nowrap {
   white-space: nowrap;
 }
@@ -24721,7 +25028,6 @@ export function ConfirmDetailsScreen({ backdrop }: { backdrop?: boolean }) {
       gesture="primary"
       header={
         <Actionbar
-          className={styles.centerTitle}
           title="Confirm Details"
           onBack={() => back(HOME_NOT_ACTIVATED)}
           actions={<Button variant="ghost" size="sm">Help</Button>}
@@ -24938,19 +25244,6 @@ export function SheetFrame({ under, backdrop, children }: { under: string; backd
 
 .raised {
   background: var(--l3-surface-primary);
-}
-
-.header {
-  align-items: center;
-  gap: var(--l3-spacing-08);
-  height: 64px;  /* FLAG: raw px */
-  padding: var(--l3-spacing-16);
-  display: flex;
-}
-
-.header button {
-  padding-right: var(--l3-spacing-24);
-  padding-left: var(--l3-spacing-12);
 }
 
 .topSection {
@@ -25664,24 +25957,28 @@ export function SheetFrame({ under, backdrop, children }: { under: string; backd
 // as it is today: SIPs, popular funds, explore funds, fund houses, experts. The banner has no click action in the
 // original (a button without a target).
 // FLAG: redraws the app's Mutual Fund home (no MF flow in src/flows yet) for this prototype.
-// FLAG: hand-made search field in the header, category buttons, "See all" text buttons, scrollers and fixed-width cards
-// (see MutualFundHome.module.css) — L3 TextField / Button / Card / Grid exist.
+// FLAG: hand-made category buttons, "See all" text buttons, scrollers and fixed-width cards
+// (see MutualFundHome.module.css) — L3 Button / Card / Grid exist.
 import { useState, type ReactNode } from 'react'
+import { Actionbar } from '@l3/components/Actionbar'
 import { BottomNavbar } from '@l3/components/BottomNavbar'
 import { NavIcon } from '@l3/components/BottomNavbar/NavIcon'
 import { Card } from '@l3/components/Card'
 import { Icon } from '@l3/components/Icon'
 import { Tabs } from '@l3/components/Tabs'
 import { Tag } from '@l3/components/Tag'
+import { InlineSvg } from '../../components/InlineSvg'
 import { Phone } from '../../components/Phone'
 import { usePreview } from '../../../../shared/prototype'
 import { goToTab } from '../../../../shared/ui/MainNav'
 import { Move } from './components/Primitives'
 import { entryUrl } from './entryAssets'
-import { arrowForward, chevronRight, search } from './icons'
+import { arrowForward, chevronRight } from './icons'
 import styles from './MutualFundHome.module.css'
 
 const mfUrl = (file: string) => entryUrl(`mf/${file}`)
+/** Path of an mf SVG for InlineSvg (its colours are L3 tokens). */
+const mfPath = (file: string) => `assets/entry/mf/${file}`
 
 /** A decorative image at a fixed size (his `va`). FLAG: raw inline px size on top of width/height. */
 function Pic({ src, size, w = size, h = size, className }: { src: string; size?: number; w?: number; h?: number; className?: string }) {
@@ -25740,18 +26037,15 @@ export function MutualFundHomeScreen() {
   const preview = usePreview()
   const [popular, setPopular] = useState('high')
   const [explore, setExplore] = useState('equity')
+  const [query, setQuery] = useState('')
   return (
     <Phone
       label="Mutual funds"
       surface="primary"
       header={
-        <div className={styles.header}>
-          <Pic src={mfUrl('profile.svg')} size={32} />
-          <button type="button" className={styles.searchPill}>
-            <Icon icon={search} size={16} />
-            <span>Search for stocks</span>
-          </button>
-        </div>
+        <Actionbar
+          search={{ value: query, onChange: setQuery, placeholder: 'Search for stocks', label: 'Search for stocks' }}
+        />
       }
       gesture="none"
       footer={
@@ -25784,7 +26078,7 @@ export function MutualFundHomeScreen() {
             {categories.map((category) => (
               <button key={category.icon} type="button" className={styles.category}>
                 <span className={styles.categoryIcon}>
-                  <Pic src={mfUrl(category.icon)} size={20} />
+                  <InlineSvg src={mfPath(category.icon)} w={20} />
                 </span>
                 <span>
                   {category.label[0]}
@@ -25799,13 +26093,13 @@ export function MutualFundHomeScreen() {
           {/* The US Stocks banner (E5). FLAG: hand-made banner with animated mascot + coins — L3 Card; copy hard-coded. */}
           <button type="button" className={styles.usBanner}>
             <span className={styles.coins} aria-hidden="true">
-              <Pic src={mfUrl('tile.svg')} size={48} className={styles.tile} />
+              <InlineSvg src={mfPath('tile.svg')} w={48} className={styles.tile} />
               <span className={styles.mascotWrap}>
                 <Pic src={mfUrl('mascot.svg')} w={38.985} h={40} className={styles.mascot} />
               </span>
               <span className={styles.logos}>
-                {/* FLAG: raw hex #76b900 (NVIDIA green) as the coin colour */}
-                <span className={styles.coin} data-logo="nvda" style={{ '--coin-bg': '#76b900' } as React.CSSProperties}>
+                {/* NVIDIA's green coin: L3 brand green (the nearest token) */}
+                <span className={styles.coin} data-logo="nvda" style={{ '--coin-bg': 'var(--l3-content-accent-brand-default)' } as React.CSSProperties}>
                   <Pic src={mfUrl('mark-nvda.svg')} size={9.6} />
                 </span>
                 <span className={styles.coin} data-logo="aapl">
@@ -25928,7 +26222,7 @@ export function MutualFundHomeScreen() {
                   <span className={styles.houseName}>Zomato</span>
                   <span className={styles.houseAum}>50000 Cr + AUM</span>
                 </span>
-                <Pic src={mfUrl('chevron-ios-2.svg')} size={16} />
+                <InlineSvg src={mfPath('chevron-ios-2.svg')} w={16} />
               </Card>
             </Scroller>
           </section>
@@ -25943,7 +26237,7 @@ export function MutualFundHomeScreen() {
               ].map(([ring, photo], i) => (
                 <Card key={ring} onClick={() => {}} className={styles.expert} aria-label="Harsha Upadhyaya, 25+ years, ₹1,270,096 Cr AUM">
                   <span className={styles.avatar}>
-                    <Pic src={mfUrl(ring)} size={45.3} className={styles.ring} />
+                    <InlineSvg src={mfPath(ring)} w={45.3} className={styles.ring} />
                     <img src={mfUrl(photo)} alt="" className={styles.photo} data-crop={i === 1 || undefined} />
                   </span>
                   <span className={styles.expertText}>
@@ -25974,42 +26268,6 @@ export function MutualFundHomeScreen() {
 ```css
 /* Teammate's CSS module 1f20t, reformatted (one declaration per line). */
 /* FLAG: raw display:flex/grid + gap/padding layout instead of L3 Stack/Section/Inset/Grid (whole file) */
-
-.header {
-  background: var(--l3-surface-default);
-}
-
-.titleRow {
-  padding: var(--l3-spacing-08) var(--l3-spacing-16);
-  justify-content: space-between;
-  align-items: center;
-  display: flex;
-}
-
-.title {
-  font: var(--l3-text-heading-18);
-  color: var(--l3-content-primary);
-}
-
-.icons {
-  gap: var(--l3-spacing-12);
-  display: flex;
-}
-
-/* FLAG: hand-made round icon buttons — use L3 ActionbarAction */
-.round {
-  width: var(--l3-size-32);
-  height: var(--l3-size-32);
-  border: 1px solid var(--l3-border-light);
-  border-radius: var(--l3-radius-full);
-  background: var(--l3-surface-default);
-  color: var(--l3-content-primary);
-  cursor: pointer;
-  justify-content: center;
-  align-items: center;
-  padding: 0;
-  display: flex;
-}
 
 .page {
   background: var(--l3-surface-primary);
@@ -26198,34 +26456,6 @@ export function MutualFundHomeScreen() {
   white-space: nowrap;
 }
 
-/* FLAG: hand-made empty state — use L3 EmptyState */
-.empty {
-  align-items: center;
-  gap: var(--l3-spacing-24);
-  margin-top: var(--l3-spacing-24);
-  text-align: center;
-  flex-direction: column;
-  display: flex;
-}
-
-.emptyText {
-  gap: var(--l3-spacing-04);
-  flex-direction: column;
-  display: flex;
-}
-
-.emptyTitle {
-  font: var(--l3-text-heading-14);
-  color: var(--l3-content-primary);
-  margin: 0;
-}
-
-.emptyDesc {
-  font: var(--l3-text-label-12);
-  color: var(--l3-content-tertiary);
-  margin: 0;
-}
-
 .indexHead {
   justify-content: space-between;
   align-items: center;
@@ -26235,35 +26465,6 @@ export function MutualFundHomeScreen() {
 .index .label {
   font: var(--l3-text-label-12);
   color: var(--l3-content-tertiary);
-}
-
-.walletArt {
-  width: 88px;  /* FLAG: raw px */
-  height: 64px;  /* FLAG: raw px */
-  display: block;
-  position: relative;
-}
-
-.wallet {
-  object-fit: contain;
-  width: 89px;  /* FLAG: raw px */
-  height: 57px;  /* FLAG: raw px */
-  display: block;
-  position: absolute;
-  top: 7px;  /* FLAG: raw px */
-  left: 0;
-}
-
-.coin {
-  width: 18px;  /* FLAG: raw px */
-  height: 25px;  /* FLAG: raw px */
-  position: absolute;
-  top: 0;
-  left: 26px;  /* FLAG: raw px */
-}
-
-.explore {
-  min-width: 156px;  /* FLAG: raw px */
 }
 
 .holdTotal {
@@ -26462,10 +26663,12 @@ export function MutualFundHomeScreen() {
 // NOTE: both variants render the same — his `live` prop is not read anywhere, and the US-market banner that the Figma
 // frames show ("opens tonight" / "LIVE till 2:30 AM IST") is no longer drawn (OrdersTab keeps an unused `banner` slot).
 // FLAG: redraws the app's Portfolio tab (no portfolio flow in src/flows yet) for this prototype.
-// FLAG: hand-made round icon buttons in the header, Sort text button, holding cards and empty states
-// (see PortfolioScreen.module.css) — L3 ActionbarAction / Button / Card / EmptyState exist.
+// FLAG: hand-made Sort text button and holding cards
+// (see PortfolioScreen.module.css) — L3 Button / Card exist. Empty tabs use L3 EmptyState.
 import { useState } from 'react'
+import { Actionbar, ActionbarAction } from '@l3/components/Actionbar'
 import { Button } from '@l3/components/Button'
+import { EmptyState } from '@l3/components/EmptyState'
 import { Card } from '@l3/components/Card'
 import { Icon } from '@l3/components/Icon'
 import { Tabs } from '@l3/components/Tabs'
@@ -26487,22 +26690,14 @@ import { holdingsSummary, marketIndices, portfolioTabs, sortedHoldings, type Por
 import { SortSheet, type SortValue } from './sheets/SortSheet'
 import styles from './PortfolioScreen.module.css'
 
-/** The empty state with the 3D wallet: a title, a line of text and one button. */
+/** An empty tab: L3 Empty state (default illustration), centred in the space left in the sheet, with one small button. */
 function EmptyWallet({ title, text, button, onClick }: { title: string; text: string; button: string; onClick?: () => void }) {
   return (
-    <div className={styles.empty}>
-      <span className={styles.walletArt} aria-hidden="true">
-        <img src={entryUrl('portfolio/wallet-3d.gif')} alt="" className={styles.wallet} />
-        <img src={entryUrl('portfolio/rupee-coin.svg')} alt="" className={styles.coin} />
-      </span>
-      <span className={styles.emptyText}>
-        <h3 className={styles.emptyTitle}>{title}</h3>
-        <p className={styles.emptyDesc}>{text}</p>
-      </span>
-      <Button variant="secondary" size="md" className={styles.explore} onClick={onClick}>
-        {button}
-      </Button>
-    </div>
+    <EmptyState
+      title={title}
+      description={text}
+      action={<Button variant="primary" size="sm" onClick={onClick}>{button}</Button>}
+    />
   )
 }
 
@@ -26530,18 +26725,15 @@ export function PortfolioScreen(_props: { live?: boolean }) {
       bodyRef={swipe.bind}
       label="Portfolio"
       header={
-        <div className={styles.header}>
-          <div className={styles.titleRow}>
-            <h1 className={styles.title}>Portfolio</h1>
-            <span className={styles.icons}>
-              <button type="button" className={styles.round} aria-label="Search" onClick={() => go(SEARCH)}>
-                <Icon icon={entryUrl('search.svg')} size={16} />
-              </button>
-              <button type="button" className={styles.round} aria-label="Wallet" onClick={() => go(WALLET)}>
-                <Icon icon={entryUrl('wallet.svg')} size={20} />
-              </button>
-            </span>
-          </div>
+        <Actionbar
+          title="Portfolio"
+          actions={
+            <>
+              <ActionbarAction icon={entryUrl('search.svg')} label="Search" onClick={() => go(SEARCH)} />
+              <ActionbarAction icon={entryUrl('wallet.svg')} label="Wallet" onClick={() => go(WALLET)} />
+            </>
+          }
+          bottom={
           <SlidingTabs
             appearance="underline"
             aria-label="Portfolio sections"
@@ -26554,7 +26746,8 @@ export function PortfolioScreen(_props: { live?: boolean }) {
               { value: 'orders', label: 'Orders' },
             ]}
           />
-        </div>
+          }
+        />
       }
       gesture="none"
       footer={<UsMainNav value="portfolio" />}
@@ -26681,529 +26874,6 @@ export function PortfolioScreen(_props: { live?: boolean }) {
 
 export const PortfolioBannerScreen = () => <PortfolioScreen live={false} />
 export const PortfolioBannerLiveScreen = () => <PortfolioScreen live />
-```
-
-### `src/flows/us-stocks/screens/entry/SearchScreen.module.css`
-
-```css
-/* Teammate's CSS module 1ncsw, reformatted (one declaration per line). */
-/* FLAG: raw display:flex/grid + gap/padding layout instead of L3 Stack/Section/Inset/Grid (whole file) */
-
-.body {
-  overscroll-behavior: contain;
-  scrollbar-width: none;
-  gap: var(--l3-spacing-24);
-  min-height: 0;
-  padding: var(--l3-spacing-16) 0 calc(297px + var(--l3-spacing-16));  /* clears the keyboard image at its tallest (412 wide: 412 * 260 / 360); FLAG: raw px */
-  flex-direction: column;
-  flex: 1;
-  display: flex;
-  overflow: hidden auto;
-}
-
-.body::-webkit-scrollbar {
-  display: none;
-}
-
-.section {
-  gap: var(--l3-spacing-12);
-  flex-direction: column;
-  display: flex;
-}
-
-.head {
-  padding: 0 var(--l3-spacing-16);
-  justify-content: space-between;
-  align-items: center;
-  display: flex;
-}
-
-.headTitle {
-  font: var(--l3-text-label-12);
-  color: var(--l3-content-secondary);
-}
-
-.headAction {
-  align-items: center;
-  gap: var(--l3-spacing-02);
-  font: var(--l3-text-label-12);
-  color: var(--l3-content-secondary);
-  cursor: pointer;
-  background: 0 0;
-  border: 0;
-  padding: 0;
-  display: flex;
-}
-
-.chipRow {
-  gap: var(--l3-spacing-12);
-  padding: 0 var(--l3-spacing-16);
-  overscroll-behavior-x: contain;
-  scrollbar-width: none;
-  display: flex;
-  overflow-x: auto;
-}
-
-.chipRow::-webkit-scrollbar {
-  display: none;
-}
-
-.chipGrid {
-  gap: var(--l3-spacing-12);
-  padding: 0 var(--l3-spacing-16);
-  grid-template-columns: 1fr 1fr;
-  display: grid;
-}
-
-/* FLAG: hand-made chip — use L3 Tabs pill / Tag */
-.chip {
-  align-items: center;
-  gap: var(--l3-spacing-08);
-  max-width: 100%;
-  padding: calc(var(--l3-spacing-08) - 1px) var(--l3-spacing-12) calc(var(--l3-spacing-08) - 1px) calc(var(--l3-spacing-08) - 1px);
-  border: 1px solid var(--l3-border-light);
-  border-radius: var(--l3-radius-08);
-  background: var(--l3-surface-default);
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  transition: transform var(--l3-motion-duration-short) var(--l3-motion-easing-standard);
-  flex: none;
-  display: flex;
-}
-
-.chip[data-wide] {
-  max-width: none;
-}
-
-.chip:active {
-  transform: scale(var(--l3-motion-scale-press-default));
-}
-
-@media (hover:hover) {
-  .chip:hover {
-    background-image: linear-gradient(var(--l3-state-layer-dark-hover), var(--l3-state-layer-dark-hover));
-  }
-
-}
-
-.chipLabel {
-  font: var(--l3-text-label-12);
-  color: var(--l3-content-secondary);
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
-}
-
-.chip[data-wide] .chipLabel {
-  color: var(--l3-content-primary);
-}
-
-/* FLAG: hand-made tinted icon tile */
-.chipIcon {
-  --tone: var(--l3-content-secondary);
-  width: var(--l3-size-24);
-  height: var(--l3-size-24);
-  border: 1px solid color-mix(in srgb, var(--tone) 24%, transparent);
-  border-radius: var(--l3-radius-04);
-  background: color-mix(in srgb, var(--tone) 16%, transparent);
-  color: var(--tone);
-  flex: none;
-  justify-content: center;
-  align-items: center;
-  display: flex;
-}
-
-.chipIcon[data-tone=purple] {
-  --tone: var(--l3-content-accent-purple-default);
-}
-
-.chipIcon[data-tone=warning] {
-  --tone: var(--l3-content-accent-warning-default);
-}
-
-.chipIcon[data-tone=teal] {
-  --tone: var(--l3-content-accent-teal-default);
-}
-
-.chipIcon[data-tone=profit] {
-  --tone: var(--l3-content-accent-indicator-up-default);
-}
-
-.chipIcon[data-tone=loss] {
-  --tone: var(--l3-content-accent-indicator-down-default);
-}
-
-/* FLAG: hand-made logo plate */
-.logo {
-  width: var(--l3-size-24);
-  height: var(--l3-size-24);
-  border-radius: var(--l3-radius-04);
-  background: var(--logo-bg,var(--l3-surface-secondary));
-  flex: none;
-  justify-content: center;
-  align-items: center;
-  display: flex;
-  overflow: hidden;
-}
-
-.logo[data-size="32"] {
-  width: var(--l3-size-32);
-  height: var(--l3-size-32);
-}
-
-.logo img {
-  object-fit: contain;
-  width: 100%;
-  height: 100%;
-}
-
-.logo img[data-fit=cover] {
-  object-fit: cover;
-}
-
-.logo[data-initials] {
-  background: var(--l3-surface-accent-us-stock-light);
-  font: var(--l3-text-label-10);
-  color: var(--l3-content-accent-us-stock-default);
-}
-
-.logo[data-initials][data-size="32"] {
-  font: var(--l3-text-label-12);
-}
-
-.results,
-.list {
-  flex-direction: column;
-  display: flex;
-}
-
-/* FLAG: hand-made list row — use L3 ListCell */
-.row {
-  align-items: center;
-  display: flex;
-  position: relative;
-}
-
-.row:after {
-  content: "";
-  right: var(--l3-spacing-16);
-  bottom: 0;
-  left: var(--l3-spacing-16);
-  background: var(--l3-border-light);
-  height: 1px;
-  position: absolute;
-}
-
-.list>.row:last-child:after {
-  display: none;
-}
-
-.rowMain {
-  align-items: center;
-  gap: var(--l3-spacing-16);
-  min-width: 0;
-  padding: var(--l3-spacing-16) 0 var(--l3-spacing-16) var(--l3-spacing-16);
-  color: inherit;
-  text-align: left;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  background: 0 0;
-  border: 0;
-  flex: 1;
-  display: flex;
-}
-
-.row:last-child .rowMain {
-  padding-right: var(--l3-spacing-16);
-}
-
-.rowMain:active {
-  opacity: .7;
-}
-
-.rowText {
-  gap: var(--l3-spacing-02);
-  flex-direction: column;
-  flex: 1;
-  min-width: 0;
-  display: flex;
-}
-
-.rowName {
-  font: var(--l3-text-label-14);
-  color: var(--l3-content-primary);
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
-}
-
-.rowSub {
-  font: var(--l3-text-description-12);
-  color: var(--l3-content-secondary);
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
-}
-
-.rowPrice {
-  align-items: flex-end;
-  gap: var(--l3-spacing-02);
-  flex-direction: column;
-  flex: none;
-  display: flex;
-}
-
-.rowValue {
-  font: var(--l3-text-label-12);
-  color: var(--l3-content-primary);
-}
-
-.rowValue[data-muted] {
-  color: var(--l3-content-secondary);
-}
-
-.rowChange {
-  align-items: center;
-  gap: var(--l3-spacing-02);
-  font: var(--l3-text-label-12);
-  color: var(--l3-content-accent-indicator-down-default);
-  display: flex;
-}
-
-.rowChange[data-up] {
-  color: var(--l3-content-accent-indicator-up-default);
-}
-
-.rowChange[data-up] .tri {
-  rotate: 180deg;
-}
-
-/* FLAG: hand-made bookmark button — use L3 Button */
-.save {
-  padding: 0 var(--l3-spacing-16);
-  color: var(--l3-content-secondary);
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  background: 0 0;
-  border: 0;
-  flex: none;
-  justify-content: center;
-  align-self: stretch;
-  align-items: center;
-  display: flex;
-}
-
-.save[aria-pressed=true] {
-  color: var(--l3-content-accent-brand-default);
-}
-
-.save:active {
-  transform: scale(.9);
-}
-
-.watchlists {
-  gap: var(--l3-spacing-12);
-  padding: 0 var(--l3-spacing-16);
-  flex-direction: column;
-  display: flex;
-}
-
-/* FLAG: hand-made card (unused in JSX) — use L3 Card */
-.watchlist {
-  align-items: center;
-  gap: var(--l3-spacing-12);
-  padding: var(--l3-spacing-12);
-  border: 1px solid var(--l3-border-light);
-  border-radius: var(--l3-radius-12);
-  background: var(--l3-surface-primary);
-  color: var(--l3-content-primary);
-  text-align: left;
-  cursor: pointer;
-  display: flex;
-}
-
-.watchInitial {
-  width: var(--l3-size-32);
-  height: var(--l3-size-32);
-  border-radius: var(--l3-radius-04);
-  background: var(--l3-surface-accent-us-stock-light);
-  font: var(--l3-text-label-12);
-  color: var(--l3-content-accent-us-stock-default);
-  flex: none;
-  justify-content: center;
-  align-items: center;
-  display: flex;
-}
-
-.empty {
-  margin-top: var(--l3-spacing-24);
-}
-
-.chipIcon[data-tone=loss]>* {
-  scale: 1 -1;
-}
-
-/* FLAG: keypad drawn as an image (keyboard.png, 360 x 260) — full width, height follows the aspect ratio */
-.keyboard {
-  z-index: 3;
-  width: 100%;
-  height: auto;
-  aspect-ratio: 360 / 260;
-  object-fit: cover;
-  display: block;
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-}
-
-.tabsRow.tabsRow [role=tab][aria-selected] {
-  --tab-height: var(--l3-size-48);
-}
-```
-
-### `src/flows/us-stocks/screens/entry/SearchScreen.tsx`
-
-```tsx
-// E2a · Search on the US tab, idle: Recent Searches, Popular Searches and Collections as chips under a search bar with
-// the keyboard up. Typing filters the US stocks (a result row opens its stock page, the bookmark toggles the watchlist);
-// no match shows an empty state. Back leads to US Stocks home.
-// FLAG: duplicates the app's Search flow (src/flows/search) — the Search screen redrawn for this prototype.
-// FLAG: the keyboard is a screenshot (keyboard.png) laid over the screen, not the app's keypad.
-// FLAG: hand-made chips, result rows, logo plates and bookmark buttons (see SearchScreen.module.css) — L3 Tabs pill / Tag /
-// ListCell / Button exist.
-import { useState, type CSSProperties } from 'react'
-import { Actionbar, ActionbarAction } from '@l3/components/Actionbar'
-import { EmptyState } from '@l3/components/EmptyState'
-import { Icon } from '@l3/components/Icon'
-import { Tabs } from '@l3/components/Tabs'
-import { Phone } from '../../components/Phone'
-import { openStock, stockFromRow } from '../../data'
-import { useUsNav } from '../../nav'
-import { Move } from './components/Primitives'
-import { entryUrl } from './entryAssets'
-import { bookmarkAdd, bookmarkAdded, close } from './icons'
-import { STOCKS_HOME } from './ids'
-import { searchResults, searchSections, searchTabs, type SearchLogo, type SearchResult } from './searchData'
-import styles from './SearchScreen.module.css'
-
-function Logo({ logo, size = 24 }: { logo: SearchLogo; size?: 24 | 32 }) {
-  return (
-    <span className={styles.logo} data-size={size} style={{ '--logo-bg': logo.bg } as CSSProperties} aria-hidden="true">
-      <img src={logo.src} alt="" data-fit={logo.fit} />
-    </span>
-  )
-}
-
-export function SearchScreen() {
-  const { back, go } = useUsNav()
-  const open = (result: SearchResult) =>
-    openStock(
-      go,
-      stockFromRow({ sym: result.id.toUpperCase(), name: result.name, logo: result.logo.src, plate: result.logo.bg, price: result.price, change: result.change, up: result.up }),
-    )
-  const [query, setQuery] = useState('')
-  const [saved, setSaved] = useState(() => new Set(['nvda']))
-  const needle = query.trim().toLowerCase()
-  const matches = needle ? searchResults.filter((r) => `${r.name} ${r.sub}`.toLowerCase().includes(needle)) : []
-  const toggleSaved = (id: string) =>
-    setSaved((prev) => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      return next
-    })
-
-  return (
-    <Phone
-      label="Search"
-      gesture="none"
-      header={
-        <Actionbar
-          onBack={() => back(STOCKS_HOME)}
-          search={{ value: query, onChange: setQuery, placeholder: 'Search US Stocks', autoFocus: true }}
-          actions={query ? <ActionbarAction icon={close} label="Clear search" variant="ghost" onClick={() => setQuery('')} /> : undefined}
-          bottom={
-            <div className={styles.tabsRow}>
-              <Tabs appearance="underline" size="sm" width="auto" aria-label="Search in" items={searchTabs} value="us" onChange={() => {}} />
-            </div>
-          }
-        />
-      }
-      overlay={<img className={styles.keyboard} src={entryUrl('keyboard.png')} alt="" aria-hidden="true" />}
-    >
-      <div key={needle ? 'q' : 'idle'} className={styles.body}>
-        {!needle &&
-          searchSections.map((section) => (
-            <section key={section.title} className={styles.section}>
-              <div className={styles.head}>
-                <h2 className={styles.headTitle}>{section.title}</h2>
-              </div>
-              <div className={styles.chipRow}>
-                {section.chips.map((chip) => (
-                  <button
-                    key={chip.label}
-                    type="button"
-                    className={styles.chip}
-                    onClick={() => {
-                      const hit = searchResults.find((r) => r.name === chip.label)
-                      if (hit) open(hit)
-                      else if (chip.logo) setQuery(chip.label)
-                    }}
-                  >
-                    {chip.logo ? (
-                      <Logo logo={chip.logo} />
-                    ) : (
-                      <span className={styles.chipIcon} data-tone={chip.tone}>
-                        <Icon icon={chip.icon!} size={16} />
-                      </span>
-                    )}
-                    <span className={styles.chipLabel}>{chip.label}</span>
-                  </button>
-                ))}
-              </div>
-            </section>
-          ))}
-        {needle && matches.length > 0 && (
-          <section className={styles.results}>
-            <div className={styles.head}>
-              <h2 className={styles.headTitle}>US Stocks ({matches.length})</h2>
-            </div>
-            <div className={styles.list}>
-              {matches.map((result) => (
-                <div key={result.id} className={styles.row}>
-                  <button type="button" className={styles.rowMain} onClick={() => open(result)}>
-                    <Logo logo={result.logo} size={32} />
-                    <span className={styles.rowText}>
-                      <span className={styles.rowName}>{result.name}</span>
-                      <span className={styles.rowSub}>{result.sub}</span>
-                    </span>
-                    <span className={styles.rowPrice}>
-                      <span className={styles.rowValue}>{result.price}</span>
-                      <Move value={result.change} up={result.up} />
-                    </span>
-                  </button>
-                  <button
-                    type="button"
-                    className={styles.save}
-                    aria-pressed={saved.has(result.id)}
-                    aria-label={saved.has(result.id) ? `Remove ${result.name} from watchlist` : `Add ${result.name} to watchlist`}
-                    onClick={() => toggleSaved(result.id)}
-                  >
-                    <Icon icon={saved.has(result.id) ? bookmarkAdded : bookmarkAdd} size={24} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-        {needle && matches.length === 0 && (
-          <EmptyState className={styles.empty} title={`No US stocks for “${query.trim()}”`} description="Check the spelling or try a company name or symbol." />
-        )}
-      </div>
-    </Phone>
-  )
-}
 ```
 
 ### `src/flows/us-stocks/screens/entry/SpxIndex.module.css`
@@ -27693,6 +27363,7 @@ import { SpxChart } from './components/SpxChart'
 import { entryUrl } from './entryAssets'
 import { chevronRight, functionIcon, settings, star, stylus, swapHoriz } from './icons'
 import { STOCKS_HOME } from './ids'
+import { InlineSvg } from '../../components/InlineSvg'
 import { indexStocks } from './spxData'
 import styles from './SpxIndex.module.css'
 
@@ -27767,10 +27438,10 @@ export function SpxIndexScreen() {
           </div>
           <div className={styles.rangeBar} style={{ '--at': 0.5 } as React.CSSProperties}>
             <img className={styles.rangeLine} src={entryUrl('index/range-line.svg')} alt="" />
-            <img className={styles.rangeBolt} src={entryUrl('index/range-bolt.svg')} alt="" width={16.43} height={19.24} />
+            <InlineSvg className={styles.rangeBolt} src="assets/entry/index/range-bolt.svg" w={16.43} h={19.24} />
           </div>
           <p className={styles.ltp}>
-            <img src={entryUrl('index/bolt.svg')} alt="" width={7.44} height={9} />
+            <InlineSvg src="assets/entry/index/bolt.svg" w={7.44} h={9} />
             <span className={styles.label}>Last Traded Price :</span>
             {' ₹640.00'}
           </p>
@@ -28027,7 +27698,7 @@ export function SpxIndexScreen() {
 // FLAG: hand-made carousel cards (fixed 296px wide), pager dots and returns pill — L3 has Card and PriceChange.
 import { useEffect, useRef, useState } from 'react'
 import { Icon } from '@l3/components/Icon'
-import { asset } from '../../../asset'
+import { InlineSvg } from '../../../components/InlineSvg'
 import { unfoldMore } from '../icons'
 import styles from './HoldingsCards.module.css'
 
@@ -28096,8 +27767,8 @@ export function HoldingsCards({
           return (
             <section key={id} className={styles.card} data-market={id} aria-label={labels[id].title} onClick={() => onMarket(id)}>
               <span className={styles.leaves} aria-hidden="true">
-                <img src={asset('assets/entry/portfolio/leaf-b.svg')} alt="" className={styles.leafB} />
-                <img src={asset('assets/entry/portfolio/leaf-a.svg')} alt="" className={styles.leafA} />
+                <InlineSvg src="assets/entry/portfolio/leaf-b.svg" className={styles.leafB} />
+                <InlineSvg src="assets/entry/portfolio/leaf-a.svg" className={styles.leafA} />
               </span>
               <span className={styles.facts}>
                 <span className={styles.fact}>
@@ -28177,6 +27848,7 @@ export function MaskImg({ src, w, h = w, className }: { src: string; w: number; 
 
 .orders {
   flex-direction: column;
+  flex: 1;
   min-height: 100%;
   display: flex;
 }
@@ -28323,12 +27995,11 @@ export function MaskImg({ src, w, h = w, className }: { src: string; w: number; 
 
 ```tsx
 // Portfolio → Orders: an IND / US switcher, Open · SIP · History tabs, and the empty state for the picked pair.
-// FLAG: hand-made empty state (mascot in a halo) — use L3 EmptyState with the default illustration.
 // FLAG: the Select is restyled into an outlined pill and the Tabs row is custom-sized (see OrdersTab.module.css).
 import { useState, type ReactNode } from 'react'
+import { EmptyState } from '@l3/components/EmptyState'
 import { Select } from '@l3/components/Select'
 import { Tabs } from '@l3/components/Tabs'
-import { entryUrl } from '../entryAssets'
 import styles from './OrdersTab.module.css'
 
 type OrderTab = 'open' | 'sip' | 'history'
@@ -28379,12 +28050,8 @@ export function OrdersTab({ banner }: { banner?: ReactNode }) {
         />
       </div>
       {banner}
-      <div className={styles.empty} key={`${tab}${market}`}>
-        <span className={styles.halo} aria-hidden="true">
-          <img src={entryUrl('mf/mascot.svg')} alt="" />
-        </span>
-        <p>{message}</p>
-      </div>
+      {/* L3 Empty state with its default illustration, centred in the space under the tabs. */}
+      <EmptyState key={`${tab}${market}`} className={styles.empty} title={message} />
     </div>
   )
 }
@@ -28604,6 +28271,7 @@ export function SlidingTabs({ className, wrapClassName, fitLabel, ...tabs }: Sli
 // FLAG: hand-drawn chart (SVG rects + absolutely-positioned labels) — L3 has a Chart component.
 import { barWidth, candleBodies, candleWicks, lastLineY, lastPrice, plotHeight, plotWidth, priceAxis, timeLabels, volumeBars } from '../spxData'
 import { entryPath, entryUrl } from '../entryAssets'
+import { InlineSvg } from '../../../components/InlineSvg'
 import { MaskImg } from './MaskImg'
 import styles from '../SpxIndex.module.css'
 
@@ -28649,7 +28317,7 @@ export function SpxChart() {
         ))}
       </ol>
       <span className={styles.chartType} aria-hidden="true">
-        <img src={entryUrl('index/chart-type.svg')} alt="" width={22.59} height={11.4} />
+        <InlineSvg src="assets/entry/index/chart-type.svg" w={22.59} h={11.4} />
       </span>
     </div>
   )
@@ -28931,18 +28599,16 @@ export const WALLET = '5852:99084'
 // 8 PM IST) and the Mutual Fund home with a US banner. (The Market tab with the S&P 500 filter, E3 / 5796:88869, is the
 // app's own Market flow now — see FIGMA_IN_OTHER_FLOWS in ../../nav.tsx.)
 // FLAG: copy not in copy.json yet — every string in this part is hard-coded in the screens and data files.
-// FLAG: Search, Portfolio and Mutual Fund home redraw app areas (src/flows/search exists; Portfolio and
-// Mutual Fund home do not yet); they are kept here only because the US flow enters through them.
+// Search (E2a) is the app's Search flow, US tab (search-29). FLAG: Portfolio and Mutual Fund home redraw app areas that
+// don't exist yet as flows; they are kept here only because the US flow enters through them.
 import type { UsScreenMap } from '../types'
 import { MutualFundHomeScreen } from './MutualFundHomeScreen'
 import { PortfolioBannerLiveScreen, PortfolioBannerScreen } from './PortfolioScreen'
-import { SearchScreen } from './SearchScreen'
 import { SpxIndexScreen } from './SpxIndexScreen'
 
 /** Screens of this part, by Figma node id. */
 export const screens: UsScreenMap = {
   '5796:89422': SpxIndexScreen, // E1a · S&P 500 index · market open
-  '5796:89230': SearchScreen, // E2a · Search · US tab · idle
   '5796:88668': PortfolioBannerScreen, // E4 · Portfolio · US market banner
   '5796:92301': PortfolioBannerLiveScreen, // E4 · Portfolio · US market banner · live
   '5796:88163': MutualFundHomeScreen, // E5 · Mutual Fund home · US banner
@@ -29015,85 +28681,6 @@ export const holdingsSummary: Record<HoldingsMarket, HoldingsSummary> = {
   in: { pnl: '+₹168.05', pct: '12.61%', up: true, invested: '₹1,332.20', current: '₹1,500.25' },
   us: { pnl: '$0.00', pct: '0.00%', up: true, invested: '$0.00', current: '$0.00' },
 }
-```
-
-### `src/flows/us-stocks/screens/entry/searchData.ts`
-
-```ts
-// Search · US tab: sample data. FLAG: hard-coded prices, logos and copy.
-import { entryUrl } from './entryAssets'
-import { accountBalance, emojiEvents, memory } from './icons'
-
-const searchUrl = (file: string) => entryUrl(`search/${file}`)
-
-/** A logo on its plate colour (raw hex — FLAG: no token for a logo plate). */
-export type SearchLogo = { src: string; bg: string; fit?: 'cover' }
-
-export const logos: Record<string, SearchLogo> = {
-  nvda: { src: searchUrl('nvda.svg'), bg: '#76b900' },
-  aapl: { src: searchUrl('aapl.svg'), bg: '#ffffff' },
-  tsla: { src: searchUrl('tsla.png'), bg: '#ffffff', fit: 'cover' },
-  msft: { src: searchUrl('msft.svg'), bg: '#ffffff' },
-  amzn: { src: searchUrl('amzn.svg'), bg: '#ff9900' },
-  googl: { src: searchUrl('googl.svg'), bg: '#ffffff' },
-  meta: { src: searchUrl('meta.png'), bg: '#ffffff', fit: 'cover' },
-  nflx: { src: searchUrl('nflx.png'), bg: '#000000', fit: 'cover' },
-}
-
-export type SearchChip = { label: string; logo?: SearchLogo; icon?: string; tone?: 'purple' | 'warning' | 'teal' }
-
-/** The idle page: Recent Searches, Popular Searches, Collections. */
-export const searchSections: { title: string; chips: SearchChip[] }[] = [
-  {
-    title: 'Recent Searches',
-    chips: [
-      { label: 'NVIDIA Corp', logo: logos.nvda },
-      { label: 'Apple Inc.', logo: logos.aapl },
-      { label: 'Tesla Inc.', logo: logos.tsla },
-      { label: 'Microsoft Corp', logo: logos.msft },
-      { label: 'Amazon.com Inc.', logo: logos.amzn },
-    ],
-  },
-  {
-    title: 'Popular Searches',
-    chips: [
-      { label: 'Alphabet Inc.', logo: logos.googl },
-      { label: 'Meta Platforms Inc.', logo: logos.meta },
-      { label: 'Netflix Inc.', logo: logos.nflx },
-    ],
-  },
-  {
-    title: 'Collections',
-    chips: [
-      { label: 'AI Leaders', icon: memory, tone: 'purple' },
-      { label: 'Trillion Dollar Club', icon: emojiEvents, tone: 'warning' },
-      { label: 'Warren Buffet’s portfolio', icon: accountBalance, tone: 'teal' },
-    ],
-  },
-]
-
-export type SearchResult = { id: string; name: string; sub: string; logo: SearchLogo; price: string; change: string; up: boolean }
-
-/** What typing searches through. */
-export const searchResults: SearchResult[] = [
-  { id: 'nvda', name: 'NVIDIA Corp', sub: 'NASDAQ • NVDA', logo: logos.nvda, price: '$226.43', change: '3.42%', up: true },
-  { id: 'aapl', name: 'Apple Inc.', sub: 'NASDAQ • AAPL', logo: logos.aapl, price: '$341.06', change: '1.31%', up: true },
-  { id: 'tsla', name: 'Tesla Inc.', sub: 'NASDAQ • TSLA', logo: logos.tsla, price: '$438.12', change: '2.87%', up: true },
-  { id: 'msft', name: 'Microsoft Corp', sub: 'NASDAQ • MSFT', logo: logos.msft, price: '$541.19', change: '1.14%', up: true },
-  { id: 'amzn', name: 'Amazon.com Inc.', sub: 'NASDAQ • AMZN', logo: logos.amzn, price: '$259.44', change: '1.76%', up: true },
-  { id: 'googl', name: 'Alphabet Inc.', sub: 'NASDAQ • GOOGL', logo: logos.googl, price: '$352.73', change: '0.92%', up: true },
-  { id: 'meta', name: 'Meta Platforms Inc.', sub: 'NASDAQ • META', logo: logos.meta, price: '$712.55', change: '2.14%', up: true },
-  { id: 'nflx', name: 'Netflix Inc.', sub: 'NASDAQ • NFLX', logo: logos.nflx, price: '$1,204.30', change: '0.68%', up: true },
-]
-
-/** The "Search in" tabs (US is selected; the others do nothing). */
-export const searchTabs = [
-  { value: 'stocks', label: 'Stocks' },
-  { value: 'us', label: 'US' },
-  { value: 'fno', label: 'F&O' },
-  { value: 'mf', label: 'MF' },
-  { value: 'ipo', label: 'IPO' },
-]
 ```
 
 ### `src/flows/us-stocks/screens/entry/sheets/SortSheet.module.css`
@@ -29444,6 +29031,1243 @@ export const lastLineY = 132
 export const timeLabels = ['9:15', '10:15', '11:15', '1:15', '2:15', '3:15']
 ```
 
+### `src/flows/us-stocks/screens/etf/Etf.module.css`
+
+```css
+/* The ETF list and the first ETF page, from the teammate's CSS (L3 tokens). */
+.page{gap:var(--l3-spacing-16);padding:var(--l3-spacing-16) var(--l3-spacing-16) var(--l3-spacing-24);flex-direction:column;display:flex}
+
+.page[data-gap="24"]{gap:var(--l3-spacing-24)}
+
+.chips{width:calc(100% + 2 * var(--l3-spacing-16));margin:0 calc(-1 * var(--l3-spacing-16));padding:0 var(--l3-spacing-16)}
+
+.list,.holdings{gap:var(--l3-spacing-08);flex-direction:column;margin:0;padding:0;list-style:none;display:flex}
+
+.rowCard[data-interactive]{align-items:center;gap:var(--l3-spacing-12);flex-direction:row}
+
+.rowText{gap:var(--l3-spacing-04);text-align:left;flex-direction:column;flex:1;min-width:0;display:flex}
+
+.rowName{font:var(--l3-text-heading-14);color:var(--l3-content-primary);text-overflow:ellipsis;white-space:nowrap;overflow:hidden}
+
+.rowSub{font:var(--l3-text-label-12);color:var(--l3-content-secondary);text-overflow:ellipsis;white-space:nowrap;overflow:hidden}
+
+.rowPrice{align-items:flex-end;gap:var(--l3-spacing-04);flex-direction:column;flex:none;display:flex}
+
+.rowValue{font:var(--l3-text-heading-14);color:var(--l3-content-primary);font-variant-numeric:tabular-nums}
+
+.disc{width:var(--l3-size-32);height:var(--l3-size-32);border-radius:var(--l3-radius-full);background:var(--l3-surface-secondary);box-shadow:inset 0 0 0 1px var(--l3-border-light);font:var(--l3-text-heading-10);color:var(--l3-content-primary);letter-spacing:0;flex:none;place-items:center;display:grid}
+
+.disc[data-size="40"]{width:var(--l3-size-40);height:var(--l3-size-40);font:var(--l3-text-heading-12)}
+
+.disc[data-size="24"]{width:var(--l3-size-24);height:var(--l3-size-24);font:var(--l3-text-label-10)}
+
+.disc>img{object-fit:contain;width:72%;height:72%}
+
+.disc[data-fill]{overflow:hidden}
+
+.disc[data-fill]>img{object-fit:cover;width:100%;height:100%}
+
+.move{align-items:center;gap:var(--l3-spacing-04);font:var(--l3-text-label-12);color:var(--l3-content-accent-error-default);font-variant-numeric:tabular-nums;display:inline-flex}
+
+.move[data-up]{color:var(--l3-content-accent-success-default)}
+
+.tri{border-top:var(--l3-spacing-04) solid currentColor;border-right:var(--l3-spacing-04) solid transparent;border-left:var(--l3-spacing-04) solid transparent;width:0;height:0}
+
+.move[data-up] .tri{border-top:0;border-bottom:var(--l3-spacing-04) solid currentColor}
+
+.lede{font:var(--l3-text-label-12);color:var(--l3-content-secondary);margin:0}
+
+.group{gap:var(--l3-spacing-12);flex-direction:column;display:flex}
+
+.groupTitle,.sectionTitle{font:var(--l3-text-heading-16);color:var(--l3-content-primary);margin:0}
+
+.pair{gap:var(--l3-spacing-08);grid-template-columns:1fr 1fr;display:grid}
+
+.sideCard[data-interactive]{align-items:flex-start;gap:var(--l3-spacing-08);min-width:0}
+
+.sideSym{font:var(--l3-text-heading-16);color:var(--l3-content-primary)}
+
+.sideName{width:100%;font:var(--l3-text-label-12);color:var(--l3-content-secondary);text-overflow:ellipsis;white-space:nowrap;overflow:hidden}
+
+.sidePrice{align-items:center;gap:var(--l3-spacing-04);font:var(--l3-text-heading-12);color:var(--l3-content-primary);font-variant-numeric:tabular-nums;flex-wrap:wrap;display:flex}
+
+.head{justify-content:space-between;align-items:flex-start;gap:var(--l3-spacing-12);display:flex}
+
+.headText{gap:var(--l3-spacing-08);flex-direction:column;min-width:0;display:flex}
+
+.name{font:var(--l3-text-heading-16);color:var(--l3-content-primary);margin:0}
+
+.price{align-items:center;gap:var(--l3-spacing-08);font:var(--l3-text-heading-24);color:var(--l3-content-primary);font-variant-numeric:tabular-nums;margin:0;display:flex}
+
+.tags{gap:var(--l3-spacing-08);flex-wrap:wrap;display:flex}
+
+.chart{width:100%;height:auto;display:block}
+
+.chartLine{fill:none;stroke:var(--l3-content-accent-error-default);stroke-width:1.5px;stroke-linejoin:round}
+
+.chartFill{fill:color-mix(in srgb, var(--l3-content-accent-error-default) 10%, transparent)}
+
+.chart[data-up] .chartLine{stroke:var(--l3-content-accent-success-default)}
+
+.chart[data-up] .chartFill{fill:color-mix(in srgb, var(--l3-content-accent-success-default) 10%, transparent)}
+
+.note{padding:var(--l3-spacing-12);border-radius:var(--l3-radius-08);background:var(--l3-surface-secondary);font:var(--l3-text-label-12);color:var(--l3-content-secondary);margin:0}
+
+.section{gap:var(--l3-spacing-12);flex-direction:column;display:flex}
+
+.sectionHead{justify-content:space-between;align-items:center;display:flex}
+
+.sectionMeta{font:var(--l3-text-label-12);color:var(--l3-content-tertiary)}
+
+.facts{gap:var(--l3-spacing-12);padding:var(--l3-spacing-12);border-radius:var(--l3-radius-12);background:var(--l3-surface-primary);box-shadow:inset 0 0 0 1px var(--l3-border-light);flex-direction:column;margin:0;display:flex}
+
+.fact{justify-content:space-between;gap:var(--l3-spacing-12);display:flex}
+
+.fact dt{font:var(--l3-text-label-12);color:var(--l3-content-secondary)}
+
+.fact dd{font:var(--l3-text-heading-12);color:var(--l3-content-primary);text-align:right;margin:0}
+
+.holdings{border-radius:var(--l3-radius-12);background:var(--l3-surface-primary);box-shadow:inset 0 0 0 1px var(--l3-border-light);gap:0;overflow:hidden}
+
+.holdings>li+li{box-shadow:inset 0 1px 0 var(--l3-border-light)}
+
+.holding{align-items:center;gap:var(--l3-spacing-12);width:100%;padding:var(--l3-spacing-12);color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;background:0 0;border:0;display:flex}
+
+.holding:focus-visible{outline:var(--l3-spacing-02) solid var(--l3-border-dark);outline-offset:calc(-1 * var(--l3-spacing-02))}
+
+.weightBar{height:var(--l3-spacing-04);border-radius:var(--l3-radius-full);background:var(--l3-surface-tertiary);display:block;overflow:hidden}
+
+.weightBar>span{border-radius:inherit;background:var(--l3-content-accent-discover-default);height:100%;display:block}
+
+.weight{font:var(--l3-text-heading-12);color:var(--l3-content-primary);font-variant-numeric:tabular-nums;flex:none}
+```
+
+### `src/flows/us-stocks/screens/etf/EtfListScreen.tsx`
+
+```tsx
+// 9001:1 · ETFs · Regular & Leveraged — the list from the ETFs quick action. Regular tab: region chips and rows;
+// Leveraged tab: long / short pairs per index. A row opens the ETF page (9001:2).
+// FLAG: copy not in copy.json yet (hard-coded).
+// FLAG: rows and pair cards are L3 Cards with hand-made content (module CSS); the logo disc is hand-made.
+import { useState } from 'react'
+import { Actionbar } from '@l3/components/Actionbar'
+import { Card } from '@l3/components/Card'
+import { Tabs } from '@l3/components/Tabs'
+import { Phone } from '../../components/Phone'
+import { useUsNav } from '../../nav'
+import { setCurrentEtf } from './currentEtf'
+import { COUNTRIES, ETFS, ETF_PAGE, HOME_ACTIVATED, leveragedGroups, money, type Etf } from './data'
+import { EtfDisc, EtfMove, SideTag } from './parts'
+import styles from './Etf.module.css'
+
+const TABS = [
+  { value: 'normal', label: 'Regular' },
+  { value: 'leveraged', label: 'Leveraged' },
+]
+
+export function EtfRow({ etf, onClick }: { etf: Etf; onClick: () => void }) {
+  return (
+    <Card onClick={onClick} className={styles.rowCard} aria-label={`${etf.name}, $${money(etf.price)}, ${etf.change >= 0 ? '+' : '-'}${Math.abs(etf.change)}%`}>
+      <EtfDisc sym={etf.sym} />
+      <span className={styles.rowText}>
+        <span className={styles.rowName}>{etf.sym}</span>
+        <span className={styles.rowSub}>{etf.name} · {etf.tracks}</span>
+      </span>
+      <span className={styles.rowPrice}>
+        <span className={styles.rowValue}>${money(etf.price)}</span>
+        <EtfMove change={etf.change} />
+      </span>
+    </Card>
+  )
+}
+
+export function EtfListScreen({ backdrop }: { backdrop?: boolean }) {
+  const { go, back } = useUsNav()
+  const [tab, setTab] = useState(() => {
+    // The home's "Leveraged" shortcut can ask for the second tab (his sessionStorage hand-off).
+    try {
+      const t = sessionStorage.getItem('etf:tab')
+      sessionStorage.removeItem('etf:tab')
+      return t === 'leveraged' ? 'leveraged' : 'normal'
+    } catch {
+      return 'normal'
+    }
+  })
+  const [country, setCountry] = useState('all')
+  const open = (sym: string) => {
+    if (backdrop) return
+    setCurrentEtf(sym)
+    go(ETF_PAGE)
+  }
+  const regular = ETFS.filter((e) => e.kind === 'normal' && (country === 'all' || e.country === country))
+
+  return (
+    <Phone
+      label="ETFs"
+      header={
+        <Actionbar
+          title="ETFs"
+          onBack={() => back(HOME_ACTIVATED)}
+          bottom={<Tabs appearance="underline" width="fill" aria-label="ETF type" items={TABS} value={tab} onChange={setTab} />}
+        />
+      }
+      gesture="none"
+    >
+      <div className={styles.page}>
+        {tab === 'normal' ? (
+          <>
+            <Tabs
+              appearance="pill"
+              behavior="filter"
+              aria-label="Country"
+              className={styles.chips}
+              items={[{ value: 'all', label: 'All' }, ...COUNTRIES.map((c) => ({ value: c, label: c }))]}
+              value={country}
+              onChange={setCountry}
+            />
+            <ul className={styles.list}>
+              {regular.map((e) => (
+                <li key={e.sym}>
+                  <EtfRow etf={e} onClick={() => open(e.sym)} />
+                </li>
+              ))}
+            </ul>
+          </>
+        ) : (
+          <>
+            <p className={styles.lede}>Leveraged ETFs multiply a day’s move, 2x or 3x. Go long if you expect a rise, short if you expect a fall.</p>
+            {leveragedGroups().map((g) => (
+              <section className={styles.group} key={g.tracks} aria-label={g.tracks}>
+                <h2 className={styles.groupTitle}>{g.tracks}</h2>
+                <div className={styles.pair}>
+                  {g.etfs.map((e) => (
+                    <Card key={e.sym} onClick={() => open(e.sym)} className={styles.sideCard} aria-label={`${e.sym}, ${e.lev} ${e.side}, $${money(e.price)}`}>
+                      <SideTag etf={e} />
+                      <span className={styles.sideSym}>{e.sym}</span>
+                      <span className={styles.sideName}>{e.name}</span>
+                      <span className={styles.sidePrice}>
+                        ${money(e.price)} <EtfMove change={e.change} />
+                      </span>
+                    </Card>
+                  ))}
+                </div>
+              </section>
+            ))}
+          </>
+        )}
+      </div>
+    </Phone>
+  )
+}
+```
+
+### `src/flows/us-stocks/screens/etf/EtfPage.module.css`
+
+```css
+/* Copied from ../activation/StockPage.module.css (the stock page layout the ETF page reuses) — only the rules the ETF page uses. */
+/* FLAG (file): layout is raw display:flex + gap/padding instead of L3 Stack/Section/Inset/Grid; raw px values are marked per line. */
+.still * {
+  transition: none !important;
+  animation: none !important;
+}
+
+.info:after,
+.tradingView:after {
+  content: "";
+  inset: calc(50% - var(--l3-size-tap-target) / 2);
+  width: var(--l3-size-tap-target);
+  height: var(--l3-size-tap-target);
+  position: absolute;
+}
+
+.assetHeader {
+  gap: var(--l3-spacing-24);
+  padding: var(--l3-spacing-08) var(--l3-spacing-16) 0;
+  flex-direction: column;
+  display: flex;
+}
+
+.titleRow {
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--l3-spacing-12);
+  display: flex;
+}
+
+.namePrice {
+  gap: var(--l3-spacing-02);
+  flex-direction: column;
+  display: flex;
+}
+
+.name {
+  font: var(--l3-text-heading-18);
+  color: var(--l3-content-primary);
+  margin: 0;
+}
+
+.priceRow {
+  align-items: center;
+  gap: var(--l3-spacing-08);
+  display: flex;
+}
+
+.price {
+  font: var(--l3-text-heading-24);
+  color: var(--l3-content-primary);
+}
+
+.change {
+  align-items: center;
+  gap: var(--l3-spacing-04);
+  display: inline-flex;
+}
+
+.changeAbs {
+  font: var(--l3-text-label-16);
+  color: var(--l3-content-accent-indicator-up-default);
+}
+
+.tagsRow {
+  height: var(--l3-size-24);
+  justify-content: space-between;
+  align-items: center;
+  display: flex;
+}
+
+.tags {
+  gap: var(--l3-spacing-08);
+  display: flex;
+}
+
+/* FLAG: overrides L3 Tag colours — restyling an L3 component */
+.tags > [data-variant] {
+  background: var(--l3-surface-secondary);
+  box-shadow: none;
+  font: var(--l3-text-heading-12);
+  color: var(--l3-content-primary);
+}
+
+/* FLAG: hand-drawn price chart (svg line + positioned dot/halo) — L3 has a Chart component */
+.chart {
+  height: 184px; /* FLAG: raw px */
+  margin: var(--l3-spacing-24) 0 var(--l3-spacing-16);
+  padding: 0 var(--l3-spacing-16);
+  display: flex;
+  position: relative;
+}
+
+.plot {
+  color: var(--l3-content-accent-indicator-up-default);
+  flex: 1;
+  position: relative;
+}
+
+.line {
+  position: absolute;
+  top: 12px; /* FLAG: raw px */
+  left: 0;
+  width: calc(100% + 4px); /* FLAG: raw px */
+  height: 153.5px; /* FLAG: raw px */
+}
+
+.halo,
+.dot {
+  border-radius: var(--l3-radius-full);
+  background: var(--l3-content-accent-indicator-up-default);
+  position: absolute;
+}
+
+.halo {
+  width: var(--l3-size-12);
+  height: var(--l3-size-12);
+  opacity: 0.3;
+  top: 54px; /* FLAG: raw px */
+  right: -8px; /* FLAG: raw px */
+}
+
+.dot {
+  width: 6px; /* FLAG: raw px */
+  height: 6px; /* FLAG: raw px */
+  top: 57px; /* FLAG: raw px */
+  right: -5px; /* FLAG: raw px */
+}
+
+.yAxis {
+  width: 56px; /* FLAG: raw px */
+  font: var(--l3-text-description-10);
+  color: var(--l3-content-secondary);
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 11px; /* FLAG: raw px */
+  padding-top: 6px; /* FLAG: raw px */
+  display: flex;
+}
+
+.yAxis span:first-child {
+  color: var(--l3-content-primary);
+}
+
+.tabsAndContent {
+  gap: var(--l3-spacing-24);
+  padding: 0 var(--l3-spacing-16) var(--l3-spacing-14);
+  flex-direction: column;
+  display: flex;
+}
+
+.tabsBlock {
+  gap: var(--l3-spacing-24);
+  flex-direction: column;
+  display: flex;
+}
+
+.tabsBlock > .flatTabs.flatTabs {
+  width: calc(100% + 2 * var(--l3-spacing-16));
+  max-width: none;
+  margin-inline: calc(-1 * var(--l3-spacing-16));
+}
+
+/* FLAG: hand-made range meter */
+.dayRange {
+  height: var(--l3-size-08);
+  margin-block: var(--l3-spacing-04);
+  border-radius: var(--l3-radius-full);
+  background: linear-gradient(
+    90deg,
+    color-mix(
+      in srgb,
+      var(--l3-content-accent-indicator-down-default) 55%,
+      var(--l3-surface-primary)
+    ),
+    color-mix(
+      in srgb,
+      var(--l3-content-accent-indicator-up-default) 55%,
+      var(--l3-surface-primary)
+    )
+  );
+  position: relative;
+}
+
+.dayTick {
+  background: var(--l3-content-primary);
+  width: 1px;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+}
+
+.dayBolt {
+  top: 50%;
+  left: var(--at);
+  color: var(--l3-content-primary);
+  display: grid;
+  position: absolute;
+  translate: -50% -50%;
+}
+
+.overview {
+  gap: var(--l3-spacing-32);
+  flex-direction: column;
+  display: flex;
+}
+
+.section {
+  gap: var(--l3-spacing-16);
+  flex-direction: column;
+  display: flex;
+}
+
+.sectionTitle {
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--l3-spacing-08);
+  display: flex;
+}
+
+.sectionHeading {
+  gap: var(--l3-spacing-08);
+  flex-direction: column;
+  display: flex;
+}
+
+.sectionHeading h2 {
+  font: var(--l3-text-heading-16);
+  color: var(--l3-content-primary);
+  margin: 0;
+}
+
+.underline {
+  width: var(--l3-size-40);
+  height: var(--l3-spacing-02);
+  border-radius: var(--l3-radius-02);
+  background: var(--l3-surface-accent-brand-default);
+}
+
+/* FLAG: hand-made info icon button */
+.info {
+  color: var(--l3-content-secondary);
+  cursor: pointer;
+  background: 0 0;
+  border: 0;
+  margin-top: 3px; /* FLAG: raw px */
+  padding: 0;
+  display: inline-flex;
+  position: relative;
+}
+
+/* FLAG: hand-made panel (L3 Card) */
+.panel {
+  padding: var(--l3-spacing-12);
+  border-radius: var(--l3-radius-12);
+  background: var(--l3-surface-primary);
+  box-shadow: inset 0 0 0 1px var(--l3-border-light);
+  flex-direction: column;
+  margin: 0;
+  display: flex;
+}
+
+.panel[data-rows] {
+  padding-top: var(--l3-spacing-16);
+}
+
+.panel[data-gap="04"] {
+  gap: var(--l3-spacing-04);
+}
+
+.panel[data-gap="12"] {
+  gap: var(--l3-spacing-12);
+}
+
+.panel[data-gap="16"] {
+  gap: var(--l3-spacing-16);
+}
+
+.stat {
+  gap: var(--l3-spacing-04);
+  flex-direction: column;
+  min-width: 0;
+  display: flex;
+}
+
+.stat[data-end] {
+  text-align: right;
+  align-items: flex-end;
+}
+
+.statLabel {
+  font: var(--l3-text-label-12);
+  color: var(--l3-content-secondary);
+}
+
+.statValue {
+  font: var(--l3-text-heading-12);
+  color: var(--l3-content-primary);
+}
+
+.statValue[data-up] {
+  color: var(--l3-content-accent-indicator-up-default);
+}
+
+.lowHigh {
+  justify-content: space-between;
+  display: flex;
+}
+
+.ltp {
+  align-items: center;
+  gap: var(--l3-spacing-04);
+  font: var(--l3-text-heading-12);
+  color: var(--l3-content-secondary);
+  margin: 0;
+  display: flex;
+}
+
+.kv {
+  justify-content: space-between;
+  gap: var(--l3-spacing-16);
+  display: flex;
+}
+
+.kv[data-sep] {
+  padding-top: var(--l3-spacing-12);
+  background: repeating-linear-gradient(
+      90deg,
+      var(--l3-border-light) 0 4px,
+      transparent 4px 8px
+    )
+    top / 100% 1px no-repeat;
+}
+
+.kv dt {
+  font: var(--l3-text-label-12);
+  color: var(--l3-content-secondary);
+}
+
+.kv dd {
+  font: var(--l3-text-heading-12);
+  color: var(--l3-content-primary);
+  margin: 0;
+}
+
+.newsTitle {
+  -webkit-line-clamp: 2;
+  font: var(--l3-text-label-14);
+  color: var(--l3-content-primary);
+  -webkit-box-orient: vertical;
+  margin: 0;
+  display: -webkit-box;
+  overflow: hidden;
+}
+
+.newsMeta {
+  gap: var(--l3-spacing-04);
+  font: var(--l3-text-description-12);
+  color: var(--l3-content-secondary);
+  margin: 0;
+  display: flex;
+}
+
+.newsMeta span {
+  color: var(--l3-content-tertiary);
+}
+
+/* FLAG: hand-made logo disc (L3 Avatar / BrandLogo) */
+.logoDisc {
+  border-radius: var(--l3-radius-full);
+  background: var(--plate, var(--l3-surface-secondary));
+  width: 44px; /* FLAG: raw px */
+  height: 44px; /* FLAG: raw px */
+  font: var(--l3-text-heading-18);
+  color: var(--l3-content-primary);
+  flex: none;
+  place-items: center;
+  display: grid;
+  overflow: hidden;
+}
+
+.logoDisc img {
+  object-fit: contain;
+  width: 100%;
+  height: 100%;
+}
+
+.changeAbs[data-down] {
+  color: var(--l3-content-accent-indicator-down-default);
+}
+
+.events {
+  padding: var(--l3-spacing-24) var(--l3-spacing-16);
+}
+```
+
+### `src/flows/us-stocks/screens/etf/EtfPage.tsx`
+
+```tsx
+// 9001:2 · ETF page — an ETF in the stock page layout: price, ETF / Exp. Ratio tags, line chart with a period picker,
+// Overview (Daily Performance, Fundamentals) and Events tabs, Buy / Sell dock (Go Long / Go Short on leveraged ETFs).
+// Reads the current ETF (setCurrentEtf; SPY by default).
+// FLAG: copy not in copy.json yet (hard-coded).
+// FLAG: price block, chart, range meter and info buttons are hand-made
+// (EtfPage.module.css, copied from the stock page) instead of L3 Chart; same as the stock page.
+import { useEffect, useState } from 'react'
+import { Actionbar, ActionbarAction } from '@l3/components/Actionbar'
+import { Button } from '@l3/components/Button'
+import { ButtonGroup } from '@l3/components/ButtonGroup'
+import { Icon } from '@l3/components/Icon'
+import { MaskIcon } from '@l3/components/MaskIcon'
+import { PriceChange } from '@l3/components/PriceChange'
+import { Tabs } from '@l3/components/Tabs'
+import { Tag } from '@l3/components/Tag'
+import { Phone } from '../../components/Phone'
+import { asset } from '../../asset'
+import { useUsNav } from '../../nav'
+import { getCurrentEtf } from './currentEtf'
+import { BUY_PAD, ETF_LIST, PERIODS, detailsFor, issuerLogo, issuerName, money, percent } from './data'
+import { boltIcon, infoIcon } from './icons'
+import { EtfMove } from './parts'
+import styles from './EtfPage.module.css'
+
+const SECTIONS = [
+  { value: 'overview', label: 'Overview' },
+  { value: 'events', label: 'Events' },
+]
+const Y_STEPS = [1.006, 1.004, 1.002, 1, 0.998, 0.996, 0.994, 0.993]
+
+function SectionTitle({ title }: { title: string }) {
+  return (
+    <div className={styles.sectionTitle}>
+      <div className={styles.sectionHeading}><h2>{title}</h2></div>
+      {/* FLAG: hand-made info button (L3 has Tooltip / BottomSheetHeader info) */}
+      <button type="button" className={styles.info} aria-label={`About ${title}`}><Icon icon={infoIcon} size={16} /></button>
+    </div>
+  )
+}
+
+function Stat({ label, value, end }: { label: string; value: string; end?: boolean }) {
+  return (
+    <div className={styles.stat} data-end={end || undefined}>
+      <span className={styles.statLabel}>{label}</span>
+      <span className={styles.statValue}>{value}</span>
+    </div>
+  )
+}
+
+export function EtfPage({ backdrop }: { backdrop?: boolean }) {
+  const { go, back } = useUsNav()
+  const etf = getCurrentEtf()
+  const d = detailsFor(etf)
+  const leveraged = etf.kind === 'leveraged'
+  const long = etf.side === 'long'
+  const logo = issuerLogo(etf.sym)
+  const issuer = issuerName(etf.sym)
+  const dayChangeAbs = (etf.price * etf.change) / (100 + etf.change)
+  const [period, setPeriod] = useState('1D')
+  const [section, setSection] = useState('overview')
+  const [body, setBody] = useState<HTMLDivElement | null>(null)
+  // The Actionbar shows symbol + price once the big price has scrolled away.
+  const [scrolled, setScrolled] = useState(false)
+  useEffect(() => {
+    if (!body) return
+    const onScroll = () => setScrolled(body.scrollTop > 64)
+    onScroll()
+    body.addEventListener('scroll', onScroll, { passive: true })
+    return () => body.removeEventListener('scroll', onScroll)
+  }, [body])
+  const act = (fn: () => void) => () => { if (!backdrop) fn() }
+
+  const header = (
+    <Actionbar
+      onBack={() => back(ETF_LIST)}
+      title={scrolled ? etf.sym : undefined}
+      description={scrolled ? <>${money(etf.price)} <EtfMove change={etf.change} /></> : undefined}
+      actions={<ActionbarAction icon={asset('assets/etf/watchlist.svg')} label={`Add ${etf.sym} to watchlist`} onClick={() => {}} />}
+    />
+  )
+
+  const footer = (
+    <ButtonGroup aria-label={`Trade ${etf.sym}`} direction="horizontal" scrollIndicator>
+      <Button variant="brand" size="lg" onClick={act(() => go(BUY_PAD))}>{leveraged ? 'Go Long' : 'Buy'}</Button>
+      <Button variant="secondary" size="lg" onClick={act(() => go(BUY_PAD))}>{leveraged ? 'Go Short' : 'Sell'}</Button>
+    </ButtonGroup>
+  )
+
+  const dayStats: [string, string][] = [
+    ['Open', `$${money(etf.price - dayChangeAbs * 0.6)}`],
+    ['Prev. Close', `$${money(etf.price - dayChangeAbs)}`],
+    ['AUM', etf.aum],
+    ['Volume', d.volume],
+    ['52-week high', `$${money(d.high52)}`],
+    ['52-week low', `$${money(d.low52)}`],
+  ]
+  const fundamentals: [string, string][] = [
+    ['Expense Ratio', percent(etf.expense)],
+    ['NAV', `$${money(d.nav)}`],
+    ['Index Tracked', d.index],
+    ['Issuer', issuer ?? '—'],
+    ['Dividend Yield', d.yield],
+    ['Holdings', d.holdings],
+    ...(leveraged ? ([['Leverage', `${etf.lev} daily, ${long ? 'long' : 'short'}`]] as [string, string][]) : []),
+  ]
+  const at = Math.min(100, Math.max(0, ((etf.price - d.low) / (d.high - d.low)) * 100))
+
+  return (
+    <Phone label={etf.name} header={header} footer={footer} gesture="none" bodyRef={setBody} className={backdrop ? styles.still : undefined}>
+      <div className={styles.assetHeader}>
+        <div className={styles.titleRow}>
+          <div className={styles.namePrice}>
+            <h1 className={styles.name}>{etf.name}</h1>
+            <div className={styles.priceRow}>
+              <span className={styles.price}>${money(etf.price)}</span>
+              <span className={styles.change}>
+                <PriceChange value={etf.change} size="lg" arrow />
+                <span className={styles.changeAbs} data-down={dayChangeAbs < 0 || undefined}>
+                  ({dayChangeAbs < 0 ? '−' : '+'}{money(Math.abs(dayChangeAbs))})
+                </span>
+              </span>
+            </div>
+          </div>
+          <span className={styles.logoDisc} style={logo ? ({ '--plate': logo.plate } as React.CSSProperties) : undefined} aria-hidden="true">
+            {logo ? <img src={asset(`assets/etf/${logo.file}.png`)} alt="" /> : etf.sym[0]}
+          </span>
+        </div>
+        <div className={styles.tagsRow}>
+          <div className={styles.tags}>
+            <Tag variant="tertiary" color="neutral" size="md">ETF</Tag>
+            <Tag variant="tertiary" color="neutral" size="md">Exp. Ratio {percent(etf.expense)}</Tag>
+            {leveraged && (
+              <Tag variant="secondary" color={long ? 'profit' : 'loss'} size="md">{etf.lev} {long ? 'Long' : 'Short'}</Tag>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className={styles.chart} role="img" aria-label={`${etf.sym} price today`}>
+        <div className={styles.plot}>
+          <span className={styles.line}><MaskIcon src={asset('assets/etf/price-line-1d.svg')} /></span>
+          <span className={styles.halo} />
+          <span className={styles.dot} />
+        </div>
+        <div className={styles.yAxis} aria-hidden="true">
+          {Y_STEPS.map((s) => <span key={s}>{money(etf.price * s)}</span>)}
+        </div>
+      </div>
+
+      <div className={styles.tabsAndContent}>
+        <Tabs
+          appearance="pill-group"
+          size="sm"
+          width="fill"
+          aria-label="Chart period"
+          value={period}
+          onChange={setPeriod}
+          items={PERIODS.map((p) => ({ value: p, label: p }))}
+        />
+        <div className={styles.tabsBlock}>
+          <Tabs appearance="underline" width="fill" aria-label="ETF sections" className={styles.flatTabs} value={section} onChange={setSection} items={SECTIONS} />
+          {section === 'events' ? (
+            <div className={styles.overview}>
+              <section className={styles.section}>
+                <ul className={styles.events}>
+                  {d.events.map((e) => (
+                    <li key={e.title}>
+                      <span className={styles.eventDate} aria-hidden="true"><b>{e.day}</b>{e.month}</span>
+                      <div>
+                        <p className={styles.newsTitle}>{e.title}</p>
+                        <p className={styles.newsMeta}>{e.detail}</p>
+                        <Tag variant="secondary" color="neutral" size="sm" className={styles.impact}>{e.type}</Tag>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            </div>
+          ) : (
+            <div className={styles.overview}>
+              <section className={styles.section}>
+                <SectionTitle title="Daily Performance" />
+                <div className={styles.panel} data-gap="04">
+                  <div className={styles.lowHigh}>
+                    <Stat label="1D Low" value={`$${money(d.low)}`} />
+                    <Stat label="1D High" value={`$${money(d.high)}`} end />
+                  </div>
+                  <div
+                    className={styles.dayRange}
+                    role="meter"
+                    aria-label="Last traded price within today's range"
+                    aria-valuemin={d.low}
+                    aria-valuemax={d.high}
+                    aria-valuenow={etf.price}
+                    style={{ '--at': `${at}%` } as React.CSSProperties}
+                  >
+                    <span className={styles.dayTick} />
+                    <span className={styles.dayBolt}><Icon icon={boltIcon} size={16} /></span>
+                  </div>
+                  <p className={styles.ltp}><Icon icon={boltIcon} size={12} />Last Traded Price : ${money(etf.price)}</p>
+                </div>
+                <dl className={styles.panel} data-gap="12" data-rows="">
+                  {dayStats.map(([k, v], i) => (
+                    <div className={styles.kv} data-sep={i > 0 || undefined} key={k}><dt>{k}</dt><dd>{v}</dd></div>
+                  ))}
+                </dl>
+              </section>
+              <section className={styles.section}>
+                <SectionTitle title="Fundamentals" />
+                <dl className={styles.panel} data-gap="12" data-rows="">
+                  {fundamentals.map(([k, v], i) => (
+                    <div className={styles.kv} data-sep={i > 0 || undefined} key={k}><dt>{k}</dt><dd>{v}</dd></div>
+                  ))}
+                </dl>
+              </section>
+            </div>
+          )}
+        </div>
+      </div>
+    </Phone>
+  )
+}
+```
+
+### `src/flows/us-stocks/screens/etf/EtfPreviousScreen.tsx`
+
+```tsx
+// 9001:6 · ETF page · previous — the first ETF page (31 Oct), kept to compare: price line, about, opposite side and
+// holdings. Reads the current ETF (SPY unless one was tapped).
+// FLAG: copy not in copy.json yet (hard-coded).
+// FLAG: the price line is a hand-drawn SVG from made-up points (L3 has a Chart component).
+import { Actionbar } from '@l3/components/Actionbar'
+import { Button } from '@l3/components/Button'
+import { ButtonGroup } from '@l3/components/ButtonGroup'
+import { Card } from '@l3/components/Card'
+import { Tag } from '@l3/components/Tag'
+import { Phone } from '../../components/Phone'
+import { useUsNav } from '../../nav'
+import { getCurrentEtf, setCurrentEtf } from './currentEtf'
+import { BUY_PAD, ETF_LIST, ETF_PAGE, leveragedOn, money, openHolding, stockName, type Etf } from './data'
+import { EtfDisc, EtfMove, SideTag } from './parts'
+import styles from './Etf.module.css'
+
+/** A stable made-up day line for the ETF, drawn as an SVG (the same points every time). */
+function PriceLine({ etf }: { etf: Etf }) {
+  let seed = [...etf.sym].reduce((n, c) => n * 31 + c.charCodeAt(0), 11)
+  const next = () => (seed = (seed * 9301 + 49297) % 233280) / 233280
+  const drift = etf.change / 100
+  const pts: number[] = []
+  let v = 0
+  for (let i = 0; i < 48; i++) {
+    v += (next() - 0.5) * 0.9 + drift * 2.4
+    pts.push(v)
+  }
+  const lo = Math.min(...pts)
+  const hi = Math.max(...pts)
+  const y = (p: number) => 8 + (1 - (p - lo) / (hi - lo || 1)) * 104
+  const line = pts.map((p, i) => `${i ? 'L' : 'M'} ${((i / 47) * 328).toFixed(1)} ${y(p).toFixed(1)}`).join(' ')
+  return (
+    <svg className={styles.chart} viewBox="0 0 328 120" data-up={etf.change >= 0 || undefined} role="img" aria-label={`${etf.sym} today, ${etf.change >= 0 ? 'up' : 'down'} ${Math.abs(etf.change)}%`}>
+      <path d={`${line} L 328 120 L 0 120 Z`} className={styles.chartFill} />
+      <path d={line} className={styles.chartLine} />
+    </svg>
+  )
+}
+
+export function EtfPreviousScreen({ backdrop }: { backdrop?: boolean }) {
+  const { go, back } = useUsNav()
+  const etf = getCurrentEtf()
+  const leveraged = etf.kind === 'leveraged'
+  const long = etf.side === 'long'
+  const opposite = leveraged ? leveragedOn(etf.tracks).find((e) => e.side !== etf.side) : undefined
+  const act = (fn: () => void) => () => { if (!backdrop) fn() }
+  const facts: [string, string][] = [
+    ['Tracks', etf.tracks],
+    ['Expense ratio', `${etf.expense.toFixed(2)}%`],
+    ['Fund size (AUM)', etf.aum],
+    ['Country', etf.country],
+    ...(leveraged ? ([['Leverage', `${etf.lev} daily`], ['Side', long ? 'Long · gains when it rises' : 'Short · gains when it falls']] as [string, string][]) : []),
+  ]
+  const [primary, secondary] = leveraged ? ['Go Long', 'Go Short'] : ['Buy', 'Sell']
+
+  return (
+    <Phone
+      label={etf.name}
+      header={<Actionbar title={etf.sym} onBack={() => back(ETF_LIST)} />}
+      footer={
+        <ButtonGroup aria-label={`Trade ${etf.sym}`} direction="horizontal">
+          <Button variant="brand" size="lg" onClick={act(() => go(BUY_PAD))}>{primary}</Button>
+          <Button variant="secondary" size="lg" onClick={act(() => go(BUY_PAD))}>{secondary}</Button>
+        </ButtonGroup>
+      }
+      gesture="none"
+    >
+      <div className={styles.page} data-gap="24">
+        <div className={styles.head}>
+          <div className={styles.headText}>
+            <h2 className={styles.name}>{etf.name}</h2>
+            <p className={styles.price}>
+              ${money(etf.price)} <EtfMove change={etf.change} />
+            </p>
+            <div className={styles.tags}>
+              <Tag variant="secondary" color="neutral" size="sm">ETF</Tag>
+              <Tag variant="secondary" color="neutral" size="sm">{etf.tracks}</Tag>
+              <SideTag etf={etf} />
+            </div>
+          </div>
+          <EtfDisc sym={etf.sym} size={40} />
+        </div>
+        <PriceLine etf={etf} />
+        {leveraged && (
+          <p className={styles.note}>
+            {etf.lev} {long ? 'long' : 'short'}: if {etf.tracks} {long ? 'rises' : 'falls'} 1% in a day, this ETF aims to gain about {etf.lev?.replace('x', '')}%. Losses
+            are multiplied the same way, and holding it over many days can drift from {etf.lev} the index.
+          </p>
+        )}
+        <section className={styles.section} aria-label="About this ETF">
+          <h2 className={styles.sectionTitle}>About this ETF</h2>
+          <dl className={styles.facts}>
+            {facts.map(([k, v]) => (
+              <div className={styles.fact} key={k}>
+                <dt>{k}</dt>
+                <dd>{v}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+        {opposite && (
+          <section className={styles.section} aria-label="Opposite side">
+            <h2 className={styles.sectionTitle}>Opposite side</h2>
+            <Card
+              onClick={act(() => { setCurrentEtf(opposite.sym); go(ETF_PAGE) })}
+              className={styles.rowCard}
+              aria-label={`${opposite.sym}, ${opposite.lev} ${opposite.side}`}
+            >
+              <EtfDisc sym={opposite.sym} />
+              <span className={styles.rowText}>
+                <span className={styles.rowName}>{opposite.sym}</span>
+                <span className={styles.rowSub}>{opposite.name}</span>
+              </span>
+              <SideTag etf={opposite} />
+            </Card>
+          </section>
+        )}
+        <section className={styles.section} aria-label="Holdings">
+          <div className={styles.sectionHead}>
+            <h2 className={styles.sectionTitle}>{leveraged ? 'Tracks' : 'Top holdings'}</h2>
+            <span className={styles.sectionMeta}>Weight</span>
+          </div>
+          <ul className={styles.holdings}>
+            {etf.holdings.map((h) => (
+              <li key={h.sym}>
+                <button type="button" className={styles.holding} onClick={act(() => openHolding(go, h.sym))} aria-label={`${stockName(h.sym)}, ${h.weight}% of the ETF. Open stock`}>
+                  <EtfDisc sym={h.sym} />
+                  <span className={styles.rowText}>
+                    <span className={styles.rowName}>{stockName(h.sym)}</span>
+                    <span className={styles.weightBar} aria-hidden="true"><span style={{ width: `${Math.min(100, h.weight)}%` }} /></span>
+                  </span>
+                  <span className={styles.weight}>{h.weight.toFixed(1)}%</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      </div>
+    </Phone>
+  )
+}
+```
+
+### `src/flows/us-stocks/screens/etf/currentEtf.ts`
+
+```ts
+// The ETF being looked at: whoever opens the ETF page (the ETFs list, the stock page's Related ETFs) sets it first
+// with setCurrentEtf(sym), the page reads it. Defaults to SPY (the page opened straight from the screen list).
+// An unknown symbol falls back to SPY.
+import { etfFor, type Etf } from './data'
+
+let current: Etf = etfFor('SPY')
+export const setCurrentEtf = (sym: string) => { current = etfFor(sym) }
+export const getCurrentEtf = (): Etf => current
+```
+
+### `src/flows/us-stocks/screens/etf/data.ts`
+
+```ts
+// ETF sample data (the teammate's): the catalogue of regular and leveraged ETFs, their issuers and the details the
+// ETF page shows. Sample numbers — the API would return the same shapes.
+// FLAG: copy not in copy.json yet — all UI text in this part is hard-coded.
+import { stockFor, openStock } from '../../data'
+
+export type EtfHolding = { sym: string; weight: number }
+export type Etf = {
+  sym: string
+  name: string
+  /** The index or theme the ETF follows. */
+  tracks: string
+  kind: 'normal' | 'leveraged'
+  /** Leveraged ETFs only: long gains when the index rises, short when it falls. */
+  side?: 'long' | 'short'
+  lev?: '2x' | '3x'
+  country: string
+  price: number
+  /** Day change in %. */
+  change: number
+  /** Expense ratio in %. */
+  expense: number
+  aum: string
+  holdings: EtfHolding[]
+}
+
+const weights = (...rows: [string, number][]): EtfHolding[] => rows.map(([sym, weight]) => ({ sym, weight }))
+
+const SP500 = weights(['NVDA', 9.1], ['MSFT', 8.4], ['AAPL', 7.6], ['AMZN', 5.2], ['META', 3.9], ['GOOGL', 3.7])
+const NASDAQ = weights(['NVDA', 9.8], ['MSFT', 8.9], ['AAPL', 8.1], ['AVGO', 5.6], ['AMZN', 5.4], ['META', 3.8])
+const SEMIS = weights(['NVDA', 11.2], ['AVGO', 9.4], ['AMD', 7.8], ['MU', 5.1])
+
+export const ETFS: Etf[] = [
+  { sym: 'SPY', name: 'SPDR S&P 500 ETF', tracks: 'S&P 500', kind: 'normal', country: 'US', price: 682.4, change: 0.34, expense: 0.09, aum: '$672B', holdings: SP500 },
+  { sym: 'QQQ', name: 'Invesco QQQ Trust', tracks: 'Nasdaq 100', kind: 'normal', country: 'US', price: 618.9, change: 0.52, expense: 0.2, aum: '$381B', holdings: NASDAQ },
+  { sym: 'VTI', name: 'Vanguard Total Stock Market', tracks: 'US total market', kind: 'normal', country: 'US', price: 334.2, change: 0.29, expense: 0.03, aum: '$521B', holdings: SP500 },
+  { sym: 'SMH', name: 'VanEck Semiconductor ETF', tracks: 'Semiconductors', kind: 'normal', country: 'US', price: 312.6, change: 1.84, expense: 0.35, aum: '$27B', holdings: SEMIS },
+  { sym: 'ITA', name: 'iShares US Aerospace & Defense', tracks: 'Defense', kind: 'normal', country: 'US', price: 198.3, change: 0.61, expense: 0.4, aum: '$7.9B', holdings: weights(['GE', 18.2], ['RTX', 15.1], ['LMT', 6.4], ['NOC', 4.8]) },
+  { sym: 'XLE', name: 'Energy Select Sector SPDR', tracks: 'Oil & energy', kind: 'normal', country: 'US', price: 89.7, change: -0.48, expense: 0.09, aum: '$27B', holdings: weights(['XOM', 22.9], ['CVX', 16.4], ['COP', 7.1]) },
+  { sym: 'BOTZ', name: 'Global X Robotics & AI', tracks: 'AI & robotics', kind: 'normal', country: 'US', price: 34.8, change: 1.22, expense: 0.68, aum: '$2.9B', holdings: weights(['NVDA', 12.4], ['ISRG', 9.2], ['ABB', 7.3]) },
+  { sym: 'UFO', name: 'Procure Space ETF', tracks: 'Space', kind: 'normal', country: 'US', price: 31.6, change: 2.04, expense: 0.75, aum: '$0.1B', holdings: weights(['RKLB', 6.1], ['ASTS', 5.4], ['GRMN', 4.9]) },
+  { sym: 'INDA', name: 'iShares MSCI India ETF', tracks: 'India large & mid cap', kind: 'normal', country: 'India', price: 54.2, change: 0.18, expense: 0.64, aum: '$9.6B', holdings: weights(['HDB', 7.8], ['IBN', 5.9], ['INFY', 4.6]) },
+  { sym: 'EPI', name: 'WisdomTree India Earnings', tracks: 'India earnings', kind: 'normal', country: 'India', price: 47.9, change: 0.26, expense: 0.85, aum: '$3.2B', holdings: weights(['HDB', 6.5], ['INFY', 5.1], ['IBN', 4.4]) },
+  { sym: 'MCHI', name: 'iShares MSCI China ETF', tracks: 'China', kind: 'normal', country: 'China', price: 61.3, change: -0.92, expense: 0.59, aum: '$6.8B', holdings: weights(['BABA', 9.8], ['PDD', 4.2], ['BIDU', 2.9]) },
+  { sym: 'KWEB', name: 'KraneShares China Internet', tracks: 'China internet', kind: 'normal', country: 'China', price: 38.4, change: -1.31, expense: 0.7, aum: '$7.1B', holdings: weights(['BABA', 11.2], ['PDD', 8.7], ['BIDU', 6.1]) },
+  { sym: 'EWJ', name: 'iShares MSCI Japan ETF', tracks: 'Japan', kind: 'normal', country: 'Japan', price: 74.6, change: 0.44, expense: 0.5, aum: '$15B', holdings: weights(['TM', 5.1], ['SONY', 3.6], ['MUFG', 3.2]) },
+  { sym: 'VGK', name: 'Vanguard FTSE Europe ETF', tracks: 'Europe', kind: 'normal', country: 'Europe', price: 78.1, change: 0.12, expense: 0.06, aum: '$25B', holdings: weights(['ASML', 2.9], ['NVO', 2.4], ['SAP', 2.2]) },
+  { sym: 'EWY', name: 'iShares MSCI South Korea', tracks: 'South Korea', kind: 'normal', country: 'Korea', price: 72.3, change: 0.87, expense: 0.59, aum: '$5.4B', holdings: weights(['SSNLF', 22.4], ['HXSCL', 9.1]) },
+  { sym: 'TQQQ', name: 'ProShares UltraPro QQQ', tracks: 'Nasdaq 100', kind: 'leveraged', side: 'long', lev: '3x', country: 'US', price: 104.2, change: 1.58, expense: 0.84, aum: '$26B', holdings: NASDAQ },
+  { sym: 'SQQQ', name: 'ProShares UltraPro Short QQQ', tracks: 'Nasdaq 100', kind: 'leveraged', side: 'short', lev: '3x', country: 'US', price: 15.6, change: -1.6, expense: 0.95, aum: '$3.1B', holdings: NASDAQ },
+  { sym: 'SOXL', name: 'Direxion Semiconductor Bull 3X', tracks: 'Semiconductors', kind: 'leveraged', side: 'long', lev: '3x', country: 'US', price: 38.9, change: 5.42, expense: 0.75, aum: '$12B', holdings: SEMIS },
+  { sym: 'SOXS', name: 'Direxion Semiconductor Bear 3X', tracks: 'Semiconductors', kind: 'leveraged', side: 'short', lev: '3x', country: 'US', price: 4.12, change: -5.38, expense: 0.97, aum: '$1.2B', holdings: SEMIS },
+  { sym: 'NVDL', name: 'GraniteShares 2x Long NVDA', tracks: 'NVIDIA', kind: 'leveraged', side: 'long', lev: '2x', country: 'US', price: 92.7, change: 2.46, expense: 1.15, aum: '$4.6B', holdings: weights(['NVDA', 100]) },
+  { sym: 'NVD', name: 'GraniteShares 2x Short NVDA', tracks: 'NVIDIA', kind: 'leveraged', side: 'short', lev: '2x', country: 'US', price: 6.84, change: -2.5, expense: 1.5, aum: '$0.3B', holdings: weights(['NVDA', 100]) },
+  { sym: 'SPXL', name: 'Direxion S&P 500 Bull 3X', tracks: 'S&P 500', kind: 'leveraged', side: 'long', lev: '3x', country: 'US', price: 201.5, change: 1.02, expense: 0.87, aum: '$5.8B', holdings: SP500 },
+  { sym: 'SPXS', name: 'Direxion S&P 500 Bear 3X', tracks: 'S&P 500', kind: 'leveraged', side: 'short', lev: '3x', country: 'US', price: 4.37, change: -1.04, expense: 1.02, aum: '$0.5B', holdings: SP500 },
+]
+
+/** Region chips on the Regular tab (after "All"). */
+export const COUNTRIES = ['US', 'China', 'Japan', 'Europe', 'Korea']
+
+export const etfFor = (sym: string): Etf => ETFS.find((e) => e.sym === sym) ?? ETFS[0]
+/** Leveraged ETFs on one index / theme (the long and the short). */
+export const leveragedOn = (tracks: string) => ETFS.filter((e) => e.kind === 'leveraged' && e.tracks === tracks)
+/** Leveraged ETFs grouped by what they track, the long first. */
+export const leveragedGroups = () =>
+  [...new Set(ETFS.filter((e) => e.kind === 'leveraged').map((e) => e.tracks))].map((tracks) => ({
+    tracks,
+    etfs: leveragedOn(tracks).sort((a) => (a.side === 'long' ? -1 : 1)),
+  }))
+
+/** Open a stock (a holding of the ETF) on its stock page. */
+export const openHolding = (go: (figma: string) => void, sym: string) => openStock(go, stockFor(sym))
+
+// Issuers (logo + plate behind it) and which issuer runs which ETF.
+type Issuer = { file: string; plate: string; name: string; fill?: boolean }
+const ISSUERS: Record<string, Issuer> = {
+  spdr: { file: 'spdr', plate: 'var(--l3-static-white)', name: 'State Street (SPDR)' },
+  invesco: { file: 'invesco', plate: 'var(--l3-static-black)', name: 'Invesco' },
+  vanguard: { file: 'vanguard', plate: 'var(--l3-static-white)', name: 'Vanguard' },
+  vaneck: { file: 'vaneck', plate: 'var(--l3-static-black)', name: 'VanEck' },
+  ishares: { file: 'ishares', plate: 'var(--l3-static-black)', name: 'BlackRock (iShares)', fill: true },
+  globalx: { file: 'globalx', plate: 'var(--l3-static-white)', name: 'Global X' },
+  procure: { file: 'procure', plate: 'var(--l3-static-white)', name: 'Procure', fill: true },
+  wisdomtree: { file: 'wisdomtree', plate: 'var(--l3-static-white)', name: 'WisdomTree' },
+  kraneshares: { file: 'kraneshares', plate: 'var(--l3-static-white)', name: 'KraneShares', fill: true },
+  proshares: { file: 'proshares', plate: 'var(--l3-static-white)', name: 'ProShares' },
+  direxion: { file: 'direxion', plate: 'var(--l3-static-white)', name: 'Direxion' },
+  graniteshares: { file: 'graniteshares', plate: 'var(--l3-static-white)', name: 'GraniteShares', fill: true },
+}
+const ISSUER_OF: Record<string, string> = {
+  SPY: 'spdr', XLE: 'spdr', QQQ: 'invesco', VTI: 'vanguard', VGK: 'vanguard', SMH: 'vaneck', ITA: 'ishares', INDA: 'ishares',
+  MCHI: 'ishares', EWJ: 'ishares', EWY: 'ishares', BOTZ: 'globalx', UFO: 'procure', EPI: 'wisdomtree', KWEB: 'kraneshares',
+  TQQQ: 'proshares', SQQQ: 'proshares', SOXL: 'direxion', SOXS: 'direxion', SPXL: 'direxion', SPXS: 'direxion',
+  NVDL: 'graniteshares', NVD: 'graniteshares', SGOV: 'ishares', SHV: 'ishares', BIL: 'spdr',
+}
+/** The issuer's logo file (assets/etf/<file>.png), the plate behind it and whether it fills the circle. */
+export const issuerLogo = (sym: string) => {
+  const issuer = ISSUERS[ISSUER_OF[sym]]
+  return issuer && { file: issuer.file, plate: issuer.plate, fill: !!issuer.fill }
+}
+export const issuerName = (sym: string) => ISSUERS[ISSUER_OF[sym]]?.name
+
+// Number of holdings of the big index funds (the leveraged ones list only what the sample has).
+const HOLDING_COUNT: Record<string, string> = { SPY: '503', QQQ: '101', VTI: '3,612', SMH: '26', VGK: '1,284', ITA: '38', XLE: '22', EWJ: '186', MCHI: '558' }
+
+/** Everything the ETF page shows beyond the catalogue row: the day's range, 52-week range, NAV, yield and events. */
+export function detailsFor(etf: Etf) {
+  const lev = etf.kind === 'leveraged'
+  return {
+    index: lev ? etf.tracks : `${etf.tracks} Index`,
+    low: etf.price * 0.993,
+    high: etf.price * 1.006,
+    low52: etf.price * (lev ? 0.58 : 0.82),
+    high52: etf.price * (lev ? 1.12 : 1.04),
+    nav: etf.price * 1.0012,
+    yield: lev ? '0.42%' : etf.country === 'US' ? '1.05%' : '2.31%',
+    volume: lev ? '$2.1B' : '$5.9B',
+    holdings: lev ? `${etf.holdings.length}` : HOLDING_COUNT[etf.sym] ?? '50',
+    events: [
+      { day: '19', month: 'Dec', title: lev ? 'Distribution · $0.12 per share' : 'Dividend · $1.83 per share', detail: 'Ex-date · paid 31 Dec', type: 'Dividend' },
+      { day: '22', month: 'Sep', title: lev ? 'Distribution · $0.10 per share' : 'Dividend · $1.76 per share', detail: 'Paid 30 Sep', type: 'Dividend' },
+      { day: '15', month: 'Aug', title: 'Annual report', detail: 'Holdings, costs and returns for the year', type: 'Report' },
+    ],
+  }
+}
+
+export const PERIODS = ['1D', '1W', '1M', '1Y', '3Y', '5Y']
+export const money = (n: number) => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+export const percent = (n: number) => `${n.toFixed(2)}%`
+
+// Where the screens go.
+export const ETF_LIST = '9001:1'
+export const ETF_PAGE = '9001:2'
+export const ETF_PAGE_PREVIOUS = '9001:6'
+/** The order pad (Buy). */
+export const BUY_PAD = '5837:95201'
+/** Home · US tab · activated — the back fallback of the ETF list. */
+export const HOME_ACTIVATED = '5826:92885'
+
+/** A holding's display name (the catalogue's, or the symbol when it isn't in it). */
+export const stockName = (sym: string) => stockFor(sym).name
+```
+
+### `src/flows/us-stocks/screens/etf/icons.ts`
+
+```ts
+// Icons the ETF page draws (the teammate's inline SVGs, Material Symbols).
+export const backIcon = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' height='24' viewBox='0 -960 960 960' width='24'%3E%3Cpath d='m313-440 196 196q12 12 11.5 28T508-188q-12 11-28 11.5T452-188L188-452q-6-6-8.5-13t-2.5-15q0-8 2.5-15t8.5-13l264-264q11-11 27.5-11t28.5 11q12 12 12 28.5T508-715L313-520h447q17 0 28.5 11.5T800-480q0 17-11.5 28.5T760-440H313Z'/%3E%3C/svg%3E`
+export const boltIcon = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' height='24' viewBox='0 -960 960 960' width='24'%3E%3Cpath d='M360-360H236q-24 0-35.5-21.5T203-423l299-430q10-14 26-19.5t33 .5q17 6 25 21t6 32l-32 259h155q26 0 36.5 23t-6.5 43L416-100q-11 13-27 17t-31-3q-15-7-23.5-21.5T328-139l32-221Z'/%3E%3C/svg%3E`
+export const infoIcon = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' height='24' viewBox='0 -960 960 960' width='24'%3E%3Cpath d='M508.5-291.5Q520-303 520-320v-160q0-17-11.5-28.5T480-520q-17 0-28.5 11.5T440-480v160q0 17 11.5 28.5T480-280q17 0 28.5-11.5Zm0-320Q520-623 520-640t-11.5-28.5Q497-680 480-680t-28.5 11.5Q440-657 440-640t11.5 28.5Q463-600 480-600t28.5-11.5ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z'/%3E%3C/svg%3E`
+```
+
+### `src/flows/us-stocks/screens/etf/index.tsx`
+
+```tsx
+// ETFs: the ETF list (Regular / Leveraged), the ETF page and the first ETF page (31 Oct), kept to compare.
+// Entered from the US home's ETFs quick action and Discover ETFs "View all" (-> 9001:1), and from the stock page's
+// Related ETFs (-> 9001:2, after setCurrentEtf(sym)).
+// FLAG: copy not in copy.json yet — every string in this part is hard-coded.
+// FLAG: own screen frame (components/Phone) and hand-made rows / chart, see each screen.
+import type { UsScreenMap } from '../types'
+import { EtfListScreen } from './EtfListScreen'
+import { EtfPage } from './EtfPage'
+import { EtfPreviousScreen } from './EtfPreviousScreen'
+
+export const screens: UsScreenMap = {
+  '9001:1': EtfListScreen, // ETFs · Regular & Leveraged
+  '9001:2': EtfPage, // ETF page
+  '9001:6': EtfPreviousScreen, // ETF page · previous
+}
+```
+
+### `src/flows/us-stocks/screens/etf/parts.tsx`
+
+```tsx
+// Small pieces the three ETF screens share: the issuer logo disc, the day-change figure and the leveraged tag.
+// FLAG: hand-made logo disc and change figure (module CSS) — L3 has no ETF / issuer logo; PriceChange is not used in rows here.
+import { Tag } from '@l3/components/Tag'
+import { asset } from '../../asset'
+import { issuerLogo, type Etf } from './data'
+import styles from './Etf.module.css'
+
+/** The issuer's logo on its plate; initials when the issuer has none. */
+export function EtfDisc({ sym, size = 32 }: { sym: string; size?: 24 | 32 | 40 }) {
+  const logo = issuerLogo(sym)
+  if (!logo) {
+    return <span className={styles.disc} data-size={size} aria-hidden="true">{sym.slice(0, size === 40 ? 4 : size === 24 ? 2 : 3)}</span>
+  }
+  return (
+    <span className={styles.disc} data-size={size} data-fill={logo.fill || undefined} style={{ background: logo.plate }} aria-hidden="true">
+      <img src={asset(`assets/etf/${logo.file}.png`)} alt="" />
+    </span>
+  )
+}
+
+export function EtfMove({ change }: { change: number }) {
+  const up = change >= 0
+  return (
+    <span className={styles.move} data-up={up || undefined}>
+      <span className={styles.tri} aria-hidden="true" />
+      {up ? '+' : '−'}
+      {Math.abs(change).toFixed(2)}%
+    </span>
+  )
+}
+
+/** "3x Long" / "3x Short" on leveraged ETFs, nothing on regular ones. */
+export function SideTag({ etf, size = 'sm' }: { etf: Etf; size?: 'sm' | 'md' }) {
+  if (etf.kind !== 'leveraged') return null
+  const long = etf.side === 'long'
+  return (
+    <Tag variant="secondary" color={long ? 'profit' : 'loss'} size={size}>
+      {etf.lev} {long ? 'Long' : 'Short'}
+    </Tag>
+  )
+}
+```
+
 ### `src/flows/us-stocks/screens/index.ts`
 
 ```ts
@@ -29451,11 +30275,12 @@ export const timeLabels = ['9:15', '10:15', '11:15', '1:15', '2:15', '3:15']
 import type { UsScreenMap } from './types'
 import { screens as activation } from './activation'
 import { screens as entry } from './entry'
+import { screens as etf } from './etf'
 import { screens as money } from './money'
 import { screens as trade } from './trade'
 import { screens as wallet } from './wallet'
 
-export const allScreens: UsScreenMap = { ...activation, ...entry, ...money, ...trade, ...wallet }
+export const allScreens: UsScreenMap = { ...activation, ...entry, ...etf, ...money, ...trade, ...wallet }
 ```
 
 ### `src/flows/us-stocks/screens/money/AddMoneyScreen.tsx`
@@ -29539,7 +30364,7 @@ export function AddMoneyScreen({ id, initial, breakdown = false, mismatch = fals
     <Phone
       label="Deposit USD"
       overlay={backdrop ? undefined : sheet}
-      header={<Actionbar className={styles.centerTitle} title="Deposit USD" onBack={() => back(moneyIds.addEntry)} />}
+      header={<Actionbar title="Deposit USD" onBack={() => back(moneyIds.addEntry)} />}
       footer={<MoneyDock amount={amount} blocked={blocked} onAdd={addToWallet} />}
     >
       {mismatch && (
@@ -29945,11 +30770,6 @@ export function ChargesBreakdownSheet({ open, onClose, amount, charges }: { open
   font: var(--l3-text-description-12);
 }
 
-.centerTitle :is(h1,h2) {
-  padding-right: calc(var(--l3-icon-size-24) + var(--l3-spacing-12));
-  text-align: center;
-}
-
 .gesture {
   padding: var(--l3-spacing-10) var(--l3-spacing-16);
   background: var(--l3-surface-primary);
@@ -30050,7 +30870,7 @@ export function MoneyDock({
   amount,
   blocked,
   onAdd,
-  note = 'Pay before 2 PM, trade from Thu 8 PM (or Fri)',
+  note = 'Pay before 2 PM, arrives in your wallet by Thu 8 PM (or Fri)',
   bankLead = 'Pay from',
   cta,
 }: {
@@ -30285,7 +31105,7 @@ export function WithdrawScreen({ id, initial, backdrop }: { id: string; initial:
   return (
     <Phone
       label="Withdraw USD"
-      header={<Actionbar className={styles.centerTitle} title="Withdraw USD" onBack={() => back(moneyIds.withdrawEntry)} />}
+      header={<Actionbar title="Withdraw USD" onBack={() => back(moneyIds.withdrawEntry)} />}
       footer={
         <MoneyDock
           amount={amount}
@@ -31283,7 +32103,7 @@ import { Button } from '@l3/components/Button'
 import { ButtonGroup } from '@l3/components/ButtonGroup'
 import { KeyValueList, KeyValueRow } from '@l3/components/KeyValueList'
 import { Phone } from '../../components/Phone'
-import { asset } from '../../asset'
+import { InlineSvg } from '../../components/InlineSvg'
 import { useUsNav } from '../../nav'
 import { MaskImage } from '../money/components/MaskImage'
 import { forCurrentStock } from './format'
@@ -31322,7 +32142,7 @@ export function OrderResult({ config }: { config: OrderResultConfig }) {
           {config.art === 'loading' ? (
             <MaskImage src="assets/trade/loading-arc.svg" w={72} className={styles.spinner} />
           ) : (
-            <img src={asset(`assets/trade/${config.art}.svg`)} alt="" width={72} height={72} />
+            <InlineSvg src={`assets/trade/${config.art}.svg`} w={72} />
           )}
         </span>
         <div className={styles.title} role={config.art === 'loading' ? 'status' : undefined}>
@@ -32704,12 +33524,6 @@ export function BalanceCard({ total, facts = [], onDetails, still, look = 'dashe
   color:var(--l3-content-secondary);
   margin:0;
 }
-
-.centered :is(h1,h2) {
-  /* FLAG: overrides the L3 Actionbar title alignment (centered + 12px offset) */
-  padding-left:var(--l3-spacing-12);
-  text-align:center;
-}
 ```
 
 ### `src/flows/us-stocks/screens/wallet/BalanceDetails.tsx`
@@ -32755,7 +33569,6 @@ export function BalanceDetails({ expanded = false }: { expanded?: boolean }) {
       gesture="none"
       header={
         <Actionbar
-          className={styles.centered}
           title="Balance Details"
           onBack={() => back(FIGMA.walletFunded)}
           actions={
@@ -32796,12 +33609,12 @@ export function BalanceDetails({ expanded = false }: { expanded?: boolean }) {
 
 ```css
 .stage {
-  /* illustration art: base green primitives (no semantic token fits a coin) */
-  --hi: var(--l3-base-hue-green-200);
-  --mid: var(--l3-base-hue-green-400);
-  --lo: var(--l3-base-hue-green-500);
-  --rim: var(--l3-base-hue-green-700);
-  --ink: var(--l3-base-hue-green-800);
+  /* coin shades from L3 success green: light, base, and base darkened with static black for the rim and ink */
+  --hi: var(--l3-border-accent-success-light);
+  --mid: var(--l3-content-accent-success-default);
+  --lo: var(--l3-surface-accent-success-default);
+  --rim: color-mix(in srgb, var(--l3-content-accent-success-default) 60%, var(--l3-static-black));
+  --ink: color-mix(in srgb, var(--l3-content-accent-success-default) 45%, var(--l3-static-black));
   place-items:center;
   /* FLAG: fixed 96x64 px stage and 44/36 px coins; hand-made coin art, not an L3 illustration */
   width:96px;
@@ -32975,9 +33788,9 @@ export function GrowNudge() {
       <span className={styles.nudgeText}>
         <h3 className={styles.nudgeTitle}>Grow Wealth in Dollars</h3>
         <p className={styles.nudgeDesc}>
-          Dollars kept here grew <b>~27%</b>
+          The dollar has historically gained against the rupee.
           <br />
-          vs the rupee in 5 years
+          Hold a USD balance to invest anytime.
         </p>
       </span>
     </div>
@@ -33036,12 +33849,7 @@ export function PendingBanner({ title, sub, action }: PendingBannerProps) {
 }
 
 .actionbar {
-  box-shadow:none;
-  background:0 0;
-}
-
-.actionbar.actionbar:after {
-  content:none;
+  background:0 0; /* the wallet's wash shows through the bar */
 }
 
 .link[data-variant=ghost] {
@@ -33364,7 +34172,8 @@ export function WalletScreen(props: WalletScreenProps) {
     <>
       {pending && <PendingBanner {...pending} />}
       <ButtonGroup direction="horizontal" aria-label="Wallet actions" className={styles.dock}>
-        <Button variant="primary" size="lg" onClick={goTo(dock.primaryTo)}>
+        {/* Deposit is the brand button; other first actions (Activate US Stocks) stay primary. */}
+        <Button variant={dock.primary === 'Deposit' ? 'brand' : 'primary'} size="lg" onClick={goTo(dock.primaryTo)}>
           {dock.primary}
         </Button>
         {dock.withdraw !== false && (
@@ -33388,7 +34197,8 @@ export function WalletScreen(props: WalletScreenProps) {
       footer={footer}
       overlay={sheet ?? detailsSheet}
     >
-      <div className={styles.stack}>
+      {/* The whole body (balance card and what's under it) pushes left / right when the wallet switches. */}
+      <div className={styles.stack} ref={swipe.contentRef}>
         <BalanceCard
           look="dashed"
           link={linkLook}
@@ -33397,7 +34207,7 @@ export function WalletScreen(props: WalletScreenProps) {
           withdrawable={shownWithdrawable}
           onDetails={backdrop ? undefined : () => setDetailsState('open')}
         />
-        <div className={`${styles.page} ${styles.body}`} ref={swipe.contentRef} data-flow={noteFlow || undefined}>
+        <div className={`${styles.page} ${styles.body}`} data-flow={noteFlow || undefined}>
           {children}
           {nudge && !inr && <GrowNudge />}
           {!inr && <p className={styles.custodian}>US Stocks wallet · held at ViewTrade IFSC</p>}
@@ -33493,7 +34303,7 @@ export function WalletTransferInProgressScreen({ backdrop }: ScreenProps) {
       withdrawable="$0.00"
       backTo={FIGMA.homeMoneyReady}
       dock={DEPOSIT_ONLY}
-      pending={{ title: '$1,035.37 deposit in progress', sub: 'Ready to trade by Thu 8 PM (or Fri)' }}
+      pending={{ title: '$1,035.37 deposit in progress', sub: 'Arrives in your wallet by Thu 8 PM (or Fri)' }}
     />
   )
 }
@@ -33865,6 +34675,9 @@ function useSwipe(onSwipe: (direction: 1 | -1) => void, onDrag: (dx: number | nu
   }, [])
 }
 
+/** How long the push between the wallets runs (= --l3-motion-duration-long). */
+const PUSH_MS = 400
+
 /** Swipe between pages: `bind` goes on the swipeable element, `contentRef` on the part that slides, `entered(dir)` plays the slide-in for a tap-switch. */
 export function useSwipeTabs({ canGo, onSwitch, page }: { canGo: (direction: 1 | -1) => boolean; onSwitch: (direction: 1 | -1) => void; page: string }) {
   const content = useRef<HTMLElement | null>(null)
@@ -33885,6 +34698,7 @@ export function useSwipeTabs({ canGo, onSwitch, page }: { canGo: (direction: 1 |
       snapping.current = false
       if (!canGo(direction)) return settle()
       pending.current = direction
+      outgoing.current = leaving()
       onSwitch(direction)
     },
     (dx) => {
@@ -33904,6 +34718,19 @@ export function useSwipeTabs({ canGo, onSwitch, page }: { canGo: (direction: 1 |
     },
   )
 
+  // A push between the two pages: a copy of the page you leave slides out one way while the new one slides in from the other.
+  const leaving = () => {
+    const el = content.current
+    if (!el || prefersReducedMotion()) return
+    const copy = el.cloneNode(true) as HTMLElement
+    copy.setAttribute('aria-hidden', 'true')
+    copy.inert = true
+    Object.assign(copy.style, { position: 'absolute', top: `${el.offsetTop}px`, left: `${el.offsetLeft}px`, width: `${el.offsetWidth}px`, margin: '0', pointerEvents: 'none' })
+    el.parentElement?.appendChild(copy)
+    return copy
+  }
+  const outgoing = useRef<HTMLElement | undefined>(undefined)
+
   useLayoutEffect(() => {
     const el = content.current
     const direction = pending.current
@@ -33911,9 +34738,13 @@ export function useSwipeTabs({ canGo, onSwitch, page }: { canGo: (direction: 1 |
       pending.current = 0
       el.style.translate = ''
       el.style.opacity = ''
+      const copy = outgoing.current
+      outgoing.current = undefined
       if (!prefersReducedMotion()) {
-        el.animate([{ translate: `${direction * 56}px 0`, opacity: '0' }, { translate: '0 0', opacity: '1' }], { duration: 300, easing: EASE })
-      }
+        const push = { duration: PUSH_MS, easing: EASE }
+        el.animate([{ translate: `${direction * 100}% 0` }, { translate: '0 0' }], push)
+        copy?.animate([{ translate: copy.style.translate || '0px 0' }, { translate: `${-direction * 100}% 0` }], push).finished.then(() => copy.remove(), () => copy.remove())
+      } else copy?.remove()
     }
   }, [page])
 
@@ -33924,6 +34755,7 @@ export function useSwipeTabs({ canGo, onSwitch, page }: { canGo: (direction: 1 |
     },
     entered: (direction: number) => {
       pending.current = direction
+      outgoing.current = leaving()
     },
   }
 }
@@ -34401,6 +35233,8 @@ export type Preview = {
   screenId?: string
   /** Back to the screen shown before this one in the prototype (any flow); false when there's none to go back to. */
   back?: () => boolean
+  /** The screen was reached by going back (a back button, or a screen earlier in the app) — a page can come back as it was left. */
+  cameBack?: boolean
 }
 
 export const PreviewContext = createContext<Preview>({ interactive: false, go: () => {} })
@@ -34540,9 +35374,12 @@ export function rememberStocksHome(screen: string, market: 'in' | 'us') {
   lastStocks = { screen, market }
 }
 
-/** The Stocks home, when it opens: the IND / US tab to come back to, if the navbar brought the user back to it. */
-export function takeStocksTab(screen: string): 'in' | 'us' | undefined {
-  const back = restoring
+/**
+ * The Stocks home, when it opens: the IND / US tab to come back to — if the navbar brought the user back to it, or a
+ * back move did (back from a stock page, Market, the wallet … returns to the tab it was opened from).
+ */
+export function takeStocksTab(screen: string, cameBack = false): 'in' | 'us' | undefined {
+  const back = restoring ?? (cameBack ? lastStocks : null)
   restoring = null
   return back && back.screen === screen ? back.market : undefined
 }

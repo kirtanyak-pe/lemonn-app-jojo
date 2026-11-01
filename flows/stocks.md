@@ -10,14 +10,13 @@ Prototype: https://kirtanyak-pe.github.io/lemonn-app-prototype/#/stocks · machi
 
 | Id | Screen | Figma | Taps go to | Note |
 |---|---|---|---|---|
-| `stocks-01` | Home | [5714:64982]() | `search-01`, `profile-01`, `dash-02` | Top of the page: search, indices, holdings, products, shortcuts. |
-| `stocks-02` | Home · top movers & watchlists | — | `search-01`, `profile-01`, `dash-02` | Same page, scrolled. |
-| `stocks-03` | Home · top losers | — | `search-01`, `profile-01`, `dash-02` | The "Top losers" chip picked. |
-| `stocks-04` | Home · Smart Invest | — | `search-01`, `profile-01`, `dash-02` | Same page, scrolled: managed strategies, then the announcement. |
-| `stocks-05` | Home · sectors & highlights | — | `search-01`, `profile-01`, `dash-02` | Same page, scrolled. |
-| `stocks-06` | Home · highlights & idea baskets | — | `search-01`, `profile-01`, `dash-02` | Same page, scrolled. (The live app no longer has Trade ideas here — removed 2026-10-22.) |
-| `stocks-07` | Home · idea baskets & disclosure | — | `search-01`, `profile-01`, `dash-02` | The end of the page: the disclosure, four lines and Read More. |
-| `stocks-08` | Home · DASH coach mark | [5612:44075]() | `search-01`, `profile-01`, `dash-02` | First visit after DASH launches: an L3 coach mark on the DASH pill (Figma "Intro" in DASH AI main flow). Got it! or the pill opens DASH. |
+| `stocks-01` | Home | [5714:64982]() | `profile-01` | Top of the page: search, indices, holdings, products, shortcuts. |
+| `stocks-02` | Home · top movers & watchlists | — | `profile-01` | Same page, scrolled. |
+| `stocks-03` | Home · top losers | — | `profile-01` | The "Top losers" chip picked. |
+| `stocks-04` | Home · Smart Invest | — | `profile-01` | Same page, scrolled: managed strategies, then the announcement. |
+| `stocks-05` | Home · sectors & highlights | — | `profile-01` | Same page, scrolled. |
+| `stocks-06` | Home · highlights & idea baskets | — | `profile-01` | Same page, scrolled. (The live app no longer has Trade ideas here — removed 2026-10-22.) |
+| `stocks-07` | Home · idea baskets & disclosure | — | `profile-01` | The end of the page: the disclosure, four lines and Read More. |
 | `stocks-09` | Home · US Stocks tab | [5756:74756]() | — | The US Stocks tab for a user who has not activated US Stocks: US indices, the Activate US Stocks card (→ risk disclosure sheet, stocks-12), shortcuts, Top Movers, Trillion Dollar Titans, Brands, Heatmap, themes. A US stock opens its page (not activated). Designed in the US Stocks flow (Figma Home · US tab · Activate US Stocks card); here it is the tab on the app\ |
 | `stocks-10` | Home · US Stocks tab · scrolled | — | — | Same tab, scrolled past the tabs: the compact IND / US tabs are pinned under the top bar. |
 | `stocks-11` | Home · US Stocks intro sheet | [5756:68986]() | `stocks-12`, `stocks-01` | First launch after release: the IND tab with the US Stocks intro (FTUX) sheet — animated flag, five company logos, three benefits. Activate US Stocks → the risk disclosure (stocks-12); ✕ → Home (stocks-01). |
@@ -55,7 +54,6 @@ One long, scrolling L1 page. The board shows it as frames scrolled to each part,
 | `stocks-04` | Home · Smart Invest | Strategies on the brand tint · the announcement · sectors |
 | `stocks-05` | Home · sectors & highlights | Sectors · Highlights (Mutual funds, F&O) |
 | `stocks-06` | Home · highlights & idea baskets | Highlights (Mutual Funds, F&O) · Invest in Ideas |
-| `stocks-08` | Home · DASH coach mark | First visit after DASH launches: "DASH AI" coach mark on the DASH pill (Figma 5612:44075) |
 | `stocks-07` | Home · idea baskets & disclosure | Invest in ideas (baskets) · the broker's regulatory line |
 | `stocks-09` | Home · US Stocks tab | The **US Stocks** tab (user has not activated US Stocks): US indices · Activate US Stocks card · shortcuts · Top Movers · Trillion Dollar Titans · Brands You Know · Heatmap · Explore by themes |
 | `stocks-10` | Home · US Stocks tab · scrolled | Same tab scrolled past the tabs: the compact IND / US tabs are pinned under the top bar |
@@ -73,9 +71,8 @@ One long, scrolling L1 page. The board shows it as frames scrolled to each part,
 ### Page structure (top to bottom)
 
 1. **Top bar (sticky, this screen's own — not the L3 Actionbar):** profile initials (34, opens Profile) · search pill
-   (38, opens Search) · **DASH pill** (opens DASH AI, `dash-02`; Figma "Dash entry point" 11492:7740) · Wallet (38).
-   16 at the sides, 12 between (Figma home with DASH). First visit after DASH launches: an L3 coach mark on the pill
-   (`stocks-08`). Tapping the search field opens Search
+   (38, opens Search) · Wallet (38). 16 at the sides, 12 between. No DASH pill here (DASH is entered from the F&O
+   home only, 2026-11-01). Tapping the search field opens Search
    (`search-01`, the Search flow: Stocks tab, keyboard up); nothing is typed on Home. Back on Search returns here.
 2. **Summary area** (grey, `surface/secondary`):
    - **Index strip** (scrolls sideways): NIFTY 50 / SENSEX / NIFTY BANK — value, day change; each opens its chart.
@@ -90,7 +87,7 @@ One long, scrolling L1 page. The board shows it as frames scrolled to each part,
    strip's place; tapping it switches tab and starts that feed at the top. The top bar itself never hides.
 4. **Feed — IND tab** on a sheet whose top edge is the tabs strip's line (the rounded top / overlap it had before the tabs
    is gone), sections 32 apart:
-   - **Do more with Lemonn:** Trade ideas · IPO ("8 new") · Watchlist (count) · Refer & earn ("New").
+   - **Do more with Lemonn** (no heading — the four shortcuts start the feed): Trade ideas · IPO ("8 new") · Watchlist (count) · Refer & earn ("New").
    - **Top movers:** chips Top gainers / Top losers / Under ₹100 → two rows of stock cards (logo, symbol, price,
      change). View all.
    - **Watchlist:** the user's watchlists (name, stock count). New watchlist.
@@ -123,6 +120,25 @@ One long, scrolling L1 page. The board shows it as frames scrolled to each part,
      strength follows the day change; prices drift every 1.2 s (made up).
    - **Explore by themes:** four theme cards (overlapping logos + "+n"); tapping one opens Market's US list.
 6. **Main navbar:** Stocks (selected) · Market · Portfolio · Mutual Fund · F&O.
+
+### Homepage versions (prototype option)
+
+Jojo's US Stocks design has nine versions of the home (`designs/lemonn-us-stocks-design.html`, its "Homepage version"
+switch). Here they are the flow option **Homepage version** (`homeVersion`, default V2, a floating card beside every
+Home screen); `components/homeVersions.ts` lists them and `screens/Home.tsx` reads the choice. Only the top of the page
+changes — the feeds are the same:
+
+| Version | Figma | IND / US switch | Tiles | Other |
+|---|---|---|---|---|
+| V1 · Current homepage | 6118:9 | none (IND only) | MF · F&O · Commodity | |
+| V2 · Existing folder | 6118:254 | notched folder tabs, between summary and feed | Mutual funds · Equity F&O · Commodities | |
+| V3 · Pill | 6128:29822 | L3 pill group at the top of the feed sheet, flags | MF · F&O · Commodity | |
+| V4 · CoinSwitch style | 6128:30124 | L3 underline tabs at the top of the feed sheet, flags | MF · F&O · Commodity | |
+| V5 · Card-level segmented control | 6128:30436 | small L3 pill group "IND / US" in the top bar | MF · F&O · Commodity | |
+| V6 · Pill on top | 6128:30747 | L3 pill group under the top bar, flags | F&O · Commodities · US Stocks (opens the US tab) | |
+| V7 · Lit folder on top | 6128:31013 | folder tabs under the top bar, flags, US "New" | Mutual funds · Equity F&O · Commodities | |
+| V8 · Lit folder · India / USA | 6128:31431 | folder tabs "INDIA / USA" under the top bar, flags, US "New" | F&O · Commodities · US Stocks | "Do More With Lemonn" title |
+| V9 · Graphite segmented | 6128:31986 | L3 pill group "IND / US" under the top bar, flags, US "New" | Mutual funds · Equity F&O · Commodities | no index ticker; "Do More With Lemonn" title |
 
 ### Sheets (over the Home, via `Screen`'s `sheet`; `components/us/sheets/`)
 
@@ -195,6 +211,8 @@ One long, scrolling L1 page. The board shows it as frames scrolled to each part,
 
 - **Notched market tabs** (IND / US strip with an SVG outline and a flipping label) — no L3 component; hand-made in
   `components/MarketTabs.tsx` (the pinned compact version is a plain L3 Tabs).
+- **Homepage versions** — no flag icons in L3 (the flags are system emoji); V9's "Graphite segmented" has no L3 style of
+  its own (it is the L3 pill group); V7 / V8's lit folder on top reuses the notched tabs, without Jojo's lit panel.
 - **Swipe between pages** — no L3 behaviour; `components/useSwipeBetween.ts` is a hand-made pointer gesture.
 - **US tab hand-made bits** (marked `FLAG` in `components/us/`): activation card + carousel dots, cap chip, Titan / brand
   card insides and logo stacks, heatmap tiles; a few raw px kept from the US Stocks prototype (card widths, sparkline).
@@ -206,6 +224,9 @@ One long, scrolling L1 page. The board shows it as frames scrolled to each part,
 
 ### Changelog
 
+- 2026-11-02 — Homepage versions V1–V9 from Jojo's US Stocks design, as the prototype option "Homepage version"
+  (default V2): switch place and look, tile sets, ticker and "Do More With Lemonn" title per version.
+- 2026-11-01 — Do more with Lemonn (IND and US tabs): heading removed; the four shortcuts start the feed on their own. Shortcut cards have no top padding and a rounded (12) hover; the count / "New" still sits over the icon (the card no longer clips). From main d50e0d1.
 - 2026-10-30 — The US Stocks flow's Home is replaced by this one: `Home` got `usState` (activate / review / failed /
   activated / ready / holding), `sheet`, `onWallet`, `autoNext`; screens `stocks-11` … `stocks-18` (intro sheet, risk
   disclosure, under review, failed, activated, money ready, holding, activation submitted); the US holdings summary and
@@ -19271,14 +19292,14 @@ import { t } from '../copy'
 import styles from './Home.module.css'
 
 /** "Do more with Lemonn": four feature shortcuts, with a count or "New" where there's something to see. */
-export function Shortcuts({ onOpen, items = shortcuts }: { onOpen?: (id: string) => void; /** The US tab swaps IPO for ETFs (data.ts usShortcuts). */ items?: Shortcut[] }) {
+export function Shortcuts({ onOpen, items = shortcuts, titled = false }: { onOpen?: (id: string) => void; /** The US tab swaps IPO for ETFs (data.ts usShortcuts). */ items?: Shortcut[]; /** Home versions V8, V9: the "Do More With Lemonn" title shows (components/homeVersions.ts). */ titled?: boolean }) {
   return (
     <Stack as="section" gap="16" aria-label={t('shortcuts.title')}>
-      <Inset paddingInline="16" paddingBlock="00"><SectionHeader title={t('shortcuts.title')} /></Inset>
+      {titled && <Inset paddingInline="16" paddingBlock="00"><SectionHeader title={t('shortcuts.title')} /></Inset>}
       <Inset paddingInline="16" paddingBlock="00">
         <Grid columns={4} gap="00">
           {items.map((s) => (
-            <Card key={s.id} variant="flat" padding="none" onClick={() => onOpen?.(s.id)}>
+            <Card key={s.id} variant="flat" padding="none" className={styles.shortcutCard} onClick={() => onOpen?.(s.id)}>
               <span className={styles.shortcut}>
                 <span className={styles.shortcutIcon}>
                   <span className={styles.shortcutCircle} aria-hidden="true"><Icon icon={s.icon} size={24} /></span>
@@ -19535,8 +19556,13 @@ export function Watchlists({ onOpen, onCreate }: { onOpen?: (id: string) => void
   flex-direction: column;
   align-items: center;
   gap: var(--l3-spacing-08);
-  padding-top: var(--l3-spacing-12); /* room for the count / "New" that sits 8 over the icon (the card clips) */
   text-align: center;
+}
+
+/* The flat card rounded (so its hover grey has rounded corners) and not clipping, so the count / "New" can sit over its top edge. */
+.shortcutCard[data-variant='flat'][data-padding='none'] {
+  overflow: visible;
+  border-radius: var(--l3-radius-12);
 }
 
 .shortcutIcon {
@@ -19975,6 +20001,31 @@ export function Highlights({ onExplore }: { onExplore?: (id: string) => void }) 
   background: var(--l3-surface-secondary);
 }
 
+/* Home versions V7, V8: under the top bar, above the index ticker — no pull-up. */
+.marketTabs[data-place='top'] {
+  margin-top: 0;
+}
+
+/* A flag (system emoji) in place of the tab icon: 16, like the icons. */
+.flag {
+  flex: none;
+  font: var(--l3-text-label-14);
+  line-height: 1;
+}
+
+/* ---- The IND / US switch as L3 Tabs (MarketSwitch) ---- */
+.switch {
+  background: var(--l3-surface-secondary);
+}
+
+.switch:not([data-compact]) {
+  padding: var(--l3-spacing-08) var(--l3-spacing-16);
+}
+
+.switch[data-appearance='underline'] {
+  padding-block: 0;
+}
+
 /* Drawn by MarketTabs.tsx at the measured width. */
 .outline {
   position: absolute;
@@ -20165,9 +20216,10 @@ export function Highlights({ onExplore }: { onExplore?: (id: string) => void }) 
 // "Live till 2:30 AM". Ported from the US Stocks prototype (screens/home/MarketTabs.tsx).
 // L3 gap: notched market tabs — no L3 component (L3 Tabs has flat / pill / ribbon only). The pinned compact version
 // (PinnedMarketTabs) is a plain L3 Tabs, appearance="underline".
-import { useEffect, useId, useRef, useState, type CSSProperties } from 'react'
+import { useEffect, useId, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { MaskIcon } from '@l3/components/MaskIcon'
 import { Tabs } from '@l3/components/Tabs'
+import { Tag } from '@l3/components/Tag'
 import { t } from '../copy'
 import indOff from '../assets/us/ind-icon-off.svg'
 import indOn from '../assets/us/ind-icon-on.svg'
@@ -20179,19 +20231,38 @@ export type Market = 'in' | 'us'
 
 const icons: Record<Market, { on: string; off: string }> = { in: { on: indOn, off: indOff }, us: { on: usOn, off: usOff } }
 
-/** The notched tab strip (40 tall, full width). */
-export function MarketTabs({ value, onChange }: { value: Market; onChange: (market: Market) => void }) {
+/** The home version's look for the tabs (components/homeVersions.ts): labels, flags, a "New" tag on US. */
+export type MarketTabsLook = { labels?: 'stocks' | 'short' | 'country'; flags?: boolean; usNew?: boolean }
+
+const labelKeys = {
+  stocks: { in: 'us.tabs.in', us: 'us.tabs.us' },
+  short: { in: 'us.tabs.inShort', us: 'us.tabs.usShort' },
+  country: { in: 'us.tabs.inCountry', us: 'us.tabs.usCountry' },
+} as const
+
+// L3 gap: no flag icons in L3 — the flags are the system's emoji.
+const flagEmoji: Record<Market, string> = { in: '🇮🇳', us: '🇺🇸' }
+const Flag = ({ market }: { market: Market }) => <span className={styles.flag} aria-hidden="true">{flagEmoji[market]}</span>
+const NewTag = () => <Tag color="success" size="sm">{t('us.tabs.new')}</Tag>
+
+/**
+ * The notched tab strip (40 tall, full width). `place="top"` (home versions V7, V8): right under the top bar, so it
+ * doesn't pull up into the summary.
+ */
+export function MarketTabs({ value, onChange, look = {}, place = 'mid' }: { value: Market; onChange: (market: Market) => void; look?: MarketTabsLook; place?: 'mid' | 'top' }) {
   return (
-    <div className={styles.marketTabs} role="tablist" aria-label={t('us.tabs.label')} data-on={value} data-home="tabs">
+    <div className={styles.marketTabs} role="tablist" aria-label={t('us.tabs.label')} data-on={value} data-home="tabs" data-place={place}>
       <TabOutline on={value} />
-      <MarketTab market="in" on={value === 'in'} onClick={() => onChange('in')} />
-      <MarketTab market="us" on={value === 'us'} onClick={() => onChange('us')} />
+      <MarketTab market="in" on={value === 'in'} onClick={() => onChange('in')} look={look} />
+      <MarketTab market="us" on={value === 'us'} onClick={() => onChange('us')} look={look} />
     </div>
   )
 }
 
-function MarketTab({ market, on, onClick }: { market: Market; on: boolean; onClick: () => void }) {
-  const icon = icons[market][on ? 'on' : 'off']
+function MarketTab({ market, on, onClick, look }: { market: Market; on: boolean; onClick: () => void; look: MarketTabsLook }) {
+  const svg = icons[market][on ? 'on' : 'off']
+  const icon = look.flags ? <Flag market={market} /> : <img src={svg} alt="" width={16} height={16} />
+  const label = t(labelKeys[look.labels ?? 'stocks'][market])
   const [pressed, setPressed] = useState(false)
   return (
     <button
@@ -20209,18 +20280,18 @@ function MarketTab({ market, on, onClick }: { market: Market; on: boolean; onCli
     >
       {market === 'in' ? (
         <>
-          <img src={icon} alt="" width={16} height={16} />
-          <span>{t('us.tabs.in')}</span>
+          {icon}
+          <span>{label}</span>
         </>
       ) : (
-        <FlipLabel icon={icon} paused={pressed} />
+        <FlipLabel icon={icon} label={label} isNew={look.usNew} paused={pressed} />
       )}
     </button>
   )
 }
 
 /** "US Stocks" ↔ "Live till 2:30 AM": flips every 2.5–3.5 s, pauses while pressed or when the page is hidden, still with reduced motion. */
-function FlipLabel({ icon, paused }: { icon: string; paused: boolean }) {
+function FlipLabel({ icon, label, isNew, paused }: { icon: ReactNode; label: string; isNew?: boolean; paused: boolean }) {
   const [face, setFace] = useState(0)
   const [still, setStill] = useState(false)
 
@@ -20244,8 +20315,9 @@ function FlipLabel({ icon, paused }: { icon: string; paused: boolean }) {
   return (
     <span className={styles.flip} data-face={still ? 0 : face} aria-hidden="true">
       <span className={styles.flipFace} data-side="name">
-        <img src={icon} alt="" width={16} height={16} />
-        {t('us.tabs.us')}
+        {icon}
+        {label}
+        {isNew && <NewTag />}
         {still && <span className={styles.liveDot} />}
       </span>
       <span className={styles.flipFace} data-side="live">
@@ -20320,6 +20392,33 @@ export function PinnedMarketTabs({ value, onChange }: { value: Market; onChange:
     </div>
   )
 }
+
+/**
+ * The IND / US switch drawn with L3 Tabs (home versions V3–V6, V9: components/homeVersions.ts): a pill group or
+ * underline tabs filling the row, or (`compact`, V5) a small pill group hugging its labels in the top bar.
+ * L3 gap: Jojo's V9 "Graphite segmented" has no L3 style of its own — it is the L3 pill group.
+ */
+export function MarketSwitch({ value, onChange, appearance, look = {}, compact = false }: { value: Market; onChange: (market: Market) => void; appearance: 'pill-group' | 'underline'; look?: MarketTabsLook; compact?: boolean }) {
+  const keys = labelKeys[look.labels ?? 'stocks']
+  return (
+    <div className={styles.switch} data-home="tabs" data-appearance={appearance} data-compact={compact || undefined}>
+      <Tabs
+        appearance={appearance}
+        width={compact ? 'hug' : 'fill'}
+        size={compact ? 'sm' : 'md'}
+        aria-label={t('us.tabs.label')}
+        value={value}
+        onChange={(next) => onChange(next as Market)}
+        items={(['in', 'us'] as const).map((market) => ({
+          value: market,
+          label: t(keys[market]),
+          iconLeft: look.flags ? <Flag market={market} /> : undefined,
+          badge: market === 'us' && look.usNew ? <NewTag /> : undefined,
+        }))}
+      />
+    </div>
+  )
+}
 ```
 
 ### `src/flows/stocks/components/Overview.tsx`
@@ -20335,7 +20434,7 @@ import { indices, type MarketIndex } from '../../../shared/data/market'
 import { holdings } from '../../../shared/data/portfolio'
 import { inr } from '../../../shared/data/format'
 import { Rail } from '../../../shared/ui/Rail'
-import { products } from '../data'
+import { products, type Product } from '../data'
 import { usHoldings } from './us/data'
 import { t } from '../copy'
 import styles from './Home.module.css'
@@ -20383,10 +20482,10 @@ export function HoldingsSummary({ onOpen, us = false }: { onOpen?: () => void; /
 }
 
 /** Mutual funds · Equity F&O · Commodities — each product's one-line promise. */
-export function ProductCards({ onProduct }: { onProduct?: (id: string) => void }) {
+export function ProductCards({ onProduct, items = products }: { onProduct?: (id: string) => void; /** The home version's tiles (components/homeVersions.ts). */ items?: Product[] }) {
   return (
     <Rail label={t('products.label')} visible={2.55} className={styles.onEdgeRoom}>
-      {products.map((p) => (
+      {items.map((p) => (
         <Card key={p.id} onClick={() => onProduct?.(p.id)}>
           <span className={styles.cardStack}>
             {p.isNew && <span className={styles.onEdge}><Tag color="success" size="sm">{t('products.new')}</Tag></span>}
@@ -20500,10 +20599,9 @@ export function ProductCards({ onProduct }: { onProduct?: (id: string) => void }
 ### `src/flows/stocks/components/TopBar.tsx`
 
 ```tsx
+import type { ReactNode } from 'react'
 import { Icon } from '@l3/components/Icon'
-import { CoachMark } from '@l3/components/Tooltip'
 import { msAccountBalanceWallet, msSearch } from '@l3/icons/material'
-import { DashEntry } from '../../../shared/ui/dash/DashEntry'
 import { t } from '../copy'
 import styles from './TopBar.module.css'
 
@@ -20514,23 +20612,19 @@ type TopBarProps = {
   /** The search pill is a button: it opens the Search screen, where the typing happens. */
   onSearch?: () => void
   onWallet?: () => void
-  /** The DASH pill opens DASH AI (dash-02). */
-  onDash?: () => void
-  /** First visit after DASH launches: an L3 coach mark points at the pill (Figma "Intro" 5612:44075). */
-  dashIntro?: boolean
-  onDashIntroDone?: () => void
   /** The page is scrolled: the bar turns surface/primary. */
   scrolled?: boolean
+  /** After the wallet: home version V5's IND / US switch (components/homeVersions.ts). */
+  end?: ReactNode
 }
 
 /**
  * Stocks home's own top bar, as in the live app (a one-off for this screen — not the L3 Actionbar):
- * profile initials (indigo circle) · a search pill ("Search stocks", opens Search) · the DASH pill (opens DASH AI —
- * Figma "Home page", DASH AI main flow) · the wallet.
+ * profile initials (indigo circle) · a search pill ("Search stocks", opens Search) · the wallet. (No DASH pill: DASH
+ * is entered from the F&O home only — 2026-11-01.)
  * The bar sits on the summary area's grey; the pill and the wallet are on surface/default.
  */
-export function TopBar({ initials, onProfile, onSearch, onWallet, onDash, dashIntro = false, onDashIntroDone, scrolled = false }: TopBarProps) {
-  const dash = <DashEntry label={t('top.dash')} ariaLabel={t('top.dashLabel')} onClick={onDash} />
+export function TopBar({ initials, onProfile, onSearch, onWallet, scrolled = false, end }: TopBarProps) {
   return (
     <header className={styles.bar} data-scrolled={scrolled || undefined}>
       <button type="button" className={styles.profile} aria-label={t('top.profile')} onClick={onProfile}>
@@ -20540,19 +20634,60 @@ export function TopBar({ initials, onProfile, onSearch, onWallet, onDash, dashIn
         <Icon icon={msSearch} size={20} />
         <span className={styles.placeholder}>{t('search.placeholder')}</span>
       </button>
-      {dashIntro ? (
-        <CoachMark open heading={t('dashIntro.heading')} body={t('dashIntro.body')} nextLabel={t('dashIntro.gotIt')} onNext={() => onDashIntroDone?.()} autoFocus={false}>
-          {dash}
-        </CoachMark>
-      ) : (
-        dash
-      )}
       <button type="button" className={styles.wallet} aria-label={t('top.wallet')} onClick={onWallet}>
         <Icon icon={msAccountBalanceWallet} size={20} />
       </button>
+      {end}
     </header>
   )
 }
+```
+
+### `src/flows/stocks/components/homeVersions.ts`
+
+```ts
+// The Stocks home's design versions, from Jojo's US Stocks design (designs/lemonn-us-stocks-design.html, its
+// "Homepage version" switch: Figma "Homepage versions", nodes below). They differ only in the IND / US switch (where it
+// sits and how it looks), the product tiles, the index ticker and the shortcuts' title; the feeds are the same.
+// The prototype picks one with the flow option `homeVersion` (index.tsx), default V2 as in Jojo's file.
+
+export type HomeVersionId = 'v1' | 'v2' | 'v3' | 'v4' | 'v5' | 'v6' | 'v7' | 'v8' | 'v9'
+
+export type HomeVersion = {
+  id: HomeVersionId
+  name: string
+  figma: string
+  /** Where the IND / US switch sits: none · between the summary and the feed (mid) · under the top bar (top) · in the top bar (header). */
+  place: 'none' | 'mid' | 'top' | 'header'
+  /** How it looks: the notched folder tabs · an L3 pill group · L3 underline tabs. */
+  look: 'folder' | 'pill' | 'underline'
+  /** The tab labels: "IND Stocks / US Stocks" · "IND / US" · "INDIA / USA". */
+  labels: 'stocks' | 'short' | 'country'
+  /** Flags before the labels (🇮🇳 / 🇺🇸). */
+  flags: boolean
+  /** A "New" tag on the US tab. */
+  usNew: boolean
+  /** The product tiles: MF / F&O / Commodity · Mutual funds / Equity F&O / Commodities · F&O / Commodities / US Stocks. */
+  tiles: 'classic' | 'today' | 'withUs'
+  /** The index ticker under the top bar. */
+  ticker: boolean
+  /** The shortcuts get a "Do more with Lemonn" title. */
+  doMore: boolean
+}
+
+export const homeVersions: HomeVersion[] = [
+  { id: 'v1', name: 'Current homepage', figma: '6118:9', place: 'none', look: 'folder', labels: 'stocks', flags: false, usNew: false, tiles: 'classic', ticker: true, doMore: false },
+  { id: 'v2', name: 'Existing folder', figma: '6118:254', place: 'mid', look: 'folder', labels: 'stocks', flags: false, usNew: false, tiles: 'today', ticker: true, doMore: false },
+  { id: 'v3', name: 'Pill', figma: '6128:29822', place: 'mid', look: 'pill', labels: 'stocks', flags: true, usNew: false, tiles: 'classic', ticker: true, doMore: false },
+  { id: 'v4', name: 'CoinSwitch style', figma: '6128:30124', place: 'mid', look: 'underline', labels: 'stocks', flags: true, usNew: false, tiles: 'classic', ticker: true, doMore: false },
+  { id: 'v5', name: 'Card-level segmented control', figma: '6128:30436', place: 'header', look: 'pill', labels: 'short', flags: false, usNew: false, tiles: 'classic', ticker: true, doMore: false },
+  { id: 'v6', name: 'Pill on top', figma: '6128:30747', place: 'top', look: 'pill', labels: 'stocks', flags: true, usNew: false, tiles: 'withUs', ticker: true, doMore: false },
+  { id: 'v7', name: 'Lit folder on top', figma: '6128:31013', place: 'top', look: 'folder', labels: 'stocks', flags: true, usNew: true, tiles: 'today', ticker: true, doMore: false },
+  { id: 'v8', name: 'Lit folder · India / USA', figma: '6128:31431', place: 'top', look: 'folder', labels: 'country', flags: true, usNew: true, tiles: 'withUs', ticker: true, doMore: true },
+  { id: 'v9', name: 'Graphite segmented', figma: '6128:31986', place: 'top', look: 'pill', labels: 'short', flags: true, usNew: true, tiles: 'today', ticker: false, doMore: true },
+]
+
+export const homeVersion = (id: string) => homeVersions.find((v) => v.id === id) ?? homeVersions[1]
 ```
 
 ### `src/flows/stocks/components/us/UsActivationCard.tsx`
@@ -21238,11 +21373,13 @@ type UsHomeProps = {
   onStock?: (sym: string) => void
   /** "View all" / a theme was tapped (Market has been handed what to open on) → the Market page. */
   onMarket?: () => void
+  /** The ETFs shortcut → the ETF list (Regular / Leveraged). */
+  onEtfs?: () => void
 }
 
 const sign = (up: boolean) => (up ? '+' : '-')
 
-export function UsHome({ usState = 'activate', onActivate, onStock, onMarket }: UsHomeProps) {
+export function UsHome({ usState = 'activate', onActivate, onStock, onMarket, onEtfs }: UsHomeProps) {
   const [filter, setFilter] = useState<MoverFilter>('gainers')
   const [cap, setCap] = useState<CapValue>('mega')
   const [index, setIndex] = useState<(typeof heatmapIndices)[number]>('sp')
@@ -21274,7 +21411,7 @@ export function UsHome({ usState = 'activate', onActivate, onStock, onMarket }: 
   return (
     <>
       {usState !== 'holding' && usState !== 'ready' && <Inset paddingInline="16" paddingBlock="00"><UsActivationCard state={usState} onCta={onActivate} /></Inset>}
-      <Shortcuts items={usShortcuts} />
+      <Shortcuts items={usShortcuts} onOpen={(id) => { if (id === 'etfs') onEtfs?.() }} />
 
       <div data-home="movers">
         <Stack as="section" gap="16" aria-label={t('us.movers.title')}>
@@ -22504,16 +22641,16 @@ export function useSwipeBetween({ canGo, onSwitch, page }: { canGo: (direction: 
   "smartInvest.tagAuto": "Auto Buy & Sell",
   "disclosure.readMore": "Read More",
   "disclosure.readLess": "Read Less",
-  "top.dash": "DASH",
-  "top.dashLabel": "Open DASH Ai",
-  "dashIntro.heading": "DASH Ai",
-  "dashIntro.body": "DASH helps you build your rules and strategies.",
-  "dashIntro.gotIt": "Got it!",
   "us.tabs.label": "Market",
   "us.tabs.in": "IND Stocks",
   "us.tabs.us": "US Stocks",
   "us.tabs.live": "Live till 2:30 AM",
   "us.tabs.usLabel": "US Stocks, live till 2:30 AM IST",
+  "us.tabs.inShort": "IND",
+  "us.tabs.usShort": "US",
+  "us.tabs.inCountry": "INDIA",
+  "us.tabs.usCountry": "USA",
+  "us.tabs.new": "New",
   "us.indices.label": "US market indices",
   "us.activate.title": "Activate US Stocks",
   "us.activate.subtitle": "Takes under a minute",
@@ -22614,11 +22751,23 @@ import { companies, companiesByChange, type Company } from '../../shared/data/co
 /** Stocks home — what the API sends for each section, in page order. Sample values; market data from the live app. */
 
 /** Product shortcuts under the holdings: one line on what's special about each. */
-export type Product = { id: 'mutual-funds' | 'fno' | 'commodities'; name: string; highlight: string; detail: string; isNew?: boolean }
+export type Product = { id: 'mutual-funds' | 'fno' | 'commodities' | 'us-stocks'; name: string; highlight: string; detail: string; isNew?: boolean }
 export const products: Product[] = [
   { id: 'mutual-funds', name: 'Mutual funds', highlight: '240+', detail: 'funds' },
   { id: 'fno', name: 'Equity F&O', highlight: '0', detail: 'slippage' },
   { id: 'commodities', name: 'Commodities', highlight: '0', detail: 'brokerage', isNew: true },
+]
+/** The same tiles, short names (home versions V1, V3–V5: components/homeVersions.ts). */
+export const productsClassic: Product[] = [
+  { id: 'mutual-funds', name: 'MF', highlight: '240+', detail: 'Funds' },
+  { id: 'fno', name: 'F&O', highlight: 'Scalper', detail: 'mode' },
+  { id: 'commodities', name: 'Commodity', highlight: '0', detail: 'Brokerage', isNew: true },
+]
+/** With US Stocks as the new tile, before the market opens (home versions V6, V8). */
+export const productsWithUs: Product[] = [
+  { id: 'fno', name: 'Equity F&O', highlight: '0', detail: 'slippage' },
+  { id: 'commodities', name: 'Commodities', highlight: '0', detail: 'brokerage' },
+  { id: 'us-stocks', name: 'US Stocks', highlight: 'Opens', detail: '8:00 PM', isNew: true },
 ]
 
 /** "Do more with Lemonn": feature shortcuts, each with an optional count or "New" flag. */
@@ -22733,16 +22882,20 @@ import type { Flow } from '../types'
 import { goToTab } from '../../shared/ui/MainNav'
 import type { Go } from '../types'
 import { Home } from './screens/Home'
+import { homeVersions } from './components/homeVersions'
 import type { UsState } from './components/us/data'
 import { ActivationSubmittedSheet } from './components/us/sheets/ActivationSubmittedSheet'
 import { RiskDisclosureSheet } from './components/us/sheets/RiskDisclosureSheet'
 import { UsFtuxSheet } from './components/us/sheets/UsFtuxSheet'
 
 /** The US tab's taps, by screen id: Activate US Stocks → the risk disclosure sheet (stocks-12), a stock → its page (not activated, in the US Stocks flow), View all / a theme → Market on the US list. */
-const usNav = (go: Go) => ({ onActivateUs: () => go('stocks-12'), onUsStock: () => go('us-stocks-13'), onUsMarket: () => go('market-10') })
+const usNav = (go: Go) => ({ onActivateUs: () => go('stocks-12'), onUsStock: () => go('us-stocks-13'), onUsMarket: () => go('market-10'), onUsEtfs: () => go('us-stocks-71') })
 
 /** The top bar and navbar taps every Home screen shares. */
-const chrome = (go: Go) => ({ onTab: (t: Parameters<typeof goToTab>[1]) => goToTab(go, t), onSearch: () => go('search-01'), onProfile: () => go('profile-01'), onDash: () => go('dash-02') })
+/** Search from the Home field: the Stocks tab on IND, the US tab on US (search-29). */
+const searchFor = (market: 'in' | 'us') => (market === 'us' ? 'search-29' : 'search-01')
+
+const chrome = (go: Go) => ({ onTab: (t: Parameters<typeof goToTab>[1]) => goToTab(go, t), onSearch: (m: 'in' | 'us') => go(searchFor(m)), onProfile: () => go('profile-01') })
 
 /** Wallet icon on the US tab, by where the user is (screens of the US Stocks flow): Indian wallet · under review · failed · $0 · funded. */
 const walletFor: Record<UsState, string> = { activate: 'us-stocks-53', review: 'us-stocks-55', failed: 'us-stocks-56', activated: 'us-stocks-20', ready: 'us-stocks-59', holding: 'us-stocks-59' }
@@ -22761,15 +22914,26 @@ export const stocks: Flow = {
   title: 'Stocks',
   description: 'The Stocks tab — the home after login: indices, holdings, products, movers, watchlists, ideas.',
   figmaFile: '',
+  options: [
+    // Jojo's homepage versions (designs/lemonn-us-stocks-design.html "Homepage version"): applies to every Home screen.
+    {
+      id: 'homeVersion',
+      group: 'Home',
+      label: 'Homepage version',
+      picker: 'dropdown',
+      values: homeVersions.map((v) => ({ value: v.id, label: `${v.id.toUpperCase()} · ${v.name}` })),
+      default: 'v2',
+      floatOn: ['stocks-01', 'stocks-02', 'stocks-03', 'stocks-04', 'stocks-05', 'stocks-06', 'stocks-07', 'stocks-09', 'stocks-10', 'stocks-11', 'stocks-12', 'stocks-13', 'stocks-14', 'stocks-15', 'stocks-16', 'stocks-17', 'stocks-18'],
+    },
+  ],
   screens: [
-    { id: 'stocks-01', name: 'Home', figma: '5714:64982', group: 'ftux', note: 'Top of the page: search, indices, holdings, products, shortcuts.', tab: true, render: (go) => <Home onTab={(t) => goToTab(go, t)} onSearch={() => go('search-01')} onProfile={() => go('profile-01')} onDash={() => go('dash-02')} {...usNav(go)} /> },
-    { id: 'stocks-02', name: 'Home · top movers & watchlists', figma: '', note: 'Same page, scrolled.', tab: true, render: (go) => <Home onTab={(t) => goToTab(go, t)} onSearch={() => go('search-01')} onProfile={() => go('profile-01')} onDash={() => go('dash-02')} {...usNav(go)} scrollTo="movers" /> },
-    { id: 'stocks-03', name: 'Home · top losers', figma: '', note: 'The "Top losers" chip picked.', tab: true, render: (go) => <Home onTab={(t) => goToTab(go, t)} onSearch={() => go('search-01')} onProfile={() => go('profile-01')} onDash={() => go('dash-02')} {...usNav(go)} scrollTo="movers" movers="losers" /> },
-    { id: 'stocks-04', name: 'Home · Smart Invest', figma: '', note: 'Same page, scrolled: managed strategies, then the announcement.', tab: true, render: (go) => <Home onTab={(t) => goToTab(go, t)} onSearch={() => go('search-01')} onProfile={() => go('profile-01')} onDash={() => go('dash-02')} {...usNav(go)} scrollTo="invest" /> },
-    { id: 'stocks-05', name: 'Home · sectors & highlights', figma: '', note: 'Same page, scrolled.', tab: true, render: (go) => <Home onTab={(t) => goToTab(go, t)} onSearch={() => go('search-01')} onProfile={() => go('profile-01')} onDash={() => go('dash-02')} {...usNav(go)} scrollTo="sectors" /> },
-    { id: 'stocks-06', name: 'Home · highlights & idea baskets', figma: '', note: 'Same page, scrolled. (The live app no longer has Trade ideas here — removed 2026-10-22.)', tab: true, render: (go) => <Home onTab={(t) => goToTab(go, t)} onSearch={() => go('search-01')} onProfile={() => go('profile-01')} onDash={() => go('dash-02')} {...usNav(go)} scrollTo="highlights" /> },
-    { id: 'stocks-07', name: 'Home · idea baskets & disclosure', figma: '', note: 'The end of the page: the disclosure, four lines and Read More.', tab: true, render: (go) => <Home onTab={(t) => goToTab(go, t)} onSearch={() => go('search-01')} onProfile={() => go('profile-01')} onDash={() => go('dash-02')} {...usNav(go)} scrollTo="more" /> },
-    { id: 'stocks-08', name: 'Home · DASH coach mark', figma: '5612:44075', note: 'First visit after DASH launches: an L3 coach mark on the DASH pill (Figma "Intro" in DASH AI main flow). Got it! or the pill opens DASH.', tab: true, render: (go) => <Home onTab={(t) => goToTab(go, t)} onSearch={() => go('search-01')} onProfile={() => go('profile-01')} onDash={() => go('dash-02')} {...usNav(go)} dashIntro onDashIntroDone={() => go('dash-02')} /> },
+    { id: 'stocks-01', name: 'Home', badge: 'changed', badgeNote: 'Header hides on scroll; DASH pill removed; back returns to the IND / US tab you left', figma: '5714:64982', group: 'ftux', note: 'Top of the page: search, indices, holdings, products, shortcuts.', tab: true, render: (go) => <Home onTab={(t) => goToTab(go, t)} onSearch={(m) => go(searchFor(m))} onProfile={() => go('profile-01')} {...usNav(go)} /> },
+    { id: 'stocks-02', name: 'Home · top movers & watchlists', badge: 'changed', badgeNote: 'Compact IND / US tabs under the index strip when scrolled; switching tabs keeps the scroll', figma: '', note: 'Same page, scrolled.', tab: true, render: (go) => <Home onTab={(t) => goToTab(go, t)} onSearch={(m) => go(searchFor(m))} onProfile={() => go('profile-01')} {...usNav(go)} scrollTo="movers" /> },
+    { id: 'stocks-03', name: 'Home · top losers', figma: '', note: 'The "Top losers" chip picked.', tab: true, render: (go) => <Home onTab={(t) => goToTab(go, t)} onSearch={(m) => go(searchFor(m))} onProfile={() => go('profile-01')} {...usNav(go)} scrollTo="movers" movers="losers" /> },
+    { id: 'stocks-04', name: 'Home · Smart Invest', figma: '', note: 'Same page, scrolled: managed strategies, then the announcement.', tab: true, render: (go) => <Home onTab={(t) => goToTab(go, t)} onSearch={(m) => go(searchFor(m))} onProfile={() => go('profile-01')} {...usNav(go)} scrollTo="invest" /> },
+    { id: 'stocks-05', name: 'Home · sectors & highlights', figma: '', note: 'Same page, scrolled.', tab: true, render: (go) => <Home onTab={(t) => goToTab(go, t)} onSearch={(m) => go(searchFor(m))} onProfile={() => go('profile-01')} {...usNav(go)} scrollTo="sectors" /> },
+    { id: 'stocks-06', name: 'Home · highlights & idea baskets', figma: '', note: 'Same page, scrolled. (The live app no longer has Trade ideas here — removed 2026-10-22.)', tab: true, render: (go) => <Home onTab={(t) => goToTab(go, t)} onSearch={(m) => go(searchFor(m))} onProfile={() => go('profile-01')} {...usNav(go)} scrollTo="highlights" /> },
+    { id: 'stocks-07', name: 'Home · idea baskets & disclosure', figma: '', note: 'The end of the page: the disclosure, four lines and Read More.', tab: true, render: (go) => <Home onTab={(t) => goToTab(go, t)} onSearch={(m) => go(searchFor(m))} onProfile={() => go('profile-01')} {...usNav(go)} scrollTo="more" /> },
     { id: 'stocks-09', name: 'Home · US Stocks tab', figma: '5756:74756', group: 'us-activate', note: 'The US Stocks tab for a user who has not activated US Stocks: US indices, the Activate US Stocks card (→ risk disclosure sheet, stocks-12), shortcuts, Top Movers, Trillion Dollar Titans, Brands, Heatmap, themes. A US stock opens its page (not activated). Designed in the US Stocks flow (Figma Home · US tab · Activate US Stocks card); here it is the tab on the app\'s own Stocks home.', tab: true, render: (go) => usHome(go, 'activate') },
     { id: 'stocks-10', name: 'Home · US Stocks tab · scrolled', figma: '', note: 'Same tab, scrolled past the tabs: the compact IND / US tabs are pinned under the top bar.', tab: true, render: (go) => usHome(go, 'activate', { scrollTo: 'movers' }) },
     { id: 'stocks-11', name: 'Home · US Stocks intro sheet', figma: '5756:68986', group: 'ftux', note: 'First launch after release: the IND tab with the US Stocks intro (FTUX) sheet — animated flag, five company logos, three benefits. Activate US Stocks → the risk disclosure (stocks-12); ✕ → Home (stocks-01).', tab: true, render: (go) => <Home {...chrome(go)} {...usNav(go)} sheet={<UsFtuxSheet onActivate={() => go('stocks-12')} onClose={() => go('stocks-01')} />} /> },
@@ -22795,7 +22959,7 @@ export const stocks: Flow = {
  * top-only radius, the default surface and the accent tints.
  */
 .summary {
-  padding: var(--l3-spacing-16) 0 var(--l3-spacing-48);
+  padding: var(--l3-spacing-24) 0 var(--l3-spacing-48); /* 24 under the index marquee, which sits above it */
   background: var(--l3-surface-secondary);
 }
 
@@ -22830,6 +22994,24 @@ export const stocks: Flow = {
   font: var(--l3-text-label-16);
 }
 
+/* Home versions V3, V4: the L3 IND / US switch at the top of the feed's rounded sheet (the feed then starts under it). */
+.sheetHead {
+  position: relative;
+  margin-top: calc(-1 * var(--l3-spacing-24));
+  padding-top: var(--l3-spacing-16);
+  border-radius: var(--l3-radius-32) var(--l3-radius-32) 0 0;
+  background: var(--l3-surface-default);
+}
+
+.sheetHead > * {
+  background: none;
+}
+
+/* Home version V9: no index ticker, so no band behind it. */
+.marquee[data-ticker='off'] .band {
+  display: none;
+}
+
 /* With the IND / US tabs above it (components/MarketTabs) the feed no longer overlaps the summary or rounds its top:
    the strip's line and notch are the sheet's top edge. */
 .feedTabbed {
@@ -22838,24 +23020,30 @@ export const stocks: Flow = {
 }
 
 /*
- * The header overlay: the top bar, the sticky index marquee and the pinned IND / US tabs hang from a sticky block with
- * no height of its own, so showing or hiding any of them never moves the page (the spacer under it holds the top bar's
- * 64 at the top of the page). Each part slides open / closed like the US Stocks prototype's header: grid rows 0fr ↔ 1fr
- * plus a short translate; no animation on arrival or with reduced motion.
+ * The header. The top bar hangs from a sticky block with no height of its own (the spacer under it holds its 64 at the
+ * top of the page), so hiding it never moves the page. The index marquee is the page's own strip, sticky right under
+ * the top bar — no second copy. Its white band (12 above and below the strip, drawn behind it) fades in from the grey
+ * summary as soon as the page scrolls. Scrolling down, the top bar slides up out of sight while the same marquee glides
+ * up into its place, together, so the header reads as one block turning into a slimmer one; the compact tabs unfold
+ * from under the band once the notched tabs have gone beneath it. No animation on arrival or with reduced motion.
  */
 .header {
   position: sticky;
   top: 0;
-  z-index: 3; /* over the feed and the notched tab (z-index 1); under sheets (--app-layer-sheet) */
+  z-index: 4; /* over the marquee (3), the feed and the notched tab (1); under sheets (--app-layer-sheet) */
   flex: none;
   height: 0;
 }
 
-.overlay {
+.topBar {
   position: absolute;
   top: 0;
   right: 0;
   left: 0;
+}
+
+.topBar[data-hidden] {
+  translate: 0 -100%;
 }
 
 .spacer {
@@ -22863,57 +23051,81 @@ export const stocks: Flow = {
   height: var(--l3-size-64); /* the top bar's height (TopBar.module.css) */
 }
 
-.slide {
-  display: grid;
-  grid-template-rows: 0fr;
-  opacity: 0;
+.marquee {
+  --band-pad: var(--l3-spacing-12);
+
+  position: sticky;
+  top: var(--l3-size-64); /* right under the top bar */
+  z-index: 3; /* over the summary and the notched tabs scrolling under it */
+  flex: none;
 }
 
-.slide > div {
-  min-height: 0;
-  overflow: hidden;
+/* Top bar away: up into its place, the band's 12 above the strip now inside the screen. */
+.marquee[data-state='down'] {
+  translate: 0 calc(var(--band-pad) - var(--l3-size-64));
 }
 
-.slide[data-open] {
-  grid-template-rows: 1fr;
-  opacity: 1;
+.band {
+  position: absolute;
+  inset: calc(-1 * var(--band-pad)) 0;
+  z-index: -1;
+  background: var(--l3-surface-secondary); /* the summary's grey: invisible at the top of the page */
 }
 
-.header[data-animate] .slide {
-  transition: grid-template-rows var(--l3-motion-duration-medium) var(--l3-motion-easing-standard), opacity var(--l3-motion-duration-short) var(--l3-motion-easing-standard);
-}
-
-.header[data-animate] .slide > div > * {
-  transition: translate var(--l3-motion-duration-medium) var(--l3-motion-easing-standard);
-}
-
-.slide[data-edge='top']:not([data-open]) > div > * {
-  translate: 0 calc(-1 * var(--l3-spacing-12));
-}
-
-.slide[data-edge='bottom']:not([data-open]) > div > * {
-  translate: 0 var(--l3-spacing-12);
-}
-
-/* Closed tabs don't animate away (the marquee stays put as they go). */
-.header[data-animate] .slide[data-edge='bottom']:not([data-open]),
-.header[data-animate] .slide[data-edge='bottom']:not([data-open]) > div > * {
-  transition: none;
-}
-
-/* The page's marquee, sticky: on white (surface/default), 12 above and below. A hairline closes it while the tabs aren't pinned. */
-.stickyIndex {
-  padding-block: var(--l3-spacing-12);
+.marquee:not([data-state='top']) .band {
   background: var(--l3-surface-default);
 }
 
-.overlay:not([data-tabs]) .stickyIndex {
+.marquee:not([data-state='top']):not([data-tabs]) .band {
   box-shadow: inset 0 -1px 0 var(--l3-border-light); /* 1px hairline */
 }
 
+/* The compact tabs hang under the band and unfold out of it (clipped, so they never show above its edge). */
+.pinnedTabs {
+  position: absolute;
+  top: calc(100% + var(--band-pad));
+  right: 0;
+  left: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.pinnedTabs > * {
+  translate: 0 -100%;
+}
+
+.pinnedTabs[data-open] {
+  pointer-events: auto;
+}
+
+.pinnedTabs[data-open] > * {
+  translate: 0 0;
+}
+
+/* One slow, smooth curve for every part, so they move as one. */
+.header[data-animate] .topBar,
+.marquee[data-animate],
+.marquee[data-animate] .band,
+.marquee[data-animate] .pinnedTabs > * {
+  transition-duration: var(--l3-motion-duration-long);
+  transition-timing-function: var(--l3-motion-easing-standard);
+}
+
+.header[data-animate] .topBar,
+.marquee[data-animate],
+.marquee[data-animate] .pinnedTabs > * {
+  transition-property: translate;
+}
+
+.marquee[data-animate] .band {
+  transition-property: background-color, box-shadow;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .header[data-animate] .slide,
-  .header[data-animate] .slide > div > * {
+  .header[data-animate] .topBar,
+  .marquee[data-animate],
+  .marquee[data-animate] .band,
+  .marquee[data-animate] .pinnedTabs > * {
     transition: none;
   }
 }
@@ -22928,20 +23140,21 @@ import { Icon } from '@l3/components/Icon'
 import { Section } from '@l3/components/Section'
 import { Stack } from '@l3/components/Stack'
 import { msCheckCircle } from '@l3/icons/material'
-import { useAutoAdvance, usePreview } from '../../../shared/prototype'
+import { useAutoAdvance, useFlowOption, usePreview } from '../../../shared/prototype'
 import { user } from '../../../shared/data/user'
 import { MainNav, rememberStocksHome, takeStocksTab, type Section as NavSection } from '../../../shared/ui/MainNav'
 import { Screen } from '../../../shared/ui/Screen'
 import { Disclosure, IdeaBaskets } from '../components/Ideas'
 import { Announcement, Highlights, Sectors, SmartInvest } from '../components/Invest'
 import { HoldingsSummary, IndexStrip, ProductCards } from '../components/Overview'
-import { MarketTabs, PinnedMarketTabs, type Market } from '../components/MarketTabs'
+import { MarketSwitch, MarketTabs, PinnedMarketTabs, type Market } from '../components/MarketTabs'
+import { homeVersion, type HomeVersion } from '../components/homeVersions'
 import { TopBar } from '../components/TopBar'
 import { usIndices, type UsState } from '../components/us/data'
 import { UsHome } from '../components/us/UsHome'
 import { neighbour, useSwipeBetween } from '../components/useSwipeBetween'
 import { Shortcuts, TopMovers, Watchlists } from '../components/Discover'
-import type { MoverList } from '../data'
+import { products, productsClassic, productsWithUs, type MoverList } from '../data'
 import { t } from '../copy'
 import styles from './Home.module.css'
 
@@ -22962,14 +23175,10 @@ type Props = {
   /** The main navbar: go to another tab. */
   onTab?: (section: NavSection) => void
   /** Tapping the search field opens the Search screen (search-01), where the typing happens. */
-  onSearch?: () => void
+  /** The search field: opens Search on the tab matching the market shown (IND → Stocks, US → US). */
+  onSearch?: (market: Market) => void
   /** The profile icon opens Profile & settings (profile-01). */
   onProfile?: () => void
-  /** The DASH pill in the top bar opens DASH AI. */
-  onDash?: () => void
-  /** First visit after DASH launches: the coach mark on the DASH pill. */
-  dashIntro?: boolean
-  onDashIntroDone?: () => void
   /** The wallet icon in the top bar. */
   onWallet?: () => void
   /** US tab: where the user is with US Stocks — picks the card on top and the toast (default: not activated). */
@@ -22980,6 +23189,8 @@ type Props = {
   onUsStock?: (sym: string) => void
   /** US tab: "View all" / a theme (Market was handed what to open on) → the Market page. */
   onUsMarket?: () => void
+  /** The US tab's ETFs shortcut → the ETF list. */
+  onUsEtfs?: () => void
   /** Prototype: after 2 s go on to this screen (the under-review Home moves on to "activated" by itself). */
   autoNext?: string
   /** A sheet over the page: the US Stocks intro, the risk disclosure, "activation submitted". */
@@ -22994,30 +23205,39 @@ type Props = {
  * products; and on the rounded sheet over it, the feed: shortcuts, top movers, watchlists, Smart Invest (brand tint),
  * an announcement (the campaign's artwork), sectors, highlights, idea baskets and the broker's disclosure.
  */
-export function Home({ scrollTo = 'top', market = 'in', movers, onTab, onSearch, onProfile, onDash, dashIntro, onDashIntroDone, onWallet, usState = 'activate', onActivateUs, onUsStock, onUsMarket, autoNext, sheet }: Props) {
+export function Home({ scrollTo = 'top', market = 'in', movers, onTab, onSearch, onProfile, onWallet, usState = 'activate', onActivateUs, onUsStock, onUsMarket, onUsEtfs, autoNext, sheet }: Props) {
   useAutoAdvance(autoNext, 2000)
   const page = useRef<HTMLDivElement>(null)
-  // The navbar brings the user back to the Stocks home on the IND / US tab they left it on.
-  const { screenId } = usePreview()
-  const [tab, setTab] = useState<Market>(() => (screenId && takeStocksTab(screenId)) || market)
+  // The design version (the prototype's "Homepage version" option): where the IND / US switch sits and how it looks.
+  const version = homeVersion(useFlowOption('stocks', 'homeVersion', 'v2'))
+  const hasSwitch = version.place !== 'none'
+  // The navbar, or going back, brings the user back to the Stocks home on the IND / US tab they left it on.
+  const { screenId, cameBack } = usePreview()
+  const [chosenTab, setTab] = useState<Market>(() => (screenId && takeStocksTab(screenId, cameBack)) || market)
+  // V1 has no switch: the page is the IND tab.
+  const tab: Market = hasSwitch ? chosenTab : 'in'
   useEffect(() => {
     if (screenId) rememberStocksHome(screenId, tab)
   }, [screenId, tab])
   // The index strip slides in once the tab has changed (not on arrival).
   const [stripSlides, setStripSlides] = useState(false)
-  // The header is an overlay on the scrolling page (a sticky, zero-height block with its parts hanging below it), so
-  // nothing in it moves the page. At the top: the top bar alone, as ever. Scrolled down: the top bar slides away and the
-  // index marquee sticks to the top (white), then the compact tabs under it. Any upward scroll: the top bar slides back in.
+  // One header, no copies. The top bar hangs from a sticky, zero-height block (so it never moves the page); the page's
+  // own index marquee is sticky under it. Scrolling: the marquee stays put and turns white. Scrolling down: the top bar
+  // slides away and the same marquee glides up into its place; the compact tabs unfold from under it once the notched
+  // ones have gone beneath it. Any upward scroll: the top bar slides back in and the marquee glides down under it.
   const [scrollState, setScrollState] = useState<ScrollState>(scrollTo === 'top' ? 'top' : 'up')
   const [pinned, setPinned] = useState(scrollTo !== 'top')
   // Not animated until the page has settled on arrival (a board frame opens already scrolled, with the header in place).
   const [animate, setAnimate] = useState(false)
   const pinnedNow = useRef(scrollTo !== 'top')
+  // The compact tabs pin under the marquee only when the switch scrolls with the page (versions with it mid or on top).
+  const hasTabsInPage = useRef(false)
+  hasTabsInPage.current = version.place === 'mid' || version.place === 'top'
   const direction = useRef<'down' | 'up'>(scrollTo === 'top' ? 'down' : 'up')
   const lastTop = useRef(0)
-  const overlay = useRef<HTMLDivElement>(null)
   const spacer = useRef<HTMLDivElement>(null)
   const marquee = useRef<HTMLDivElement>(null)
+  const band = useRef<HTMLDivElement>(null)
 
   // "Money ready": the toast shows on the US tab until it times out (6 s) — also when the tab is left and come back to.
   const [toastGone, setToastGone] = useState(false)
@@ -23033,17 +23253,22 @@ export function Home({ scrollTo = 'top', market = 'in', movers, onTab, onSearch,
     if (!body || !strip) return 0
     return strip.getBoundingClientRect().bottom - body.getBoundingClientRect().top + body.scrollTop
   }
-  // The page's own marquee's bottom edge, in the same coordinates.
-  const marqueeBottom = () => {
-    const body = page.current?.parentElement
-    const strip = page.current?.querySelector('[data-home="top"] > :first-child')
-    if (!body || !strip) return 0
-    return strip.getBoundingClientRect().bottom - body.getBoundingClientRect().top + body.scrollTop
+  /**
+   * Where the sticky header ends on screen (from the top of the scroll area) once it has settled in a state: the
+   * marquee's white band (12 above and below the strip) under the top bar, or at the very top when the top bar is away;
+   * plus the compact tabs when they're pinned.
+   */
+  const headerBottom = (state: ScrollState, withTabs: boolean) => {
+    const strip = marquee.current?.offsetHeight ?? 0
+    const pad = ((band.current?.offsetHeight ?? strip) - strip) / 2
+    const bar = spacer.current?.offsetHeight ?? 0
+    const bottom = state === 'down' ? pad + strip + pad : bar + strip + pad
+    return bottom + (withTabs ? (page.current?.querySelector('[data-home="tabs"]') as HTMLElement | null)?.offsetHeight ?? 0 : 0)
   }
   /**
    * The header's scroll states (as the US Stocks prototype's: 'top' / 'down' / 'up', a 6 px delta before the direction
-   * changes). 'top': the page's own marquee is still in sight, so the top bar stays put. Past it: 'down' hides the top
-   * bar, 'up' shows it again. The compact tabs pin once the notched tabs have gone under the sticky marquee.
+   * changes). 'top': the page is at its top. Scrolled: 'down' hides the top bar, 'up' shows it again. The compact tabs
+   * pin once the notched tabs have gone under the marquee's band.
    */
   const sync = () => {
     const body = page.current?.parentElement
@@ -23054,10 +23279,10 @@ export function Home({ scrollTo = 'top', market = 'in', movers, onTab, onSearch,
       direction.current = delta > 0 ? 'down' : 'up'
       lastTop.current = top
     }
-    const stuck = top >= marqueeBottom() - (spacer.current?.offsetHeight ?? 0)
-    const pin = top >= feedTop() - (marquee.current?.offsetHeight ?? 0)
+    const state: ScrollState = top > 0 ? direction.current : 'top'
+    const pin = hasTabsInPage.current && feedTop() - top <= headerBottom(state, false)
     pinnedNow.current = pin
-    setScrollState(stuck ? direction.current : 'top')
+    setScrollState(state)
     setPinned(pin)
     setScrolled(top > 0)
   }
@@ -23090,7 +23315,7 @@ export function Home({ scrollTo = 'top', market = 'in', movers, onTab, onSearch,
     let frame = 0
     let tries = 0
     const align = () => {
-      const covered = overlay.current?.getBoundingClientRect().height ?? 0
+      const covered = headerBottom('up', pinnedNow.current)
       const delta = target.getBoundingClientRect().top - body.getBoundingClientRect().top - covered
       if (Math.abs(delta) < 1 || tries++ > 8) {
         setAnimate(true)
@@ -23112,8 +23337,10 @@ export function Home({ scrollTo = 'top', market = 'in', movers, onTab, onSearch,
     setTab(next)
   }
   const markets: Market[] = ['in', 'us']
+  const hasSwitchNow = useRef(hasSwitch)
+  hasSwitchNow.current = hasSwitch
   const swipe = useSwipeBetween({
-    canGo: (direction) => neighbour(markets, tab, direction) !== null,
+    canGo: (direction) => hasSwitchNow.current && neighbour(markets, tab, direction) !== null,
     onSwitch: (direction) => switchTo(neighbour(markets, tab, direction)!),
     page: tab,
   })
@@ -23122,7 +23349,8 @@ export function Home({ scrollTo = 'top', market = 'in', movers, onTab, onSearch,
     swipe.bind(body)
     return () => swipe.bind(null)
   }, [])
-  // Switching while pinned: the other tab starts at the top of its feed.
+  // Switching while scrolled: the page stays where it is (the other tab's feed at the same depth, header unchanged);
+  // a shorter feed ends the page where it ends.
   const firstTab = useRef(true)
   useLayoutEffect(() => {
     if (firstTab.current) {
@@ -23130,10 +23358,12 @@ export function Home({ scrollTo = 'top', market = 'in', movers, onTab, onSearch,
       return
     }
     const body = page.current?.parentElement
-    // The feed starts right under what is sticky at the moment (marquee + tabs, and the top bar if it is showing).
-    if (body && pinnedNow.current) scrollBodyTo(feedTop() - (overlay.current?.getBoundingClientRect().height ?? 0))
+    if (body) lastTop.current = body.scrollTop
     sync()
-  }, [tab])
+  }, [tab, version.id])
+
+  // Under a switch in the middle the feed starts right below it; otherwise it overlaps the summary on a rounded sheet.
+  const feedClass = version.place === 'mid' ? `${styles.feed} ${styles.feedTabbed}` : styles.feed
 
   return (
     <Screen
@@ -23142,38 +23372,30 @@ export function Home({ scrollTo = 'top', market = 'in', movers, onTab, onSearch,
       bottom={<MainNav value="stocks" onChange={onTab} />}
     >
       <div className={styles.header} data-animate={animate || undefined}>
-        <div ref={overlay} className={styles.overlay} data-tabs={pinned || undefined}>
-          <div className={styles.slide} data-edge="top" data-open={scrollState !== 'down' || undefined} inert={scrollState === 'down' || undefined}>
-            <div>
-              <TopBar scrolled={scrolled} initials={initials(user.name)} onProfile={onProfile} onSearch={onSearch} onWallet={onWallet} onDash={onDash} dashIntro={dashIntro} onDashIntroDone={onDashIntroDone} />
-            </div>
-          </div>
-          <div className={styles.slide} data-open={scrollState !== 'top' || undefined} inert={scrollState === 'top' || undefined}>
-            <div>
-              <div ref={marquee}>
-                {tab === 'us' ? <IndexStrip key="us" items={usIndices} label={t('us.indices.label')} className={styles.stickyIndex} /> : <IndexStrip key="in" className={styles.stickyIndex} />}
-              </div>
-            </div>
-          </div>
-          <div className={styles.slide} data-edge="bottom" data-open={pinned || undefined} inert={!pinned || undefined}>
-            <div>
-              <PinnedMarketTabs value={tab} onChange={(next) => switchTo(next, true)} />
-            </div>
-          </div>
+        <div className={styles.topBar} data-hidden={scrollState === 'down' || undefined} inert={scrollState === 'down' || undefined}>
+          <TopBar scrolled={scrolled} initials={initials(user.name)} onProfile={onProfile} onSearch={() => onSearch?.(tab)} onWallet={onWallet} end={version.place === 'header' && <MarketSwitch compact appearance="pill-group" look={version} value={tab} onChange={(next) => switchTo(next, true)} />} />
         </div>
       </div>
-      {/* Holds the top bar's place at the top of the page (the bar itself hangs in the overlay above). */}
+      {/* Holds the top bar's place at the top of the page (the bar itself hangs from the sticky header above). */}
       <div ref={spacer} className={styles.spacer} aria-hidden="true" />
       <Stack ref={page} className={styles.flatCards}>
-        <Stack style={{ paddingTop: '0' }} gap="24" className={styles.summary} data-home="top">
-          {tab === 'us' ? <IndexStrip key="us" items={usIndices} label={t('us.indices.label')} slideIn={stripSlides} /> : <IndexStrip key="in" slideIn={stripSlides} />}
+        {version.place === 'top' && <MarketSwitchFor version={version} value={tab} onChange={(next) => switchTo(next, true)} />}
+        {/* The page's one index marquee: sticky under the top bar, and up to the very top while the top bar is away. */}
+        <div ref={marquee} className={styles.marquee} data-home="top" data-state={scrollState} data-tabs={pinned || undefined} data-animate={animate || undefined} data-ticker={version.ticker ? undefined : 'off'}>
+          <div ref={band} className={styles.band} aria-hidden="true" />
+          {!version.ticker ? null : tab === 'us' ? <IndexStrip key="us" items={usIndices} label={t('us.indices.label')} slideIn={stripSlides} /> : <IndexStrip key="in" slideIn={stripSlides} />}
+          <div className={styles.pinnedTabs} data-open={pinned || undefined} inert={!pinned || undefined}>
+            <PinnedMarketTabs value={tab} onChange={(next) => switchTo(next, true)} />
+          </div>
+        </div>
+        <Stack gap="24" className={styles.summary}>
           <HoldingsSummary us={tab === 'us' && usState === 'holding'} />
-          <ProductCards />
+          <ProductCards key={version.tiles} items={tiles[version.tiles]} onProduct={(id) => id === 'us-stocks' && switchTo('us', true)} />
         </Stack>
-        <MarketTabs value={tab} onChange={(next) => switchTo(next, true)} />
+        {version.place === 'mid' && <MarketSwitchFor version={version} value={tab} onChange={(next) => switchTo(next, true)} />}
         {tab === 'in' ? (
-          <Stack key="in" gap="32" className={`${styles.feed} ${styles.feedTabbed}`} ref={swipe.contentRef}>
-            <Shortcuts />
+          <Stack key="in" gap="32" className={feedClass} ref={swipe.contentRef}>
+            <Shortcuts titled={version.doMore} />
             <div data-home="movers"><TopMovers initial={movers} /></div>
             <Watchlists />
             <Section paddingBlock="24" className={styles.tinted} data-tint="brand" data-home="invest"><SmartInvest /></Section>
@@ -23184,13 +23406,25 @@ export function Home({ scrollTo = 'top', market = 'in', movers, onTab, onSearch,
             <Disclosure />
           </Stack>
         ) : (
-          <Stack key="us" gap="32" className={`${styles.feed} ${styles.feedTabbed}`} style={{ '--stk-gap': 'var(--l3-spacing-28)' } as CSSProperties} ref={swipe.contentRef}>
-            <UsHome usState={usState} onActivate={onActivateUs} onStock={onUsStock} onMarket={onUsMarket} />
+          <Stack key="us" gap="32" className={feedClass} style={{ '--stk-gap': 'var(--l3-spacing-28)' } as CSSProperties} ref={swipe.contentRef}>
+            <UsHome usState={usState} onActivate={onActivateUs} onStock={onUsStock} onMarket={onUsMarket} onEtfs={onUsEtfs} />
           </Stack>
         )}
       </Stack>
     </Screen>
   )
+}
+
+const tiles = { classic: productsClassic, today: products, withUs: productsWithUs }
+
+/**
+ * The IND / US switch of a version that has it in the page: the notched folder tabs (V2, V7, V8), or L3 Tabs — a pill
+ * group (V3, V6, V9) or underline tabs (V4). In the middle, the L3 Tabs sit at the top of the feed's rounded sheet.
+ */
+function MarketSwitchFor({ version, value, onChange }: { version: HomeVersion; value: Market; onChange: (market: Market) => void }) {
+  if (version.look === 'folder') return <MarketTabs value={value} onChange={onChange} look={version} place={version.place === 'top' ? 'top' : 'mid'} />
+  const tabs = <MarketSwitch appearance={version.look === 'underline' ? 'underline' : 'pill-group'} look={version} value={value} onChange={onChange} />
+  return version.place === 'mid' ? <div className={styles.sheetHead}>{tabs}</div> : tabs
 }
 
 /** "Rohan Mehta" → "RM": the profile's initials. */
@@ -39203,6 +39437,8 @@ export type Preview = {
   screenId?: string
   /** Back to the screen shown before this one in the prototype (any flow); false when there's none to go back to. */
   back?: () => boolean
+  /** The screen was reached by going back (a back button, or a screen earlier in the app) — a page can come back as it was left. */
+  cameBack?: boolean
 }
 
 export const PreviewContext = createContext<Preview>({ interactive: false, go: () => {} })
@@ -39342,9 +39578,12 @@ export function rememberStocksHome(screen: string, market: 'in' | 'us') {
   lastStocks = { screen, market }
 }
 
-/** The Stocks home, when it opens: the IND / US tab to come back to, if the navbar brought the user back to it. */
-export function takeStocksTab(screen: string): 'in' | 'us' | undefined {
-  const back = restoring
+/**
+ * The Stocks home, when it opens: the IND / US tab to come back to — if the navbar brought the user back to it, or a
+ * back move did (back from a stock page, Market, the wallet … returns to the tab it was opened from).
+ */
+export function takeStocksTab(screen: string, cameBack = false): 'in' | 'us' | undefined {
+  const back = restoring ?? (cameBack ? lastStocks : null)
   restoring = null
   return back && back.screen === screen ? back.market : undefined
 }
@@ -39745,360 +39984,4 @@ export function Spot({ icon, tone = 'brand', size = 'lg' }: { icon: string; tone
     </span>
   )
 }
-```
-
-### `src/shared/ui/dash/DashEntry.module.css`
-
-```css
-/*
- * DASH pill — Figma "Dash entry point" (DASH AI main flow, 11492:7740), copied as drawn: hugs its content (4 / 8
- * padding, 2 between the orb and the word), full radius, a 1px green-300 edge, a 176° fill from surface/primary
- * (37.5%) into the brand-light lime (93.4%), the orb at 21.8 without its halo, "DASH" in Heading/10, success green.
- */
-.entry {
-  display: inline-flex;
-  flex: none;
-  align-items: center;
-  gap: var(--l3-spacing-02);
-  padding: var(--l3-spacing-04) var(--l3-spacing-08);
-  border: 1px solid var(--l3-base-hue-green-300); /* 1px: Figma stroke */
-  border-radius: var(--l3-radius-full);
-  background: linear-gradient(176deg, var(--l3-surface-primary) 37.508%, var(--l3-surface-accent-brand-light) 93.358%);
-  color: var(--l3-content-accent-success-default);
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  transition: transform var(--l3-motion-duration-short) var(--l3-motion-easing-standard);
-}
-
-.entry:active {
-  transform: scale(var(--l3-motion-scale-press-default));
-}
-
-.entry:focus-visible {
-  outline: 2px solid var(--l3-content-primary);
-  outline-offset: 2px;
-}
-
-/* Figma "logo": 21.818 (local token — no L3 size). */
-.entry > span:first-child {
-  --orb-box: var(--app-dash-orb-pill);
-}
-
-.label {
-  font: var(--l3-text-heading-10);
-  text-align: center;
-  white-space: nowrap;
-}
-```
-
-### `src/shared/ui/dash/DashEntry.tsx`
-
-```tsx
-import { DashOrb } from './DashOrb'
-import styles from './DashEntry.module.css'
-
-type DashEntryProps = {
-  /** The visible word ("DASH"), from the caller's copy file. */
-  label: string
-  /** What a screen reader says ("Open DASH AI"). */
-  ariaLabel: string
-  onClick?: () => void
-}
-
-/**
- * The way into DASH AI — a pill in the Stocks home top bar (Figma "Dash entry point", DASH AI main flow 11492:7740):
- * the orb and "DASH" on a white-into-lime fill with a thin green edge. It hugs its content (≈ 32 tall).
- */
-export function DashEntry({ label, ariaLabel, onClick }: DashEntryProps) {
-  return (
-    <button type="button" className={styles.entry} onClick={onClick} aria-label={ariaLabel}>
-      <DashOrb size="sm" halo={false} />
-      <span className={styles.label} aria-hidden="true">{label}</span>
-    </button>
-  )
-}
-```
-
-### `src/shared/ui/dash/DashOrb.module.css`
-
-```css
-/*
- * The orb artwork is the Figma vector component: every part keeps the exact Figma box (px inside a 100 × 100 frame —
- * artwork geometry, not layout), and the whole thing scales to the slot. Sizes come from L3 size tokens.
- */
-.orb {
-  --orb-box: var(--l3-size-96);
-  position: relative;
-  display: inline-block;
-  flex: none;
-  width: var(--orb-box);
-  height: var(--orb-box);
-}
-
-.orb[data-size='lg'] { --orb-box: var(--l3-size-96); }
-.orb[data-size='md'] { --orb-box: var(--l3-size-64); }
-.orb[data-size='compact'] { --orb-box: var(--l3-size-40); }
-.orb[data-size='sm'] { --orb-box: var(--l3-size-32); }
-
-/* The art is drawn at 100 and scaled to the box. */
-.scale {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100px;
-  height: 100px;
-  transform: scale(calc(var(--orb-box) / 100px));
-  transform-origin: 0 0;
-}
-
-.art {
-  position: absolute;
-  inset: 0;
-}
-
-/* Figma: the halo copy sits 8 right / 10 down, layer blur 23.35. */
-.halo {
-  transform: translate(8px, 10px);
-  filter: blur(var(--app-dash-orb-halo-blur));
-}
-
-.art img {
-  display: block;
-  max-width: none;
-}
-
-/* "Group 1000006113" (back leaf, blurred glow): box 55.5 × 57.8, bottom 49.7, centre +17.2. */
-.leafBackBox,
-.leafFrontBox {
-  position: absolute;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transform: translateX(-50%);
-}
-
-.leafBackBox {
-  bottom: 49.71px;
-  left: calc(50% + 17.24px);
-  width: 55.526px;
-  height: 57.791px;
-}
-
-.leafBack,
-.leafFront {
-  position: relative;
-  flex: none;
-  /* Figma's order: rotate, then skew, then the vertical flip (Tailwind -scale-y-100 rotate-[-108.93deg] skew-x-1) */
-  transform: rotate(-108.93deg) skewX(1deg) scaleY(-1);
-}
-
-.leafBack {
-  width: 45.469px;
-  height: 43.372px;
-}
-
-.leafBackImg {
-  position: absolute;
-  inset: -14.91% -14.25% -14.71% -13.92%;
-  width: auto;
-  height: auto;
-}
-
-/* "Group 1000006112" (front leaves). */
-.leafFrontBox {
-  bottom: 50.97px;
-  left: calc(50% + 17.61px);
-  width: 50.159px;
-  height: 51.373px;
-}
-
-.leafFront {
-  width: 40.069px;
-  height: 39.526px;
-}
-
-.leafFront img {
-  width: 100%;
-  height: 100%;
-}
-
-/* "Ellipse 8": the ring's soft inner fill. */
-.fill {
-  position: absolute;
-  top: 30.85px;
-  left: 10.38px;
-  width: 57.662px;
-  height: 59.282px;
-}
-
-/* "circleGroup": the angular-gradient ring. */
-.ringBox {
-  position: absolute;
-  top: 27.88px;
-  left: 7.5px;
-  width: 62.852px;
-  height: 64.618px;
-}
-
-.ring {
-  position: absolute;
-  inset: -7.11% -7.31%;
-  width: auto;
-  height: auto;
-}
-
-/*
- * Idle motion (live app, 2026-10-23): the ring's yellow highlight goes round clockwise once a second, at a steady
- * speed — the ring and its soft fill turn on their own centres; the leaves stay still. Off for reduced motion.
- */
-.ringBox,
-.fill {
-  animation: dash-orb-spin var(--app-dash-orb-spin) linear infinite;
-}
-
-@keyframes dash-orb-spin {
-  to {
-    transform: rotate(1turn);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .ringBox,
-  .fill {
-    animation: none;
-  }
-}
-```
-
-### `src/shared/ui/dash/DashOrb.tsx`
-
-```tsx
-import leafBack from './assets/leaf-back.svg'
-import leafFront from './assets/leaf-front.svg'
-import orbFill from './assets/orb-fill.svg'
-import orbRing from './assets/orb-ring.svg'
-import styles from './DashOrb.module.css'
-
-export type DashOrbSize = 'sm' | 'compact' | 'md' | 'lg' // 32 · 40 · 64 · 96
-
-/**
- * DASH's mascot — the lime ring with two leaves (Figma "Logo" / "BotIcon", the 100 × 100 vector component), drawn from
- * its own vector parts in the Figma positions, with the soft halo behind it (a blurred copy).
- * Sizes: lg 96 (landing pages), md 64 (sheet headers, on a soft disc), sm 32 (the rule card's icon). The DASH pill sets its own
- * box (21.8). Shared: DASH flows and the home's entry pill use the same artwork.
- * Decorative: screen readers skip it — the text next to it says what it is.
- */
-export function DashOrb({ size = 'lg', halo = true }: { size?: DashOrbSize; halo?: boolean }) {
-  return (
-    <span className={styles.orb} data-size={size} aria-hidden="true">
-      <span className={styles.scale}>
-        {halo && <OrbArt className={styles.halo} />}
-        <OrbArt />
-      </span>
-    </span>
-  )
-}
-
-/** The artwork at its Figma size (100 × 100); the parent scales it. */
-function OrbArt({ className }: { className?: string }) {
-  return (
-    <span className={[styles.art, className].filter(Boolean).join(' ')}>
-      <span className={styles.leafBackBox}>
-        <span className={styles.leafBack}>
-          <img src={leafBack} alt="" className={styles.leafBackImg} />
-        </span>
-      </span>
-      <span className={styles.leafFrontBox}>
-        <span className={styles.leafFront}>
-          <img src={leafFront} alt="" />
-        </span>
-      </span>
-      <img src={orbFill} alt="" className={styles.fill} />
-      <span className={styles.ringBox}>
-        <img src={orbRing} alt="" className={styles.ring} />
-      </span>
-    </span>
-  )
-}
-```
-
-### `src/shared/ui/dash/assets/leaf-back.svg`
-
-```tsx
-<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="58.2771" height="56.2179" viewBox="0 0 58.2771 56.2179" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g id="Group 1000006113" filter="url(#filter0_f_0_282)">
-<path id="Big_leaf_00000052817416241482779350000003325489541389591972_" d="M11.1805 6.4948L10.2325 8.23984C7.21698 13.7241 6.07176 19.8031 6.63218 25.5588C7.5941 35.2352 13.3302 44.2732 22.6694 49.2476L23.6172 47.5025C27.4934 40.6061 28.2232 32.8573 26.4785 25.7606C24.3978 17.9116 19.1614 10.7108 11.1805 6.4948Z" fill="#8EF087" style="fill:#8EF087;fill:color(display-p3 0.5578 0.9428 0.5275);fill-opacity:1;"/>
-<path id="Small_leaf_00000086657169406454258550000009755690847739837326_" d="M51.7823 38.3919C48.9397 43.4603 44.4029 47.018 39.1965 48.6543C33.6484 50.4553 27.3477 50.0009 21.8287 47.1335C24.6713 42.065 29.2933 38.5078 34.4997 36.8715C39.9626 35.07 46.2638 35.4411 51.7823 38.3919Z" fill="#8EF087" style="fill:#8EF087;fill:color(display-p3 0.5578 0.9428 0.5275);fill-opacity:1;"/>
-</g>
-<defs>
-<filter id="filter0_f_0_282" x="-7.45058e-08" y="2.2538e-07" width="58.2771" height="56.2179" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-<feFlood flood-opacity="0" result="BackgroundImageFix"/>
-<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
-<feGaussianBlur stdDeviation="3.2474" result="effect1_foregroundBlur_0_282"/>
-</filter>
-</defs>
-</svg>
-```
-
-### `src/shared/ui/dash/assets/leaf-front.svg`
-
-```tsx
-<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="40.0692" height="39.5257" viewBox="0 0 40.0692 39.5257" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g id="Group 1000006112">
-<path id="Small_leaf_00000086657169406454258550000009755690847739837326_" d="M40.0554 29.6165C37.5947 34.0042 33.6673 37.084 29.1603 38.5005C24.3574 40.0595 18.9031 39.6661 14.1254 37.1839C16.5862 32.7963 20.5873 29.7169 25.0943 28.3004C29.8234 26.7409 35.2782 27.0621 40.0554 29.6165Z" fill="url(#paint0_linear_0_409)"/>
-<path id="Big_leaf_00000052817416241482779350000003325489541389591972_" d="M4.19434 0.0243672L3.37396 1.5349C0.764101 6.28215 -0.226587 11.5445 0.259219 16.5271C1.09303 24.9038 6.05968 32.7283 14.1449 37.0356L14.9652 35.525C18.3199 29.5554 18.9507 22.8476 17.4396 16.704C15.6376 9.90912 11.1037 3.67494 4.19434 0.0243672Z" fill="url(#paint1_linear_0_409)"/>
-</g>
-<defs>
-<linearGradient id="paint0_linear_0_409" x1="21.3968" y1="29.3938" x2="22.0238" y2="39.1604" gradientUnits="userSpaceOnUse">
-<stop stop-color="#7CE883" style="stop-color:#7CE883;stop-color:color(display-p3 0.4863 0.9098 0.5137);stop-opacity:1;"/>
-<stop offset="1" stop-color="#3EBF47" style="stop-color:#3EBF47;stop-color:color(display-p3 0.2433 0.7503 0.2802);stop-opacity:1;"/>
-</linearGradient>
-<linearGradient id="paint1_linear_0_409" x1="5.24577" y1="6.42552" x2="13.4379" y2="33.8372" gradientUnits="userSpaceOnUse">
-<stop stop-color="#7CE883" style="stop-color:#7CE883;stop-color:color(display-p3 0.4863 0.9098 0.5137);stop-opacity:1;"/>
-<stop offset="1" stop-color="#3EBF47" style="stop-color:#3EBF47;stop-color:color(display-p3 0.2433 0.7503 0.2802);stop-opacity:1;"/>
-</linearGradient>
-</defs>
-</svg>
-```
-
-### `src/shared/ui/dash/assets/orb-fill.svg`
-
-```tsx
-<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="57.6624" height="59.2824" viewBox="0 0 57.6624 59.2824" fill="none" xmlns="http://www.w3.org/2000/svg">
-<mask id="stroke0_0_416" fill="white">
-<path d="M57.6624 29.6412C57.6624 46.0116 44.7543 59.2824 28.8312 59.2824C12.9082 59.2824 0 46.0116 0 29.6412C0 13.2708 12.9082 0 28.8312 0C44.7543 0 57.6624 13.2708 57.6624 29.6412Z"/>
-</mask>
-<path id="Ellipse 8" d="M57.6624 29.6412C57.6624 46.0116 44.7543 59.2824 28.8312 59.2824C12.9082 59.2824 0 46.0116 0 29.6412C0 13.2708 12.9082 0 28.8312 0C44.7543 0 57.6624 13.2708 57.6624 29.6412Z" stroke-width="16.8671" stroke="url(#paint0_linear_0_416)" mask="url(#stroke0_0_416)"/>
-<defs>
-<linearGradient id="paint0_linear_0_416" x1="17.0104" y1="56.2094" x2="43.5226" y2="4.92706" gradientUnits="userSpaceOnUse">
-<stop stop-color="#72E780" style="stop-color:#72E780;stop-color:color(display-p3 0.4476 0.9047 0.5009);stop-opacity:1;"/>
-<stop offset="1" stop-color="#FDFFB5" style="stop-color:#FDFFB5;stop-color:color(display-p3 0.9903 1.0000 0.7091);stop-opacity:1;"/>
-</linearGradient>
-</defs>
-</svg>
-```
-
-### `src/shared/ui/dash/assets/orb-ring.svg`
-
-```tsx
-<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="72.0446" height="73.8103" viewBox="0 0 72.0446 73.8103" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g id="circleGroup">
-<g id="Ellipse 9" filter="url(#filter0_f_0_407)">
-<mask id="stroke0_0_407" fill="white">
-<path d="M67.4483 36.9052C67.4483 54.7489 53.3784 69.2141 36.0223 69.2141C18.6662 69.2141 4.59628 54.7489 4.59628 36.9052C4.59628 19.0615 18.6662 4.59628 36.0223 4.59628C53.3784 4.59628 67.4483 19.0615 67.4483 36.9052Z"/>
-</mask>
-<mask id="stroke1_0_407">
-<path d="M67.4483 36.9052C67.4483 54.7489 53.3784 69.2141 36.0223 69.2141C18.6662 69.2141 4.59628 54.7489 4.59628 36.9052C4.59628 19.0615 18.6662 4.59628 36.0223 4.59628C53.3784 4.59628 67.4483 19.0615 67.4483 36.9052Z" stroke-width="18.3851" stroke="white" mask="url(#stroke0_0_407)"/>
-</mask>
-<g clip-path="url(#paint0_angular_0_407_clip_path)" data-figma-skip-parse="true" mask="url(#stroke1_0_407)"><g transform="matrix(0.01625 -0.02375 0.0230642 0.0166474 37.0963 36.713)"><foreignObject x="-3827.82" y="-3827.82" width="7655.64" height="7655.64"><div xmlns="http://www.w3.org/1999/xhtml" style="background:conic-gradient(from 90deg,rgba(121, 234, 105, 1) 0deg,rgba(246, 253, 38, 1) 124.615deg,rgba(52, 177, 33, 1) 238.846deg,rgba(122, 235, 105, 1) 360deg);height:100%;width:100%;opacity:1"></div></foreignObject></g></g><path d="M67.4483 36.9052C67.4483 54.7489 53.3784 69.2141 36.0223 69.2141C18.6662 69.2141 4.59628 54.7489 4.59628 36.9052C4.59628 19.0615 18.6662 4.59628 36.0223 4.59628C53.3784 4.59628 67.4483 19.0615 67.4483 36.9052Z" stroke-width="18.3851" stroke="black" stroke-opacity="0" data-figma-gradient-stroke="{&#34;type&#34;:&#34;GRADIENT_ANGULAR&#34;,&#34;stops&#34;:[{&#34;color&#34;:{&#34;r&#34;:0.47711750864982605,&#34;g&#34;:0.92151820659637451,&#34;b&#34;:0.41342675685882568,&#34;a&#34;:1.0},&#34;position&#34;:0.0},{&#34;color&#34;:{&#34;r&#34;:0.96524602174758911,&#34;g&#34;:0.99325793981552124,&#34;b&#34;:0.15290218591690063,&#34;a&#34;:1.0},&#34;position&#34;:0.34615385532379150},{&#34;color&#34;:{&#34;r&#34;:0.20681096613407135,&#34;g&#34;:0.69540637731552124,&#34;b&#34;:0.13164243102073669,&#34;a&#34;:1.0},&#34;position&#34;:0.66346156597137451},{&#34;color&#34;:{&#34;r&#34;:0.47843137383460999,&#34;g&#34;:0.92156863212585449,&#34;b&#34;:0.41176471114158630,&#34;a&#34;:1.0},&#34;position&#34;:1.0}],&#34;transform&#34;:{&#34;m00&#34;:32.500003814697266,&#34;m01&#34;:46.128456115722656,&#34;m02&#34;:-2.2179441452026367,&#34;m10&#34;:-47.500007629394531,&#34;m11&#34;:33.294700622558594,&#34;m12&#34;:43.815639495849609},&#34;opacity&#34;:1.0,&#34;blendMode&#34;:&#34;NORMAL&#34;,&#34;stopsVar&#34;:[{&#34;color&#34;:{&#34;r&#34;:0.47711750864982605,&#34;g&#34;:0.92151820659637451,&#34;b&#34;:0.41342675685882568,&#34;a&#34;:1.0},&#34;position&#34;:0.0},{&#34;color&#34;:{&#34;r&#34;:0.96524602174758911,&#34;g&#34;:0.99325793981552124,&#34;b&#34;:0.15290218591690063,&#34;a&#34;:1.0},&#34;position&#34;:0.34615385532379150},{&#34;color&#34;:{&#34;r&#34;:0.20681096613407135,&#34;g&#34;:0.69540637731552124,&#34;b&#34;:0.13164243102073669,&#34;a&#34;:1.0},&#34;position&#34;:0.66346156597137451},{&#34;color&#34;:{&#34;r&#34;:0.47843137383460999,&#34;g&#34;:0.92156863212585449,&#34;b&#34;:0.41176471114158630,&#34;a&#34;:1.0},&#34;position&#34;:1.0}],&#34;visible&#34;:true}" mask="url(#stroke0_0_407)"/>
-</g>
-</g>
-<defs>
-<filter id="filter0_f_0_407" x="0" y="0" width="72.0446" height="73.8103" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-<feFlood flood-opacity="0" result="BackgroundImageFix"/>
-<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
-<feGaussianBlur stdDeviation="2.29814" result="effect1_foregroundBlur_0_407"/>
-</filter>
-<clipPath id="paint0_angular_0_407_clip_path"><rect x="-41.3666" y="-41.3666" width="154.778" height="156.543"/></clipPath></defs>
-</svg>
 ```

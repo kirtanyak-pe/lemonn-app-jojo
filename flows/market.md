@@ -1653,6 +1653,8 @@ export type Preview = {
   screenId?: string
   /** Back to the screen shown before this one in the prototype (any flow); false when there's none to go back to. */
   back?: () => boolean
+  /** The screen was reached by going back (a back button, or a screen earlier in the app) — a page can come back as it was left. */
+  cameBack?: boolean
 }
 
 export const PreviewContext = createContext<Preview>({ interactive: false, go: () => {} })
@@ -1792,9 +1794,12 @@ export function rememberStocksHome(screen: string, market: 'in' | 'us') {
   lastStocks = { screen, market }
 }
 
-/** The Stocks home, when it opens: the IND / US tab to come back to, if the navbar brought the user back to it. */
-export function takeStocksTab(screen: string): 'in' | 'us' | undefined {
-  const back = restoring
+/**
+ * The Stocks home, when it opens: the IND / US tab to come back to — if the navbar brought the user back to it, or a
+ * back move did (back from a stock page, Market, the wallet … returns to the tab it was opened from).
+ */
+export function takeStocksTab(screen: string, cameBack = false): 'in' | 'us' | undefined {
+  const back = restoring ?? (cameBack ? lastStocks : null)
   restoring = null
   return back && back.screen === screen ? back.market : undefined
 }

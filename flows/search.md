@@ -2,7 +2,7 @@
 
 > One self-contained file for converting this flow to another platform. Read https://kirtanyak-pe.github.io/lemonn-app-prototype/CONVERT.md first. Design system: Lemonnade V3 @ `cdf73c6` (components, tokens and rules: https://kirtanyak-pe.github.io/lemonnade-v3-docs/llms.txt).
 
-Search stocks, F&O contracts, mutual funds and IPOs; Smart Options & Futures lists; add to watchlist.
+Search stocks, US stocks, F&O contracts, mutual funds and IPOs; Smart Options & Futures lists; add to watchlist.
 
 Prototype: https://kirtanyak-pe.github.io/lemonn-app-prototype/#/search · machine-readable: https://kirtanyak-pe.github.io/lemonn-app-prototype/flows/search.json
 
@@ -16,6 +16,9 @@ Prototype: https://kirtanyak-pe.github.io/lemonn-app-prototype/#/search · machi
 | `search-03` | Stocks · only a watchlist matches | [4912:13671](https://www.figma.com/design/sG24GPizTdwbMBxLm0IpTA/?node-id=4912-13671) | `stocks-01` | "Penny": the watchlist, and "Stocks (0)" with nothing under it. |
 | `search-04` | Stocks · no matching watchlist | [4912:13587](https://www.figma.com/design/sG24GPizTdwbMBxLm0IpTA/?node-id=4912-13587) | `stocks-01`, `search-18` | Same results without the watchlist group. |
 | `search-05` | Stocks · nothing found | [4912:13703](https://www.figma.com/design/sG24GPizTdwbMBxLm0IpTA/?node-id=4912-13703) | `stocks-01` | L3 empty state with the L3 default illustration (Figma still has the old magnifier). Clear Search empties the field. |
+| `search-29` | US · before typing | [5796:89230](https://www.figma.com/design/sG24GPizTdwbMBxLm0IpTA/?node-id=5796-89230) | `stocks-09` | From the search field on Stocks home’s US tab, or Search on the US Portfolio. Recent and popular US stocks as chips (a chip searches for that company), then US collections as tiles. Back returns to where Search was opened. |
+| `search-30` | US · results | — | `stocks-09` | "N": US stocks by name or ticker, with $ prices. A row opens that stock’s US stock page. |
+| `search-31` | US · nothing found | — | `stocks-09` | No US stock matches: L3 empty state with Clear search. |
 | `search-25` | F&O · search from home | [4912:13728](https://www.figma.com/design/sG24GPizTdwbMBxLm0IpTA/?node-id=4912-13728) | `fno-01`, `search-26` | From F&O home; Back returns there. |
 | `search-28` | F&O · “Gold” results (illiquid) | — | `fno-01`, `search-26` | Typing “Gold” on the F&O tab (live app reference, 2026-10-29): MCX gold options with the gold artwork. Illiquid contracts (GOLD 135000 Put, GOLD 150000 Call) carry the ILLIQUID tag after the name; tapping the tag opens “What does illiquidity mean?”. Tapping a row opens the contract’s asset page (fno-21); an illiquid one opens the ILLIQUID asset page (fno-22). |
 | `search-26` | F&O home · all Smart Options | [4912:13925](https://www.figma.com/design/sG24GPizTdwbMBxLm0IpTA/?node-id=4912-13925) | `fno-01` |  |
@@ -53,8 +56,9 @@ F&O home entry points (2026-10-26): `search-25` opens F&O search, `search-26` op
 - **Figma:** [Search → 🌙 Dark](https://www.figma.com/design/sG24GPizTdwbMBxLm0IpTA/?node-id=4912-12950) (dev
   handoff file) — **final layouts** in the old D2 system. This flow keeps every layout as it is and swaps the parts for
   L3 components, tokens and text styles. Figma frames are dark; the code works in every L3 theme.
-- **Status:** ✅ · last updated 2026-10-19
-- **Entry:** the search field on Stocks home (`stocks-01`), or the Search action on Market (`market-01` → `search-24`) ·
+- **Status:** ✅ · last updated 2026-11-01
+- **Entry:** the search field on Stocks home (`stocks-01`; on the US tab → `search-29`), the Search action on Market
+  (`market-01` → `search-24`), or Search on the US Portfolio (`us-stocks-05`) ·
   **Exit:** back → where it was opened from (Stocks home or Market); a result opens its page
   (stock / contract / fund / IPO page — not in this flow)
 
@@ -68,6 +72,9 @@ F&O home entry points (2026-10-26): `search-25` opens F&O search, `search-26` op
 | `search-03` | Stocks · only a watchlist matches | 4912:13671 | "Penny": one watchlist, "Stocks (0)" |
 | `search-04` | Stocks · no matching watchlist | 4912:13587 | "Bank" without the watchlist group |
 | `search-05` | Stocks · nothing found | 4912:13703 | Empty state + Clear Search |
+| `search-29` | US · before typing | 5796:89230 | Recent / popular US stocks as chips (a chip searches for it), then US collections as tiles; back → where Search was opened |
+| `search-30` | US · results | — | "N": US stocks by name or ticker, $ price and change; a row opens the US stock page (`us-stocks-13`) |
+| `search-31` | US · nothing found | — | Empty state + Clear Search |
 | `search-06` | F&O · before typing | 4912:13728 | Recent / popular contracts, Smart Options & Futures tiles (View All) |
 | `search-07` | F&O · results | 4912:14199 | "Bank": watchlists (no count), Contracts (4) |
 | `search-08` | F&O · nothing found | 4912:13902 | Empty state |
@@ -93,6 +100,8 @@ F&O home entry points (2026-10-26): `search-25` opens F&O search, `search-26` op
 
 ```
 market Search action ─▶ search-24 (= search-01; back ─▶ market-01)
+stocks-01 search field ─▶ search-01 (US tab on Home ─▶ search-29; US Portfolio Search ─▶ search-29)
+search-29/30 US row ─▶ us-stocks-13 (that stock) ─back─▶ search
 stocks-01 search field ─▶ search-01 ─type─▶ results in place (search-02 …) · tabs switch in place · ✕ / Clear Search ─▶ before typing
 search-06 tile / View All ─▶ search-09 ─back─▶ search-06        (↕ pill, list pills and Price ↕ change the list in place)
 search-02 bookmark ─▶ search-18 ─tick─▶ search-19 ─Save─▶ search-20 (toast) ─OK / auto─▶ search-21
@@ -103,12 +112,14 @@ any screen ─back─▶ where Search was opened from (stocks-01 / market-01)
 ### Data
 
 `data.ts` (types = the API contract, values = examples from Figma):
-- `search(query)` → `SearchResults` `{ query, counts: {stocks, fno, mf, ipo}, tabs: { [tab]: { watchlists, listTitle, items } } }`.
+- `search(query)` → `SearchResults` `{ query, counts: {stocks, us, fno, mf, ipo}, tabs: { [tab]: { watchlists, listTitle, items } } }`.
   A tab with no entry shows the empty state. Real app: one search call per (debounced) query.
 - `WatchlistMatch` `{ id, name, initials, count? }` — `count` ("2 stocks") on the Stocks tab only.
-- `SearchResult` `{ id, name, detail, initials?, logoUrl?, price?, changePct?, returnsLabel?, priceBand?, volume?, saved? }`
-  — stocks: logo + price + change; contracts: no logo; funds: no logo, "3Y" + returns; IPOs: logo + price band.
-- Before typing: `recent[tab]` (max 5), `popular[tab]` (1–2 rows), `signalCategories`, `collections`, `ipoLists`.
+- `SearchResult` `{ id, name, detail, initials?, logoUrl?, price?, changePct?, returnsLabel?, priceBand?, volume?, saved?, currency? }`
+  — stocks: logo + price + change; US stocks: `currency: 'usd'`, `id` = ticker, detail "NASDAQ • NVDA", $ price; contracts: no logo; funds: no logo, "3Y" + returns; IPOs: logo + price band.
+- Before typing: `recent[tab]` (max 5), `popular[tab]` (1–2 rows), `signalCategories`, `collections`, `usCollections`, `ipoLists`.
+- US tab: chips and results come from the shared US catalogue (`src/shared/data/usStocks.ts`: name, exchange, $ price,
+  change, logo); `usStocks(q)` matches the ticker or any word of the name onward.
 - Signals: `signalScopes` (Indices / Stocks, each with its lists), `indexSignals`, `stockSignals`, sort `price | volume`.
 - Watchlists: `allWatchlists` (the sheet), `fewWatchlists`.
 - API: search(query) · add item to watchlists(ids) · create watchlist(name) · signals list(scope, list, sort, filters).
@@ -186,6 +197,9 @@ any screen ─back─▶ where Search was opened from (stocks-01 / market-01)
 
 ### Changelog
 
+- 2026-11-01 — **US tab** (Stocks · US · F&O · MF · IPO): `search-29`–`31`. Replaces US Stocks' own search screen
+  (`us-stocks-03`, Figma 5796:89230) — one Search for the whole app. Opened from Home's US tab and the US Portfolio;
+  back returns to where it was opened; a result opens the US stock page.
 - 2026-10-21 — layout moved from CSS-module classes to the L3 layout blocks (Section, Stack, Inset, Grid); nothing moved (measured at 392).
 - 2026-10-19 — opened from Market too (`search-24`, back returns to Market).
 - 2026-10-19 — Clear Search back to Small (empty-state action).
@@ -367,7 +381,7 @@ import { Stack } from '@l3/components/Stack'
 import { Tag } from '@l3/components/Tag'
 import { msBlock } from '@l3/icons/material'
 import { lmWatchlistAdd, lmWatchlistAdded } from '@l3/icons/lemonnade'
-import { inr } from '../../../shared/data/format'
+import { inr, usd } from '../../../shared/data/format'
 import type { SearchResult } from '../data'
 import { t } from '../copy'
 import styles from './ResultList.module.css'
@@ -436,7 +450,7 @@ export function ResultList({ items, label, showVolume, bookmarks = true, saved, 
 function Trailing({ item, showVolume }: { item: SearchResult; showVolume?: boolean }) {
   if (showVolume && item.volume !== undefined) return <span className={styles.value}>{item.volume.toLocaleString('en-IN')}</span>
   if (item.priceBand) return <span className={styles.value}>{item.priceBand}</span>
-  const top = item.returnsLabel ?? (item.price !== undefined ? inr(item.price) : undefined)
+  const top = item.returnsLabel ?? (item.price !== undefined ? (item.currency === 'usd' ? usd(item.price) : inr(item.price)) : undefined)
   if (top === undefined) return null
   return (
     <span className={styles.stack}>
@@ -653,12 +667,14 @@ export function WatchlistMatches({ watchlists, onOpen }: { watchlists: Watchlist
 ```json
 {
   "tab.stocks": "Stocks",
+  "tab.us": "US",
   "tab.fno": "F&O",
   "tab.mf": "MF",
   "tab.ipo": "IPO",
   "tab.withCount": "{tab} ({count})",
   "tabs.label": "Search in",
   "field.stocks": "Search stocks",
+  "field.us": "Search US stocks",
   "field.fno": "Search contracts",
   "field.mf": "Search mutual funds",
   "field.ipo": "Search IPOs",
@@ -670,6 +686,7 @@ export function WatchlistMatches({ watchlists, onOpen }: { watchlists: Watchlist
   "signals.tilesLabel": "Smart Options & Futures lists",
   "collections.title": "Collections",
   "collections.tilesLabel": "Fund collections",
+  "usCollections.tilesLabel": "US stock collections",
   "group.viewAll": "View All",
   "group.viewAllLabel": "View all {name}",
   "results.title": "{list} ({count})",
@@ -727,8 +744,9 @@ export const t = makeCopy('search', copy)
 
 /** The four search tabs, in order. */
 import goldArt from './assets/gold.png'
+import { catalogue, usLogo } from '../../shared/data/usStocks'
 
-export type SearchTab = 'stocks' | 'fno' | 'mf' | 'ipo'
+export type SearchTab = 'stocks' | 'us' | 'fno' | 'mf' | 'ipo'
 
 /** A recent or popular search, shown as a chip (max 200 wide; at most 5 recent ones are kept). */
 export type SearchChip = { label: string; initials: string; logoUrl?: string }
@@ -755,6 +773,8 @@ export type SearchResult = {
   volume?: number
   /** Already in one of the user's watchlists (filled bookmark). */
   saved?: boolean
+  /** US stocks: the price is in dollars, and `id` is the ticker (a row opens that US stock's page). */
+  currency?: 'usd'
   /** Commodity contracts: the commodity's artwork instead of a logo. */
   image?: string
   /**
@@ -777,6 +797,11 @@ export type SearchResults = { query: string; counts: Record<SearchTab, number>; 
 
 // ---- Before typing ---------------------------------------------------------------------------------------------
 
+/** US chips: the company's name and logo from the shared US catalogue (src/shared/data/usStocks.ts). */
+function usChips(symbols: string[]): SearchChip[] {
+  return symbols.map((sym) => ({ label: catalogue[sym].name, initials: sym[0], logoUrl: usLogo(sym) }))
+}
+
 export const recent: Record<SearchTab, SearchChip[]> = {
   stocks: [
     { label: 'Bharat Coking Coal Ltd.', initials: 'B' },
@@ -785,6 +810,7 @@ export const recent: Record<SearchTab, SearchChip[]> = {
     { label: 'Reliance Industries Ltd', initials: 'R' },
     { label: 'Tata Motors Passenger Vehicles Ltd.', initials: 'T' },
   ],
+  us: usChips(['NVDA', 'AAPL', 'TSLA', 'MSFT', 'AMZN']),
   fno: [
     { label: 'Reliance Fut Finnifty 23500 CE', initials: 'R' },
     { label: 'Nifty 24500 CE', initials: 'N' },
@@ -816,6 +842,7 @@ export const popular: Record<SearchTab, SearchChip[][]> = {
       { label: 'Saregama India Ltd.', initials: 'S' },
     ],
   ],
+  us: [usChips(['GOOGL', 'META', 'NFLX']), usChips(['AVGO', 'AMD', 'UBER'])],
   fno: [
     [
       { label: 'Nifty 24500 CE', initials: 'N' },
@@ -843,6 +870,9 @@ export const popular: Record<SearchTab, SearchChip[][]> = {
     ],
   ],
 }
+
+/** US: themed lists, as tiles (2 columns). */
+export const usCollections = ['AI Leaders', 'Trillion Dollar Club', 'Warren Buffett’s Portfolio', 'Dividend Kings']
 
 /** F&O: the Smart Options & Futures lists, as tiles (2 columns). Each opens its signals list. */
 export const signalCategories = [
@@ -913,7 +943,7 @@ const noWatchlistCounts = (w: WatchlistMatch[]) => w.map(({ count: _count, ...re
 /** "Bank": results on the Stocks, F&O and MF tabs (no IPO matches). */
 export const bank: SearchResults = {
   query: 'Bank',
-  counts: { stocks: bankStocks.length, fno: bankContracts.length, mf: bankFunds.length, ipo: 0 },
+  counts: { stocks: bankStocks.length, us: 0, fno: bankContracts.length, mf: bankFunds.length, ipo: 0 },
   tabs: {
     stocks: { watchlists: bankWatchlists, listTitle: 'Stocks', items: bankStocks },
     fno: { watchlists: noWatchlistCounts(bankWatchlists), listTitle: 'Contracts', items: bankContracts },
@@ -927,14 +957,14 @@ export const bankNoWatchlist: SearchResults = { ...bank, tabs: { ...bank.tabs, s
 /** "Penny": a watchlist matches, no stock does. */
 export const penny: SearchResults = {
   query: 'Penny',
-  counts: { stocks: 1, fno: 0, mf: 0, ipo: 0 },
+  counts: { stocks: 1, us: 0, fno: 0, mf: 0, ipo: 0 },
   tabs: { stocks: { watchlists: [{ id: 'penny', name: 'Penny stocks', initials: 'P', count: 7 }], listTitle: 'Stocks', items: [] } },
 }
 
 /** "Energy": two IPOs. */
 export const energy: SearchResults = {
   query: 'Energy',
-  counts: { stocks: 3, fno: 1, mf: 0, ipo: 2 },
+  counts: { stocks: 3, us: 0, fno: 1, mf: 0, ipo: 2 },
   tabs: {
     ipo: {
       watchlists: [],
@@ -964,12 +994,12 @@ const goldContracts: SearchResult[] = [
 /** "Gold": only F&O contracts in this sample. */
 export const gold: SearchResults = {
   query: 'Gold',
-  counts: { stocks: 0, fno: goldContracts.length, mf: 0, ipo: 0 },
+  counts: { stocks: 0, us: 0, fno: goldContracts.length, mf: 0, ipo: 0 },
   tabs: { fno: { watchlists: [], listTitle: 'Contracts', items: goldContracts } },
 }
 
 /** A query nothing matches ("Vanf", "Adsf"): the empty state on every tab. */
-export const nothing = (query: string): SearchResults => ({ query, counts: { stocks: 0, fno: 0, mf: 0, ipo: 0 }, tabs: {} })
+export const nothing = (query: string): SearchResults => ({ query, counts: { stocks: 0, us: 0, fno: 0, mf: 0, ipo: 0 }, tabs: {} })
 
 /**
  * Prototype search: the sample result sets above, matched as you type ("Ba" → Bank). Anything else finds nothing.
@@ -979,7 +1009,17 @@ export function search(query: string): SearchResults | undefined {
   const q = query.trim().toLowerCase()
   if (!q) return undefined
   const sample = [bank, penny, energy, gold].find((s) => s.query.toLowerCase().startsWith(q))
-  return sample ? { ...sample, query } : nothing(query)
+  const found = sample ? { ...sample, query } : nothing(query)
+  // The US tab searches the US catalogue by name or ticker, whatever the query.
+  const us = usStocks(q)
+  return us.length ? { ...found, counts: { ...found.counts, us: us.length }, tabs: { ...found.tabs, us: { watchlists: [], listTitle: 'US Stocks', items: us } } } : found
+}
+
+/** US stocks whose ticker, or any word of the name onward, starts with the query ("nv", "nvidia corp", "corp"). Prices in $. */
+export function usStocks(q: string): SearchResult[] {
+  return Object.entries(catalogue)
+    .filter(([sym, s]) => sym.toLowerCase().startsWith(q) || ` ${s.name.toLowerCase()}`.includes(` ${q}`))
+    .map(([sym, s]) => ({ id: sym, name: s.name, detail: `${s.exchange} • ${sym}`, initials: sym[0], logoUrl: usLogo(sym), price: s.price, changePct: s.change, currency: 'usd' as const }))
 }
 
 // ---- Smart Options & Futures (signals) ---------------------------------------------------------------------------
@@ -1037,6 +1077,7 @@ export const fewWatchlists = allWatchlists.slice(0, 4)
 import { Aerobar } from '@l3/components/Aerobar'
 import { Icon } from '@l3/components/Icon'
 import { msCheck } from '@l3/icons/material'
+import { viewUsStock } from '../../shared/data/usStocks'
 import type { Flow, Go } from '../types'
 import { t } from './copy'
 import { allWatchlists, bank, bankNoWatchlist, energy, fewWatchlists, nothing, penny, type SearchResult } from './data'
@@ -1048,23 +1089,28 @@ import { AddToWatchlistSheet, CreateWatchlistSheet } from './sheets/WatchlistShe
 const savedAfter = ['BANKBARODA', 'HDFCBANK']
 
 /**
- * Search — the search screen for Stocks, F&O, MF and IPO (one screen, four tabs), F&O's Smart Options & Futures lists,
+ * Search — the search screen for Stocks, US stocks, F&O, MF and IPO (one screen, five tabs), F&O's Smart Options & Futures lists,
  * and adding a result to a watchlist. Figma: "Search → 🌙 Dark" (4912:12950) in the dev handoff file — final D2
  * layouts, rebuilt with L3 components and tokens without changing the layout.
  */
 /**
  * Tapping a result: commodity contracts (they carry artwork) open their asset page in F&O — fno-21, or the ILLIQUID
- * asset page fno-22. Other results have no page in this prototype yet.
+ * asset page fno-22; US stocks open their US stock page (us-stocks-13) for that ticker. Other results have no page in
+ * this prototype yet.
  */
-const openResult = (go: Go) => (item: SearchResult) => { if (item.image) go(item.illiquid ? 'fno-22' : 'fno-21') }
+const openResult = (go: Go) => (item: SearchResult) => {
+  if (item.currency === 'usd') { viewUsStock(item.id); go('us-stocks-13'); return }
+  if (item.image) go(item.illiquid ? 'fno-22' : 'fno-21')
+}
 
 export const search: Flow = {
   id: 'search',
   title: 'Search',
-  description: 'Search stocks, F&O contracts, mutual funds and IPOs; Smart Options & Futures lists; add to watchlist.',
+  description: 'Search stocks, US stocks, F&O contracts, mutual funds and IPOs; Smart Options & Futures lists; add to watchlist.',
   figmaFile: 'sG24GPizTdwbMBxLm0IpTA',
   sections: [
     { id: 'stocks', title: 'Stocks' },
+    { id: 'us', title: 'US stocks' },
     { id: 'fno', title: 'F&O' },
     { id: 'mf', title: 'Mutual funds' },
     { id: 'ipo', title: 'IPO' },
@@ -1078,6 +1124,11 @@ export const search: Flow = {
     { id: 'search-03', section: 'stocks', name: 'Stocks · only a watchlist matches', figma: '4912:13671', note: '"Penny": the watchlist, and "Stocks (0)" with nothing under it.', render: (go) => <Search onOpen={openResult(go)} results={penny} onBack={() => go('stocks-01')} /> },
     { id: 'search-04', section: 'stocks', name: 'Stocks · no matching watchlist', figma: '4912:13587', note: 'Same results without the watchlist group.', render: (go) => <Search onOpen={openResult(go)} results={bankNoWatchlist} onBack={() => go('stocks-01')} onBookmark={() => go('search-18')} /> },
     { id: 'search-05', section: 'stocks', name: 'Stocks · nothing found', figma: '4912:13703', note: 'L3 empty state with the L3 default illustration (Figma still has the old magnifier). Clear Search empties the field.', render: (go) => <Search onOpen={openResult(go)} results={nothing('Vanf')} onBack={() => go('stocks-01')} /> },
+    // ---- US stocks (was US Stocks' own search screen, us-stocks-03 / Figma 5796:89230 — merged here)
+    { id: 'search-29', section: 'us', badge: 'new', badgeNote: 'US tab added to Search (replaces US Stocks’ own search screen)', name: 'US · before typing', figma: '5796:89230', note: 'From the search field on Stocks home’s US tab, or Search on the US Portfolio. Recent and popular US stocks as chips (a chip searches for that company), then US collections as tiles. Back returns to where Search was opened.', render: (go) => <Search onOpen={openResult(go)} tab="us" backToPrevious onBack={() => go('stocks-09')} /> },
+    { id: 'search-30', section: 'us', badge: 'new', name: 'US · results', figma: '', note: '"N": US stocks by name or ticker, with $ prices. A row opens that stock’s US stock page.', render: (go) => <Search onOpen={openResult(go)} tab="us" query="N" backToPrevious onBack={() => go('stocks-09')} /> },
+    { id: 'search-31', section: 'us', badge: 'new', name: 'US · nothing found', figma: '', note: 'No US stock matches: L3 empty state with Clear search.', render: (go) => <Search onOpen={openResult(go)} tab="us" results={nothing('Vanf')} backToPrevious onBack={() => go('stocks-09')} /> },
+
     // ---- F&O
     { id: 'search-25', section: 'fno', name: 'F&O · search from home', figma: '4912:13728', note: 'From F&O home; Back returns there.', render: (go) => <Search onOpen={openResult(go)} tab="fno" onBack={() => go('fno-01')} onSignals={() => go('search-26')} /> },
     { id: 'search-28', section: 'fno', name: 'F&O · “Gold” results (illiquid)', figma: '', note: 'Typing “Gold” on the F&O tab (live app reference, 2026-10-29): MCX gold options with the gold artwork. Illiquid contracts (GOLD 135000 Put, GOLD 150000 Call) carry the ILLIQUID tag after the name; tapping the tag opens “What does illiquidity mean?”. Tapping a row opens the contract’s asset page (fno-21); an illiquid one opens the ILLIQUID asset page (fno-22).', render: (go) => <Search onOpen={openResult(go)} tab="fno" query="Gold" keyboard={false} onBack={() => go('fno-01')} onSignals={() => go('search-26')} /> },
@@ -1151,13 +1202,13 @@ import { SearchChips } from '../components/SearchChips'
 import { Tiles } from '../components/Tiles'
 import { WatchlistMatches } from '../components/WatchlistMatches'
 import {
-  collections, ipoLists, popular, recent, search, signalCategories,
-  type SearchResult, type SearchResults, type SearchTab,
+  collections, ipoLists, popular, recent, search, signalCategories, usCollections,
+  type SearchChip, type SearchResult, type SearchResults, type SearchTab,
 } from '../data'
 import { t } from '../copy'
 import styles from './Search.module.css'
 
-const TABS: SearchTab[] = ['stocks', 'fno', 'mf', 'ipo']
+const TABS: SearchTab[] = ['stocks', 'us', 'fno', 'mf', 'ipo']
 
 type SearchProps = {
   /** The tab it opens on. */
@@ -1177,19 +1228,22 @@ type SearchProps = {
   onBookmark?: (item: SearchResult) => void
   /** F&O: a Smart Options & Futures tile (or View All) opens its signals list. */
   onSignals?: (category: string) => void
-  /** A result row opens its page (commodity contracts → the asset page; illiquid → the ILLIQUID asset page). */
+  /** A result row opens its page (commodity contracts → the asset page; illiquid → the ILLIQUID asset page; US stocks → the US stock page). */
   onOpen?: (item: SearchResult) => void
+  /** Back goes to the screen shown before (wherever Search was opened from), `onBack` when there's none. */
+  backToPrevious?: boolean
 }
 
 /**
- * Search — one screen for Stocks, F&O, MF and IPO. The top bar is the search field (back · field · ✕ once something is
- * typed) with the four tabs in its bottom slot; each tab shows its result count once there's a query.
- * Before typing: recent and popular searches (chips), plus F&O's Smart Options & Futures, MF's collections or the IPO
- * lists. After typing: the matching watchlists, then the results (with a bookmark each). No match on a tab: the L3
+ * Search — one screen for Stocks, US, F&O, MF and IPO. The top bar is the search field (back · field · ✕ once something is
+ * typed) with the five tabs in its bottom slot; each tab shows its result count once there's a query.
+ * Before typing: recent and popular searches (chips), plus US collections, F&O's Smart Options & Futures, MF's
+ * collections or the IPO lists. A US chip types its name into the field. After typing: the matching watchlists, then the results (with a bookmark each). No match on a tab: the L3
  * empty state with "Clear Search". The phone keyboard stays up while searching.
  */
-export function Search({ tab: initialTab = 'stocks', query: initialQuery, results, saved, keyboard = true, sheet, toast, onBack, onBookmark, onSignals, onOpen }: SearchProps) {
-  const { interactive } = usePreview()
+export function Search({ tab: initialTab = 'stocks', query: initialQuery, results, saved, keyboard = true, sheet, toast, onBack, onBookmark, onSignals, onOpen, backToPrevious }: SearchProps) {
+  const { interactive, back } = usePreview()
+  const goBack = () => { if (!(backToPrevious && back?.())) onBack?.() }
   const startQuery = initialQuery ?? results?.query ?? ''
   const [tab, setTab] = useState<SearchTab>(initialTab)
   const [query, setQuery] = useState(startQuery)
@@ -1205,7 +1259,7 @@ export function Search({ tab: initialTab = 'stocks', query: initialQuery, result
     <Screen
       top={
         <Actionbar
-          onBack={onBack}
+          onBack={onBack || backToPrevious ? goBack : undefined}
           search={{ value: query, onChange: setQuery, placeholder: t(`field.${tab}`), label: t(`field.${tab}`), autoFocus: interactive && keyboard }}
           actions={query ? <ActionbarAction variant="ghost" icon={msClose} label={t('field.clear')} onClick={clear} /> : undefined}
           bottom={<Tabs size="sm" aria-label={t('tabs.label')} items={tabItems} value={tab} onChange={(v) => setTab(v as SearchTab)} />}
@@ -1216,7 +1270,7 @@ export function Search({ tab: initialTab = 'stocks', query: initialQuery, result
       sheet={sheet ?? illiquidSheet}
     >
       {!shown ? (
-        <BeforeTyping tab={tab} onSignals={onSignals} />
+        <BeforeTyping tab={tab} onSignals={onSignals} onPick={(chip) => setQuery(chip.label)} />
       ) : shown.tabs[tab] ? (
         <Results tab={tab} results={shown} saved={saved} onBookmark={onBookmark} onIlliquid={setIlliquid} onOpen={onOpen} />
       ) : (
@@ -1233,11 +1287,19 @@ export function Search({ tab: initialTab = 'stocks', query: initialQuery, result
 }
 
 /** Nothing typed yet. */
-function BeforeTyping({ tab, onSignals }: { tab: SearchTab; onSignals?: (category: string) => void }) {
+function BeforeTyping({ tab, onSignals, onPick }: { tab: SearchTab; onSignals?: (category: string) => void; onPick?: (chip: SearchChip) => void }) {
+  // US chips search for that company (the other tabs' chips are not wired in this prototype).
+  const pick = tab === 'us' ? onPick : undefined
   return (
     <Section paddingBlock="16" gap="24">
-      <SearchChips title={t('recent.title')} rows={[recent[tab]]} />
-      <SearchChips title={t('popular.title')} rows={popular[tab]} />
+      <SearchChips title={t('recent.title')} rows={[recent[tab]]} onPick={pick} />
+      <SearchChips title={t('popular.title')} rows={popular[tab]} onPick={pick} />
+      {tab === 'us' && (
+        <Stack as="section" gap="12" aria-label={t('collections.title')}>
+          <GroupHeader title={t('collections.title')} />
+          <Tiles items={usCollections} label={t('usCollections.tilesLabel')} muted />
+        </Stack>
+      )}
       {tab === 'fno' && (
         <Stack as="section" gap="12" aria-label={t('signals.title')}>
           <GroupHeader title={t('signals.title')} action={<ViewAll label={t('signals.title')} onClick={() => onSignals?.(signalCategories[0])} />} />
@@ -1555,6 +1617,71 @@ export const mask = (s: string, keepStart: number, keepEnd: number) =>
   s.slice(0, keepStart) + '•'.repeat(Math.max(0, s.length - keepStart - keepEnd)) + s.slice(s.length - keepEnd)
 ```
 
+### `src/shared/data/usStocks.ts`
+
+```ts
+// US stocks — sample data more than one flow uses (the US Stocks flow and the Market tab's US list).
+// Prices are samples. Logos are PNGs in src/shared/assets/us-logos (L3 has company logos for Indian stocks only).
+
+export type UsStock = {
+  sym: string
+  name: string
+  price: number
+  /** Day change, %. */
+  change: number
+  exchange: string
+  /** Logo path (asset()) — overrides the catalogue logo. */
+  logo?: string
+  /** Logo plate colour behind a transparent logo. */
+  plate?: string
+}
+
+export const catalogue: Record<string, Omit<UsStock, 'sym'>> = {
+  NVDA: { name: 'NVIDIA Corp', price: 188.42, change: 1.24, exchange: 'NASDAQ' },
+  AAPL: { name: 'Apple Inc', price: 262.82, change: 0.89, exchange: 'NASDAQ' },
+  MSFT: { name: 'Microsoft Corp', price: 523.61, change: -0.42, exchange: 'NASDAQ' },
+  GOOGL: { name: 'Alphabet Inc', price: 251.46, change: 0.92, exchange: 'NASDAQ' },
+  GOOG: { name: 'Alphabet Inc', price: 252.03, change: 0.9, exchange: 'NASDAQ' },
+  TSLA: { name: 'Tesla Inc', price: 433.72, change: 2.15, exchange: 'NASDAQ' },
+  AMZN: { name: 'Amazon.com Inc', price: 224.21, change: -0.37, exchange: 'NASDAQ' },
+  META: { name: 'Meta Platforms', price: 734, change: 0.64, exchange: 'NASDAQ' },
+  NFLX: { name: 'Netflix Inc', price: 1187, change: -1.12, exchange: 'NASDAQ' },
+  NKE: { name: 'Nike Inc', price: 64.3, change: 0.48, exchange: 'NYSE' },
+  MCD: { name: 'McDonald’s Corp', price: 301.55, change: -0.21, exchange: 'NYSE' },
+  KO: { name: 'Coca-Cola Co', price: 69.42, change: 0.18, exchange: 'NYSE' },
+  SBUX: { name: 'Starbucks Corp', price: 84.1, change: -0.66, exchange: 'NASDAQ' },
+  V: { name: 'Visa Inc', price: 344.7, change: 0.37, exchange: 'NYSE' },
+  UBER: { name: 'Uber Technologies', price: 96.2, change: 1.05, exchange: 'NYSE' },
+  AMD: { name: 'Advanced Micro Devices', price: 214.9, change: 3.12, exchange: 'NASDAQ' },
+  AVGO: { name: 'Broadcom Inc', price: 342.37, change: 2.87, exchange: 'NASDAQ' },
+  MU: { name: 'Micron Technology', price: 192.4, change: 1.4, exchange: 'NASDAQ' },
+  LULU: { name: 'Lululemon Athletica', price: 168.3, change: -1.6, exchange: 'NASDAQ' },
+  JPM: { name: 'JPMorgan Chase', price: 296.2, change: 0.31, exchange: 'NYSE' },
+  // Mid and small caps — so the Market tab's cap filters have stocks in every tier.
+  LYFT: { name: 'Lyft Inc', price: 22.4, change: 1.8, exchange: 'NASDAQ' },
+  ETSY: { name: 'Etsy Inc', price: 61.2, change: -0.9, exchange: 'NASDAQ' },
+  SONO: { name: 'Sonos Inc', price: 14.1, change: -1.3, exchange: 'NASDAQ' },
+}
+
+const logoFiles = import.meta.glob('../assets/us-logos/*.png', { eager: true, query: '?url', import: 'default' }) as Record<string, string>
+const logoBySymbol = new Map(Object.entries(logoFiles).map(([path, url]) => [path.slice(path.lastIndexOf('/') + 1, -'.png'.length), url]))
+
+/** Symbols that have a logo file in src/shared/assets/us-logos. */
+export const usLogoSymbols: string[] = [...logoBySymbol.keys()].sort()
+
+/** The logo of a US company (PNG URL), or undefined (show initials). */
+export const usLogo = (symbol: string): string | undefined => logoBySymbol.get(symbol)
+
+// The stock being looked at: a list (Market tab, Search …) sets it, the stock page reads it.
+let viewed: string | undefined
+
+/** Remember which US stock the stock page should open. */
+export const viewUsStock = (symbol: string) => { viewed = symbol }
+
+/** The symbol set by the last `viewUsStock`, or undefined if none yet. */
+export const viewedUsStock = () => viewed
+```
+
 ### `src/shared/prototype.ts`
 
 ```ts
@@ -1575,6 +1702,8 @@ export type Preview = {
   screenId?: string
   /** Back to the screen shown before this one in the prototype (any flow); false when there's none to go back to. */
   back?: () => boolean
+  /** The screen was reached by going back (a back button, or a screen earlier in the app) — a page can come back as it was left. */
+  cameBack?: boolean
 }
 
 export const PreviewContext = createContext<Preview>({ interactive: false, go: () => {} })

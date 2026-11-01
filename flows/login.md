@@ -935,6 +935,8 @@ export type Preview = {
   screenId?: string
   /** Back to the screen shown before this one in the prototype (any flow); false when there's none to go back to. */
   back?: () => boolean
+  /** The screen was reached by going back (a back button, or a screen earlier in the app) — a page can come back as it was left. */
+  cameBack?: boolean
 }
 
 export const PreviewContext = createContext<Preview>({ interactive: false, go: () => {} })
