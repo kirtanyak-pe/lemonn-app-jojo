@@ -239,6 +239,8 @@
     "src/flows/us-stocks/screens/wallet/sheets/WithdrawalRequestsSheet.tsx"
   ],
   "shared": [
+    "src/shared/data/live.ts",
+    "src/shared/data/us-market-snapshot.json",
     "src/shared/data/usStocks.ts",
     "src/shared/prototype.ts",
     "src/shared/ui/MainNav.tsx"

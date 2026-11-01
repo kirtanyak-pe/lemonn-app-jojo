@@ -373,6 +373,7 @@
   "shared": [
     "src/shared/copy.ts",
     "src/shared/data/format.ts",
+    "src/shared/data/us-market-snapshot.json",
     "src/shared/data/usStocks.ts",
     "src/shared/prototype.ts",
     "src/shared/ui/IlliquidSheet.module.css",
