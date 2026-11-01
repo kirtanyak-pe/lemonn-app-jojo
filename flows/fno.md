@@ -1,6 +1,6 @@
 # Flow: F&O (`fno`)
 
-> One self-contained file for converting this flow to another platform. Read https://kirtanyak-pe.github.io/lemonn-app-prototype/CONVERT.md first. Design system: Lemonnade V3 @ `cdf73c6` (components, tokens and rules: https://kirtanyak-pe.github.io/lemonnade-v3-docs/llms.txt).
+> One self-contained file for converting this flow to another platform. Read https://kirtanyak-pe.github.io/lemonn-app-prototype/CONVERT.md first. Design system: Lemonnade V3 @ `e34cfaf` (components, tokens and rules: https://kirtanyak-pe.github.io/lemonnade-v3-docs/llms.txt).
 
 Equity F&O home: P&L, indices, chart metrics, watchlists, Smart Options, Futures Heatmap and Smart Futures.
 
@@ -4217,6 +4217,11 @@ export function Home({ product = 'equity', segment = 'equity', picker, onProduct
    sheet; over the dimmed screen it read as a stray line) — the sheet keeps its shadow. */
 .sheet [data-sheet-content] {
   padding: 0;
+}
+
+/* …and none of L3's spaces around the content either (2.3.5: 16 above it, 24 under it) — edge to edge. */
+.sheet [data-sheet-space] {
+  display: none;
 }
 
 .sheet.sheet.sheet {
