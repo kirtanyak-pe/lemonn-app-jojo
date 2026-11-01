@@ -24,12 +24,12 @@ Prototype: https://kirtanyak-pe.github.io/lemonn-app-prototype/#/us-stocks · ma
 
 ### Screens
 
-57 screens in 4 sections — the list (id, Figma node, name, what it shows) is `registry.ts`:
+58 screens in 4 sections — the list (id, Figma node, name, what it shows) is `registry.ts`:
 
 | Section | Screens | What |
 |---|---|---|
 | Entry points | `us-stocks-02`, `05`–`07` | Ways into US Stocks: S&P 500, Portfolio, MF (the Home entry is `stocks-09`; Search is the Search flow's US tab, `search-29`) |
-| FTUX | `13`–`15`, `20`–`28` | Stock page (not activated), risk disclosure, confirm details, $0 wallet, add money (the Home screens of the flow are `stocks-11`…`18`) |
+| FTUX | `13`–`15`, `20`–`28`, `74` | Stock page (not activated; KYC not done), risk disclosure, confirm details, $0 wallet, add money (the Home screens of the flow are `stocks-11`…`18`) |
 | Activated user | `31`–`52` | Stock page (no holdings / holding), buy (amount / shares / limit / SL / AMO / errors), results, sell |
 | USD wallet | `53`–`70` | Wallet states, balance details, withdraw, withdrawal tracking |
 
@@ -68,6 +68,13 @@ Every tap he wired is kept. The main path: FTUX sheet → Activate → Risk disc
 
 ### Changelog
 
+- 2026-11-02 — KYC not done: `us-stocks-74`, the stock page with Complete KYC (→ `kyc-01`) in place of Activate,
+  back → the US tab with the KYC card (`stocks-21`, mapped as `9001:11` in `nav.tsx`). Not in Jojo's Figma.
+- 2026-11-02 — Figma page re-scanned (77 frames). Two Home states were missing and are now `stocks-19` (under review ·
+  Contact Support) and `stocks-20` (money on the way), mapped in `nav.tsx`. Back from the transfer-in-progress wallet
+  (us-stocks-28) now lands on Money on the way, as in his prototype. Not built: the contract-card stock page variant
+  (5958:2), an old INR wallet (5973:16924), a portfolio reference (6052:19544) and two homepage explorations
+  (6102:20127 = homepage V5, 6102:20522 close to V9).
 - 2026-11-02 — Real prices. Every US stock and ETF the flow shows takes its price and day change from the US snapshot
   (`src/shared/data/us-market-snapshot.json`, Yahoo Finance, `npm run us:snapshot`); a list row's own price string only
   fills in for a symbol the snapshot lacks. The stock page's price ticks (live.ts, simulated movement around the real
@@ -22220,10 +22227,13 @@ export const FIGMA_IN_OTHER_FLOWS: Record<string, string> = {
   '5714:65691': 'stocks-02', // Home · Scrolled down
   '5740:67333': 'stocks-02', // Home · Scrolled down then up
   '5756:74756': 'stocks-09', // Home · US tab · Activate US Stocks card
+  '9001:11': 'stocks-21', // Home · US tab · KYC not done (not in Jojo's Figma)
   '5756:68986': 'stocks-11', // Home · FTUX sheet · US Stocks intro
   '5756:75539': 'stocks-13', // A00 · Home · Activation under review
   '5776:81034': 'stocks-14', // A00 · Home · Activation failed
   '5776:81870': 'stocks-15', // A00 · Home · Activated · Add money
+  '5776:80202': 'stocks-19', // A00 · Home · Under review · Contact Support
+  '5796:86490': 'stocks-20', // A00 · Home · Money on the way
   '5796:87332': 'stocks-16', // A00 · Home · Money ready
   '5826:92885': 'stocks-17', // Home · US tab · Activated · full page
   '5756:73797': 'stocks-18', // Activation submitted · under review sheet (over the under-review Home)
@@ -22292,6 +22302,7 @@ export const registry: UsScreenEntry[] = [
   { figma: '5796:92301', tab: 'portfolio', id: 'us-stocks-06', badge: 'changed', badgeNote: "Empty states: L3 Empty state with its default illustration, centred", section: 'entry', name: "E4 · Portfolio · US market banner · live", note: "Portfolio after 8 PM IST. Banner turns LIVE till 2:30 AM IST." },
   { figma: '5796:88163', tab: 'mutualFund', id: 'us-stocks-07', section: 'entry', name: "E5 · Mutual Fund home · US banner", note: "Mutual Fund home with a US Stocks on Lemonn banner." },
   { figma: '5826:93627', id: 'us-stocks-13', badge: 'changed', badgeNote: "Overview / News & Events tabs; Related ETFs and Key Holders sections", section: 'ftux', name: "S03a · Stock page · not activated", note: "Stock page for a user who hasn't activated. Shows Activate instead of Buy/Sell." },
+  { figma: '9001:10', id: 'us-stocks-74', badge: 'new', badgeNote: "Not in Jojo's Figma: a user whose Lemonn KYC isn't done", section: 'ftux', name: "Stock page · KYC not done", note: "Stock page for a user whose Lemonn (Indian) KYC isn't complete: US Stocks can't be activated yet, so the button is Complete KYC (→ the KYC flow, kyc-01) in place of Activate. Back → the US tab with the KYC card (stocks-21)." },
   { figma: '5756:71475', id: 'us-stocks-14', section: 'ftux', name: "Risk disclosure sheet", note: "Risk disclosure sheet. Agree and Continue submits the activation and lands on the under-review home (or wallet); Confirm Details and the result sheet are skipped." },
   { figma: '5756:72486', id: 'us-stocks-15', section: 'ftux', name: "Confirm details", note: "Confirm KYC details and accept the declarations before activating." },
   { figma: '5776:83524', id: 'us-stocks-20', badge: 'changed', badgeNote: "Nudge copy: the dollar has historically gained against the rupee", section: 'ftux', name: "W1 · Wallet · US tab · $0 balance", note: "USD Wallet with $0 balance. Add Money and Withdraw." },
@@ -23539,12 +23550,13 @@ import {
   AboutCompany, AnalystRatings, DailyPerformance, Events, Financials, Fundamentals, HoldingsSection, KeyHolders, News, Peers, RelatedEtfs, money,
 } from './sections'
 import {
-  BUY_PAD, HOME_ACTIVATED, HOME_NOT_ACTIVATED, RISK_DISCLOSURE, SELL_PAD_HOLDING, SELL_PAD_NO_HOLDINGS,
+  BUY_PAD, HOME_ACTIVATED, HOME_KYC_PENDING, HOME_NOT_ACTIVATED, KYC_START, RISK_DISCLOSURE, SELL_PAD_HOLDING, SELL_PAD_NO_HOLDINGS,
 } from './ids'
 import { EtfMove } from '../etf/parts'
 import styles from './StockPage.module.css'
 
-export type StockState = 'not-activated' | 'no-holdings' | 'holding'
+/** kyc-pending: the user's Lemonn KYC isn't done, so US Stocks can't be activated yet (not in Jojo's Figma). */
+export type StockState = 'kyc-pending' | 'not-activated' | 'no-holdings' | 'holding'
 
 export function StockPage({ state, backdrop }: { state: StockState; backdrop?: boolean }) {
   const { go, back } = useUsNav()
@@ -23585,7 +23597,7 @@ export function StockPage({ state, backdrop }: { state: StockState; backdrop?: b
 
   const header = (
     <Actionbar
-      onBack={() => back(state === 'not-activated' ? HOME_NOT_ACTIVATED : HOME_ACTIVATED)}
+      onBack={() => back(state === 'kyc-pending' ? HOME_KYC_PENDING : state === 'not-activated' ? HOME_NOT_ACTIVATED : HOME_ACTIVATED)}
       title={scrolled ? stock.sym : undefined}
       description={scrolled ? <>${money(stock.price)} <EtfMove change={stock.change} /></> : undefined}
       actions={<ActionbarAction icon={asset('assets/activation/watchlist.svg')} label={`Add ${stock.sym} to watchlist`} onClick={() => {}} />}
@@ -23593,7 +23605,11 @@ export function StockPage({ state, backdrop }: { state: StockState; backdrop?: b
   )
 
   const footer =
-    state === 'not-activated' ? (
+    state === 'kyc-pending' ? (
+      <ButtonGroup aria-label="US Stocks" direction="horizontal" scrollIndicator>
+        <Button variant="primary" size="lg" fullWidth onClick={() => go(KYC_START)}>Complete KYC</Button>
+      </ButtonGroup>
+    ) : state === 'not-activated' ? (
       <ButtonGroup aria-label="US Stocks" direction="horizontal" scrollIndicator>
         <Button variant="primary" size="lg" fullWidth onClick={() => go(RISK_DISCLOSURE)}>Activate US Stocks</Button>
       </ButtonGroup>
@@ -23727,6 +23743,7 @@ export function StockPage({ state, backdrop }: { state: StockState; backdrop?: b
   )
 }
 
+export const StockKycPending = (props: { backdrop?: boolean }) => <StockPage state="kyc-pending" {...props} />
 export const StockNotActivated = (props: { backdrop?: boolean }) => <StockPage state="not-activated" {...props} />
 export const StockNoHoldings = (props: { backdrop?: boolean }) => <StockPage state="no-holdings" {...props} />
 export const StockHolding = (props: { backdrop?: boolean }) => <StockPage state="holding" {...props} />
@@ -24289,6 +24306,8 @@ export const historyIcon = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2
 export const STOCK_NOT_ACTIVATED = '5826:93627'
 export const STOCK_NO_HOLDINGS = '5826:94125'
 export const STOCK_HOLDING = '5837:94648'
+/** Not in Jojo's Figma: the stock page for a user whose Lemonn KYC isn't done (Complete KYC in place of Activate). */
+export const STOCK_KYC_PENDING = '9001:10'
 
 export const RISK_DISCLOSURE = '5756:71475'
 export const CONFIRM_DETAILS = '5756:72486'
@@ -24301,6 +24320,10 @@ export const SELL_PAD_HOLDING = '5837:95560'
 
 /** Homes the stock page / sheets sit on. */
 export const HOME_NOT_ACTIVATED = '5756:74756'
+/** Not in Jojo's Figma: the US tab for a user whose KYC isn't done (the Stocks flow's stocks-21). */
+export const HOME_KYC_PENDING = '9001:11'
+/** The KYC flow's first screen (another flow; mapped in nav.tsx). */
+export const KYC_START = 'kyc-01'
 export const HOME_ACTIVATION_PENDING = '5756:75539'
 export const HOME_ACTIVATED = '5826:92885'
 /** Home (activation pending) variant reached from the 5852 screens. */
@@ -24315,16 +24338,17 @@ export const HOME_ACTIVATION_PENDING_ALT = '5852:99028'
 // Imported from the teammate's prototype; his `screens` map by Figma node id.
 // FLAG: copy not in copy.json yet — all UI text in this part is hard-coded.
 import type { UsScreenMap } from '../types'
-import { CONFIRM_DETAILS, RISK_DISCLOSURE, STOCK_HOLDING, STOCK_NO_HOLDINGS, STOCK_NOT_ACTIVATED } from './ids'
+import { CONFIRM_DETAILS, RISK_DISCLOSURE, STOCK_HOLDING, STOCK_KYC_PENDING, STOCK_NO_HOLDINGS, STOCK_NOT_ACTIVATED } from './ids'
 import { ConfirmDetailsScreen } from './sheets/ConfirmDetailsScreen'
 import { RiskDisclosureSheet } from './sheets/RiskDisclosureSheet'
-import { StockHolding, StockNoHoldings, StockNotActivated, StockPage } from './StockPage'
+import { StockHolding, StockKycPending, StockNoHoldings, StockNotActivated, StockPage } from './StockPage'
 
-export { StockHolding, StockNoHoldings, StockNotActivated, StockPage }
+export { StockHolding, StockKycPending, StockNoHoldings, StockNotActivated, StockPage }
 
 /** Screens of this part, by Figma node id. */
 export const screens: UsScreenMap = {
   [STOCK_NOT_ACTIVATED]: StockNotActivated,
+  [STOCK_KYC_PENDING]: StockKycPending,
   [STOCK_NO_HOLDINGS]: StockNoHoldings,
   [STOCK_HOLDING]: StockHolding,
   // Sheets (his `Xr` map).
@@ -34337,7 +34361,7 @@ export function WalletTransferInProgressScreen({ backdrop }: ScreenProps) {
       {...WITH_BALANCE}
       total="$0"
       withdrawable="$0.00"
-      backTo={FIGMA.homeMoneyReady}
+      backTo={FIGMA.homeMoneyOnTheWay}
       dock={DEPOSIT_ONLY}
       pending={{ title: '$1,035.37 deposit in progress', sub: 'Arrives in your wallet by Thu 8 PM (or Fri)' }}
     />
@@ -34444,6 +34468,8 @@ export function WalletWithdrawalDelayedScreen({ backdrop }: ScreenProps) {
 export const FIGMA = {
   /** A00 · Home · Money ready (where "back" from the wallet lands by default). */
   homeMoneyReady: '5796:87332',
+  /** A00 · Home · Money on the way (back from the transfer-in-progress wallet, as in his prototype). */
+  homeMoneyOnTheWay: '5796:86490',
   /** W2 · Wallet · US tab · Funded. */
   walletFunded: '5852:98908',
   /** W2d-x · Balance Details · expanded. */
@@ -35061,7 +35087,7 @@ export function WithdrawableSheet({
             Got it
           </Button>
           {onFullDetails && (
-            <Button variant="ghost" size="lg" fullWidth onClick={onFullDetails}>
+            <Button variant="secondary" size="lg" fullWidth onClick={onFullDetails}>
               Full balance details
             </Button>
           )}

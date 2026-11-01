@@ -83,6 +83,17 @@
       "figmaUrl": ""
     },
     {
+      "id": "stocks-21",
+      "name": "Home · US tab · KYC not done",
+      "figma": "9001:20",
+      "note": "The US tab for a user who hasn\\",
+      "goesTo": [
+        "kyc-01",
+        "us-stocks-74"
+      ],
+      "figmaUrl": ""
+    },
+    {
       "id": "stocks-09",
       "name": "Home · US Stocks tab",
       "figma": "5756:74756",
@@ -100,7 +111,7 @@
     },
     {
       "id": "stocks-11",
-      "name": "Home · US Stocks intro sheet",
+      "name": "Home · US Stocks intro (FTUX) sheet",
       "figma": "5756:68986",
       "note": "First launch after release: the IND tab with the US Stocks intro (FTUX) sheet — animated flag, five company logos, three benefits. Activate US Stocks → the risk disclosure (stocks-12); ✕ → Home (stocks-01).",
       "goesTo": [
@@ -126,6 +137,17 @@
       "figma": "5756:75539",
       "note": "US tab, activation under review (honey card, up to 1 working day). In the prototype it moves on to \"activated\" (stocks-15) by itself after 2 s; the wallet opens the wallet with the review banner.",
       "goesTo": [],
+      "figmaUrl": ""
+    },
+    {
+      "id": "stocks-22",
+      "name": "Home · US tab · activation approved sheet",
+      "figma": "9001:21",
+      "note": "The review is approved: the activated US tab with the \"US Stocks is active\" sheet (success spot). Add Money to US wallet → the $0 USD wallet (us-stocks-20); Later or closing → the activated Home (stocks-15). The under-review Home (stocks-13) moves here by itself after 2 s.",
+      "goesTo": [
+        "us-stocks-20",
+        "stocks-15"
+      ],
       "figmaUrl": ""
     },
     {
@@ -165,6 +187,24 @@
       "figmaUrl": ""
     },
     {
+      "id": "stocks-19",
+      "name": "Home · US tab · under review · Contact Support",
+      "figma": "5776:80202",
+      "note": "Activation still under review after a working day: the honey card gains a Contact Support button. Figma has no support screen, so the button goes nowhere yet (L3 gap / missing screen). The wallet opens the wallet\\",
+      "goesTo": [],
+      "figmaUrl": ""
+    },
+    {
+      "id": "stocks-20",
+      "name": "Home · US tab · money on the way",
+      "figma": "5796:86490",
+      "note": "After paying on the bank page: the honey \"Money on the way\" card (trade from Thu 8 PM) with what happens next (debited, converted, credited). Track Transfer and the wallet open the wallet\\",
+      "goesTo": [
+        "us-stocks-28"
+      ],
+      "figmaUrl": ""
+    },
+    {
       "id": "stocks-18",
       "name": "Home · activation submitted sheet",
       "figma": "5756:73797",
@@ -178,6 +218,8 @@
   "files": [
     "src/flows/stocks/README.md",
     "src/flows/stocks/assets/announcement-jio-ipo.jpg",
+    "src/flows/stocks/assets/flags/india.svg",
+    "src/flows/stocks/assets/flags/us.svg",
     "src/flows/stocks/assets/us/benefit-bolt.svg",
     "src/flows/stocks/assets/us/ftux/bloom-blue.svg",
     "src/flows/stocks/assets/us/ftux/bloom-red.svg",
@@ -200,16 +242,21 @@
     "src/flows/stocks/components/Home.module.css",
     "src/flows/stocks/components/Ideas.tsx",
     "src/flows/stocks/components/Invest.tsx",
+    "src/flows/stocks/components/MarketSwitchGuide.module.css",
+    "src/flows/stocks/components/MarketSwitchGuide.tsx",
     "src/flows/stocks/components/MarketTabs.module.css",
     "src/flows/stocks/components/MarketTabs.tsx",
     "src/flows/stocks/components/Overview.tsx",
     "src/flows/stocks/components/TopBar.module.css",
     "src/flows/stocks/components/TopBar.tsx",
+    "src/flows/stocks/components/UsIntroStory.module.css",
+    "src/flows/stocks/components/UsIntroStory.tsx",
     "src/flows/stocks/components/homeVersions.ts",
     "src/flows/stocks/components/us/UsActivationCard.tsx",
     "src/flows/stocks/components/us/UsHome.module.css",
     "src/flows/stocks/components/us/UsHome.tsx",
     "src/flows/stocks/components/us/data.ts",
+    "src/flows/stocks/components/us/sheets/ActivationApprovedSheet.tsx",
     "src/flows/stocks/components/us/sheets/ActivationSubmittedSheet.tsx",
     "src/flows/stocks/components/us/sheets/RiskDisclosureSheet.tsx",
     "src/flows/stocks/components/us/sheets/UsFtuxSheet.module.css",

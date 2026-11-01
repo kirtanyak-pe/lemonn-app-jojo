@@ -17,15 +17,19 @@ Prototype: https://kirtanyak-pe.github.io/lemonn-app-prototype/#/stocks · machi
 | `stocks-05` | Home · sectors & highlights | — | `profile-01` | Same page, scrolled. |
 | `stocks-06` | Home · highlights & idea baskets | — | `profile-01` | Same page, scrolled. (The live app no longer has Trade ideas here — removed 2026-10-22.) |
 | `stocks-07` | Home · idea baskets & disclosure | — | `profile-01` | The end of the page: the disclosure, four lines and Read More. |
+| `stocks-21` | Home · US tab · KYC not done | [9001:20]() | `kyc-01`, `us-stocks-74` | The US tab for a user who hasn\ |
 | `stocks-09` | Home · US Stocks tab | [5756:74756]() | — | The US Stocks tab for a user who has not activated US Stocks: US indices, the Activate US Stocks card (→ risk disclosure sheet, stocks-12), shortcuts, Top Movers, Trillion Dollar Titans, Brands, Heatmap, themes. A US stock opens its page (not activated). Designed in the US Stocks flow (Figma Home · US tab · Activate US Stocks card); here it is the tab on the app\ |
 | `stocks-10` | Home · US Stocks tab · scrolled | — | — | Same tab, scrolled past the tabs: the compact IND / US tabs are pinned under the top bar. |
-| `stocks-11` | Home · US Stocks intro sheet | [5756:68986]() | `stocks-12`, `stocks-01` | First launch after release: the IND tab with the US Stocks intro (FTUX) sheet — animated flag, five company logos, three benefits. Activate US Stocks → the risk disclosure (stocks-12); ✕ → Home (stocks-01). |
+| `stocks-11` | Home · US Stocks intro (FTUX) sheet | [5756:68986]() | `stocks-12`, `stocks-01` | First launch after release: the IND tab with the US Stocks intro (FTUX) sheet — animated flag, five company logos, three benefits. Activate US Stocks → the risk disclosure (stocks-12); ✕ → Home (stocks-01). |
 | `stocks-12` | Home · US tab · risk disclosure sheet | [5756:71475]() | `stocks-13`, `stocks-09` | The Risk disclosure (For US Stocks) sheet over the US tab. Agree and Continue submits the activation → under review (stocks-13); closing it → the tab (stocks-09). |
 | `stocks-13` | Home · US tab · activation under review | [5756:75539]() | — | US tab, activation under review (honey card, up to 1 working day). In the prototype it moves on to "activated" (stocks-15) by itself after 2 s; the wallet opens the wallet with the review banner. |
+| `stocks-22` | Home · US tab · activation approved sheet | [9001:21]() | `us-stocks-20`, `stocks-15` | The review is approved: the activated US tab with the "US Stocks is active" sheet (success spot). Add Money to US wallet → the $0 USD wallet (us-stocks-20); Later or closing → the activated Home (stocks-15). The under-review Home (stocks-13) moves here by itself after 2 s. |
 | `stocks-14` | Home · US tab · activation failed | [5776:81034]() | — | US tab, activation failed (PAN could not be verified): red card, Retry Activation → the risk disclosure (stocks-12). |
 | `stocks-15` | Home · US tab · activated · add money | [5776:81870]() | `us-stocks-20` | US tab, activation successful: green card with the unlocked benefits, Add Money to US wallet → the $0 USD wallet (us-stocks-20). The wallet icon goes there too. |
 | `stocks-16` | Home · US tab · money ready | [5796:87332]() | `stocks-17` | Money reached the US wallet: a "Your money is ready" toast above the navbar (times out after 6 s; no card, as in his design); tapping the toast → the activated page (stocks-17). Wallet → the funded USD wallet (us-stocks-59). |
 | `stocks-17` | Home · US tab · activated · holding | [5826:92885]() | — | US tab for an activated user who holds US stocks: no card, the summary shows US holdings ($). A US stock opens its stock page — NVDA (held) with Buy / Sell, others Buy only. Wallet → the funded USD wallet. |
+| `stocks-19` | Home · US tab · under review · Contact Support | [5776:80202]() | — | Activation still under review after a working day: the honey card gains a Contact Support button. Figma has no support screen, so the button goes nowhere yet (L3 gap / missing screen). The wallet opens the wallet\ |
+| `stocks-20` | Home · US tab · money on the way | [5796:86490]() | `us-stocks-28` | After paying on the bank page: the honey "Money on the way" card (trade from Thu 8 PM) with what happens next (debited, converted, credited). Track Transfer and the wallet open the wallet\ |
 | `stocks-18` | Home · activation submitted sheet | [5756:73797]() | `stocks-13` | The under-review US tab with the "US Stocks activation under review" sheet (we\ |
 
 ## Spec (README.md)
@@ -57,14 +61,16 @@ One long, scrolling L1 page. The board shows it as frames scrolled to each part,
 | `stocks-07` | Home · idea baskets & disclosure | Invest in ideas (baskets) · the broker's regulatory line |
 | `stocks-09` | Home · US Stocks tab | The **US Stocks** tab (user has not activated US Stocks): US indices · Activate US Stocks card · shortcuts · Top Movers · Trillion Dollar Titans · Brands You Know · Heatmap · Explore by themes |
 | `stocks-10` | Home · US Stocks tab · scrolled | Same tab scrolled past the tabs: the compact IND / US tabs are pinned under the top bar |
-| `stocks-11` | Home · US Stocks intro sheet | IND tab + the **US Stocks intro (FTUX) sheet**, first launch after release (Figma 5756:68986). Activate US Stocks → `stocks-12`; ✕ → `stocks-01` |
+| `stocks-11` | Home · US Stocks intro (FTUX) sheet | IND tab + the **US Stocks intro (FTUX) sheet**, first launch after release (Figma 5756:68986). Activate US Stocks → `stocks-12`; ✕ → `stocks-01` |
 | `stocks-12` | Home · US tab · risk disclosure sheet | US tab + the **Risk disclosure** sheet (5756:71475). Agree and Continue → `stocks-13`; close → `stocks-09` |
-| `stocks-13` | Home · US tab · activation under review | Honey card "Activation under review" (5756:75539). Auto → `stocks-15` after 2 s; wallet → `us-stocks-55` |
+| `stocks-13` | Home · US tab · activation under review | Honey card "Activation under review" (5756:75539). Auto → `stocks-22` after 2 s; wallet → `us-stocks-55` |
 | `stocks-14` | Home · US tab · activation failed | Red card, Retry Activation → `stocks-12` (5776:81034); wallet → `us-stocks-56` |
 | `stocks-15` | Home · US tab · activated · add money | Green card with the unlocked benefits, Add Money to US wallet → `us-stocks-20` (5776:81870); wallet → `us-stocks-20` |
 | `stocks-16` | Home · US tab · money ready | "Your money is ready" toast (L3 Aerobar, 6 s) + the ready card, Explore US Stocks → `stocks-17` (5796:87332); wallet → `us-stocks-59` |
 | `stocks-17` | Home · US tab · activated · holding | No card; the summary shows **US holdings ($)** (5826:92885). A stock → `us-stocks-32` (NVDA, held) or `us-stocks-31`; wallet → `us-stocks-59` |
 | `stocks-18` | Home · activation submitted sheet | Under-review US tab + the **"US Stocks activation under review"** sheet (5756:73797). Okay / close → `stocks-13` |
+| `stocks-21` | Home · US tab · KYC not done | **Not in Figma.** The user's Lemonn (Indian) KYC isn't complete, so US Stocks can't be activated: blue card "Complete your KYC first", Complete KYC → `kyc-01`; a US stock → `us-stocks-74` (Complete KYC); wallet → `us-stocks-53` |
+| `stocks-22` | Home · US tab · activation approved sheet | **Not in Figma.** Activated US tab + the **"US Stocks is active"** sheet (success spot), the moment the review is approved. Add Money to US wallet → `us-stocks-20`; Later / close → `stocks-15` |
 
 `stocks-01 … 08` are the **IND Stocks** tab. Screens 09–18 are the **US Stocks** tab in each state of the user's US Stocks activation; they come from the US Stocks flow's Home (designed by a teammate, Figma file `8HEY699cTPiWiQeAVX3122`), which now uses this page — his frames map here through `FIGMA_IN_OTHER_FLOWS` in `src/flows/us-stocks/nav.tsx`. `stocks-09` Activate US Stocks → `stocks-12` (was `us-stocks-14`); a US stock on a not-activated state → `us-stocks-13` (stock page, Activate).
 
@@ -126,11 +132,10 @@ One long, scrolling L1 page. The board shows it as frames scrolled to each part,
 Jojo's US Stocks design has nine versions of the home (`designs/lemonn-us-stocks-design.html`, its "Homepage version"
 switch). Here they are the flow option **Homepage version** (`homeVersion`, default V2, a floating card beside every
 Home screen); `components/homeVersions.ts` lists them and `screens/Home.tsx` reads the choice. Only the top of the page
-changes — the feeds are the same:
+changes — the feeds are the same. (V1, the current homepage with no switch, is no longer in the list.)
 
 | Version | Figma | IND / US switch | Tiles | Other |
 |---|---|---|---|---|
-| V1 · Current homepage | 6118:9 | none (IND only) | MF · F&O · Commodity | |
 | V2 · Existing folder | 6118:254 | notched folder tabs, between summary and feed | Mutual funds · Equity F&O · Commodities | |
 | V3 · Pill | 6128:29822 | L3 pill group at the top of the feed sheet, flags | MF · F&O · Commodity | |
 | V4 · CoinSwitch style | 6128:30124 | L3 underline tabs at the top of the feed sheet, flags | MF · F&O · Commodity | |
@@ -140,6 +145,29 @@ changes — the feeds are the same:
 | V8 · Lit folder · India / USA | 6128:31431 | folder tabs "INDIA / USA" under the top bar, flags, US "New" | F&O · Commodities · US Stocks | "Do More With Lemonn" title |
 | V9 · Graphite segmented | 6128:31986 | L3 pill group "IND / US" under the top bar, flags, US "New" | Mutual funds · Equity F&O · Commodities | no index ticker; "Do More With Lemonn" title |
 
+#### Two homes (V10–V13, no Figma yet)
+
+V1–V9 only swap the feed: the holdings and the product tiles above the switch stay Indian, so the US tab reads as a
+section of the Indian home. The business wants the two markets kept apart, so V10–V13 split the app at the top
+(`scope: 'page'` in `homeVersions.ts`): **the market is picked first, and everything under the top bar belongs to it.**
+
+- **Whole page per market.** Ticker (NIFTY / SENSEX ↔ S&P 500 / NASDAQ), summary, tiles, feed and search
+  ("Search US stocks") all change. The US summary leads with the activation card while there is one (it moves up from
+  the feed), else the US holdings in $. US tiles: ETFs (3x leveraged) · Fractional (from $1) · Market hours (8 PM to
+  2:30 AM); ETFs opens the ETF list, the others Market on the US list.
+- **The switch never scrolls away.** V10 / V11 carry it in the sticky block above the ticker; V12 / V13 in the top bar,
+  which then never slides away on scroll (also V5, whose switch is in the bar): scrolled, it stays and turns surface/primary.
+- **Search is a round icon button** like the wallet (TopBar `compactSearch`), so the top bar has room for the switch.
+- **Switching opens the other home at its top** (it's another page, not the same page at the same depth).
+- Swipe sideways still switches.
+
+| Version | Switch | Why try it |
+|---|---|---|
+| V10 · Two homes · segmented on top | L3 pill group, flags, US "New", sticky under the top bar; the track is white with a hairline over the grey summary (grey again once scrolled) so it stands out | clearest: two equal choices, always visible |
+| V11 · Two homes · tabs on top | L3 underline tabs, flags, US "New", sticky | lighter; reads as top-level navigation (Delivery / Dining style) |
+| V12 · Two homes · switch in top bar | L3 pill group with the big (md, 32) pills "🇮🇳 IND / 🇺🇸 US", right after the profile, in a surface/primary track as tall as search and the wallet (38); the unselected pill has no grey fill | no extra row; most room for content (the top bar never hides on this version) |
+| V13 · Two homes · market picker | one round button after the profile, as tall as search and the wallet: "🇮🇳 IND Stocks" + the L3 switch arrows (`lmSwitchArrowVertical`) — one tap switches to the other market (no sheet; TopBar `market`) | the market as the user's context; the smallest switch |
+
 ### Sheets (over the Home, via `Screen`'s `sheet`; `components/us/sheets/`)
 
 - **US Stocks intro (FTUX)** — `UsFtuxSheet`: the animated flag (`assets/us/ftux/flag.webp`), blooms, five company logos,
@@ -148,6 +176,8 @@ changes — the feeds are the same:
 - **Risk disclosure** — L3 `BottomSheet` (via `Sheet`), small header "Risk disclosure / For US Stocks", five bullets, Agree and Continue.
 - **Activation submitted** — L3 `BottomSheet`, large header with a warning-tone illustration slot, "US Stocks activation
   under review", Okay.
+- **Activation approved** — `ActivationApprovedSheet`, L3 `BottomSheet`, large header with a success spot, "US Stocks is
+  active", Add Money to US wallet (primary) and Later (secondary). Not in Figma: the twin of Activation submitted.
 
 ### Data
 
@@ -207,12 +237,33 @@ changes — the feeds are the same:
 - **Sample data:** holdings and watchlists are fictional; top movers are real (catalogue snapshot); indices, sectors
   and baskets are samples.
 
+#### Market switch guide (FTUX, prototype setting "Market switch guide", on by default)
+
+Shown every time the Home opens, and again for each homepage version picked (a switch
+lower on the page is scrolled into view first). `components/MarketSwitchGuide.tsx` + `components/UsIntroStory.tsx`.
+
+- **Torch:** the whole screen (top bar and navbar too, and the phone's status and navigation bars) dims — black at
+  75 %, a little darker than surface/overlay — except a hole over this version's
+  switch, with a white ring pulsing out of it.
+- **The US Stocks intro card** pops out under the switch (over it when the switch is low), its tail on the switch, and
+  holds still (no float) — built like DASH's animated Pine Script tip: a dark card (surface/inverted) with a turning blue gradient
+  edge; "Introducing US Stocks" + New + ✕; a looping story on a small white stage — a fingertip taps US on a tiny
+  IND / US switch, the US list (AAPL, NVDA, TSLA, real prices) slides in, NVIDIA's buy bar slides up, Buy → "Bought
+  0.25 NVDA"; a stepper Switch · Explore · Trade fills with a caption per act; and **View US stocks** (L3 Button secondary,
+  Large).
+- **Taps:** View US stocks, or the lit switch → switches to US and ends the guide; ✕ → ends it. A tap on the dim does nothing (a mis-tap mustn't lose it).
+- Reduced motion: no pop or loop; the story shows its last still (bought).
+
 ### L3 gaps
 
 - **Notched market tabs** (IND / US strip with an SVG outline and a flipping label) — no L3 component; hand-made in
   `components/MarketTabs.tsx` (the pinned compact version is a plain L3 Tabs).
-- **Homepage versions** — no flag icons in L3 (the flags are system emoji); V9's "Graphite segmented" has no L3 style of
-  its own (it is the L3 pill group); V7 / V8's lit folder on top reuses the notched tabs, without Jojo's lit panel.
+- **Homepage versions** — no flag icons in L3 (round flag SVGs of our own in `assets/flags`, not emoji, so they look the same on every device); V9's "Graphite segmented" has no L3 style of
+  its own (it is the L3 pill group); V7 / V8's lit folder on top reuses the notched tabs, without Jojo's lit panel. V10's white and V12's surface/primary pill-group
+  tracks (V12 also 38 tall, its unselected pill unfilled) are local overrides: L3 Tabs `pill-group` has no option for its track surface or height.
+- **Market switch guide** — no L3 coach mark / spotlight: the dim with a hole, the pulsing ring and the story card are
+  hand-made (as DASH's Pine Script tip), with local tokens `--app-stocks-guide-*` (card 320, stage 172, the tiny
+  switch 128, motion). The tiny Buy on the stage is artwork using the L3 buy-button colours.
 - **Swipe between pages** — no L3 behaviour; `components/useSwipeBetween.ts` is a hand-made pointer gesture.
 - **US tab hand-made bits** (marked `FLAG` in `components/us/`): activation card + carousel dots, cap chip, Titan / brand
   card insides and logo stacks, heatmap tiles; a few raw px kept from the US Stocks prototype (card widths, sparkline).
@@ -224,6 +275,26 @@ changes — the feeds are the same:
 
 ### Changelog
 
+- 2026-11-02 — Pill-group switches: no square box behind the round track any more (V5's compact switch painted a grey
+  square, V10's white track rule also hit the wrapper, so its corners showed sharp). Versions with the switch in the
+  top bar (V5, V12, V13) keep the top bar on screen while scrolling (surface/primary once scrolled).
+- 2026-11-02 — **Market switch guide** (FTUX): V1 (current homepage) is out of the version list. A torch over the IND / US switch on every homepage version with one,
+  and the animated US Stocks intro card (like DASH's Pine Script tip) with View US stocks. Prototype setting "Market
+  switch guide" (on by default; shows every time). The settings' dropdowns have a fixed width; long names truncate in
+  the pill and show in full in the list.
+- 2026-11-02 — Two US states that weren't designed: **KYC not done** (`stocks-21`, new UsState `kyc`: Complete KYC →
+  the KYC flow) and **activation approved** (`stocks-22`, "US Stocks is active" sheet over the activated tab). Under
+  review (`stocks-13`) now moves on to `stocks-22` instead of straight to `stocks-15`.
+- 2026-11-02 — Two homes: search is a round icon button in V10–V13; V10's pill track gets a white background over the
+  summary. V12's switch moves next to the profile, big pills on surface/primary at the search / wallet height. V13's
+  switch is one round button that switches market in one tap (the "Choose market" sheet is gone; the shared `Sheet`
+  keeps its `placement` prop for top sheets). Flags are round SVG icons (`assets/flags`) instead of emoji.
+- 2026-11-02 — Homepage versions V10–V13, "Two homes": the IND / US switch sits at the top and the whole page under it
+  is the market's own (ticker, summary, tiles, feed, search). See Homepage versions → Two homes.
+- 2026-11-02 — Two US-tab states from Jojo's Figma that weren't built: `stocks-19` under review · Contact Support
+  (5776:80202, `usState: 'support'`; the button has no destination yet, Figma has no support screen) and `stocks-20`
+  money on the way (5796:86490, `usState: 'onTheWay'`: clock icon, what-happens-next strip, Track Transfer → the
+  transfer-in-progress wallet us-stocks-28; moves on to money ready after 2 s).
 - 2026-11-02 — Live, real prices. The US tab's index strip, Top Movers, Trillion Dollar Titans and heatmap use the
   real US snapshot (`src/shared/data/us-market-snapshot.json`, `npm run us:snapshot`, Yahoo Finance); movers are picked
   by their real day change, volume and 52-week range. Every price and index (IND too) ticks every 2 s around its real
@@ -524,6 +595,52 @@ D�W�k��&�� �?��DQ�y�� !i� ���n]�G��FS�
 �k7����?��V�u�+'I� �5���a^o�^���p�R�D:ԫXH�u/��o�� 1U4O�/�Z��Ǔ}W����}�~�����9_�ЭL;T+S��#bAҜ��Ҝ���D�ڹ������?���{W9{� r}G�Ӆ���[�:����
 �u�����*Qָ���ڼ���� �'�O��� �룵y�� $OƟ��� �+��
 ���6�� ��W(����8(�� ��
+```
+
+### `src/flows/stocks/assets/flags/india.svg`
+
+```tsx
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+  <!-- India, round: saffron / white / green with the navy Ashoka Chakra. Flag artwork keeps its own colours. -->
+  <defs><clipPath id="c"><circle cx="12" cy="12" r="12"/></clipPath></defs>
+  <g clip-path="url(#c)">
+    <rect width="24" height="8" fill="#FF9933"/>
+    <rect y="8" width="24" height="8" fill="#FFFFFF"/>
+    <rect y="16" width="24" height="8" fill="#138808"/>
+    <circle cx="12" cy="12" r="3" fill="none" stroke="#000080" stroke-width="0.8"/>
+    <circle cx="12" cy="12" r="0.8" fill="#000080"/>
+    <g stroke="#000080" stroke-width="0.4">
+      <path d="M12 9v6M9 12h6M9.88 9.88l4.24 4.24M14.12 9.88l-4.24 4.24"/>
+    </g>
+  </g>
+  <circle cx="12" cy="12" r="11.75" fill="none" stroke="#000000" stroke-opacity="0.12" stroke-width="0.5"/>
+</svg>
+```
+
+### `src/flows/stocks/assets/flags/us.svg`
+
+```tsx
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+  <!-- United States, round: red and white stripes with the blue canton. Flag artwork keeps its own colours. -->
+  <defs><clipPath id="c"><circle cx="12" cy="12" r="12"/></clipPath></defs>
+  <g clip-path="url(#c)">
+    <rect width="24" height="24" fill="#FFFFFF"/>
+    <g fill="#B22234">
+      <rect y="0" width="24" height="2.4"/>
+      <rect y="4.8" width="24" height="2.4"/>
+      <rect y="9.6" width="24" height="2.4"/>
+      <rect y="14.4" width="24" height="2.4"/>
+      <rect y="19.2" width="24" height="2.4"/>
+    </g>
+    <rect width="12" height="12" fill="#3C3B6E"/>
+    <g fill="#FFFFFF">
+      <circle cx="3.5" cy="3" r="0.8"/><circle cx="7" cy="3" r="0.8"/><circle cx="10.5" cy="3" r="0.8"/>
+      <circle cx="5.25" cy="6" r="0.8"/><circle cx="8.75" cy="6" r="0.8"/>
+      <circle cx="3.5" cy="9" r="0.8"/><circle cx="7" cy="9" r="0.8"/><circle cx="10.5" cy="9" r="0.8"/>
+    </g>
+  </g>
+  <circle cx="12" cy="12" r="11.75" fill="none" stroke="#000000" stroke-opacity="0.12" stroke-width="0.5"/>
+</svg>
 ```
 
 ### `src/flows/stocks/assets/us/benefit-bolt.svg`
@@ -19989,6 +20106,284 @@ export function Highlights({ onExplore }: { onExplore?: (id: string) => void }) 
 }
 ```
 
+### `src/flows/stocks/components/MarketSwitchGuide.module.css`
+
+```css
+/*
+ * The market switch guide (MarketSwitchGuide.tsx): the whole screen dims except a torch hole over the switch. The hole
+ * is a box over the switch whose huge spread shadow is the scrim (--app-stocks-guide-scrim, a little darker than
+ * surface/overlay), so the real switch shows through it.
+ */
+.guide {
+  position: absolute;
+  inset: 0;
+  z-index: 20; /* over the top bar, the sticky marquee and the navbar */
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Until the switch is found: a plain scrim, so the screen never flashes undimmed. */
+.guide:not([data-ready]) {
+  background: var(--app-stocks-guide-scrim);
+  animation: guide-in var(--l3-motion-duration-medium) var(--l3-motion-easing-decelerate) both;
+}
+
+.spot {
+  position: absolute;
+  top: var(--spot-y);
+  left: var(--spot-x);
+  width: var(--spot-w);
+  height: var(--spot-h);
+  border-radius: var(--spot-radius);
+  box-shadow: 0 0 0 200vmax var(--app-stocks-guide-scrim); /* the scrim around the hole */
+  animation: guide-in var(--l3-motion-duration-medium) var(--l3-motion-easing-decelerate) both;
+}
+
+/* The torch: a white ring that keeps pulsing out from the switch, so the eye lands on it. */
+.spot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: var(--l3-spacing-02) solid var(--l3-static-white);
+  border-radius: inherit;
+  pointer-events: none;
+  animation: guide-pulse calc(var(--l3-motion-duration-long) * 4) var(--l3-motion-easing-decelerate) var(--l3-motion-duration-medium) infinite;
+}
+
+/* The US Stocks intro card (UsIntroStory): placed by the guide under (or over) the hole. It pops out of its tail
+   with an overshoot and then holds still (no float or wiggle); a blue conic edge keeps turning around it and the tail points at the switch —
+   as DASH's Pine Script tip does (dash Chat.module.css .ftux). */
+@property --guide-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+.tip {
+  position: absolute;
+  z-index: 1;
+  cursor: default;
+  transform-origin: var(--tail) 100%;
+  animation: guide-pop var(--app-stocks-guide-pop) var(--app-stocks-guide-pop-easing) var(--l3-motion-duration-short) both;
+}
+
+.tip[data-below] {
+  transform-origin: var(--tail) 0;
+}
+
+/* The gradient edge: a turning conic gradient behind the card, 1.5 of it showing around. */
+.tip::before {
+  position: absolute;
+  inset: calc(-1 * var(--app-stocks-guide-edge));
+  border-radius: calc(var(--l3-radius-20) + var(--app-stocks-guide-edge));
+  background: conic-gradient(from var(--guide-angle), var(--l3-base-hue-blue-300), var(--l3-base-hue-blue-600), var(--l3-static-white), var(--l3-base-hue-blue-300));
+  content: '';
+  animation: guide-turn 4s linear infinite;
+}
+
+/* The tail: a small turned square on the card's edge, over the switch's middle, in the card's colour, edged like it. */
+.tip::after {
+  position: absolute;
+  bottom: calc(-1 * var(--l3-spacing-06));
+  left: calc(var(--tail) - var(--l3-spacing-06));
+  width: var(--l3-spacing-12);
+  height: var(--l3-spacing-12);
+  border-right: var(--app-stocks-guide-edge) solid var(--l3-base-hue-blue-300);
+  border-bottom: var(--app-stocks-guide-edge) solid var(--l3-base-hue-blue-300);
+  background: var(--l3-surface-inverted);
+  content: '';
+  transform: rotate(45deg);
+}
+
+.tip[data-below]::after {
+  top: calc(-1 * var(--l3-spacing-06));
+  bottom: auto;
+  transform: rotate(225deg);
+}
+
+@keyframes guide-pop {
+  from {
+    opacity: 0;
+    transform: translateY(var(--l3-spacing-12)) scale(0.5);
+  }
+}
+
+@keyframes guide-turn {
+  to { --guide-angle: 360deg; }
+}
+
+@keyframes guide-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes guide-pulse {
+  0% {
+    opacity: 0.9;
+    scale: 1;
+  }
+  70%,
+  100% {
+    opacity: 0;
+    scale: 1.12;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .guide,
+  .spot,
+  .spot::after,
+  .tip,
+  .tip::before {
+    animation: none;
+  }
+}
+```
+
+### `src/flows/stocks/components/MarketSwitchGuide.tsx`
+
+```tsx
+import { useLayoutEffect, useRef, useState, type CSSProperties, type MouseEvent } from 'react'
+import { UsIntroStory } from './UsIntroStory'
+import styles from './MarketSwitchGuide.module.css'
+
+type Spot = { x: number; y: number; w: number; h: number; radius: string }
+/** Where the intro card sits: left edge, its tail's x inside it, and below or above the switch. */
+type Card = { left: number; width: number; tail: number; below: boolean; top: number; bottom: number }
+
+/** Room around the switch inside the lit hole. */
+const PAD = 4
+/** The card's gap to the hole (its tail sits in it), its side gutter, and the room it needs under the switch. */
+const GAP = 14
+const GUTTER = 16
+const CARD_ROOM = 400
+const CARD_WIDTH = 320
+/** The dim's strength (black at 75 %, --app-stocks-guide-scrim): `data-scrim` tells the phone's system bars to dim too. */
+const SCRIM = '0.75'
+
+/**
+ * FTUX guide for the IND / US switch, on every homepage version (prototype setting "Market switch guide"). Like the
+ * F&O chart tools guide (DASH's "Your indicators"): the screen dims (surface/overlay) and a torch hole stays lit over
+ * the switch — wherever this version puts it (notched strip, pill group, tabs, top-bar switch, V13's market button) —
+ * with a pulsing ring, and the US Stocks intro card (UsIntroStory: an animated story, like DASH's Pine Script tip)
+ * pops in under it (above it when the switch is low), its tail on the switch. "View US stocks" or tapping the lit
+ * switch switches market and ends the guide; ✕ ends it. Tapping the dim does nothing, so a mis-tap can't lose it.
+ * Rendered in Screen's `sheet` slot, so it covers the whole screen (top bar and navbar too).
+ */
+export function MarketSwitchGuide({ onView, onClose }: { onView: () => void; onClose: () => void }) {
+  const root = useRef<HTMLDivElement>(null)
+  const [spot, setSpot] = useState<Spot | null>(null)
+  const [card, setCard] = useState<Card | null>(null)
+  // No switch on this version (V1, the current homepage): no guide at all.
+  const [missing, setMissing] = useState(false)
+
+  useLayoutEffect(() => {
+    const measure = (last = false) => {
+      const el = root.current
+      if (!el) return
+      const target = findSwitch(el)
+      if (!target) {
+        setSpot(null)
+        if (last) setMissing(true)
+        return
+      }
+      const box = el.getBoundingClientRect()
+      // Below the fold (a switch in the middle of the page): bring it into view first.
+      if (target.getBoundingClientRect().bottom > box.bottom) target.scrollIntoView({ block: 'center' })
+      const r = target.getBoundingClientRect()
+      // The preview scales the phone (and a phone may zoom): screen px → this layer's own CSS px.
+      const scale = box.width / el.offsetWidth || 1
+      // Keep the switch's own corners (round pills, the round V13 button); square strips get the 12 corner.
+      const own = parseFloat(getComputedStyle(target).borderTopLeftRadius) || 0
+      const next = {
+        x: (r.left - box.left) / scale - PAD,
+        y: (r.top - box.top) / scale - PAD,
+        w: r.width / scale + PAD * 2,
+        h: r.height / scale + PAD * 2,
+        radius: own ? `${own + PAD}px` : 'var(--l3-radius-12)',
+      }
+      setSpot(next)
+      const boxW = el.offsetWidth
+      const boxH = el.offsetHeight
+      const width = Math.min(boxW - GUTTER * 2, CARD_WIDTH)
+      const middle = next.x + next.w / 2
+      const left = Math.min(Math.max(middle - width / 2, GUTTER), boxW - GUTTER - width)
+      setCard({
+        left,
+        width,
+        tail: Math.min(Math.max(middle - left, GUTTER * 2), width - GUTTER * 2),
+        below: next.y + next.h + GAP + CARD_ROOM <= boxH,
+        top: next.y + next.h + GAP,
+        bottom: boxH - next.y + GAP,
+      })
+    }
+    measure()
+    // The home settles for a moment after a version change (top bar, marquee): measure again once it has.
+    const timers = [120, 400].map((ms) => window.setTimeout(() => measure(ms === 400), ms))
+    const onResize = () => measure()
+    window.addEventListener('resize', onResize)
+    return () => {
+      timers.forEach((id) => window.clearTimeout(id))
+      window.removeEventListener('resize', onResize)
+    }
+  }, [])
+
+  const onTap = (e: MouseEvent<HTMLDivElement>) => {
+    const el = root.current
+    if (!el) return
+    const box = el.getBoundingClientRect()
+    const scale = box.width / el.offsetWidth || 1
+    const x = (e.clientX - box.left) / scale
+    const y = (e.clientY - box.top) / scale
+    const onSpot = spot && x >= spot.x && x <= spot.x + spot.w && y >= spot.y && y <= spot.y + spot.h
+    // A tap on the dim does nothing (a mis-tap shouldn't lose the guide): only ✕, View US stocks or the switch end it.
+    if (!onSpot) return
+    // Hand the tap to the switch under the hole (IND ↔ US), then end the guide.
+    el.style.visibility = 'hidden'
+    ;(document.elementFromPoint(e.clientX, e.clientY) as HTMLElement | null)?.click()
+    onClose()
+  }
+
+  if (missing) return null
+
+  const style = spot && ({ '--spot-x': `${spot.x}px`, '--spot-y': `${spot.y}px`, '--spot-w': `${spot.w}px`, '--spot-h': `${spot.h}px`, '--spot-radius': spot.radius } as CSSProperties)
+
+  return (
+    <div ref={root} className={styles.guide} data-scrim={SCRIM} style={style ?? undefined} data-ready={spot ? '' : undefined} onClick={onTap}>
+      {spot && <div className={styles.spot} />}
+      {card && (
+        <div
+          className={styles.tip}
+          data-below={card.below || undefined}
+          style={{ left: card.left, width: card.width, top: card.below ? card.top : undefined, bottom: card.below ? undefined : card.bottom, '--tail': `${card.tail}px` } as CSSProperties}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <UsIntroStory onClose={onClose} onView={() => { onView(); onClose() }} />
+        </div>
+      )}
+    </div>
+  )
+}
+
+/** The market switch this version shows on screen: the first one marked `data-market-switch` that is visible. */
+function findSwitch(from: HTMLElement): HTMLElement | null {
+  for (let scope = from.parentElement; scope; scope = scope.parentElement) {
+    const marked = [...scope.querySelectorAll<HTMLElement>('[data-market-switch]')]
+    if (!marked.length) continue
+    const screen = scope.getBoundingClientRect()
+    for (const el of marked) {
+      // A pill group or tabs: light the tab row itself, not the padded strip around it.
+      const target = el.querySelector<HTMLElement>('[role="tablist"]') ?? el
+      const r = target.getBoundingClientRect()
+      if (r.width && r.height && r.top >= screen.top) return target
+    }
+    return null
+  }
+  return null
+}
+```
+
 ### `src/flows/stocks/components/MarketTabs.module.css`
 
 ```css
@@ -20012,9 +20407,10 @@ export function Highlights({ onExplore }: { onExplore?: (id: string) => void }) 
 
 /* A flag (system emoji) in place of the tab icon: 16, like the icons. */
 .flag {
+  display: block;
   flex: none;
-  font: var(--l3-text-label-14);
-  line-height: 1;
+  width: var(--l3-icon-size-16);
+  height: var(--l3-icon-size-16);
 }
 
 /* ---- The IND / US switch as L3 Tabs (MarketSwitch) ---- */
@@ -20026,13 +20422,32 @@ export function Highlights({ onExplore }: { onExplore?: (id: string) => void }) 
   padding: var(--l3-spacing-08) var(--l3-spacing-16);
 }
 
-/* Inside a container that brings its own padding (Home's sheet head): no padding or background of its own. */
-.switch[data-bare] {
+/* Inside a container that brings its own padding (Home's sheet head), or hugging the track (compact, in a top bar): no
+   background of its own — a square fill around the round track would show sharp corners past it. */
+.switch:is([data-bare], [data-compact]) {
   background: none;
 }
 
 .switch[data-appearance='underline'] {
   padding-block: 0;
+}
+
+/* V12 in the top bar: the big (32) pills in a track the top bar's control height (38, like search and the wallet), on
+   surface/primary with the wallet's 1px edge. */
+.switch[data-top-bar] {
+  flex: none;
+  background: none;
+}
+
+.switch[data-top-bar] [role='tablist'][data-appearance='pill-group'] {
+  padding: calc((var(--app-stocks-topbar-control) - var(--l3-size-32)) / 2);
+  background: var(--l3-surface-primary);
+  box-shadow: inset 0 0 0 1px var(--l3-border-light); /* 1px edge */
+}
+
+/* …and the unselected pill has no fill of its own: it sits straight on the track (only the selected one is filled). */
+.switch[data-top-bar] [role='tab'][data-appearance='pill'][aria-selected='false'] {
+  --tab-surface: transparent;
 }
 
 /* Drawn by MarketTabs.tsx at the measured width. */
@@ -20231,6 +20646,8 @@ import { Tabs } from '@l3/components/Tabs'
 import { Tag } from '@l3/components/Tag'
 import { t } from '../copy'
 import indOff from '../assets/us/ind-icon-off.svg'
+import flagIndia from '../assets/flags/india.svg'
+import flagUs from '../assets/flags/us.svg'
 import indOn from '../assets/us/ind-icon-on.svg'
 import usOff from '../assets/us/us-icon-off.svg'
 import usOn from '../assets/us/us-icon-on.svg'
@@ -20249,9 +20666,10 @@ const labelKeys = {
   country: { in: 'us.tabs.inCountry', us: 'us.tabs.usCountry' },
 } as const
 
-// L3 gap: no flag icons in L3 — the flags are the system's emoji.
-const flagEmoji: Record<Market, string> = { in: '🇮🇳', us: '🇺🇸' }
-const Flag = ({ market }: { market: Market }) => <span className={styles.flag} aria-hidden="true">{flagEmoji[market]}</span>
+// L3 gap: no flag icons in L3 — round flag SVGs of our own (assets/flags), not emoji, so they look the same and sit
+// centred on every device. 16, like the icons in small buttons and tabs.
+const flagIcon: Record<Market, string> = { in: flagIndia, us: flagUs }
+export const Flag = ({ market }: { market: Market }) => <img className={styles.flag} src={flagIcon[market]} alt="" aria-hidden="true" />
 const NewTag = () => <Tag color="success" size="sm">{t('us.tabs.new')}</Tag>
 
 /**
@@ -20260,7 +20678,7 @@ const NewTag = () => <Tag color="success" size="sm">{t('us.tabs.new')}</Tag>
  */
 export function MarketTabs({ value, onChange, look = {}, place = 'mid' }: { value: Market; onChange: (market: Market) => void; look?: MarketTabsLook; place?: 'mid' | 'top' }) {
   return (
-    <div className={styles.marketTabs} role="tablist" aria-label={t('us.tabs.label')} data-on={value} data-home="tabs" data-place={place}>
+    <div className={styles.marketTabs} role="tablist" aria-label={t('us.tabs.label')} data-on={value} data-home="tabs" data-market-switch data-place={place}>
       <TabOutline on={value} />
       <MarketTab market="in" on={value === 'in'} onClick={() => onChange('in')} look={look} />
       <MarketTab market="us" on={value === 'us'} onClick={() => onChange('us')} look={look} />
@@ -20404,16 +20822,17 @@ export function PinnedMarketTabs({ value, onChange }: { value: Market; onChange:
 
 /**
  * The IND / US switch drawn with L3 Tabs (home versions V3–V6, V9: components/homeVersions.ts): a pill group or
- * underline tabs filling the row, or (`compact`, V5) a small pill group hugging its labels in the top bar.
+ * underline tabs filling the row, or (`compact`, V5) a small pill group hugging its labels in the top bar, or (`topBar`,
+ * V12) the big pills hugging their labels in a surface/primary track as tall as the top bar's search and wallet.
  * L3 gap: Jojo's V9 "Graphite segmented" has no L3 style of its own — it is the L3 pill group.
  */
-export function MarketSwitch({ value, onChange, appearance, look = {}, compact = false, bare = false }: { value: Market; onChange: (market: Market) => void; appearance: 'pill-group' | 'underline'; look?: MarketTabsLook; compact?: boolean; /** No padding or background of its own (its container has them). */ bare?: boolean }) {
+export function MarketSwitch({ value, onChange, appearance, look = {}, compact = false, topBar = false, bare = false }: { value: Market; onChange: (market: Market) => void; appearance: 'pill-group' | 'underline'; look?: MarketTabsLook; compact?: boolean; topBar?: boolean; /** No padding or background of its own (its container has them). */ bare?: boolean }) {
   const keys = labelKeys[look.labels ?? 'stocks']
   return (
-    <div className={styles.switch} data-home="tabs" data-appearance={appearance} data-compact={compact || undefined} data-bare={bare || undefined}>
+    <div className={styles.switch} data-home="tabs" data-market-switch data-appearance={appearance} data-compact={compact || topBar || undefined} data-top-bar={topBar || undefined} data-bare={bare || undefined}>
       <Tabs
         appearance={appearance}
-        width={compact ? 'hug' : 'fill'}
+        width={compact || topBar ? 'hug' : 'fill'}
         size={compact ? 'sm' : 'md'}
         aria-label={t('us.tabs.label')}
         value={value}
@@ -20547,7 +20966,7 @@ export function ProductCards({ onProduct, items = products }: { onProduct?: (id:
   background: var(--l3-surface-primary);
 }
 
-.bar > :is(.profile, .search, .wallet) {
+.bar > :is(.profile, .search, .wallet, .market) {
   display: inline-flex;
   flex: none;
   align-items: center;
@@ -20561,11 +20980,11 @@ export function ProductCards({ onProduct, items = products }: { onProduct?: (id:
   transition: transform var(--l3-motion-duration-short) var(--l3-motion-easing-standard);
 }
 
-.bar > :is(.profile, .search, .wallet):active {
+.bar > :is(.profile, .search, .wallet, .market):active {
   transform: scale(var(--l3-motion-scale-press-default));
 }
 
-.bar > :is(.profile, .search, .wallet):focus-visible {
+.bar > :is(.profile, .search, .wallet, .market):focus-visible {
   outline: 2px solid var(--l3-content-primary);
   outline-offset: 2px;
 }
@@ -20610,6 +21029,22 @@ export function ProductCards({ onProduct, items = products }: { onProduct?: (id:
   background: var(--l3-surface-default);
   box-shadow: inset 0 0 0 1px var(--l3-border-light); /* 1px edge */
 }
+
+/* Two-homes versions: with search as a round button, the free room sits between the start and the buttons. */
+.gap {
+  flex: 1;
+}
+
+/* V13: the market switch — the wallet's round surface and height, wide enough for flag · name · swap icon. */
+.bar .market {
+  gap: var(--l3-spacing-06);
+  padding-inline: var(--l3-spacing-12);
+  border-radius: var(--l3-radius-full);
+  background: var(--l3-surface-default);
+  box-shadow: inset 0 0 0 1px var(--l3-border-light); /* 1px edge */
+  font: var(--l3-text-label-14);
+  white-space: nowrap;
+}
 ```
 
 ### `src/flows/stocks/components/TopBar.tsx`
@@ -20618,6 +21053,8 @@ export function ProductCards({ onProduct, items = products }: { onProduct?: (id:
 import type { ReactNode } from 'react'
 import { Icon } from '@l3/components/Icon'
 import { msAccountBalanceWallet, msSearch } from '@l3/icons/material'
+import { lmSwitchArrowVertical } from '@l3/icons/lemonnade'
+import { Flag, type Market } from './MarketTabs'
 import { t } from '../copy'
 import styles from './TopBar.module.css'
 
@@ -20630,8 +21067,19 @@ type TopBarProps = {
   onWallet?: () => void
   /** The page is scrolled: the bar turns surface/primary. */
   scrolled?: boolean
-  /** After the wallet: home version V5's IND / US switch (components/homeVersions.ts). */
+  /** After the wallet: the IND / US switch of home versions V5, V12 (components/homeVersions.ts). */
   end?: ReactNode
+  /** After the profile: V12's IND / US switch (components/homeVersions.ts). */
+  start?: ReactNode
+  /**
+   * After the profile: V13's market switch (components/homeVersions.ts) — a round button the height of search and the
+   * wallet, showing the market the home is on; one tap switches to the other market (no sheet).
+   */
+  market?: { value: Market; onSwitch: () => void }
+  /** The search pill's text (default "Search stocks"; the US home says "Search US stocks"). */
+  placeholder?: string
+  /** Two-homes versions: search is a round icon button like the wallet (its label is the placeholder), not a pill. */
+  compactSearch?: boolean
 }
 
 /**
@@ -20640,16 +21088,39 @@ type TopBarProps = {
  * is entered from the F&O home only — 2026-11-01.)
  * The bar sits on the summary area's grey; the pill and the wallet are on surface/default.
  */
-export function TopBar({ initials, onProfile, onSearch, onWallet, scrolled = false, end }: TopBarProps) {
+export function TopBar({ initials, onProfile, onSearch, onWallet, scrolled = false, end, start, market, placeholder = t('search.placeholder'), compactSearch = false }: TopBarProps) {
   return (
     <header className={styles.bar} data-scrolled={scrolled || undefined}>
       <button type="button" className={styles.profile} aria-label={t('top.profile')} onClick={onProfile}>
         {initials}
       </button>
-      <button type="button" className={styles.search} onClick={onSearch}>
-        <Icon icon={msSearch} size={20} />
-        <span className={styles.placeholder}>{t('search.placeholder')}</span>
-      </button>
+      {start}
+      {market && (
+        <button
+          type="button"
+          className={styles.market}
+          data-market-switch
+          aria-label={t('market.switch.label', { market: t(market.value === 'us' ? 'us.tabs.in' : 'us.tabs.us') })}
+          onClick={market.onSwitch}
+        >
+          <Flag market={market.value} />
+          <span>{t(market.value === 'us' ? 'us.tabs.us' : 'us.tabs.in')}</span>
+          <Icon icon={lmSwitchArrowVertical} size={16} />
+        </button>
+      )}
+      {compactSearch ? (
+        <>
+          <span className={styles.gap} aria-hidden="true" />
+          <button type="button" className={styles.wallet} aria-label={placeholder} onClick={onSearch}>
+            <Icon icon={msSearch} size={20} />
+          </button>
+        </>
+      ) : (
+        <button type="button" className={styles.search} onClick={onSearch}>
+          <Icon icon={msSearch} size={20} />
+          <span className={styles.placeholder}>{placeholder}</span>
+        </button>
+      )}
       <button type="button" className={styles.wallet} aria-label={t('top.wallet')} onClick={onWallet}>
         <Icon icon={msAccountBalanceWallet} size={20} />
       </button>
@@ -20659,22 +21130,538 @@ export function TopBar({ initials, onProfile, onSearch, onWallet, scrolled = fal
 }
 ```
 
+### `src/flows/stocks/components/UsIntroStory.module.css`
+
+```css
+/*
+ * The US Stocks intro card (UsIntroStory.tsx), built like DASH's animated Pine Script tip: a dark card (surface/inverted)
+ * with a turning blue gradient edge, around one light stage — a tiny Stocks home, always white (static colours) so it
+ * reads the same in both themes. Everything on the stage is always there and moves by transitions between the story's
+ * phases, so nothing cuts. Where it sits, its tail and its pop come from MarketSwitchGuide.module.css (.tip).
+ * Stage geometry is artwork (172 tall, --app-stocks-guide-*).
+ */
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--l3-spacing-12);
+  padding: var(--l3-spacing-12);
+  border-radius: var(--l3-radius-20);
+  background: var(--l3-surface-inverted);
+  box-shadow: 0 var(--l3-spacing-08) var(--l3-spacing-24) color-mix(in srgb, var(--l3-base-hue-blue-500) 35%, transparent);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: var(--l3-spacing-08);
+}
+
+.logo {
+  display: inline-flex;
+  flex: none;
+}
+
+.logo img {
+  width: var(--l3-size-28);
+  height: var(--l3-size-28);
+}
+
+.title {
+  color: var(--l3-content-inverted);
+  font: var(--l3-text-heading-14);
+}
+
+.badge {
+  padding: 0 var(--l3-spacing-06);
+  border-radius: var(--l3-radius-full);
+  background: var(--l3-base-hue-blue-500);
+  color: var(--l3-static-white);
+  font: var(--l3-text-label-12);
+}
+
+.close {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--l3-size-28);
+  height: var(--l3-size-28);
+  margin-left: auto;
+  padding: 0;
+  border: 0;
+  border-radius: var(--l3-radius-full);
+  background: none;
+  color: var(--l3-content-inverted-secondary);
+  cursor: pointer;
+}
+
+/* ---- The stage */
+.stage {
+  --move: var(--app-stocks-guide-move);
+  --ease: var(--l3-motion-easing-standard);
+  position: relative;
+  display: block;
+  height: var(--app-stocks-guide-stage);
+  overflow: hidden;
+  border-radius: var(--l3-radius-12);
+  background: var(--l3-static-white);
+  color: var(--l3-static-black);
+  font: var(--l3-text-label-12);
+  transition: opacity var(--l3-motion-duration-medium) var(--ease);
+}
+
+/* The loop's end: a soft fade before it starts again. */
+.stage[data-reset] {
+  opacity: 0;
+}
+
+/* The tiny IND / US switch, centred at the top: a grey track, a white knob that slides to the tapped half. */
+.switch {
+  position: absolute;
+  top: var(--l3-spacing-08);
+  left: 50%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  width: var(--app-stocks-guide-switch);
+  height: var(--l3-size-32);
+  padding: var(--l3-spacing-02);
+  border-radius: var(--l3-radius-full);
+  background: color-mix(in srgb, var(--l3-static-black) 7%, transparent);
+  transform: translateX(-50%);
+}
+
+.knob {
+  position: absolute;
+  top: var(--l3-spacing-02);
+  bottom: var(--l3-spacing-02);
+  left: var(--l3-spacing-02);
+  width: calc(50% - var(--l3-spacing-02));
+  border-radius: var(--l3-radius-full);
+  background: var(--l3-static-white);
+  box-shadow: 0 1px var(--l3-spacing-04) color-mix(in srgb, var(--l3-static-black) 18%, transparent);
+  transition: transform var(--move) var(--app-stocks-guide-pop-easing);
+}
+
+.switch[data-us] .knob {
+  transform: translateX(100%);
+}
+
+.half {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--l3-spacing-04);
+  font: var(--l3-text-heading-12);
+}
+
+.half img {
+  width: var(--l3-size-16);
+  height: var(--l3-size-16);
+}
+
+/* ---- The lists: IND sits in, US waits on the right; on the switch IND leaves left as US comes in. */
+.list {
+  position: absolute;
+  top: calc(var(--l3-spacing-08) + var(--l3-size-32) + var(--l3-spacing-04));
+  right: var(--l3-spacing-08);
+  left: var(--l3-spacing-08);
+  display: flex;
+  flex-direction: column;
+  transition: transform var(--move) var(--ease), opacity var(--move) var(--ease);
+}
+
+.list[data-place='out'] {
+  opacity: 0;
+  transform: translateX(-60%);
+}
+
+.list[data-place='next'] {
+  opacity: 0;
+  transform: translateX(60%);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--l3-spacing-08);
+  height: var(--l3-size-40);
+  padding: 0 var(--l3-spacing-06);
+  border-radius: var(--l3-radius-08);
+  transition: background var(--l3-motion-duration-short) var(--ease);
+}
+
+.row[data-picked] {
+  background: color-mix(in srgb, var(--l3-base-hue-blue-500) 14%, transparent);
+}
+
+.sym {
+  font: var(--l3-text-heading-12);
+}
+
+.price {
+  margin-left: auto;
+  font: var(--l3-text-label-12);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- NVIDIA's buy bar: a small sheet that slides up over the stage's bottom. */
+.buy {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: var(--l3-spacing-08);
+  height: var(--l3-size-56);
+  padding: 0 var(--l3-spacing-12);
+  border-radius: var(--l3-radius-16) var(--l3-radius-16) 0 0;
+  background: var(--l3-static-white);
+  box-shadow: 0 calc(-1 * var(--l3-spacing-04)) var(--l3-spacing-16) color-mix(in srgb, var(--l3-static-black) 14%, transparent);
+  transform: translateY(105%);
+  transition: transform var(--move) var(--ease);
+}
+
+.buy[data-open] {
+  transform: none;
+}
+
+.buyName {
+  display: flex;
+  flex-direction: column;
+}
+
+.fraction {
+  color: color-mix(in srgb, var(--l3-static-black) 55%, transparent);
+  font: var(--l3-text-description-12);
+}
+
+.buyButton {
+  margin-left: auto;
+  padding: var(--l3-spacing-06) var(--l3-spacing-16);
+  border-radius: var(--l3-radius-full);
+  background: var(--l3-button-buy-surface);
+  color: var(--l3-button-buy-content);
+  font: var(--l3-text-heading-12);
+  transition: transform var(--l3-motion-duration-short) var(--ease);
+}
+
+.buyButton[data-press] {
+  transform: scale(0.88);
+}
+
+.half[data-press] {
+  transform: scale(0.9);
+}
+
+/* Bought: the bar turns into a green check line that pops in. */
+.bought {
+  display: flex;
+  align-items: center;
+  gap: var(--l3-spacing-06);
+  color: var(--l3-content-accent-success-default);
+  font: var(--l3-text-heading-12);
+  animation: story-pop var(--app-stocks-guide-pop) var(--app-stocks-guide-pop-easing) both;
+}
+
+@keyframes story-pop {
+  from {
+    opacity: 0;
+    scale: 0.6;
+  }
+}
+
+/* The fingertip: one for the whole story — it glides between targets, presses (a ring ripples out), and leaves. */
+.cursor {
+  position: absolute;
+  top: var(--cy);
+  left: var(--cx);
+  z-index: 4;
+  width: var(--l3-spacing-16);
+  height: var(--l3-spacing-16);
+  margin: calc(-1 * var(--l3-spacing-08)) 0 0 calc(-1 * var(--l3-spacing-08));
+  border: var(--l3-spacing-02) solid var(--l3-static-white);
+  border-radius: var(--l3-radius-full);
+  background: color-mix(in srgb, var(--l3-static-black) 70%, transparent);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--l3-base-hue-blue-500) 60%, transparent);
+  transition:
+    top var(--app-stocks-guide-glide) var(--ease),
+    left var(--app-stocks-guide-glide) var(--ease),
+    opacity var(--l3-motion-duration-medium) var(--ease);
+}
+
+.cursor[data-away] {
+  opacity: 0;
+}
+
+.cursor[data-press] {
+  animation: story-tap var(--l3-motion-duration-medium) var(--ease) both;
+}
+
+@keyframes story-tap {
+  40% { scale: 0.75; }
+  100% { scale: 1; box-shadow: 0 0 0 var(--l3-spacing-12) color-mix(in srgb, var(--l3-base-hue-blue-500) 0%, transparent); }
+}
+
+/* ---- Switch · Explore · Trade */
+.steps {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  padding-top: var(--l3-spacing-08);
+}
+
+.track {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: var(--l3-spacing-02);
+  overflow: hidden;
+  border-radius: var(--l3-radius-full);
+  background: color-mix(in srgb, var(--l3-content-inverted) 18%, transparent);
+}
+
+.track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--l3-base-hue-blue-400);
+  transition: width var(--app-stocks-guide-move) var(--l3-motion-easing-standard);
+}
+
+.act {
+  color: var(--l3-content-inverted-secondary);
+  font: var(--l3-text-label-12);
+  transition: color var(--l3-motion-duration-medium) var(--l3-motion-easing-standard);
+}
+
+.act:nth-child(3) { text-align: center; }
+.act:nth-child(4) { text-align: end; }
+
+.act[data-state='now'] {
+  color: var(--l3-base-hue-blue-400);
+}
+
+.act[data-state='done'] {
+  color: var(--l3-content-inverted);
+}
+
+.caption {
+  color: var(--l3-content-inverted);
+  font: var(--l3-text-label-14);
+  animation: story-in var(--l3-motion-duration-medium) var(--l3-motion-easing-decelerate) both;
+}
+
+@keyframes story-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--l3-spacing-04));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stage *,
+  .caption,
+  .track span {
+    transition: none;
+    animation: none;
+  }
+}
+```
+
+### `src/flows/stocks/components/UsIntroStory.tsx`
+
+```tsx
+import { useEffect, useState, type CSSProperties } from 'react'
+import { Avatar } from '@l3/components/Avatar'
+import { Button } from '@l3/components/Button'
+import { Icon } from '@l3/components/Icon'
+import { msCheck, msClose } from '@l3/icons/material'
+import { getCompany } from '../../../shared/data/companies'
+import { usLogo } from '../../../shared/data/usStocks'
+import { t } from '../copy'
+import { Flag } from './MarketTabs'
+import { usStock } from './us/data'
+import styles from './UsIntroStory.module.css'
+
+/**
+ * The story's timeline (ms from the loop's start). One stage, one fingertip: the IND list → tap US on the switch →
+ * the US list slides in → tap NVIDIA → its buy bar slides up → tap Buy → bought → hold → fade, again.
+ */
+const TIMELINE = [
+  { at: 0, phase: 'start' },
+  { at: 300, phase: 'toUs' },
+  { at: 1000, phase: 'tapUs' },
+  { at: 1250, phase: 'us' },
+  { at: 2200, phase: 'toRow' },
+  { at: 2900, phase: 'tapRow' },
+  { at: 3150, phase: 'sheet' },
+  { at: 3700, phase: 'toBuy' },
+  { at: 4400, phase: 'tapBuy' },
+  { at: 4650, phase: 'bought' },
+  { at: 7400, phase: 'reset' },
+] as const
+const LOOP_MS = 7900
+type Phase = (typeof TIMELINE)[number]['phase']
+const order = TIMELINE.map((s) => s.phase)
+/** Reduced motion: the still — the US list with the stock bought. */
+const STILL: Phase = 'bought'
+
+/** Where the fingertip is in each phase (x in % of the stage's width, y in stage px; the stage is 172 tall). */
+const CURSOR: Record<Phase, [number, number]> = {
+  start: [110, 200],
+  toUs: [62, 24],
+  tapUs: [62, 24],
+  us: [62, 24],
+  toRow: [36, 104],
+  tapRow: [36, 104],
+  sheet: [36, 104],
+  toBuy: [86, 144],
+  tapBuy: [86, 144],
+  bought: [110, 200],
+  reset: [110, 200],
+}
+
+const ACTS = ['switchGuide.actSwitch', 'switchGuide.actExplore', 'switchGuide.actTrade'] as const
+const CAPTIONS = ['switchGuide.captionSwitch', 'switchGuide.captionExplore', 'switchGuide.captionTrade'] as const
+const actOf = (p: Phase) => (order.indexOf(p) < order.indexOf('toRow') ? 0 : order.indexOf(p) < order.indexOf('toBuy') ? 1 : 2)
+
+/** The rows the story's tiny home lists: three Indian stocks, then three US ones (real prices, the picked one 2nd). */
+const IND_ROWS = ['RELIANCE', 'TCS', 'HDFCBANK'].map((sym) => ({ sym, logo: getCompany(sym)?.logoUrl, price: getCompany(sym)?.market?.price ?? 0 }))
+const US_ROWS = ['AAPL', 'NVDA', 'TSLA'].map((sym) => ({ sym, logo: usLogo(sym), price: usStock(sym).price }))
+const PICKED = US_ROWS[1]
+
+const inr = (n: number) => `₹${n.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+const usd = (n: number) => `$${n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+
+/**
+ * The US Stocks intro (the market switch guide's card): a dark floating card with a turning blue edge — like DASH's
+ * animated Pine Script tip — with a small continuous story on a light stage: one fingertip switches the tiny home from
+ * IND to US, opens NVIDIA and buys it. A stepper (Switch · Explore · Trade) fills as it goes, a caption says each act,
+ * and "View US stocks" (L3 Button secondary, Large) switches the real home to US. ✕ hides it.
+ */
+export function UsIntroStory({ onView, onClose }: { onView: () => void; onClose: () => void }) {
+  const reduced = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  const [phase, setPhase] = useState<Phase>(reduced ? STILL : 'start')
+  const [lap, setLap] = useState(0)
+  useEffect(() => {
+    if (reduced) return
+    const timers = TIMELINE.map(({ at, phase: p }) => window.setTimeout(() => setPhase(p), at))
+    timers.push(window.setTimeout(() => setLap((n) => n + 1), LOOP_MS))
+    return () => timers.forEach(window.clearTimeout)
+  }, [lap, reduced])
+
+  const at = (p: Phase) => order.indexOf(phase) >= order.indexOf(p)
+  const act = actOf(phase)
+  const [cx, cy] = CURSOR[phase]
+  const pressing = phase === 'tapUs' || phase === 'tapRow' || phase === 'tapBuy'
+  const stage = { '--cx': `${cx}%`, '--cy': `${cy}px` } as CSSProperties
+
+  return (
+    <span className={styles.card} role="note">
+      <span className={styles.head}>
+        <span className={styles.logo} aria-hidden="true"><Flag market="us" /></span>
+        <span className={styles.title}>{t('switchGuide.title')}</span>
+        <span className={styles.badge}>{t('us.tabs.new')}</span>
+        <button type="button" className={styles.close} aria-label={t('switchGuide.hide')} onClick={onClose}>
+          <Icon icon={msClose} size={16} />
+        </button>
+      </span>
+
+      <span className={styles.stage} style={stage} data-reset={phase === 'reset' || undefined} aria-hidden="true">
+        {/* The tiny home's IND / US switch: the knob slides to US when it's tapped. */}
+        <span className={styles.switch} data-us={at('us') || undefined}>
+          <span className={styles.knob} />
+          <span className={styles.half} data-press={phase === 'tapUs' || undefined}><Flag market="in" />{t('us.tabs.inShort')}</span>
+          <span className={styles.half}><Flag market="us" />{t('us.tabs.usShort')}</span>
+        </span>
+
+        {/* The lists: IND slides out to the left as US slides in from the right. */}
+        <span className={styles.list} data-place={at('us') ? 'out' : 'in'}>
+          {IND_ROWS.map((row) => (
+            <span key={row.sym} className={styles.row}>
+              <Avatar src={row.logo} initials={row.sym.slice(0, 2)} size={24} />
+              <span className={styles.sym}>{row.sym}</span>
+              <span className={styles.price}>{inr(row.price)}</span>
+            </span>
+          ))}
+        </span>
+        <span className={styles.list} data-place={at('us') ? 'in' : 'next'}>
+          {US_ROWS.map((row) => (
+            <span key={row.sym} className={styles.row} data-picked={(row === PICKED && at('tapRow')) || undefined}>
+              <Avatar src={row.logo} initials={row.sym.slice(0, 2)} size={24} />
+              <span className={styles.sym}>{row.sym}</span>
+              <span className={styles.price}>{usd(row.price)}</span>
+            </span>
+          ))}
+        </span>
+
+        {/* NVIDIA's buy bar: slides up, Buy is tapped, it says bought. */}
+        <span className={styles.buy} data-open={at('sheet') || undefined}>
+          <Avatar src={PICKED.logo} initials={PICKED.sym.slice(0, 2)} size={24} />
+          {at('bought') ? (
+            <span className={styles.bought} key={`bought-${lap}`}>
+              <Icon icon={msCheck} size={16} />
+              {t('switchGuide.bought', { sym: PICKED.sym })}
+            </span>
+          ) : (
+            <>
+              <span className={styles.buyName}>
+                <span className={styles.sym}>{PICKED.sym}</span>
+                <span className={styles.fraction}>{t('switchGuide.fraction')}</span>
+              </span>
+              <span className={styles.buyButton} data-press={phase === 'tapBuy' || undefined}>{t('switchGuide.buy')}</span>
+            </>
+          )}
+        </span>
+
+        {/* One fingertip for the whole story. */}
+        <span className={styles.cursor} data-press={pressing || undefined} data-away={phase === 'start' || at('bought') || undefined} />
+      </span>
+
+      {/* Switch · Explore · Trade: the line fills as the story goes. */}
+      <span className={styles.steps} aria-hidden="true">
+        <span className={styles.track}><span style={{ width: `${(act + (at('reset') ? 1 : 0.5)) * 33.34}%` }} /></span>
+        {ACTS.map((a, i) => <span key={a} className={styles.act} data-state={i < act ? 'done' : i === act ? 'now' : 'next'}>{t(a)}</span>)}
+      </span>
+      <span className={styles.caption} key={act}>{t(CAPTIONS[act])}</span>
+
+      <Button variant="secondary" size="lg" fullWidth onClick={onView}>{t('switchGuide.cta')}</Button>
+    </span>
+  )
+}
+```
+
 ### `src/flows/stocks/components/homeVersions.ts`
 
 ```ts
-// The Stocks home's design versions, from Jojo's US Stocks design (designs/lemonn-us-stocks-design.html, its
+// The Stocks home's design versions. V1–V9 from Jojo's US Stocks design (designs/lemonn-us-stocks-design.html, its
 // "Homepage version" switch: Figma "Homepage versions", nodes below). They differ only in the IND / US switch (where it
 // sits and how it looks), the product tiles, the index ticker and the shortcuts' title; the feeds are the same.
+// V10–V13 ("two homes", no Figma yet) split the page at the top: the market is picked first and everything below is its own.
 // The prototype picks one with the flow option `homeVersion` (index.tsx), default V2 as in Jojo's file.
 
-export type HomeVersionId = 'v1' | 'v2' | 'v3' | 'v4' | 'v5' | 'v6' | 'v7' | 'v8' | 'v9'
+export type HomeVersionId = 'v2' | 'v3' | 'v4' | 'v5' | 'v6' | 'v7' | 'v8' | 'v9' | 'v10' | 'v11' | 'v12' | 'v13'
 
 export type HomeVersion = {
   id: HomeVersionId
   name: string
   figma: string
-  /** Where the IND / US switch sits: none · between the summary and the feed (mid) · under the top bar (top) · in the top bar (header). */
-  place: 'none' | 'mid' | 'top' | 'header'
+  /**
+   * Where the IND / US switch sits: none · between the summary and the feed (mid) · under the top bar (top) · in the top
+   * bar (header) · a market chip in the top bar that opens a "Choose market" sheet (picker).
+   */
+  place: 'none' | 'mid' | 'top' | 'header' | 'picker'
+  /**
+   * What the switch changes. 'feed' (V1–V9): only the feed under the summary; the holdings and the product tiles stay
+   * Indian. 'page' (V10–V13, "two homes"): everything under the top bar — ticker, summary, tiles and feed — belongs to the
+   * market picked, and the switch stays on screen while the page scrolls.
+   */
+  scope: 'feed' | 'page'
   /** How it looks: the notched folder tabs · an L3 pill group · L3 underline tabs. */
   look: 'folder' | 'pill' | 'underline'
   /** The tab labels: "IND Stocks / US Stocks" · "IND / US" · "INDIA / USA". */
@@ -20692,36 +21679,42 @@ export type HomeVersion = {
 }
 
 export const homeVersions: HomeVersion[] = [
-  { id: 'v1', name: 'Current homepage', figma: '6118:9', place: 'none', look: 'folder', labels: 'stocks', flags: false, usNew: false, tiles: 'classic', ticker: true, doMore: false },
-  { id: 'v2', name: 'Existing folder', figma: '6118:254', place: 'mid', look: 'folder', labels: 'stocks', flags: false, usNew: false, tiles: 'today', ticker: true, doMore: false },
-  { id: 'v3', name: 'Pill', figma: '6128:29822', place: 'mid', look: 'pill', labels: 'stocks', flags: true, usNew: false, tiles: 'classic', ticker: true, doMore: false },
-  { id: 'v4', name: 'CoinSwitch style', figma: '6128:30124', place: 'mid', look: 'underline', labels: 'stocks', flags: true, usNew: false, tiles: 'classic', ticker: true, doMore: false },
-  { id: 'v5', name: 'Card-level segmented control', figma: '6128:30436', place: 'header', look: 'pill', labels: 'short', flags: false, usNew: false, tiles: 'classic', ticker: true, doMore: false },
-  { id: 'v6', name: 'Pill on top', figma: '6128:30747', place: 'top', look: 'pill', labels: 'stocks', flags: true, usNew: false, tiles: 'withUs', ticker: true, doMore: false },
-  { id: 'v7', name: 'Lit folder on top', figma: '6128:31013', place: 'top', look: 'folder', labels: 'stocks', flags: true, usNew: true, tiles: 'today', ticker: true, doMore: false },
-  { id: 'v8', name: 'Lit folder · India / USA', figma: '6128:31431', place: 'top', look: 'folder', labels: 'country', flags: true, usNew: true, tiles: 'withUs', ticker: true, doMore: true },
-  { id: 'v9', name: 'Graphite segmented', figma: '6128:31986', place: 'top', look: 'pill', labels: 'short', flags: true, usNew: true, tiles: 'today', ticker: false, doMore: true },
+  // V1 "Current homepage" (Figma 6118:9, no IND / US switch) was taken out of the list on 2026-11-02.
+  { id: 'v2', name: 'Existing folder', figma: '6118:254', place: 'mid', scope: 'feed', look: 'folder', labels: 'stocks', flags: false, usNew: false, tiles: 'today', ticker: true, doMore: false },
+  { id: 'v3', name: 'Pill', figma: '6128:29822', place: 'mid', scope: 'feed', look: 'pill', labels: 'stocks', flags: true, usNew: false, tiles: 'classic', ticker: true, doMore: false },
+  { id: 'v4', name: 'CoinSwitch style', figma: '6128:30124', place: 'mid', scope: 'feed', look: 'underline', labels: 'stocks', flags: true, usNew: false, tiles: 'classic', ticker: true, doMore: false },
+  { id: 'v5', name: 'Card-level segmented control', figma: '6128:30436', place: 'header', scope: 'feed', look: 'pill', labels: 'short', flags: false, usNew: false, tiles: 'classic', ticker: true, doMore: false },
+  { id: 'v6', name: 'Pill on top', figma: '6128:30747', place: 'top', scope: 'feed', look: 'pill', labels: 'stocks', flags: true, usNew: false, tiles: 'withUs', ticker: true, doMore: false },
+  { id: 'v7', name: 'Lit folder on top', figma: '6128:31013', place: 'top', scope: 'feed', look: 'folder', labels: 'stocks', flags: true, usNew: true, tiles: 'today', ticker: true, doMore: false },
+  { id: 'v8', name: 'Lit folder · India / USA', figma: '6128:31431', place: 'top', scope: 'feed', look: 'folder', labels: 'country', flags: true, usNew: true, tiles: 'withUs', ticker: true, doMore: true },
+  { id: 'v9', name: 'Graphite segmented', figma: '6128:31986', place: 'top', scope: 'feed', look: 'pill', labels: 'short', flags: true, usNew: true, tiles: 'today', ticker: false, doMore: true },
+  // Two homes (2026-11-02): top-level segregation — the market is picked first, and the whole page is that market's.
+  { id: 'v10', name: 'Two homes · segmented on top', figma: '', place: 'top', scope: 'page', look: 'pill', labels: 'stocks', flags: true, usNew: true, tiles: 'today', ticker: true, doMore: false },
+  { id: 'v11', name: 'Two homes · tabs on top', figma: '', place: 'top', scope: 'page', look: 'underline', labels: 'stocks', flags: true, usNew: true, tiles: 'today', ticker: true, doMore: false },
+  { id: 'v12', name: 'Two homes · switch in top bar', figma: '', place: 'header', scope: 'page', look: 'pill', labels: 'short', flags: true, usNew: false, tiles: 'today', ticker: true, doMore: false },
+  { id: 'v13', name: 'Two homes · market picker', figma: '', place: 'picker', scope: 'page', look: 'pill', labels: 'stocks', flags: true, usNew: false, tiles: 'today', ticker: true, doMore: false },
 ]
 
-export const homeVersion = (id: string) => homeVersions.find((v) => v.id === id) ?? homeVersions[1]
+export const homeVersion = (id: string) => homeVersions.find((v) => v.id === id) ?? homeVersions[0]
 ```
 
 ### `src/flows/stocks/components/us/UsActivationCard.tsx`
 
 ```tsx
-// The card on top of the US tab, by state: Activate US Stocks / under review / failed (Retry) / activated (Add money) / money ready.
+// The card on top of the US tab, by state: Activate US Stocks / under review (+ Contact Support after a day) / failed (Retry) /
+// activated (Add money) / money on the way (Track Transfer) / money ready.
 // Title, subtitle, a rotating benefits strip (not on the plain messages) and a Large button where the state has one.
 // FLAG: hand-made card (tinted by state), carousel and dots instead of L3 Card / Aerobar / Steps — see UsHome.module.css.
 import type { CSSProperties } from 'react'
 import { Button } from '@l3/components/Button'
 import { Icon } from '@l3/components/Icon'
-import { msArrowForward, msCheck, msError, msHourglassTop } from '@l3/icons/material'
+import { msArrowForward, msCheck, msError, msHourglassTop, msSchedule } from '@l3/icons/material'
 import { useAutoSlide } from './useAutoSlide'
 import { cardSpecs, type UsState } from './data'
 import { t } from '../../copy'
 import styles from './UsHome.module.css'
 
-const stateIcons = { hourglass: msHourglassTop, error: msError }
+const stateIcons = { hourglass: msHourglassTop, error: msError, clock: msSchedule }
 
 export function UsActivationCard({ state, onCta }: { state: Exclude<UsState, 'holding'>; onCta?: () => void }) {
   const spec = cardSpecs[state]
@@ -21392,11 +22385,13 @@ type UsHomeProps = {
   onMarket?: () => void
   /** The ETFs shortcut → the ETF list (Regular / Leveraged). */
   onEtfs?: () => void
+  /** The activation card on top (default). The two-homes versions show it in the summary instead (screens/Home). */
+  card?: boolean
 }
 
 const sign = (up: boolean) => (up ? '+' : '-')
 
-export function UsHome({ usState = 'activate', onActivate, onStock, onMarket, onEtfs }: UsHomeProps) {
+export function UsHome({ usState = 'activate', onActivate, onStock, onMarket, onEtfs, card = true }: UsHomeProps) {
   const [filter, setFilter] = useState<MoverFilter>('gainers')
   const [cap, setCap] = useState<CapValue>('mega')
   const [index, setIndex] = useState<(typeof heatmapIndices)[number]>('sp')
@@ -21427,7 +22422,7 @@ export function UsHome({ usState = 'activate', onActivate, onStock, onMarket, on
 
   return (
     <>
-      {usState !== 'holding' && usState !== 'ready' && <Inset paddingInline="16" paddingBlock="00"><UsActivationCard state={usState} onCta={onActivate} /></Inset>}
+      {card && usState !== 'holding' && usState !== 'ready' && <Inset paddingInline="16" paddingBlock="00"><UsActivationCard state={usState} onCta={onActivate} /></Inset>}
       <Shortcuts items={usShortcuts} onOpen={(id) => { if (id === 'etfs') onEtfs?.() }} />
 
       <div data-home="movers">
@@ -21626,9 +22621,9 @@ export function usStock(sym: string, name?: string) {
 // ---- Activation card (one per US state) ----
 
 /** Where the user is with US Stocks: the card on top of the US tab (and what the tab shows) follows it. */
-export type UsState = 'activate' | 'review' | 'failed' | 'activated' | 'ready' | 'holding'
+export type UsState = 'kyc' | 'activate' | 'review' | 'support' | 'failed' | 'activated' | 'onTheWay' | 'ready' | 'holding'
 
-export type BenefitId = 'fractional' | 'diversify' | 'kyc' | 'stocks' | 'evening'
+export type BenefitId = 'fractional' | 'diversify' | 'kyc' | 'stocks' | 'evening' | 'debit' | 'convert' | 'credit'
 export type Benefit = { id: BenefitId; icon: string }
 /** The benefit strip's slides: `tag` and `text` are copy keys `us.benefit.<id>.tag|text`. */
 const benefit = (id: BenefitId): Benefit => ({ id, icon: benefitBolt })
@@ -21638,14 +22633,14 @@ export const lockedBenefits: Benefit[] = [benefit('fractional'), benefit('divers
 type CopyKey = Parameters<typeof t>[0]
 
 export type CardSpec = {
-  /** The card's tint: blue (US-stock accent) · honey (under review) · red (failed) · green (activated, ready). */
+  /** The card's tint: blue (US-stock accent) · honey (under review, money on the way) · red (failed) · green (activated, ready). */
   tone: 'blue' | 'honey' | 'red' | 'green'
   /** Copy keys (copy.json) of the card's words. */
   title: CopyKey
   subtitle: CopyKey
   cta?: CopyKey
   /** A state icon beside the title. */
-  icon?: 'hourglass' | 'error' | 'check'
+  icon?: 'hourglass' | 'error' | 'check' | 'clock'
   /** The rotating benefits strip (none when the card is only a message). */
   slides?: Benefit[]
   /** The button ends with an arrow. */
@@ -21654,10 +22649,13 @@ export type CardSpec = {
 
 /** The card on top of the US tab for each state (no card when the user already holds US stocks). */
 export const cardSpecs: Record<Exclude<UsState, 'holding'>, CardSpec> = {
+  kyc: { tone: 'blue', title: 'us.kyc.title', subtitle: 'us.kyc.subtitle', cta: 'us.kyc.cta', slides: lockedBenefits },
   activate: { tone: 'blue', title: 'us.activate.title', subtitle: 'us.activate.subtitle', cta: 'us.activate.cta', slides: lockedBenefits },
   review: { tone: 'honey', title: 'us.review.title', subtitle: 'us.review.subtitle', icon: 'hourglass', slides: lockedBenefits },
+  support: { tone: 'honey', title: 'us.review.title', subtitle: 'us.review.subtitle', cta: 'us.support.cta', icon: 'hourglass', slides: lockedBenefits },
   failed: { tone: 'red', title: 'us.failed.title', subtitle: 'us.failed.subtitle', cta: 'us.failed.cta', icon: 'error', slides: lockedBenefits },
   activated: { tone: 'green', title: 'us.activated.title', subtitle: 'us.activated.subtitle', cta: 'us.activated.cta', slides: [benefit('stocks'), benefit('fractional'), benefit('evening')] },
+  onTheWay: { tone: 'honey', title: 'us.onTheWay.title', subtitle: 'us.onTheWay.subtitle', cta: 'us.onTheWay.cta', icon: 'clock', slides: [benefit('debit'), benefit('convert'), benefit('credit')] },
   ready: { tone: 'green', title: 'us.ready.title', subtitle: 'us.ready.subtitle', cta: 'us.ready.cta', icon: 'check', arrow: true },
 }
 
@@ -21805,6 +22803,41 @@ export const themes: { id: 'trending' | 'leveraged' | 'dividend' | 'parking'; lo
 /** Sparkline artwork under each Titan (up / down). Illustration — keeps its own colours. */
 export { default as sparkUp } from '../../assets/us/spark-up.svg'
 export { default as sparkDown } from '../../assets/us/spark-down.svg'
+```
+
+### `src/flows/stocks/components/us/sheets/ActivationApprovedSheet.tsx`
+
+```tsx
+import { useId } from 'react'
+import { BottomSheetHeader } from '@l3/components/BottomSheet'
+import { Button } from '@l3/components/Button'
+import { ButtonGroup } from '@l3/components/ButtonGroup'
+import { msCheckCircle } from '@l3/icons/material'
+import { Sheet } from '../../../../../shared/ui/Sheet'
+import { Spot } from '../../../../../shared/ui/Spot'
+import { t } from '../../../copy'
+
+/**
+ * stocks-22 · "US Stocks is active", over the activated Home: the moment the review is approved (the twin of the
+ * "activation submitted" sheet, stocks-18). Add Money → the $0 USD wallet; Later (or closing) → the activated Home.
+ * Not in Jojo's Figma: added so the user is told they were approved, not only shown a green card.
+ */
+export function ActivationApprovedSheet({ onAddMoney, onLater }: { onAddMoney?: () => void; onLater?: () => void }) {
+  const id = useId()
+  return (
+    <Sheet
+      labelledBy={id}
+      onClose={onLater}
+      header={<BottomSheetHeader size="lg" headingId={id} icon={<Spot icon={msCheckCircle} tone="success" size="md" />} heading={t('us.approved.title')} description={t('us.approved.description')} />}
+      footer={
+        <ButtonGroup aria-label={t('us.approved.actions')}>
+          <Button size="lg" onClick={onAddMoney}>{t('us.approved.addMoney')}</Button>
+          <Button size="lg" variant="secondary" onClick={onLater}>{t('us.approved.later')}</Button>
+        </ButtonGroup>
+      }
+    />
+  )
+}
 ```
 
 ### `src/flows/stocks/components/us/sheets/ActivationSubmittedSheet.tsx`
@@ -22676,6 +23709,14 @@ export function useSwipeBetween({ canGo, onSwitch, page }: { canGo: (direction: 
   "us.tabs.usCountry": "USA",
   "us.tabs.new": "New",
   "us.indices.label": "US market indices",
+  "us.kyc.title": "Complete your KYC first",
+  "us.kyc.subtitle": "US Stocks opens once your Lemonn KYC is done",
+  "us.kyc.cta": "Complete KYC",
+  "us.approved.title": "US Stocks is active",
+  "us.approved.description": "You can now buy US stocks. Add money to your US wallet to place your first order.",
+  "us.approved.addMoney": "Add Money to US wallet",
+  "us.approved.later": "Later",
+  "us.approved.actions": "US Stocks activated",
   "us.activate.title": "Activate US Stocks",
   "us.activate.subtitle": "Takes under a minute",
   "us.activate.cta": "Activate US Stocks",
@@ -22719,6 +23760,16 @@ export function useSwipeBetween({ canGo, onSwitch, page }: { canGo: (direction: 
   "us.benefit.evening.text": "Trade in the evening, India time",
   "us.review.title": "Activation under review",
   "us.review.subtitle": "This usually takes up to 1 working day",
+  "us.support.cta": "Contact Support",
+  "us.onTheWay.title": "Money on the way",
+  "us.onTheWay.subtitle": "Trade from Thu 8 PM",
+  "us.onTheWay.cta": "Track Transfer",
+  "us.benefit.debit.tag": "What happens next",
+  "us.benefit.debit.text": "Debited from your bank by Wed",
+  "us.benefit.convert.tag": "What happens next",
+  "us.benefit.convert.text": "Converted to dollars at the day's rate",
+  "us.benefit.credit.tag": "What happens next",
+  "us.benefit.credit.text": "In your US wallet by Thu 8 PM",
   "us.failed.title": "US Stocks activation failed",
   "us.failed.subtitle": "Your PAN details could not be verified",
   "us.failed.cta": "Retry Activation",
@@ -22750,7 +23801,21 @@ export function useSwipeBetween({ canGo, onSwitch, page }: { canGo: (direction: 
   "us.submitted.title": "US Stocks activation under review",
   "us.submitted.description": "We'll let you know as soon as it's active.",
   "us.submitted.okay": "Okay",
-  "us.submitted.actions": "Activation submitted"
+  "us.submitted.actions": "Activation submitted",
+  "search.placeholderUs": "Search US stocks",
+  "market.switch.label": "Switch to {market}",
+  "switchGuide.title": "Introducing US Stocks",
+  "switchGuide.hide": "Hide",
+  "switchGuide.cta": "View US stocks",
+  "switchGuide.actSwitch": "Switch",
+  "switchGuide.actExplore": "Explore",
+  "switchGuide.actTrade": "Trade",
+  "switchGuide.captionSwitch": "Switch to US stocks right here, in one tap",
+  "switchGuide.captionExplore": "Explore Apple, NVIDIA, Tesla and more",
+  "switchGuide.captionTrade": "Trade from $1, even a part of a share",
+  "switchGuide.fraction": "0.25 share · $1 minimum",
+  "switchGuide.buy": "Buy",
+  "switchGuide.bought": "Bought 0.25 {sym}"
 }
 ```
 
@@ -22775,7 +23840,7 @@ import { companies, companiesByChange, type Company } from '../../shared/data/co
 /** Stocks home — what the API sends for each section, in page order. Sample values; market data from the live app. */
 
 /** Product shortcuts under the holdings: one line on what's special about each. */
-export type Product = { id: 'mutual-funds' | 'fno' | 'commodities' | 'us-stocks'; name: string; highlight: string; detail: string; isNew?: boolean }
+export type Product = { id: 'mutual-funds' | 'fno' | 'commodities' | 'us-stocks' | 'us-etfs' | 'us-fractional' | 'us-hours'; name: string; highlight: string; detail: string; isNew?: boolean }
 export const products: Product[] = [
   { id: 'mutual-funds', name: 'Mutual funds', highlight: '240+', detail: 'funds' },
   { id: 'fno', name: 'Equity F&O', highlight: '0', detail: 'slippage' },
@@ -22792,6 +23857,12 @@ export const productsWithUs: Product[] = [
   { id: 'fno', name: 'Equity F&O', highlight: '0', detail: 'slippage' },
   { id: 'commodities', name: 'Commodities', highlight: '0', detail: 'brokerage' },
   { id: 'us-stocks', name: 'US Stocks', highlight: 'Opens', detail: '8:00 PM', isNew: true },
+]
+/** The US home's own tiles (two-homes versions V10–V13): what's different about investing in the US. */
+export const productsUs: Product[] = [
+  { id: 'us-etfs', name: 'ETFs', highlight: '3x', detail: 'leveraged' },
+  { id: 'us-fractional', name: 'Fractional', highlight: 'From', detail: '$1' },
+  { id: 'us-hours', name: 'Market hours', highlight: '8 PM', detail: 'to 2:30 AM' },
 ]
 
 /** "Do more with Lemonn": feature shortcuts, each with an optional count or "New" flag. */
@@ -22908,6 +23979,7 @@ import type { Go } from '../types'
 import { Home } from './screens/Home'
 import { homeVersions } from './components/homeVersions'
 import type { UsState } from './components/us/data'
+import { ActivationApprovedSheet } from './components/us/sheets/ActivationApprovedSheet'
 import { ActivationSubmittedSheet } from './components/us/sheets/ActivationSubmittedSheet'
 import { RiskDisclosureSheet } from './components/us/sheets/RiskDisclosureSheet'
 import { UsFtuxSheet } from './components/us/sheets/UsFtuxSheet'
@@ -22922,7 +23994,7 @@ const searchFor = (market: 'in' | 'us') => (market === 'us' ? 'search-29' : 'sea
 const chrome = (go: Go) => ({ onTab: (t: Parameters<typeof goToTab>[1]) => goToTab(go, t), onSearch: (m: 'in' | 'us') => go(searchFor(m)), onProfile: () => go('profile-01') })
 
 /** Wallet icon on the US tab, by where the user is (screens of the US Stocks flow): Indian wallet · under review · failed · $0 · funded. */
-const walletFor: Record<UsState, string> = { activate: 'us-stocks-53', review: 'us-stocks-55', failed: 'us-stocks-56', activated: 'us-stocks-20', ready: 'us-stocks-59', holding: 'us-stocks-59' }
+const walletFor: Record<UsState, string> = { kyc: 'us-stocks-53', activate: 'us-stocks-53', review: 'us-stocks-55', support: 'us-stocks-57', failed: 'us-stocks-56', activated: 'us-stocks-20', onTheWay: 'us-stocks-28', ready: 'us-stocks-59', holding: 'us-stocks-59' }
 
 /** A Home screen on the US tab in one of the user's US Stocks states (Figma frames designed in the US Stocks flow). */
 const usHome = (go: Go, usState: UsState, extra: Partial<ComponentProps<typeof Home>> = {}) => (
@@ -22947,8 +24019,11 @@ export const stocks: Flow = {
       picker: 'dropdown',
       values: homeVersions.map((v) => ({ value: v.id, label: `${v.id.toUpperCase()} · ${v.name}` })),
       default: 'v2',
-      floatOn: ['stocks-01', 'stocks-02', 'stocks-03', 'stocks-04', 'stocks-05', 'stocks-06', 'stocks-07', 'stocks-09', 'stocks-10', 'stocks-11', 'stocks-12', 'stocks-13', 'stocks-14', 'stocks-15', 'stocks-16', 'stocks-17', 'stocks-18'],
+      floatOn: ['stocks-01', 'stocks-02', 'stocks-03', 'stocks-04', 'stocks-05', 'stocks-06', 'stocks-07', 'stocks-09', 'stocks-10', 'stocks-11', 'stocks-12', 'stocks-13', 'stocks-14', 'stocks-15', 'stocks-16', 'stocks-17', 'stocks-18', 'stocks-21', 'stocks-22'],
     },
+    // FTUX guide for the IND / US switch: dims the screen, lights the switch with a tooltip. Shown every time a Home
+    // opens (and again after a version change) while on; tap anywhere or ✕ to end it.
+    { id: 'switchGuide', group: 'Home', label: 'Market switch guide', picker: 'toggle', values: [{ value: 'off', label: 'Off' }, { value: 'on', label: 'On' }], default: 'on' },
   ],
   screens: [
     { id: 'stocks-01', name: 'Home', badge: 'changed', badgeNote: 'Header hides on scroll; DASH pill removed; back returns to the IND / US tab you left', figma: '5714:64982', group: 'ftux', note: 'Top of the page: search, indices, holdings, products, shortcuts.', tab: true, render: (go) => <Home onTab={(t) => goToTab(go, t)} onSearch={(m) => go(searchFor(m))} onProfile={() => go('profile-01')} {...usNav(go)} /> },
@@ -22958,15 +24033,19 @@ export const stocks: Flow = {
     { id: 'stocks-05', name: 'Home · sectors & highlights', figma: '', note: 'Same page, scrolled.', tab: true, render: (go) => <Home onTab={(t) => goToTab(go, t)} onSearch={(m) => go(searchFor(m))} onProfile={() => go('profile-01')} {...usNav(go)} scrollTo="sectors" /> },
     { id: 'stocks-06', name: 'Home · highlights & idea baskets', figma: '', note: 'Same page, scrolled. (The live app no longer has Trade ideas here — removed 2026-10-22.)', tab: true, render: (go) => <Home onTab={(t) => goToTab(go, t)} onSearch={(m) => go(searchFor(m))} onProfile={() => go('profile-01')} {...usNav(go)} scrollTo="highlights" /> },
     { id: 'stocks-07', name: 'Home · idea baskets & disclosure', figma: '', note: 'The end of the page: the disclosure, four lines and Read More.', tab: true, render: (go) => <Home onTab={(t) => goToTab(go, t)} onSearch={(m) => go(searchFor(m))} onProfile={() => go('profile-01')} {...usNav(go)} scrollTo="more" /> },
+    { id: 'stocks-21', name: 'Home · US tab · KYC not done', badge: 'new', badgeNote: 'Not in Jojo\'s Figma: a user whose Lemonn KYC isn\'t complete', figma: '9001:20', group: 'us-activate', note: 'The US tab for a user who hasn\'t finished their Lemonn (Indian) KYC: US Stocks can\'t be activated yet, so the card asks for KYC first. Complete KYC → the KYC flow (kyc-01). A US stock opens its page with Complete KYC in place of Activate (us-stocks-74). Everything else on the tab is as for a not-activated user (stocks-09).', tab: true, render: (go) => usHome(go, 'kyc', { onActivateUs: () => go('kyc-01'), onUsStock: () => go('us-stocks-74') }) },
     { id: 'stocks-09', name: 'Home · US Stocks tab', figma: '5756:74756', group: 'us-activate', note: 'The US Stocks tab for a user who has not activated US Stocks: US indices, the Activate US Stocks card (→ risk disclosure sheet, stocks-12), shortcuts, Top Movers, Trillion Dollar Titans, Brands, Heatmap, themes. A US stock opens its page (not activated). Designed in the US Stocks flow (Figma Home · US tab · Activate US Stocks card); here it is the tab on the app\'s own Stocks home.', tab: true, render: (go) => usHome(go, 'activate') },
     { id: 'stocks-10', name: 'Home · US Stocks tab · scrolled', figma: '', note: 'Same tab, scrolled past the tabs: the compact IND / US tabs are pinned under the top bar.', tab: true, render: (go) => usHome(go, 'activate', { scrollTo: 'movers' }) },
-    { id: 'stocks-11', name: 'Home · US Stocks intro sheet', figma: '5756:68986', group: 'ftux', note: 'First launch after release: the IND tab with the US Stocks intro (FTUX) sheet — animated flag, five company logos, three benefits. Activate US Stocks → the risk disclosure (stocks-12); ✕ → Home (stocks-01).', tab: true, render: (go) => <Home {...chrome(go)} {...usNav(go)} sheet={<UsFtuxSheet onActivate={() => go('stocks-12')} onClose={() => go('stocks-01')} />} /> },
+    { id: 'stocks-11', name: 'Home · US Stocks intro (FTUX) sheet', figma: '5756:68986', group: 'ftux', note: 'First launch after release: the IND tab with the US Stocks intro (FTUX) sheet — animated flag, five company logos, three benefits. Activate US Stocks → the risk disclosure (stocks-12); ✕ → Home (stocks-01).', tab: true, render: (go) => <Home {...chrome(go)} {...usNav(go)} sheet={<UsFtuxSheet onActivate={() => go('stocks-12')} onClose={() => go('stocks-01')} />} /> },
     { id: 'stocks-12', name: 'Home · US tab · risk disclosure sheet', figma: '5756:71475', group: 'us-activate', note: 'The Risk disclosure (For US Stocks) sheet over the US tab. Agree and Continue submits the activation → under review (stocks-13); closing it → the tab (stocks-09).', tab: true, render: (go) => usHome(go, 'activate', { sheet: <RiskDisclosureSheet onAgree={() => go('stocks-13')} onClose={() => go('stocks-09')} /> }) },
-    { id: 'stocks-13', name: 'Home · US tab · activation under review', figma: '5756:75539', group: 'us-review', note: 'US tab, activation under review (honey card, up to 1 working day). In the prototype it moves on to "activated" (stocks-15) by itself after 2 s; the wallet opens the wallet with the review banner.', tab: true, render: (go) => usHome(go, 'review', { autoNext: 'stocks-15' }) },
+    { id: 'stocks-13', name: 'Home · US tab · activation under review', figma: '5756:75539', group: 'us-review', note: 'US tab, activation under review (honey card, up to 1 working day). In the prototype it moves on to "activated" (stocks-15) by itself after 2 s; the wallet opens the wallet with the review banner.', tab: true, render: (go) => usHome(go, 'review', { autoNext: 'stocks-22' }) },
+    { id: 'stocks-22', name: 'Home · US tab · activation approved sheet', badge: 'new', badgeNote: 'Not in Jojo\'s Figma: tells the user the review was approved', figma: '9001:21', group: 'us-review', note: 'The review is approved: the activated US tab with the "US Stocks is active" sheet (success spot). Add Money to US wallet → the $0 USD wallet (us-stocks-20); Later or closing → the activated Home (stocks-15). The under-review Home (stocks-13) moves here by itself after 2 s.', tab: true, render: (go) => usHome(go, 'activated', { onActivateUs: () => go('us-stocks-20'), sheet: <ActivationApprovedSheet onAddMoney={() => go('us-stocks-20')} onLater={() => go('stocks-15')} /> }) },
     { id: 'stocks-14', name: 'Home · US tab · activation failed', figma: '5776:81034', note: 'US tab, activation failed (PAN could not be verified): red card, Retry Activation → the risk disclosure (stocks-12).', tab: true, render: (go) => usHome(go, 'failed') },
     { id: 'stocks-15', name: 'Home · US tab · activated · add money', figma: '5776:81870', note: 'US tab, activation successful: green card with the unlocked benefits, Add Money to US wallet → the $0 USD wallet (us-stocks-20). The wallet icon goes there too.', tab: true, render: (go) => usHome(go, 'activated', { onActivateUs: () => go('us-stocks-20') }) },
     { id: 'stocks-16', name: 'Home · US tab · money ready', figma: '5796:87332', note: 'Money reached the US wallet: a "Your money is ready" toast above the navbar (times out after 6 s; no card, as in his design); tapping the toast → the activated page (stocks-17). Wallet → the funded USD wallet (us-stocks-59).', tab: true, render: (go) => usHome(go, 'ready', { onActivateUs: () => go('stocks-17') }) },
     { id: 'stocks-17', name: 'Home · US tab · activated · holding', figma: '5826:92885', note: 'US tab for an activated user who holds US stocks: no card, the summary shows US holdings ($). A US stock opens its stock page — NVDA (held) with Buy / Sell, others Buy only. Wallet → the funded USD wallet.', tab: true, render: (go) => usHome(go, 'holding', { onUsStock: (sym) => go(sym === 'NVDA' ? 'us-stocks-32' : 'us-stocks-31') }) },
+    { id: 'stocks-19', name: 'Home · US tab · under review · Contact Support', badge: 'new', badgeNote: 'Added from Jojo\'s Figma (A00 · Home · Under review · Contact Support)', figma: '5776:80202', group: 'us-review', note: 'Activation still under review after a working day: the honey card gains a Contact Support button. Figma has no support screen, so the button goes nowhere yet (L3 gap / missing screen). The wallet opens the wallet\'s Contact Support state (us-stocks-57).', tab: true, render: (go) => usHome(go, 'support') },
+    { id: 'stocks-20', name: 'Home · US tab · money on the way', badge: 'new', badgeNote: 'Added from Jojo\'s Figma (A00 · Home · Money on the way)', figma: '5796:86490', note: 'After paying on the bank page: the honey "Money on the way" card (trade from Thu 8 PM) with what happens next (debited, converted, credited). Track Transfer and the wallet open the wallet\'s transfer in progress (us-stocks-28). In the prototype it moves on to "money ready" (stocks-16) by itself after 2 s, as in his prototype.', tab: true, render: (go) => usHome(go, 'onTheWay', { onActivateUs: () => go('us-stocks-28'), autoNext: 'stocks-16' }) },
     { id: 'stocks-18', name: 'Home · activation submitted sheet', figma: '5756:73797', group: 'us-review', note: 'The under-review US tab with the "US Stocks activation under review" sheet (we\'ll let you know as soon as it\'s active). Okay → the under-review Home (stocks-13). Reached from Confirm details in the US Stocks flow.', tab: true, render: (go) => usHome(go, 'review', { sheet: <ActivationSubmittedSheet onOkay={() => go('stocks-13')} /> }) },
   ],
 }
@@ -23154,6 +24233,32 @@ export const stocks: Flow = {
     transition: none;
   }
 }
+
+/*
+ * Two-homes versions V10, V11: the IND / US switch rides in the sticky block above the ticker (12 between them), so it
+ * stays on screen while the page scrolls. It sits on the block's band, so it has no background of its own.
+ */
+.stickySwitch {
+  position: relative;
+  margin-bottom: var(--l3-spacing-12);
+}
+
+/*
+ * V10: the pill group's track gets the page's white so it stands out on the grey summary (L3's track is
+ * surface/secondary, the same grey — invisible here). Once scrolled the band turns white, so the track goes back to
+ * grey. Only the round track itself (role=tablist): MarketSwitch's wrapper carries the same data-appearance, and painting
+ * it too drew a square box with sharp corners around the pills. L3 gap: Tabs pill-group has no track-surface option.
+ */
+.stickySwitch[data-look='pill'] [role='tablist'][data-appearance='pill-group'] {
+  background: var(--l3-surface-default);
+  box-shadow: inset 0 0 0 1px var(--l3-border-light); /* 1px hairline */
+  transition: background-color var(--l3-motion-duration-short) var(--l3-motion-easing-standard);
+}
+
+.marquee:not([data-state='top']) .stickySwitch[data-look='pill'] [role='tablist'][data-appearance='pill-group'] {
+  background: var(--l3-surface-secondary);
+  box-shadow: none;
+}
 ```
 
 ### `src/flows/stocks/screens/Home.tsx`
@@ -23162,6 +24267,7 @@ export const stocks: Flow = {
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { Aerobar } from '@l3/components/Aerobar'
 import { Icon } from '@l3/components/Icon'
+import { Inset } from '@l3/components/Inset'
 import { Section } from '@l3/components/Section'
 import { Stack } from '@l3/components/Stack'
 import { msCheckCircle } from '@l3/icons/material'
@@ -23174,12 +24280,14 @@ import { Announcement, Highlights, Sectors, SmartInvest } from '../components/In
 import { HoldingsSummary, IndexStrip, ProductCards } from '../components/Overview'
 import { MarketSwitch, MarketTabs, PinnedMarketTabs, type Market } from '../components/MarketTabs'
 import { homeVersion, type HomeVersion } from '../components/homeVersions'
+import { MarketSwitchGuide } from '../components/MarketSwitchGuide'
 import { TopBar } from '../components/TopBar'
 import { usIndices, type UsState } from '../components/us/data'
+import { UsActivationCard } from '../components/us/UsActivationCard'
 import { UsHome } from '../components/us/UsHome'
 import { neighbour, useSwipeBetween } from '../components/useSwipeBetween'
 import { Shortcuts, TopMovers, Watchlists } from '../components/Discover'
-import { products, productsClassic, productsWithUs, type MoverList } from '../data'
+import { products, productsClassic, productsUs, productsWithUs, type MoverList } from '../data'
 import { t } from '../copy'
 import styles from './Home.module.css'
 
@@ -23235,7 +24343,15 @@ export function Home({ scrollTo = 'top', market = 'in', movers, onTab, onSearch,
   const page = useRef<HTMLDivElement>(null)
   // The design version (the prototype's "Homepage version" option): where the IND / US switch sits and how it looks.
   const version = homeVersion(useFlowOption('stocks', 'homeVersion', 'v2'))
+  // The market switch guide (prototype setting, on by default) shows every time this Home opens, and again for each
+  // homepage version picked; ending it hides it for this version until the Home opens again.
+  const guideOn = useFlowOption('stocks', 'switchGuide', 'on') === 'on'
+  const [guideDoneFor, setGuideDoneFor] = useState<string | null>(null)
+  const guiding = guideOn && !sheet && guideDoneFor !== version.id
   const hasSwitch = version.place !== 'none'
+  // Two homes (V10–V13): the switch changes the whole page, not only the feed, and stays on screen.
+  const twoHomes = version.scope === 'page'
+  // V13: the market chip's "Choose market" sheet.
   // The navbar, or going back, brings the user back to the Stocks home on the IND / US tab they left it on.
   const { screenId, cameBack } = usePreview()
   const [chosenTab, setTab] = useState<Market>(() => (screenId && takeStocksTab(screenId, cameBack)) || market)
@@ -23257,7 +24373,10 @@ export function Home({ scrollTo = 'top', market = 'in', movers, onTab, onSearch,
   const pinnedNow = useRef(scrollTo !== 'top')
   // The compact tabs pin under the marquee only when the switch scrolls with the page (versions with it mid or on top).
   const hasTabsInPage = useRef(false)
-  hasTabsInPage.current = version.place === 'mid' || version.place === 'top'
+  hasTabsInPage.current = !twoHomes && (version.place === 'mid' || version.place === 'top')
+  // The switch lives in the top bar (V5, V12, V13): the bar never slides away — while scrolled it stays, surface/primary.
+  const switchInBar = useRef(false)
+  switchInBar.current = version.place === 'header' || version.place === 'picker'
   const direction = useRef<'down' | 'up'>(scrollTo === 'top' ? 'down' : 'up')
   const lastTop = useRef(0)
   const spacer = useRef<HTMLDivElement>(null)
@@ -23292,7 +24411,7 @@ export function Home({ scrollTo = 'top', market = 'in', movers, onTab, onSearch,
   }
   /**
    * The header's scroll states (as the US Stocks prototype's: 'top' / 'down' / 'up', a 6 px delta before the direction
-   * changes). 'top': the page is at its top. Scrolled: 'down' hides the top bar, 'up' shows it again. The compact tabs
+   * changes). 'top': the page is at its top. Scrolled: 'down' hides the top bar, 'up' shows it again (always 'up' when the switch is in the bar). The compact tabs
    * pin once the notched tabs have gone under the marquee's band.
    */
   const sync = () => {
@@ -23304,7 +24423,7 @@ export function Home({ scrollTo = 'top', market = 'in', movers, onTab, onSearch,
       direction.current = delta > 0 ? 'down' : 'up'
       lastTop.current = top
     }
-    const state: ScrollState = top > 0 ? direction.current : 'top'
+    const state: ScrollState = top > 0 ? (switchInBar.current ? 'up' : direction.current) : 'top'
     const pin = hasTabsInPage.current && feedTop() - top <= headerBottom(state, false)
     pinnedNow.current = pin
     setScrollState(state)
@@ -23383,40 +24502,70 @@ export function Home({ scrollTo = 'top', market = 'in', movers, onTab, onSearch,
       return
     }
     const body = page.current?.parentElement
+    // Two homes: the other market is another page, so it opens at its top.
+    if (body && twoHomes) scrollBodyTo(0)
     if (body) lastTop.current = body.scrollTop
     sync()
   }, [tab, version.id])
 
   // Under a switch in the middle the feed starts right below it; otherwise it overlaps the summary on a rounded sheet.
+  const switchInPage = (next: Market) => switchTo(next, true)
+  // The US home's summary (two homes): the activation card while there is one, else the US holdings in dollars.
+  const usCard = usState !== 'holding' && usState !== 'ready'
+  const onProduct = (id: string) => {
+    if (id === 'us-stocks') switchTo('us', true)
+    else if (id === 'us-etfs') onUsEtfs?.()
+    else if (id === 'us-fractional' || id === 'us-hours') onUsMarket?.()
+  }
   const feedClass = version.place !== 'mid' ? styles.feed : version.look === 'folder' ? `${styles.feed} ${styles.feedTabbed}` : `${styles.feed} ${styles.feedTabbed} ${styles.feedUnderHead}`
 
   return (
     <Screen
-      sheet={sheet}
+      sheet={sheet ?? (guiding && <MarketSwitchGuide key={version.id} onView={() => switchInPage('us')} onClose={() => setGuideDoneFor(version.id)} />)}
       toast={showToast && <Aerobar type="success" floating icon={<Icon icon={msCheckCircle} />} heading={t('us.ready.title')} paragraph={t('us.ready.subtitle')} duration={6000} onClick={onActivateUs} onDismiss={() => setToastGone(true)} />}
       bottom={<MainNav value="stocks" onChange={onTab} />}
     >
       <div className={styles.header} data-animate={animate || undefined}>
         <div className={styles.topBar} data-hidden={scrollState === 'down' || undefined} inert={scrollState === 'down' || undefined}>
-          <TopBar scrolled={scrolled} initials={initials(user.name)} onProfile={onProfile} onSearch={() => onSearch?.(tab)} onWallet={onWallet} end={version.place === 'header' && <MarketSwitch compact appearance="pill-group" look={version} value={tab} onChange={(next) => switchTo(next, true)} />} />
+          <TopBar scrolled={scrolled} initials={initials(user.name)} onProfile={onProfile} onSearch={() => onSearch?.(tab)} onWallet={onWallet}
+            compactSearch={twoHomes}
+            placeholder={twoHomes && tab === 'us' ? t('search.placeholderUs') : undefined}
+            market={version.place === 'picker' ? { value: tab, onSwitch: () => switchInPage(tab === 'us' ? 'in' : 'us') } : undefined}
+            start={version.place === 'header' && twoHomes && <MarketSwitch topBar appearance="pill-group" look={version} value={tab} onChange={switchInPage} />}
+            end={version.place === 'header' && !twoHomes && <MarketSwitch compact appearance="pill-group" look={version} value={tab} onChange={switchInPage} />} />
         </div>
       </div>
       {/* Holds the top bar's place at the top of the page (the bar itself hangs from the sticky header above). */}
       <div ref={spacer} className={styles.spacer} aria-hidden="true" />
       <Stack ref={page} className={styles.flatCards}>
-        {version.place === 'top' && <MarketSwitchFor version={version} value={tab} onChange={(next) => switchTo(next, true)} />}
+        {version.place === 'top' && !twoHomes && <MarketSwitchFor version={version} value={tab} onChange={(next) => switchTo(next, true)} />}
         {/* The page's one index marquee: sticky under the top bar, and up to the very top while the top bar is away. */}
         <div ref={marquee} className={styles.marquee} data-home="top" data-state={scrollState} data-tabs={pinned || undefined} data-animate={animate || undefined} data-ticker={version.ticker ? undefined : 'off'}>
           <div ref={band} className={styles.band} aria-hidden="true" />
+          {/* Two homes: the switch rides in the sticky block, above the ticker, so it never scrolls away. */}
+          {version.place === 'top' && twoHomes && (
+            <div className={styles.stickySwitch} data-look={version.look}>
+              {version.look === 'underline'
+                ? <MarketSwitch bare appearance="underline" look={version} value={tab} onChange={switchInPage} />
+                : <Inset paddingInline="16" paddingBlock="00"><MarketSwitch bare appearance="pill-group" look={version} value={tab} onChange={switchInPage} /></Inset>}
+            </div>
+          )}
           {!version.ticker ? null : tab === 'us' ? <IndexStrip key="us" items={usIndices} label={t('us.indices.label')} slideIn={stripSlides} /> : <IndexStrip key="in" slideIn={stripSlides} />}
           <div className={styles.pinnedTabs} data-open={pinned || undefined} inert={!pinned || undefined}>
             <PinnedMarketTabs value={tab} onChange={(next) => switchTo(next, true)} />
           </div>
         </div>
-        <Stack gap="24" className={styles.summary}>
-          <HoldingsSummary us={tab === 'us' && usState === 'holding'} />
-          <ProductCards key={version.tiles} items={tiles[version.tiles]} onProduct={(id) => id === 'us-stocks' && switchTo('us', true)} />
-        </Stack>
+        {twoHomes && tab === 'us' ? (
+          <Stack key="summary-us" gap="24" className={styles.summary}>
+            {usCard ? <Inset paddingInline="16" paddingBlock="00"><UsActivationCard state={usState as Exclude<UsState, 'holding'>} onCta={onActivateUs} /></Inset> : <HoldingsSummary us />}
+            <ProductCards items={productsUs} onProduct={onProduct} />
+          </Stack>
+        ) : (
+          <Stack key="summary-in" gap="24" className={styles.summary}>
+            <HoldingsSummary us={!twoHomes && tab === 'us' && usState === 'holding'} />
+            <ProductCards key={version.tiles} items={twoHomes ? products : tiles[version.tiles]} onProduct={onProduct} />
+          </Stack>
+        )}
         {version.place === 'mid' && <MarketSwitchFor version={version} value={tab} onChange={(next) => switchTo(next, true)} />}
         {tab === 'in' ? (
           <Stack key="in" gap="32" className={feedClass} ref={swipe.contentRef}>
@@ -23432,7 +24581,7 @@ export function Home({ scrollTo = 'top', market = 'in', movers, onTab, onSearch,
           </Stack>
         ) : (
           <Stack key="us" gap="32" className={feedClass} style={{ '--stk-gap': 'var(--l3-spacing-28)' } as CSSProperties} ref={swipe.contentRef}>
-            <UsHome usState={usState} onActivate={onActivateUs} onStock={onUsStock} onMarket={onUsMarket} onEtfs={onUsEtfs} />
+            <UsHome card={!twoHomes} usState={usState} onActivate={onActivateUs} onStock={onUsStock} onMarket={onUsMarket} onEtfs={onUsEtfs} />
           </Stack>
         )}
       </Stack>
@@ -43784,6 +44933,11 @@ export function Screen({ top, bottom, toast, sheet, children, className }: Scree
   flex-direction: column;
   max-height: calc(100% - var(--l3-size-48));
 }
+
+/* A top sheet (placement="top") hangs from the top edge instead. */
+.dock[data-placement='top'] {
+  inset: 0 0 auto;
+}
 ```
 
 ### `src/shared/ui/Sheet.tsx`
@@ -43811,6 +44965,8 @@ type SheetProps = {
   onClose?: () => void
   /** A screen's own styling hook on the sheet surface (e.g. a sheet that brings its own layout and no padding). */
   className?: string
+  /** 'top' (L3 isBottom=False): drops from the top of the screen, for menus tied to the top (a market or sort picker). */
+  placement?: 'bottom' | 'top'
 }
 
 type Publish = (id: string, sheet: SheetProps | null) => void
@@ -43834,12 +44990,12 @@ export function Sheet(props: SheetProps) {
   useLayoutEffect(() => (hosted ? () => publish(id, null) : undefined), [hosted, publish, id])
 
   if (hosted) return null
-  const { header, children, footer, labelledBy, label, className } = props
+  const { header, children, footer, labelledBy, label, className, placement = 'bottom' } = props
   return (
     <>
       <Overlay open className={styles.scrim} />
-      <div className={styles.dock} role="dialog" aria-labelledby={labelledBy} aria-label={label}>
-        <BottomSheetSurface header={header} footer={footer} className={className}>{children}</BottomSheetSurface>
+      <div className={styles.dock} data-placement={placement} role="dialog" aria-labelledby={labelledBy} aria-label={label}>
+        <BottomSheetSurface header={header} footer={footer} className={className} placement={placement}>{children}</BottomSheetSurface>
       </div>
     </>
   )
@@ -43875,6 +45031,7 @@ export function SheetHost({ container, children }: { container: HTMLElement | nu
           aria-labelledby={shown.sheet.labelledBy}
           aria-label={shown.sheet.label}
           className={shown.sheet.className}
+          placement={shown.sheet.placement}
         >
           {shown.sheet.children}
         </BottomSheet>
