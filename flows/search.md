@@ -16,9 +16,9 @@ Prototype: https://kirtanyak-pe.github.io/lemonn-app-prototype/#/search · machi
 | `search-03` | Stocks · only a watchlist matches | [4912:13671](https://www.figma.com/design/sG24GPizTdwbMBxLm0IpTA/?node-id=4912-13671) | `stocks-01` | "Penny": the watchlist, and "Stocks (0)" with nothing under it. |
 | `search-04` | Stocks · no matching watchlist | [4912:13587](https://www.figma.com/design/sG24GPizTdwbMBxLm0IpTA/?node-id=4912-13587) | `stocks-01`, `search-18` | Same results without the watchlist group. |
 | `search-05` | Stocks · nothing found | [4912:13703](https://www.figma.com/design/sG24GPizTdwbMBxLm0IpTA/?node-id=4912-13703) | `stocks-01` | L3 empty state with the L3 default illustration (Figma still has the old magnifier). Clear Search empties the field. |
-| `search-29` | US · before typing | [5796:89230](https://www.figma.com/design/sG24GPizTdwbMBxLm0IpTA/?node-id=5796-89230) | `stocks-09` | From the search field on Stocks home’s US tab, or Search on the US Portfolio. Recent and popular US stocks as chips (a chip searches for that company), then US collections as tiles. Back returns to where Search was opened. |
-| `search-30` | US · results | — | `stocks-09` | "N": US stocks by name or ticker, with $ prices. A row opens that stock’s US stock page. |
-| `search-31` | US · nothing found | — | `stocks-09` | No US stock matches: L3 empty state with Clear search. |
+| `search-29` | US · before typing | [5796:89230](https://www.figma.com/design/sG24GPizTdwbMBxLm0IpTA/?node-id=5796-89230) | `stocks-01` | From the search field on Stocks home’s US tab, or Search on the US Portfolio. Recent and popular US stocks as chips (a chip searches for that company), then US collections as tiles. Back returns to where Search was opened. |
+| `search-30` | US · results | — | `stocks-01` | "N": US stocks by name or ticker, with $ prices. A row opens that stock’s US stock page. |
+| `search-31` | US · nothing found | — | `stocks-01` | No US stock matches: L3 empty state with Clear search. |
 | `search-25` | F&O · search from home | [4912:13728](https://www.figma.com/design/sG24GPizTdwbMBxLm0IpTA/?node-id=4912-13728) | `fno-01`, `search-26` | From F&O home; Back returns there. |
 | `search-28` | F&O · “Gold” results (illiquid) | — | `fno-01`, `search-26` | Typing “Gold” on the F&O tab (live app reference, 2026-10-29): MCX gold options with the gold artwork. Illiquid contracts (GOLD 135000 Put, GOLD 150000 Call) carry the ILLIQUID tag after the name; tapping the tag opens “What does illiquidity mean?”. Tapping a row opens the contract’s asset page (fno-21); an illiquid one opens the ILLIQUID asset page (fno-22). |
 | `search-26` | F&O home · all Smart Options | [4912:13925](https://www.figma.com/design/sG24GPizTdwbMBxLm0IpTA/?node-id=4912-13925) | `fno-01` |  |
@@ -1125,9 +1125,9 @@ export const search: Flow = {
     { id: 'search-04', section: 'stocks', name: 'Stocks · no matching watchlist', figma: '4912:13587', note: 'Same results without the watchlist group.', render: (go) => <Search onOpen={openResult(go)} results={bankNoWatchlist} onBack={() => go('stocks-01')} onBookmark={() => go('search-18')} /> },
     { id: 'search-05', section: 'stocks', name: 'Stocks · nothing found', figma: '4912:13703', note: 'L3 empty state with the L3 default illustration (Figma still has the old magnifier). Clear Search empties the field.', render: (go) => <Search onOpen={openResult(go)} results={nothing('Vanf')} onBack={() => go('stocks-01')} /> },
     // ---- US stocks (was US Stocks' own search screen, us-stocks-03 / Figma 5796:89230 — merged here)
-    { id: 'search-29', section: 'us', badge: 'new', badgeNote: 'US tab added to Search (replaces US Stocks’ own search screen)', name: 'US · before typing', figma: '5796:89230', note: 'From the search field on Stocks home’s US tab, or Search on the US Portfolio. Recent and popular US stocks as chips (a chip searches for that company), then US collections as tiles. Back returns to where Search was opened.', render: (go) => <Search onOpen={openResult(go)} tab="us" backToPrevious onBack={() => go('stocks-09')} /> },
-    { id: 'search-30', section: 'us', badge: 'new', name: 'US · results', figma: '', note: '"N": US stocks by name or ticker, with $ prices. A row opens that stock’s US stock page.', render: (go) => <Search onOpen={openResult(go)} tab="us" query="N" backToPrevious onBack={() => go('stocks-09')} /> },
-    { id: 'search-31', section: 'us', badge: 'new', name: 'US · nothing found', figma: '', note: 'No US stock matches: L3 empty state with Clear search.', render: (go) => <Search onOpen={openResult(go)} tab="us" results={nothing('Vanf')} backToPrevious onBack={() => go('stocks-09')} /> },
+    { id: 'search-29', section: 'us', badge: 'new', badgeNote: 'US tab added to Search (replaces US Stocks’ own search screen)', name: 'US · before typing', figma: '5796:89230', note: 'From the search field on Stocks home’s US tab, or Search on the US Portfolio. Recent and popular US stocks as chips (a chip searches for that company), then US collections as tiles. Back returns to where Search was opened.', render: (go) => <Search onOpen={openResult(go)} tab="us" backToPrevious onBack={() => go('stocks-01')} /> },
+    { id: 'search-30', section: 'us', badge: 'new', name: 'US · results', figma: '', note: '"N": US stocks by name or ticker, with $ prices. A row opens that stock’s US stock page.', render: (go) => <Search onOpen={openResult(go)} tab="us" query="N" backToPrevious onBack={() => go('stocks-01')} /> },
+    { id: 'search-31', section: 'us', badge: 'new', name: 'US · nothing found', figma: '', note: 'No US stock matches: L3 empty state with Clear search.', render: (go) => <Search onOpen={openResult(go)} tab="us" results={nothing('Vanf')} backToPrevious onBack={() => go('stocks-01')} /> },
 
     // ---- F&O
     { id: 'search-25', section: 'fno', name: 'F&O · search from home', figma: '4912:13728', note: 'From F&O home; Back returns there.', render: (go) => <Search onOpen={openResult(go)} tab="fno" onBack={() => go('fno-01')} onSignals={() => go('search-26')} /> },
@@ -5454,6 +5454,20 @@ export const mask = (s: string, keepStart: number, keepEnd: number) =>
    "dayLow": 51563.76,
    "high52": 54744.33,
    "low52": 45057.28
+  }
+ },
+ "fx": {
+  "usdInr": {
+   "symbol": "USDINR=X",
+   "price": 94.87,
+   "open": null,
+   "prevClose": 95.19,
+   "change": -0.32,
+   "changePct": -0.34,
+   "dayHigh": null,
+   "dayLow": null,
+   "high52": null,
+   "low52": null
   }
  }
 }

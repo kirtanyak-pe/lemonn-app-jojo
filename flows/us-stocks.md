@@ -61,6 +61,18 @@ submitted" sheet `stocks-18`). His frames map to them in `nav.tsx` (`FIGMA_IN_OT
 `5826:92885` → `stocks-17`, `5756:73797` → `stocks-18`. From Home, a US stock opens `us-stocks-13` (not activated) or
 `us-stocks-31` / `32` (activated); the Home's wallet icon opens the wallet screens (`53`, `55`, `56`, `20`, `59`).
 
+### User status
+
+Two screens follow the app-level User status (`src/shared/userStatus.ts`, read through `useUsJourney()`), not a flow option:
+
+- `us-stocks-13` "S03 · Stock page" shows the stock for the user's status: KYC pending (Complete KYC), not activated
+  (Activate), activated, or holding NVDA.
+- `us-stocks-54` "W0 · Wallet · US tab" shows the USD wallet for the status: $0, money on the way, or has money.
+
+`us-stocks-74`, `31`, `32`, `55`, `56`, `57`, `58`, `59` are `hidden: true` in `registry.ts`: still routes (taps and
+other flows land on them) but not listed in the preview. `FlowScreen.hidden` is in `src/flows/types.ts`; the list uses
+`listed()` in `src/preview/screenTree.ts`.
+
 ### Navigation
 
 Every tap he wired is kept. The main path: FTUX sheet → Activate → Risk disclosure → Under review → Approved → Add money
@@ -68,6 +80,25 @@ Every tap he wired is kept. The main path: FTUX sheet → Activate → Risk disc
 
 ### Changelog
 
+- 2026-11-02 — User status: Lemonn KYC is no longer its own setting. **US Stocks activation** is one list for the
+  whole way in: Lemonn KYC pending → KYC done · not activated → under review → contact support → failed → activated
+  (`src/shared/userStatus.ts`; `useUsJourney()` is unchanged).
+- 2026-11-02 — **US money: $ first, ₹ on request** (`src/shared/money.tsx`). Every US amount goes through `<Usd>` /
+  `useUsd()` / `<InrEquivalent>`, so the app-level "₹ equivalent" setting (User status panel: `$ only` · `₹ below` ·
+  `$ / ₹ switch`) reaches every screen. The rate is USDINR=X from the US snapshot (`npm run us:snapshot`), ticking like
+  prices. `<CurrencySwitch />` sits under the wallet balance, under the stock / ETF price and on Portfolio's US
+  holdings; the pick applies app-wide. Big values (wallet balance, stock price, portfolio) show ≈ ₹ under them;
+  key-value rows and stats stack it; tables, chips, axes, button labels and sentences stay inline. Trade: the pad's
+  ≈ ₹ hint uses the live rate (was a fixed ₹88.20) and `derive` receives `{ usd, inr }` formatters. Money: Add money
+  converts at live + ₹1.43 and Withdraw at live + ₹0.93 (`money/amounts.ts`); the first-deposit minimum is $50 × rate.
+  Stays ₹: the add-money field and chips, GST, "lands in your bank", the INR wallet. Typed amount fields stay in $.
+- 2026-11-02 — Stock page toggles change the data: the chart period (1D–5Y) redraws the line, the y-axis and the change
+  under the price (green / red by direction; sample series in `activation/data.ts` → `priceSeries`); Key Holders
+  quarter; Company financials statement tabs, Annually / Quarterly, the period picker and tapping a bar (rows and
+  Y/Y or Q/Q change follow); Your Holdings "Total Returns" ↔ "1D Returns".
+- 2026-11-02 — Stock page and wallet US tab follow the User status: `us-stocks-13` is "S03 · Stock page" (KYC pending /
+  not activated / activated / holding NVDA) and `us-stocks-54` is "W0 · Wallet · US tab". `us-stocks-74`, `31`, `32`,
+  `55`–`59` are `hidden` in the list (still routes).
 - 2026-11-02 — KYC not done: `us-stocks-74`, the stock page with Complete KYC (→ `kyc-01`) in place of Activate,
   back → the US tab with the KYC card (`stocks-21`, mapped as `9001:11` in `nav.tsx`). Not in Jojo's Figma.
 - 2026-11-02 — Figma page re-scanned (77 frames). Two Home states were missing and are now `stocks-19` (under review ·
@@ -163,7 +194,7 @@ branch `jojo`, **as he built it**. Nothing below is fixed: every item is marked 
 - The three activation-state wallet frames (under review / failed / contact support) all show the $0 wallet.
 - The "Your money is ready" toast passed `closable` to Aerobar — an option L3 doesn't have (not even on Lemonnade-v3
   main), so his L3 copy was patched. Here it just times out.
-- Sample rates disagree: ₹88.20/$ on the order pad, ₹96.30 on Add money, ₹95.80 on Withdraw.
+- ~~Sample rates disagree~~ — fixed 2026-11-02: every rate follows the live USD→INR rate (src/shared/money.tsx).
 - `?link=1|2|3` URL switch in the wallet (an experiment of his).
 
 ## Code to tidy once decided (duplicates from the rebuild)
@@ -22127,16 +22158,17 @@ export function stockFromRow(row: { sym: string; name?: string; price?: string; 
   return stockFor(row.sym, extra)
 }
 
-// Where the stock page opens from decides its variant. Home is now the Stocks flow's (src/flows/stocks): its screens
+// The stock page follows the app's User status (src/shared/userStatus.ts), so every opener goes to the one status page.
+// (Was: where the stock page opens from decides its variant.) Home is now the Stocks flow's (src/flows/stocks): its screens
 // open the page themselves (not activated → `STOCK_PAGE.notActivated`; the activated page → no holdings, or holding
 // NVDA), so `openStock` only has to cover the screens of this flow.
 const STOCK_PAGE = { notActivated: '5826:93627', noHoldings: '5826:94125', holding: '5837:94648' }
 
-/** Open a stock's page from a screen of this flow (search, portfolio …): activated, with or without holding NVDA. */
+/** Open a stock's page from a screen of this flow (search, portfolio …): the status-following page (us-stocks-13). */
 export function openStock(go: (figma: string) => void, stock: UsStock) {
   current = stock
   viewUsStock(stock.sym)
-  go(STOCK_PAGE.noHoldings)
+  go(STOCK_PAGE.notActivated)
 }
 
 /** The logo of a US company (PNG), or undefined (show initials). */
@@ -22192,6 +22224,7 @@ export const usStocks: Flow = {
     tab: s.tab,
     badge: s.badge,
     badgeNote: s.badgeNote,
+    hidden: s.hidden,
     render: (go) => {
       const Screen = allScreens[s.figma]
       return (
@@ -22294,15 +22327,17 @@ export type UsScreenEntry = {
   figma: string
   /** Main-navbar tab the screen belongs to (it shows the bottom navbar): moving between tabs is a tab switch. */
   tab?: 'stocks' | 'market' | 'portfolio' | 'mutualFund'
-  id: string; section: 'entry' | 'ftux' | 'activated' | 'wallet'; name: string; note: string; badge?: 'new' | 'changed'; badgeNote?: string }
+  id: string; section: 'entry' | 'ftux' | 'activated' | 'wallet'; name: string; note: string; badge?: 'new' | 'changed'; badgeNote?: string
+  /** A state the user-status settings already show on another screen (the stock page, the wallet's US tab): not listed in the preview, still a screen taps go to. */
+  hidden?: boolean }
 
 export const registry: UsScreenEntry[] = [
   { figma: '5796:89422', id: 'us-stocks-02', section: 'entry', name: "E1a · S&P 500 index · market open", note: "S&P 500 index page while the US market is open." },
   { figma: '5796:88668', tab: 'portfolio', id: 'us-stocks-05', badge: 'changed', badgeNote: "Empty states: L3 Empty state with its default illustration, centred", section: 'entry', name: "E4 · Portfolio · US market banner", note: "Portfolio before 8 PM IST. Banner says US markets open tonight." },
   { figma: '5796:92301', tab: 'portfolio', id: 'us-stocks-06', badge: 'changed', badgeNote: "Empty states: L3 Empty state with its default illustration, centred", section: 'entry', name: "E4 · Portfolio · US market banner · live", note: "Portfolio after 8 PM IST. Banner turns LIVE till 2:30 AM IST." },
   { figma: '5796:88163', tab: 'mutualFund', id: 'us-stocks-07', section: 'entry', name: "E5 · Mutual Fund home · US banner", note: "Mutual Fund home with a US Stocks on Lemonn banner." },
-  { figma: '5826:93627', id: 'us-stocks-13', badge: 'changed', badgeNote: "Overview / News & Events tabs; Related ETFs and Key Holders sections", section: 'ftux', name: "S03a · Stock page · not activated", note: "Stock page for a user who hasn't activated. Shows Activate instead of Buy/Sell." },
-  { figma: '9001:10', id: 'us-stocks-74', badge: 'new', badgeNote: "Not in Jojo's Figma: a user whose Lemonn KYC isn't done", section: 'ftux', name: "Stock page · KYC not done", note: "Stock page for a user whose Lemonn (Indian) KYC isn't complete: US Stocks can't be activated yet, so the button is Complete KYC (→ the KYC flow, kyc-01) in place of Activate. Back → the US tab with the KYC card (stocks-21)." },
+  { figma: '5826:93627', id: 'us-stocks-13', badge: 'changed', badgeNote: "Follows the user status in the prototype settings", section: 'ftux', name: "S03 · Stock page", note: "The US stock page in the user status picked in the prototype settings (User status): KYC pending → Complete KYC (as us-stocks-74); not activated, under review or failed → Activate US Stocks in place of Buy / Sell; activated → Buy / Sell (us-stocks-31), with Your Holdings when the user holds NVDA (us-stocks-32). Home, Search and Market open this page." },
+  { figma: '9001:10', id: 'us-stocks-74', hidden: true, badge: 'new', badgeNote: "Not in Jojo's Figma: a user whose Lemonn KYC isn't done", section: 'ftux', name: "Stock page · KYC not done", note: "Stock page for a user whose Lemonn (Indian) KYC isn't complete: US Stocks can't be activated yet, so the button is Complete KYC (→ the KYC flow, kyc-01) in place of Activate. Back → the US tab with the KYC card (stocks-21)." },
   { figma: '5756:71475', id: 'us-stocks-14', section: 'ftux', name: "Risk disclosure sheet", note: "Risk disclosure sheet. Agree and Continue submits the activation and lands on the under-review home (or wallet); Confirm Details and the result sheet are skipped." },
   { figma: '5756:72486', id: 'us-stocks-15', section: 'ftux', name: "Confirm details", note: "Confirm KYC details and accept the declarations before activating." },
   { figma: '5776:83524', id: 'us-stocks-20', badge: 'changed', badgeNote: "Nudge copy: the dollar has historically gained against the rupee", section: 'ftux', name: "W1 · Wallet · US tab · $0 balance", note: "USD Wallet with $0 balance. Add Money and Withdraw." },
@@ -22314,8 +22349,8 @@ export const registry: UsScreenEntry[] = [
   { figma: '5776:84258', id: 'us-stocks-26', badge: 'changed', badgeNote: "Dock note: “arrives in your wallet by Thu 8 PM”", section: 'ftux', name: "M08 · Add money · pay on bank page sheet", note: "Sheet explaining the user will pay on their bank’s page." },
   { figma: '5796:86336', id: 'us-stocks-27', section: 'ftux', name: "Bank app (placeholder)", note: "Placeholder for the bank's payment page." },
   { figma: '5776:84195', id: 'us-stocks-28', badge: 'changed', badgeNote: "Pending card: “Arrives in your wallet by Thu 8 PM”", section: 'ftux', name: "Wallet · US tab · Add money transfer in progress", note: "Back from the bank. USD Wallet shows the transfer status." },
-  { figma: '5826:94125', id: 'us-stocks-31', badge: 'changed', badgeNote: "Overview / News & Events tabs; Related ETFs and Key Holders sections", section: 'activated', name: "S03b · Stock page · activated · no holdings", note: "Stock page, activated with no holdings. Buy only." },
-  { figma: '5837:94648', id: 'us-stocks-32', badge: 'changed', badgeNote: "Overview / News & Events tabs; Related ETFs and Key Holders sections", section: 'activated', name: "S03c · Stock page · holding", note: "Stock page when the user already holds the stock. Buy and Sell." },
+  { figma: '5826:94125', id: 'us-stocks-31', hidden: true, badge: 'changed', badgeNote: "Overview / News & Events tabs; Related ETFs and Key Holders sections", section: 'activated', name: "S03b · Stock page · activated · no holdings", note: "Stock page, activated with no holdings. Buy only." },
+  { figma: '5837:94648', id: 'us-stocks-32', hidden: true, badge: 'changed', badgeNote: "Overview / News & Events tabs; Related ETFs and Key Holders sections", section: 'activated', name: "S03c · Stock page · holding", note: "Stock page when the user already holds the stock. Buy and Sell." },
   { figma: '5837:95201', id: 'us-stocks-33', section: 'activated', name: "T01 · Buy · Amount (default)", note: "Buy sheet default: enter amount in $, see shares and ₹ estimate." },
   { figma: '5837:96215', id: 'us-stocks-34', section: 'activated', name: "T02 · Buy · Shares", note: "Buy by number of shares instead of amount." },
   { figma: '5837:96155', id: 'us-stocks-35', section: 'activated', name: "T03 · Buy · Empty US wallet", note: "US wallet is empty. Orders start at $1." },
@@ -22337,12 +22372,12 @@ export const registry: UsScreenEntry[] = [
   { figma: '5837:95371', id: 'us-stocks-51', section: 'activated', name: "H06 · Sell result · executed", note: "Sell order executed. Proceeds withdrawable after 1 working day." },
   { figma: '5837:95352', id: 'us-stocks-52', section: 'activated', name: "H07 · Sell result · rejected", note: "Sell order rejected." },
   { figma: '5852:99084', id: 'us-stocks-53', section: 'wallet', name: "W0 · Wallet · Indian tab", note: "Wallet opens on the INR tab. USD Wallet tab is marked NEW." },
-  { figma: '5852:99057', id: 'us-stocks-54', badge: 'changed', badgeNote: "Nudge copy: the dollar has historically gained against the rupee", section: 'wallet', name: "W0 · Wallet · US tab · Activate US Stocks", note: "USD Wallet before activation. Activate US Stocks card." },
-  { figma: '5852:99028', id: 'us-stocks-55', badge: 'changed', badgeNote: "Nudge copy: the dollar has historically gained against the rupee", section: 'wallet', name: "W0 · Wallet · US tab · Activation under review", note: "Activation under review, up to 1 working day." },
-  { figma: '5852:98999', id: 'us-stocks-56', badge: 'changed', badgeNote: "Nudge copy: the dollar has historically gained against the rupee", section: 'wallet', name: "W0 · Wallet · US tab · Activation failed", note: "Activation failed: PAN couldn't be verified. Retry Activation." },
-  { figma: '5852:98970', id: 'us-stocks-57', badge: 'changed', badgeNote: "Nudge copy: the dollar has historically gained against the rupee", section: 'wallet', name: "W0 · Wallet · US tab · Under review · Contact Support", note: "Review taking longer than 1 day. Contact Support." },
-  { figma: '5852:98939', id: 'us-stocks-58', badge: 'changed', badgeNote: "Nudge copy: the dollar has historically gained against the rupee", section: 'wallet', name: "W1 · Wallet · US tab · $0 balance", note: "Activation approved. USD wallet at $0." },
-  { figma: '5852:98908', id: 'us-stocks-59', section: 'wallet', name: "W2 · Wallet · US tab · Funded", note: "Wallet after adding money: total and withdrawable balance." },
+  { figma: '5852:99057', id: 'us-stocks-54', badge: 'changed', badgeNote: "Follows the user status in the prototype settings", section: 'wallet', name: "W0 · Wallet · US tab", note: "The USD wallet in the user status picked in the prototype settings (User status): not activated → Activate US Stocks card; under review, contact support, failed (us-stocks-55–57); activated → $0 (us-stocks-58), money on the way (us-stocks-28) or funded (us-stocks-59). The Indian tab's USD tab opens it." },
+  { figma: '5852:99028', id: 'us-stocks-55', hidden: true, badge: 'changed', badgeNote: "Nudge copy: the dollar has historically gained against the rupee", section: 'wallet', name: "W0 · Wallet · US tab · Activation under review", note: "Activation under review, up to 1 working day." },
+  { figma: '5852:98999', id: 'us-stocks-56', hidden: true, badge: 'changed', badgeNote: "Nudge copy: the dollar has historically gained against the rupee", section: 'wallet', name: "W0 · Wallet · US tab · Activation failed", note: "Activation failed: PAN couldn't be verified. Retry Activation." },
+  { figma: '5852:98970', id: 'us-stocks-57', hidden: true, badge: 'changed', badgeNote: "Nudge copy: the dollar has historically gained against the rupee", section: 'wallet', name: "W0 · Wallet · US tab · Under review · Contact Support", note: "Review taking longer than 1 day. Contact Support." },
+  { figma: '5852:98939', id: 'us-stocks-58', hidden: true, badge: 'changed', badgeNote: "Nudge copy: the dollar has historically gained against the rupee", section: 'wallet', name: "W1 · Wallet · US tab · $0 balance", note: "Activation approved. USD wallet at $0." },
+  { figma: '5852:98908', id: 'us-stocks-59', hidden: true, section: 'wallet', name: "W2 · Wallet · US tab · Funded", note: "Wallet after adding money: total and withdrawable balance." },
   { figma: '5852:98888', id: 'us-stocks-60', section: 'wallet', name: "W2d · Balance Details", note: "Balance details: opening, credits, debits, withdrawable, pending settlement." },
   { figma: '5852:98862', id: 'us-stocks-61', section: 'wallet', name: "W2d-x · Balance Details · expanded", note: "Credits & Debits expanded: deposits, stock sells, dividends." },
   { figma: '5852:100550', id: 'us-stocks-62', section: 'wallet', name: "H08 · Withdraw · enter amount", note: "Withdraw: enter $ amount, see ₹ estimate." },
@@ -22385,6 +22420,10 @@ export const idForFigma = new Map(registry.map((s) => [s.figma, s.id]))
   padding: var(--l3-spacing-08) var(--l3-spacing-16) 0;
   flex-direction: column;
   display: flex;
+}
+
+.currencySwitch {
+  align-self: flex-start;
 }
 
 .titleRow {
@@ -22485,6 +22524,10 @@ export const idForFigma = new Map(registry.map((s) => [s.figma, s.id]))
   position: relative;
 }
 
+.plot[data-down] {
+  color: var(--l3-content-accent-indicator-down-default);
+}
+
 .line {
   position: absolute;
   top: 12px; /* FLAG: raw px */
@@ -22493,26 +22536,33 @@ export const idForFigma = new Map(registry.map((s) => [s.figma, s.id]))
   height: 153.5px; /* FLAG: raw px */
 }
 
+.line svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
+}
+
+/* The end-of-line marker sits at the last price (--y, set by the chart). */
 .halo,
 .dot {
   border-radius: var(--l3-radius-full);
-  background: var(--l3-content-accent-indicator-up-default);
+  background: currentColor;
   position: absolute;
+  top: var(--y);
+  transform: translate(50%, -50%);
+  right: 0;
 }
 
 .halo {
   width: var(--l3-size-12);
   height: var(--l3-size-12);
   opacity: 0.3;
-  top: 54px; /* FLAG: raw px */
-  right: -8px; /* FLAG: raw px */
 }
 
 .dot {
   width: 6px; /* FLAG: raw px */
   height: 6px; /* FLAG: raw px */
-  top: 57px; /* FLAG: raw px */
-  right: -5px; /* FLAG: raw px */
 }
 
 .yAxis {
@@ -23045,6 +23095,21 @@ export const idForFigma = new Map(registry.map((s) => [s.figma, s.id]))
   left: 0;
 }
 
+.year {
+  cursor: pointer;
+  background: none;
+  border: 0;
+  padding: 0;
+}
+
+.year:not([data-active]) .bar {
+  opacity: 0.45;
+}
+
+.year[data-active] .fy {
+  color: var(--l3-content-primary);
+}
+
 .bar[data-tone="up"] {
   background: var(--l3-content-accent-indicator-up-default);
 }
@@ -23112,8 +23177,9 @@ export const idForFigma = new Map(registry.map((s) => [s.figma, s.id]))
 }
 
 .tableRow span:nth-child(2) {
-  width: 64px; /* FLAG: raw px */
+  min-width: 64px; /* FLAG: raw px; grows for ₹ amounts */
   color: var(--l3-content-primary);
+  white-space: nowrap;
   text-align: right;
 }
 
@@ -23121,6 +23187,15 @@ export const idForFigma = new Map(registry.map((s) => [s.figma, s.id]))
   width: 72px; /* FLAG: raw px */
   color: var(--l3-content-accent-indicator-up-default);
   text-align: right;
+}
+
+.tableRow span:nth-child(3)[data-down] {
+  color: var(--l3-content-accent-indicator-down-default);
+}
+
+.fyPicker button:disabled {
+  opacity: 0.3;
+  cursor: default;
 }
 
 /* FLAG: hand-made news list (L3 ListCell) */
@@ -23511,11 +23586,11 @@ export const idForFigma = new Map(registry.map((s) => [s.figma, s.id]))
   display: flex;
 }
 
-.etfPrice span {
+.etfPrice [data-change] {
   color: var(--l3-content-accent-indicator-down-default);
 }
 
-.etfPrice span[data-up] {
+.etfPrice [data-change][data-up] {
   color: var(--l3-content-accent-indicator-up-default);
 }
 ```
@@ -23533,7 +23608,6 @@ import { Actionbar, ActionbarAction } from '@l3/components/Actionbar'
 import { Button } from '@l3/components/Button'
 import { ButtonGroup } from '@l3/components/ButtonGroup'
 import { Icon } from '@l3/components/Icon'
-import { MaskIcon } from '@l3/components/MaskIcon'
 import { PriceChange } from '@l3/components/PriceChange'
 import { Tabs } from '@l3/components/Tabs'
 import { Tag } from '@l3/components/Tag'
@@ -23542,24 +23616,46 @@ import { asset } from '../../asset'
 import { currentStock } from '../../data'
 import { useLiveQuote } from '../../../../shared/data/live'
 import { usQuote } from '../../../../shared/data/usStocks'
+import { CurrencySwitch, InrEquivalent, Usd, useUsd } from '../../../../shared/money'
 import { useUsNav } from '../../nav'
 import { ImgIcon } from './components/ImgIcon'
-import { NEWS, PERIODS, Y_AXIS, type NewsItem } from './data'
+import { NEWS, PERIODS, periodReturn, priceSeries, type NewsItem } from './data'
 import { swapIcon } from './icons'
 import {
-  AboutCompany, AnalystRatings, DailyPerformance, Events, Financials, Fundamentals, HoldingsSection, KeyHolders, News, Peers, RelatedEtfs, money,
+  AboutCompany, AnalystRatings, DailyPerformance, Events, Financials, Fundamentals, HoldingsSection, KeyHolders, News, Peers, RelatedEtfs,
 } from './sections'
 import {
-  BUY_PAD, HOME_ACTIVATED, HOME_KYC_PENDING, HOME_NOT_ACTIVATED, KYC_START, RISK_DISCLOSURE, SELL_PAD_HOLDING, SELL_PAD_NO_HOLDINGS,
+  BUY_PAD, KYC_START, RISK_DISCLOSURE, SELL_PAD_HOLDING, SELL_PAD_NO_HOLDINGS,
 } from './ids'
 import { EtfMove } from '../etf/parts'
 import styles from './StockPage.module.css'
 
 /** kyc-pending: the user's Lemonn KYC isn't done, so US Stocks can't be activated yet (not in Jojo's Figma). */
-export type StockState = 'kyc-pending' | 'not-activated' | 'no-holdings' | 'holding'
+export type StockState = 'kyc-pending' | 'not-activated' | 'review' | 'support' | 'failed' | 'no-holdings' | 'holding'
 
-export function StockPage({ state, backdrop }: { state: StockState; backdrop?: boolean }) {
+/** T03 · Buy · Empty US wallet (the trade part's id). */
+const BUY_PAD_EMPTY_WALLET = '5837:96155'
+
+/**
+ * The footer of a stock / ETF page for a user who can't trade yet (KYC pending, not activated, under review, contact
+ * support, failed); null once activated. Shared by the stock page and the ETF pages.
+ */
+export function activationFooter(state: StockState, go: (figma: string) => void) {
+  const button =
+    state === 'kyc-pending' ? <Button variant="primary" size="lg" fullWidth onClick={() => go(KYC_START)}>Complete KYC</Button>
+    : state === 'not-activated' ? <Button variant="primary" size="lg" fullWidth onClick={() => go(RISK_DISCLOSURE)}>Activate US Stocks</Button>
+    : state === 'review' ? <Button variant="primary" size="lg" fullWidth disabled>Activation under review</Button>
+    // FLAG: Contact support has no destination yet.
+    : state === 'support' ? <Button variant="primary" size="lg" fullWidth onClick={() => {}}>Contact support</Button>
+    : state === 'failed' ? <Button variant="primary" size="lg" fullWidth onClick={() => go(RISK_DISCLOSURE)}>Retry activation</Button>
+    : null
+  if (!button) return null
+  return <ButtonGroup aria-label="US Stocks" direction="horizontal" scrollIndicator>{button}</ButtonGroup>
+}
+
+export function StockPage({ state, backdrop, emptyWallet }: { state: StockState; backdrop?: boolean; emptyWallet?: boolean }) {
   const { go, back } = useUsNav()
+  const usd = useUsd()
   const snapshotStock = currentStock()
   // The price ticks around its real (snapshot) level: live.ts.
   const live = useLiveQuote(snapshotStock.sym, snapshotStock.price, snapshotStock.change)
@@ -23567,12 +23663,11 @@ export function StockPage({ state, backdrop }: { state: StockState; backdrop?: b
   const quote = usQuote(stock.sym)
   const isNvda = stock.sym === 'NVDA'
   const shortName = isNvda ? 'NVIDIA' : stock.name.split(' ')[0]
-  // The day's range is real (the snapshot) when it has one; the chart axis is the NVDA sample scaled to this price.
+  // The day's range is real (the snapshot) when it has one, else the NVDA sample scaled to this price.
   const scale = snapshotStock.price / 188.42
   const low = Math.min(quote?.dayLow ?? 185.9 * scale, stock.price)
   const high = Math.max(quote?.dayHigh ?? 189.6 * scale, stock.price)
   const dayChangeAbs = live.change
-  const yAxis = Y_AXIS.map((p) => money(p * scale))
   const news: NewsItem[] = isNvda
     ? NEWS
     : [
@@ -23584,6 +23679,15 @@ export function StockPage({ state, backdrop }: { state: StockState; backdrop?: b
   const [tab, setTab] = useState('overview')
   const [feed, setFeed] = useState('events')
   const [period, setPeriod] = useState('1D')
+  // The period picker redraws the line, its axis and the change under the price (1D: the live day change).
+  const periodPct = periodReturn(stock.sym, period, stock.change)
+  const periodChangeAbs = period === '1D' ? dayChangeAbs : stock.price - stock.price / (1 + periodPct / 100)
+  const series = priceSeries(stock.sym, period, stock.price, periodPct)
+  const chartLow = Math.min(...series)
+  const chartHigh = Math.max(...series)
+  const yOf = (p: number) => ((chartHigh - p) / (chartHigh - chartLow || 1)) * 100
+  const linePoints = series.map((p, i) => `${((i / (series.length - 1)) * 100).toFixed(2)},${yOf(p).toFixed(2)}`).join(' ')
+  const yAxis = Array.from({ length: 8 }, (_, i) => usd(chartHigh - ((chartHigh - chartLow) * i) / 7))
   const [body, setBody] = useState<HTMLDivElement | null>(null)
   // The Actionbar shows symbol + price once the big price has scrolled away.
   const [scrolled, setScrolled] = useState(false)
@@ -23597,30 +23701,21 @@ export function StockPage({ state, backdrop }: { state: StockState; backdrop?: b
 
   const header = (
     <Actionbar
-      onBack={() => back(state === 'kyc-pending' ? HOME_KYC_PENDING : state === 'not-activated' ? HOME_NOT_ACTIVATED : HOME_ACTIVATED)}
+      onBack={() => back('stocks-01')}
       title={scrolled ? stock.sym : undefined}
-      description={scrolled ? <>${money(stock.price)} <EtfMove change={stock.change} /></> : undefined}
+      description={scrolled ? <><Usd value={stock.price} layout="inline" /> <EtfMove change={stock.change} /></> : undefined}
       actions={<ActionbarAction icon={asset('assets/activation/watchlist.svg')} label={`Add ${stock.sym} to watchlist`} onClick={() => {}} />}
     />
   )
 
-  const footer =
-    state === 'kyc-pending' ? (
-      <ButtonGroup aria-label="US Stocks" direction="horizontal" scrollIndicator>
-        <Button variant="primary" size="lg" fullWidth onClick={() => go(KYC_START)}>Complete KYC</Button>
-      </ButtonGroup>
-    ) : state === 'not-activated' ? (
-      <ButtonGroup aria-label="US Stocks" direction="horizontal" scrollIndicator>
-        <Button variant="primary" size="lg" fullWidth onClick={() => go(RISK_DISCLOSURE)}>Activate US Stocks</Button>
-      </ButtonGroup>
-    ) : (
-      <ButtonGroup aria-label={`Trade ${shortName}`} direction="horizontal" scrollIndicator>
-        <Button variant="brand" size="lg" onClick={() => go(BUY_PAD)}>Buy</Button>
-        <Button variant="secondary" size="lg" onClick={() => go(state === 'holding' ? SELL_PAD_HOLDING : SELL_PAD_NO_HOLDINGS)}>
-          Sell
-        </Button>
-      </ButtonGroup>
-    )
+  const footer = activationFooter(state, go) ?? (
+    <ButtonGroup aria-label={`Trade ${shortName}`} direction="horizontal" scrollIndicator>
+      <Button variant="brand" size="lg" onClick={() => go(emptyWallet ? BUY_PAD_EMPTY_WALLET : BUY_PAD)}>Buy</Button>
+      <Button variant="secondary" size="lg" onClick={() => go(state === 'holding' ? SELL_PAD_HOLDING : SELL_PAD_NO_HOLDINGS)}>
+        Sell
+      </Button>
+    </ButtonGroup>
+  )
 
   return (
     <Phone label={stock.name} header={header} footer={footer} gesture="none" bodyRef={setBody} className={backdrop ? styles.still : undefined}>
@@ -23629,18 +23724,19 @@ export function StockPage({ state, backdrop }: { state: StockState; backdrop?: b
           <div className={styles.namePrice}>
             <h1 className={styles.name}>{stock.name}</h1>
             <div className={styles.priceRow}>
-              <span className={styles.price}>${money(stock.price)}</span>
+              <span className={styles.price}><Usd value={stock.price} layout="inline" /></span>
               <span className={styles.change}>
-                <PriceChange value={stock.change} size="lg" arrow />
+                <PriceChange value={periodPct} size="lg" arrow />
                 <span
                   className={styles.changeAbs}
-                  data-down={dayChangeAbs < 0 || undefined}
-                  aria-label={`${dayChangeAbs < 0 ? 'down' : 'up'} ${money(Math.abs(dayChangeAbs))}`}
+                  data-down={periodChangeAbs < 0 || undefined}
+                  aria-label={`${periodChangeAbs < 0 ? 'down' : 'up'} ${usd(Math.abs(periodChangeAbs))} over ${period}`}
                 >
-                  ({dayChangeAbs < 0 ? '−' : '+'}{money(Math.abs(dayChangeAbs))})
+                  (<Usd value={periodChangeAbs} sign layout="inline" />) {period}
                 </span>
               </span>
             </div>
+            <InrEquivalent usd={stock.price} />
           </div>
           {isNvda ? (
             <img src={asset('assets/activation/nvda-logo.svg')} alt="" width={44} height={44} />
@@ -23654,6 +23750,7 @@ export function StockPage({ state, backdrop }: { state: StockState; backdrop?: b
             </span>
           )}
         </div>
+        <CurrencySwitch className={styles.currencySwitch} />
         <div className={styles.tagsRow}>
           <div className={styles.tags}>
             <Tag variant="tertiary" color="neutral" size="md">Technology</Tag>
@@ -23671,13 +23768,15 @@ export function StockPage({ state, backdrop }: { state: StockState; backdrop?: b
         </div>
       </div>
 
-      <div className={styles.chart} role="img" aria-label={`${shortName} price today, ${money(low)} to ${money(high)}`}>
-        <div className={styles.plot}>
-          <span className={styles.line}>
-            <MaskIcon src={asset('assets/activation/price-line-1d.svg')} />
+      <div className={styles.chart} role="img" aria-label={`${shortName} price over ${period}, ${usd(chartLow)} to ${usd(chartHigh)}`}>
+        <div className={styles.plot} data-down={periodPct < 0 || undefined}>
+          <span className={styles.line} style={{ '--y': `${yOf(stock.price)}%` } as CSSProperties}>
+            <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+              <polyline points={linePoints} fill="none" stroke="currentColor" strokeWidth={1.5} vectorEffect="non-scaling-stroke" strokeLinejoin="round" />
+            </svg>
+            <span className={styles.halo} />
+            <span className={styles.dot} />
           </span>
-          <span className={styles.halo} />
-          <span className={styles.dot} />
         </div>
         <div className={styles.yAxis} aria-hidden="true">
           {yAxis.map((p) => (
@@ -23726,7 +23825,7 @@ export function StockPage({ state, backdrop }: { state: StockState; backdrop?: b
             </div>
           ) : (
             <div className={styles.overview}>
-              {state === 'holding' && <HoldingsSection />}
+              {state === 'holding' && <HoldingsSection stock={stock} dayChange={dayChangeAbs} />}
               <DailyPerformance stock={stock} low={low} high={high} />
               <AnalystRatings />
               <Fundamentals />
@@ -23921,11 +24020,11 @@ export function ImgIcon({ src, w, h = w, className }: { src: string; w: number; 
 // FLAG: layout is raw display:flex/grid + gap/padding instead of L3 Stack/Grid.
 import { useState } from 'react'
 import { Select } from '@l3/components/Select'
+import { Usd, formatUsd } from '../../../../../shared/money'
 import { homeLogoFor, isFullBleedLogo, logoFor, plateFor } from '../../../data'
 import { PEERS, type Peer } from '../data'
 import styles from './PeerTable.module.css'
 
-const money = (n: number) => `$${n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 const percent = (n: number) => `${n >= 0 ? '+' : '−'}${Math.abs(n).toFixed(2)}%`
 const toneOf = (n: number) => (n >= 0 ? 'up' : 'down')
 
@@ -23946,7 +24045,8 @@ function CompanyLogo({ sym }: { sym: string }) {
   )
 }
 
-type Cell = { text: string; tone?: 'up' | 'down' }
+/** `usd`: the text is a $ amount, shown in the currency picked (inline, no ₹ line: it's a table cell). */
+type Cell = { text: string; tone?: 'up' | 'down'; usd?: boolean }
 type Column = { label: string; v: (p: Peer) => Cell }
 
 const VIEWS = [
@@ -23958,9 +24058,9 @@ type View = (typeof VIEWS)[number]['value']
 
 const COLUMNS: Record<View, Column[]> = {
   overview: [
-    { label: 'Price', v: (p) => ({ text: money(p.price) }) },
+    { label: 'Price', v: (p) => ({ text: formatUsd(p.price), usd: true }) },
     { label: 'Today', v: (p) => ({ text: percent(p.change), tone: toneOf(p.change) }) },
-    { label: 'Mkt Cap', v: (p) => ({ text: p.cap }) },
+    { label: 'Mkt Cap', v: (p) => ({ text: p.cap, usd: true }) },
   ],
   returns: [
     { label: '1M', v: (p) => ({ text: percent(p.r1m), tone: toneOf(p.r1m) }) },
@@ -23970,7 +24070,7 @@ const COLUMNS: Record<View, Column[]> = {
   ratios: [
     { label: 'P/E', v: (p) => ({ text: p.pe }) },
     { label: 'P/B', v: (p) => ({ text: p.pb }) },
-    { label: 'Mkt Cap', v: (p) => ({ text: p.cap }) },
+    { label: 'Mkt Cap', v: (p) => ({ text: p.cap, usd: true }) },
   ],
 }
 
@@ -24017,7 +24117,7 @@ export function PeerTable({ sym, onOpen }: { sym: string; onOpen: (peer: { sym: 
             {columns.map((c) => {
               const cell = c.v(p)
               return (
-                <span key={c.label} role="cell" className={styles.num} data-tone={cell.tone}>{cell.text}</span>
+                <span key={c.label} role="cell" className={styles.num} data-tone={cell.tone}>{cell.usd ? <Usd text={cell.text} layout="inline" /> : cell.text}</span>
               )
             })}
           </button>
@@ -24106,10 +24206,11 @@ export function SectionTitle({ title, underline = false, info, action }: { title
 ### `src/flows/us-stocks/screens/activation/components/Stat.tsx`
 
 ```tsx
-// A label over a value (holdings card).
+// A label over a value (holdings card). The value is text or a <Usd>.
+import type { ReactNode } from 'react'
 import styles from '../StockPage.module.css'
 
-export function Stat({ label, value, end, up }: { label: string; value: string; end?: boolean; up?: boolean }) {
+export function Stat({ label, value, end, up }: { label: string; value: ReactNode; end?: boolean; up?: boolean }) {
   return (
     <div className={styles.stat} data-end={end || undefined}>
       <span className={styles.statLabel}>{label}</span>
@@ -24127,8 +24228,50 @@ export function Stat({ label, value, end, up }: { label: string; value: string; 
 /** Chart periods (L3 pill group, small); 1D is selected first. */
 export const PERIODS = ['1D', '1W', '1M', '1Y', '3Y', '5Y']
 
-/** Y-axis prices of the 1D chart, for NVDA at $188.42 (scaled for other stocks). */
-export const Y_AXIS = [189.6, 189.07, 188.54, 188.01, 187.49, 186.96, 186.43, 185.9]
+/** How much NVDA moved over each chart period, in %; 1D is the live day change. Other stocks: their peer-table
+ *  returns where they have them, else NVDA's scaled by a per-symbol factor (sample data). */
+export const PERIOD_RETURNS: Record<string, number> = { '1W': 3.2, '1M': 6.8, '1Y': 41.5, '3Y': 612.4, '5Y': 1840.6 }
+
+/** How far the price wanders around its trend per chart period (share of the price). */
+const PERIOD_VOLATILITY: Record<string, number> = { '1D': 0.004, '1W': 0.012, '1M': 0.025, '1Y': 0.06, '3Y': 0.1, '5Y': 0.12 }
+
+/** Small seeded random numbers, so a stock + period always draws the same line. */
+function seeded(text: string) {
+  let h = 2166136261
+  for (const c of text) h = Math.imul(h ^ c.charCodeAt(0), 16777619)
+  return () => {
+    h = Math.imul(h ^ (h >>> 15), 2246822507) ^ Math.imul(h ^ (h >>> 13), 3266489909)
+    return ((h >>> 0) % 10000) / 10000
+  }
+}
+
+/** The stock's return over a chart period, in %. */
+export function periodReturn(sym: string, period: string, dayChangePct: number): number {
+  if (period === '1D') return dayChangePct
+  const peer = PEERS.find((p) => p.sym === sym)
+  if (peer && period === '1M') return peer.r1m
+  if (peer && period === '1Y') return peer.r1y
+  const factor = sym === 'NVDA' ? 1 : 0.15 + seeded(sym)() * 0.6
+  return Number((PERIOD_RETURNS[period] * factor).toFixed(2))
+}
+
+/** Sample price line for the chart: `points` prices from the period's start to the current price (a seeded random
+ *  walk around a smooth trend, so each period has its own shape and ends exactly at today's price). */
+export function priceSeries(sym: string, period: string, price: number, returnPct: number, points = 90): number[] {
+  const rand = seeded(`${sym}-${period}`)
+  const start = price / (1 + returnPct / 100)
+  const vol = PERIOD_VOLATILITY[period] ?? 0.02
+  const walk = [0]
+  for (let i = 1; i < points; i++) walk.push(walk[i - 1] + (rand() - 0.5) * 2)
+  const last = walk[points - 1]
+  const spread = Math.max(...walk.map((w, i) => Math.abs(w - (last * i) / (points - 1)))) || 1
+  return walk.map((w, i) => {
+    const t = i / (points - 1)
+    const trend = start * Math.pow(price / start, t)
+    const noise = (w - last * t) / spread
+    return trend * (1 + noise * vol)
+  })
+}
 
 /** [value, label] of the day stats. */
 export const DAY_STATS: [string, string][] = [
@@ -24161,38 +24304,45 @@ export const FUNDAMENTALS: [string, string][] = [
 
 export const QUARTERS = ["Sep '25", "Jun '25", "Mar '25", "Dec '24", "Sep '24"]
 
-/** [holder, %] */
-export const HOLDERS: [string, number][] = [
-  ['Institutions', 47.24],
-  ['Retail & others', 28.45],
-  ['Mutual Funds', 20.18],
-  ['Insiders', 4.13],
-]
+/** [holder, %] per quarter of Key Holders. */
+export const HOLDERS: Record<string, [string, number][]> = {
+  "Sep '25": [['Institutions', 47.24], ['Retail & others', 28.45], ['Mutual Funds', 20.18], ['Insiders', 4.13]],
+  "Jun '25": [['Institutions', 46.81], ['Retail & others', 28.92], ['Mutual Funds', 20.02], ['Insiders', 4.25]],
+  "Mar '25": [['Institutions', 45.96], ['Retail & others', 29.64], ['Mutual Funds', 19.88], ['Insiders', 4.52]],
+  "Dec '24": [['Institutions', 45.12], ['Retail & others', 30.21], ['Mutual Funds', 19.7], ['Insiders', 4.97]],
+  "Sep '24": [['Institutions', 44.38], ['Retail & others', 30.95], ['Mutual Funds', 19.31], ['Insiders', 5.36]],
+}
 
-/** Financials bar chart: pixel positions ([top, height]) of the revenue and net-income bar per year. */
-export const FY_BARS: { fy: string; x: number; rev: [number, number]; ni: [number, number] }[] = [
-  { fy: 'FY21', x: 17, rev: [121, 15], ni: [132, 4] },
-  { fy: 'FY22', x: 69, rev: [111, 25], ni: [127, 9] },
-  { fy: 'FY23', x: 123, rev: [111, 25], ni: [132, 4] },
-  { fy: 'FY24', x: 176, rev: [79, 57], ni: [108, 28] },
-  { fy: 'FY25', x: 228, rev: [15, 121], ni: [68, 68] },
-]
-
-/** [label, top px] of the chart's grid lines. */
-export const GRID_LINES: [string, number][] = [
-  ['140B', 6],
-  ['105B', 39],
-  ['70B', 71],
-  ['35B', 104],
-  ['0', 136],
-]
-
-/** [metric, value, y/y change] */
-export const FINANCIAL_ROWS: [string, string, string][] = [
-  ['Revenue', '130.5B', '+114.2%'],
-  ['Net income', '72.9B', '+144.9%'],
-  ['Net profit margin', '55.8%', '+14.3%'],
-]
+/** Company financials (NVIDIA, in $ billions). Each statement has two series, drawn as the two bars per period; the
+ *  table shows both plus a third figure worked out from them. The first period of each list is only the base for the
+ *  change of the second one and isn't drawn. */
+export type Statement = 'income' | 'balance' | 'cashflow'
+export type Frequency = 'annual' | 'quarterly'
+export const STATEMENTS: Record<Statement, { label: string; series: [string, string]; third: string; thirdIsPercent: boolean }> = {
+  income: { label: 'Income', series: ['Revenue', 'Net income'], third: 'Net profit margin', thirdIsPercent: true },
+  balance: { label: 'Balance sheet', series: ['Total assets', 'Total liabilities'], third: "Shareholders' equity", thirdIsPercent: false },
+  cashflow: { label: 'Cashflow', series: ['Operating cash flow', 'Free cash flow'], third: 'Capital spend', thirdIsPercent: false },
+}
+export const FINANCIALS: Record<Frequency, { periods: string[]; short: string[]; data: Record<Statement, [number[], number[]]> }> = {
+  annual: {
+    periods: ['FY 20', 'FY 21', 'FY 22', 'FY 23', 'FY 24', 'FY 25'],
+    short: ['FY20', 'FY21', 'FY22', 'FY23', 'FY24', 'FY25'],
+    data: {
+      income: [[10.9, 16.7, 26.9, 27.0, 60.9, 130.5], [2.8, 4.3, 9.8, 4.4, 29.8, 72.9]],
+      balance: [[17.3, 28.8, 44.2, 41.2, 65.7, 111.6], [5.1, 11.9, 17.6, 19.1, 22.8, 32.3]],
+      cashflow: [[4.8, 5.8, 9.1, 5.6, 28.1, 64.1], [3.7, 4.7, 8.0, 3.8, 27.0, 60.9]],
+    },
+  },
+  quarterly: {
+    periods: ['Q1 FY25', 'Q2 FY25', 'Q3 FY25', 'Q4 FY25', 'Q1 FY26', 'Q2 FY26'],
+    short: ["Q1'25", "Q2'25", "Q3'25", "Q4'25", "Q1'26", "Q2'26"],
+    data: {
+      income: [[26.0, 30.0, 35.1, 39.3, 44.1, 46.7], [14.9, 16.6, 19.3, 22.1, 18.8, 26.4]],
+      balance: [[77.1, 85.2, 96.0, 111.6, 125.3, 140.7], [27.9, 27.1, 30.1, 32.3, 41.4, 40.6]],
+      cashflow: [[15.3, 14.5, 17.6, 16.6, 27.4, 15.4], [14.9, 13.5, 16.8, 15.6, 26.2, 13.5]],
+    },
+  },
+}
 
 export type NewsItem = {
   title: string; source: string; time: string; img: string
@@ -24337,6 +24487,8 @@ export const HOME_ACTIVATION_PENDING_ALT = '5852:99028'
 // risk disclosure and confirm details (the "activation submitted" sheet now lives in the Stocks flow, stocks-18).
 // Imported from the teammate's prototype; his `screens` map by Figma node id.
 // FLAG: copy not in copy.json yet — all UI text in this part is hard-coded.
+import { useUsJourney } from '../../../../shared/userStatus'
+import { currentStock } from '../../data'
 import type { UsScreenMap } from '../types'
 import { CONFIRM_DETAILS, RISK_DISCLOSURE, STOCK_HOLDING, STOCK_KYC_PENDING, STOCK_NO_HOLDINGS, STOCK_NOT_ACTIVATED } from './ids'
 import { ConfirmDetailsScreen } from './sheets/ConfirmDetailsScreen'
@@ -24345,9 +24497,24 @@ import { StockHolding, StockKycPending, StockNoHoldings, StockNotActivated, Stoc
 
 export { StockHolding, StockKycPending, StockNoHoldings, StockNotActivated, StockPage }
 
-/** Screens of this part, by Figma node id. */
+/**
+ * The stock page in the user status picked in the prototype settings (src/shared/userStatus): KYC pending → Complete
+ * KYC; not activated / under review / failed → Activate US Stocks; activated → Buy / Sell, with "Your Holdings" when the
+ * user holds this stock (the sample holding is NVDA).
+ */
+function StockForStatus(props: { backdrop?: boolean }) {
+  const journey = useUsJourney()
+  if (journey === 'kyc') return <StockKycPending {...props} />
+  if (journey === 'activate') return <StockNotActivated {...props} />
+  if (journey === 'review' || journey === 'support' || journey === 'failed') return <StockPage state={journey} {...props} />
+  if (journey === 'holding' && currentStock().sym === 'NVDA') return <StockHolding {...props} />
+  // Activated with $0 or money on the way: Buy goes to the empty-wallet pad.
+  return <StockPage state="no-holdings" emptyWallet={journey === 'activated' || journey === 'onTheWay'} {...props} />
+}
+
+/** Screens of this part, by Figma node id. The not-activated frame's id is the one stock page that follows the user status. */
 export const screens: UsScreenMap = {
-  [STOCK_NOT_ACTIVATED]: StockNotActivated,
+  [STOCK_NOT_ACTIVATED]: StockForStatus,
   [STOCK_KYC_PENDING]: StockKycPending,
   [STOCK_NO_HOLDINGS]: StockNoHoldings,
   [STOCK_HOLDING]: StockHolding,
@@ -24374,13 +24541,14 @@ import { asset } from '../../asset'
 import { openStock, plateFor, stockFor, type UsStock } from '../../data'
 import { useUsNav } from '../../nav'
 import { usQuote } from '../../../../shared/data/usStocks'
+import { Usd, formatUsd, useUsd } from '../../../../shared/money'
 import { setCurrentEtf } from '../etf/currentEtf'
 import { PeerTable } from './components/PeerTable'
 import { RatingRing } from './components/RatingRing'
 import { SectionTitle } from './components/SectionTitle'
 import { Stat } from './components/Stat'
 import {
-  DAY_STATS, EVENTS, FINANCIAL_ROWS, FUNDAMENTALS, FY_BARS, GRID_LINES, HOLDERS, QUARTERS, RATINGS, relatedEtfs, type NewsItem,
+  DAY_STATS, EVENTS, FINANCIALS, FUNDAMENTALS, HOLDERS, QUARTERS, RATINGS, STATEMENTS, relatedEtfs, type Frequency, type NewsItem, type Statement,
 } from './data'
 import { boltIcon, chevronLeftIcon, chevronRightIcon, historyIcon, infoIcon } from './icons'
 import styles from './StockPage.module.css'
@@ -24392,40 +24560,51 @@ function dayStats(stock: UsStock): [string, string][] {
   if (!q) return DAY_STATS
   const volume = (n: number) => (n >= 1e9 ? `${(n / 1e9).toFixed(1)}B` : n >= 1e6 ? `${(n / 1e6).toFixed(1)}M` : `${(n / 1e3).toFixed(1)}K`)
   const real: Record<string, string | undefined> = {
-    Open: q.open != null ? `$${money(q.open)}` : undefined,
-    'Prev. Close': `$${money(q.prevClose)}`,
+    Open: q.open != null ? formatUsd(q.open) : undefined,
+    'Prev. Close': formatUsd(q.prevClose),
     Volume: q.volume != null ? volume(q.volume) : undefined,
-    '52-week high': q.high52 != null ? `$${money(q.high52)}` : undefined,
-    '52-week low': q.low52 != null ? `$${money(q.low52)}` : undefined,
+    '52-week high': q.high52 != null ? formatUsd(q.high52) : undefined,
+    '52-week low': q.low52 != null ? formatUsd(q.low52) : undefined,
   }
   return DAY_STATS.map(([value, label]) => [real[label] ?? value, label])
 }
 
-export const money = (n: number) => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+/** The sample holding: 12 shares bought at $172.50; its value follows the live price. */
+const HOLDING = { qty: 12, avg: 172.5 }
 
-export function HoldingsSection() {
+/** "Total Returns" / "1D Returns" (the Select switches between them). */
+export function HoldingsSection({ stock, dayChange }: { stock: UsStock; dayChange: number }) {
+  const [daily, setDaily] = useState(false)
+  const current = HOLDING.qty * stock.price
+  const invested = HOLDING.qty * HOLDING.avg
+  const returns = daily ? HOLDING.qty * dayChange : current - invested
+  const returnsPct = daily ? stock.change : (returns / invested) * 100
   return (
     <section className={styles.section}>
       <SectionTitle
         title="Your Holdings"
         underline={false}
-        action={<Select className={styles.accentSelect} size="md" onClick={() => {}}>Total Returns</Select>}
+        action={
+          <Select className={styles.accentSelect} size="md" aria-label="Returns shown" onClick={() => setDaily((d) => !d)}>
+            {daily ? '1D Returns' : 'Total Returns'}
+          </Select>
+        }
       />
       <div className={styles.holdingsCard}>
         <div className={styles.holdingStats}>
           <div className={styles.statRow}>
-            <Stat label="Quantity" value="12" />
-            <Stat label="Avg. Price" value="$172.50" />
+            <Stat label="Quantity" value={String(HOLDING.qty)} />
+            <Stat label="Avg. Price" value={<Usd value={HOLDING.avg} />} />
             <div className={styles.stat} data-end="">
-              <span className={styles.statLabel}>Returns %</span>
-              <PriceChange value={9.23} size="sm" />
+              <span className={styles.statLabel}>{daily ? '1D Returns %' : 'Returns %'}</span>
+              <PriceChange value={returnsPct} size="sm" />
             </div>
           </div>
           <hr className={styles.divider} />
           <div className={styles.statRow}>
-            <Stat label="Current" value="$2,261.04" />
-            <Stat label="Invested" value="$2,070.00" />
-            <Stat label="Returns" value="+$191.04" end up />
+            <Stat label="Current" value={<Usd value={current} />} />
+            <Stat label="Invested" value={<Usd value={invested} />} />
+            <Stat label={daily ? '1D Returns' : 'Returns'} value={<Usd value={returns} sign align="end" />} end up={returns >= 0} />
           </div>
         </div>
         <button type="button" className={styles.protect}>
@@ -24446,14 +24625,15 @@ export function HoldingsSection() {
 }
 
 export function DailyPerformance({ stock, low, high }: { stock: UsStock; low: number; high: number }) {
+  const usd = useUsd()
   const at = Math.min(100, Math.max(0, ((stock.price - low) / (high - low)) * 100))
   return (
     <section className={styles.section}>
       <SectionTitle title="Daily Performance" info />
       <div className={styles.panel} data-gap="04">
         <div className={styles.lowHigh}>
-          <Stat label="1D Low" value={`$${money(low)}`} />
-          <Stat label="1D High" value={`$${money(high)}`} end />
+          <Stat label="1D Low" value={<Usd value={low} />} />
+          <Stat label="1D High" value={<Usd value={high} align="end" />} end />
         </div>
         <div
           className={styles.dayRange}
@@ -24462,7 +24642,7 @@ export function DailyPerformance({ stock, low, high }: { stock: UsStock; low: nu
           aria-valuemin={low}
           aria-valuemax={high}
           aria-valuenow={stock.price}
-          aria-valuetext={`$${money(stock.price)}, between $${money(low)} and $${money(high)}`}
+          aria-valuetext={`${usd(stock.price)}, between ${usd(low)} and ${usd(high)}`}
           style={{ '--at': `${at}%` } as CSSProperties}
         >
           <span className={styles.dayTick} />
@@ -24472,14 +24652,14 @@ export function DailyPerformance({ stock, low, high }: { stock: UsStock; low: nu
         </div>
         <p className={styles.ltp}>
           <Icon icon={boltIcon} size={12} />
-          Last Traded Price : ${money(stock.price)}
+          Last Traded Price : <Usd value={stock.price} layout="inline" />
         </p>
       </div>
       <dl className={styles.panel} data-gap="12" data-rows="">
         {dayStats(stock).map(([value, label], i) => (
           <div className={styles.kv} data-sep={i > 0 || undefined} key={label}>
             <dt>{label}</dt>
-            <dd>{value}</dd>
+            <dd><Usd text={value} align="end" /></dd>
           </div>
         ))}
       </dl>
@@ -24530,7 +24710,7 @@ export function Fundamentals() {
         {FUNDAMENTALS.map(([label, value]) => (
           <div className={styles.fundCell} key={label}>
             <dt>{label}</dt>
-            <dd>{value}</dd>
+            <dd><Usd text={value} /></dd>
           </div>
         ))}
       </dl>
@@ -24587,7 +24767,7 @@ export function KeyHolders() {
           onChange={setQuarter}
           items={QUARTERS.map((q) => ({ value: q, label: q }))}
         />
-        {HOLDERS.map(([name, pct]) => (
+        {HOLDERS[quarter].map(([name, pct]) => (
           <div className={styles.holder} key={name}>
             <span className={styles.holderName}>{name}</span>
             <div className={styles.holderBar}>
@@ -24603,8 +24783,41 @@ export function KeyHolders() {
   )
 }
 
+/** A round top for the bar chart's axis: the max split into 4 nice steps (1, 2, 2.5, 5 × 10ⁿ). */
+function axisStep(max: number) {
+  const raw = max / 4
+  const pow = 10 ** Math.floor(Math.log10(raw))
+  return ([1, 2, 2.5, 5, 10].find((m) => m * pow >= raw) ?? 10) * pow
+}
+
+/** Company financials: the statement tabs, Annually / Quarterly and the period picker all change the bars and the
+ *  table (the picked period's bars are highlighted). */
 export function Financials() {
-  const [statement, setStatement] = useState('income')
+  const usd = useUsd()
+  // Statements are in $ billions; shown in the currency picked (compact: $130.50B / ₹12.40 L Cr).
+  const billions = (n: number) => usd(n * 1e9, { compact: true })
+  const [statement, setStatement] = useState<Statement>('income')
+  const [frequency, setFrequency] = useState<Frequency>('annual')
+  const book = FINANCIALS[frequency]
+  const last = book.periods.length - 1
+  const [picked, setPicked] = useState(last)
+  const spec = STATEMENTS[statement]
+  const [a, b] = book.data[statement]
+  const step = axisStep(Math.max(...a, ...b))
+  const top = step * 4
+  // Chart pixels: the 0 line sits at 136px and the top line at 6px (130px for the axis' top value).
+  const barTop = (v: number) => 136 - (v / top) * 130
+  const third = (i: number) => (spec.thirdIsPercent ? (b[i] / a[i]) * 100 : a[i] - b[i])
+  const change = (now: number, before: number, points: boolean) => (points ? now - before : ((now - before) / Math.abs(before)) * 100)
+  const rows: [string, string, number, string][] = [
+    [spec.series[0], billions(a[picked]), change(a[picked], a[picked - 1], false), '%'],
+    [spec.series[1], billions(b[picked]), change(b[picked], b[picked - 1], false), '%'],
+    [spec.third, spec.thirdIsPercent ? `${third(picked).toFixed(1)}%` : billions(third(picked)), change(third(picked), third(picked - 1), spec.thirdIsPercent), spec.thirdIsPercent ? ' pts' : '%'],
+  ]
+  const switchFrequency = () => {
+    setFrequency((f) => (f === 'annual' ? 'quarterly' : 'annual'))
+    setPicked(FINANCIALS[frequency === 'annual' ? 'quarterly' : 'annual'].periods.length - 1)
+  }
   return (
     <section className={styles.section}>
       <SectionTitle title="Company financials" info />
@@ -24616,55 +24829,67 @@ export function Financials() {
             size="sm"
             aria-label="Statement"
             value={statement}
-            onChange={setStatement}
-            items={[
-              { value: 'income', label: 'Income' },
-              { value: 'balance', label: 'Balance sheet' },
-              { value: 'cashflow', label: 'Cashflow' },
-            ]}
+            onChange={(v) => setStatement(v as Statement)}
+            items={(Object.keys(STATEMENTS) as Statement[]).map((k) => ({ value: k, label: STATEMENTS[k].label }))}
           />
           <div className={styles.legend}>
-            <span data-tone="up">REVENUE</span>
-            <span>NET INCOME</span>
+            <span data-tone="up">{spec.series[0].toUpperCase()}</span>
+            <span>{spec.series[1].toUpperCase()}</span>
           </div>
           <div
             className={styles.bars}
             role="img"
-            aria-label="Revenue and net income, FY21 to FY25. FY25 revenue 130.5B, net income 72.9B."
+            aria-label={`${spec.series[0]} and ${spec.series[1].toLowerCase()}, ${book.periods[1]} to ${book.periods[last]}. ${book.periods[picked]}: ${billions(a[picked])} and ${billions(b[picked])}.`}
           >
-            {GRID_LINES.map(([label, top]) => (
-              <span className={styles.grid} style={{ top }} key={label}>
-                <span>{label}</span>
+            {[4, 3, 2, 1, 0].map((n, i) => (
+              <span className={styles.grid} style={{ top: 6 + i * 32.5 }} key={n}>
+                <span>{n === 0 ? usd(0, { decimals: 0 }) : billions(step * n)}</span>
               </span>
             ))}
-            {FY_BARS.map((y) => (
-              <span className={styles.year} style={{ left: `calc((100% - 40px) * ${y.x / 264})` }} key={y.fy}>
-                <span className={styles.bar} data-tone="up" style={{ top: y.rev[0], height: y.rev[1] }} />
-                <span className={styles.bar} style={{ top: y.ni[0], height: y.ni[1], left: 11 }} />
-                <span className={styles.fy}>{y.fy}</span>
-              </span>
-            ))}
+            {book.short.slice(1).map((label, k) => {
+              const i = k + 1
+              return (
+                <button
+                  type="button"
+                  className={styles.year}
+                  data-active={i === picked || undefined}
+                  style={{ left: `calc((100% - 40px) * ${(17 + k * 52.75) / 264})` }}
+                  aria-label={`Show ${book.periods[i]}`}
+                  onClick={() => setPicked(i)}
+                  key={label}
+                >
+                  <span className={styles.bar} data-tone="up" style={{ top: barTop(a[i]), height: 136 - barTop(a[i]) }} />
+                  <span className={styles.bar} style={{ top: barTop(b[i]), height: 136 - barTop(b[i]), left: 11 }} />
+                  <span className={styles.fy}>{label}</span>
+                </button>
+              )
+            })}
           </div>
         </div>
         <div className={styles.tableHeader}>
-          <Select size="sm" subtle onClick={() => {}}>Annually</Select>
+          <Select size="sm" subtle aria-label="Annual or quarterly figures" onClick={switchFrequency}>
+            {frequency === 'annual' ? 'Annually' : 'Quarterly'}
+          </Select>
           <span className={styles.fyPicker}>
-            <button type="button" aria-label="Previous year">
+            <button type="button" aria-label="Previous period" disabled={picked <= 1} onClick={() => setPicked((p) => Math.max(1, p - 1))}>
               <Icon icon={chevronLeftIcon} size={12} />
             </button>
-            FY 25
-            <button type="button" aria-label="Next year">
+            {book.periods[picked]}
+            <button type="button" aria-label="Next period" disabled={picked >= last} onClick={() => setPicked((p) => Math.min(last, p + 1))}>
               <Icon icon={chevronRightIcon} size={12} />
             </button>
           </span>
-          <span className={styles.yoy}>Y/Y change</span>
+          <span className={styles.yoy}>{frequency === 'annual' ? 'Y/Y change' : 'Q/Q change'}</span>
         </div>
         <div className={styles.table}>
-          {FINANCIAL_ROWS.map(([metric, value, change]) => (
+          {rows.map(([metric, value, delta, unit]) => (
             <div className={styles.tableRow} key={metric}>
               <span>{metric}</span>
               <span>{value}</span>
-              <span>{change}</span>
+              <span data-down={delta < 0 || undefined}>
+                {delta < 0 ? '−' : '+'}
+                {Math.abs(delta).toFixed(1)}{unit}
+              </span>
             </div>
           ))}
         </div>
@@ -24760,8 +24985,8 @@ export function RelatedEtfs({ sym }: { sym: string }) {
             </span>
             <span className={styles.etfName}>{e.name}</span>
             <span className={styles.etfPrice}>
-              ${money(e.price)}
-              <span data-up={e.change >= 0 || undefined}>
+              <Usd value={e.price} layout="inline" />
+              <span data-change="" data-up={e.change >= 0 || undefined}>
                 {e.change >= 0 ? '+' : '−'}
                 {Math.abs(e.change).toFixed(2)}%
               </span>
@@ -25045,7 +25270,7 @@ import { useUsNav } from '../../../nav'
 import { ImgIcon } from '../components/ImgIcon'
 import { ADDRESS, PERSONAL_DETAILS } from '../data'
 import { checklistIcon, infoIcon, personIcon } from '../icons'
-import { ACTIVATION_SUBMITTED, HOME_NOT_ACTIVATED } from '../ids'
+import { ACTIVATION_SUBMITTED } from '../ids'
 import { Declarations } from './Declarations'
 import { RiskBullets } from './RiskBullets'
 import styles from './Activation.module.css'
@@ -25083,7 +25308,7 @@ export function ConfirmDetailsScreen({ backdrop }: { backdrop?: boolean }) {
       header={
         <Actionbar
           title="Confirm Details"
-          onBack={() => back(HOME_NOT_ACTIVATED)}
+          onBack={() => back('5714:64982')}
           actions={<Button variant="ghost" size="sm">Help</Button>}
         />
       }
@@ -26145,7 +26370,7 @@ export function MutualFundHomeScreen() {
         </div>
         <div className={styles.content}>
           {/* The US Stocks banner (E5). FLAG: hand-made banner with animated mascot + coins — L3 Card; copy hard-coded. */}
-          <button type="button" className={styles.usBanner}>
+          <button type="button" className={styles.usBanner} onClick={() => preview.go?.('stocks-01')}>
             <span className={styles.coins} aria-hidden="true">
               <InlineSvg src={mfPath('tile.svg')} w={48} className={styles.tile} />
               <span className={styles.mascotWrap}>
@@ -26725,6 +26950,7 @@ import { Button } from '@l3/components/Button'
 import { EmptyState } from '@l3/components/EmptyState'
 import { Card } from '@l3/components/Card'
 import { Icon } from '@l3/components/Icon'
+import { Stack } from '@l3/components/Stack'
 import { Tabs } from '@l3/components/Tabs'
 import { Tag } from '@l3/components/Tag'
 import { asset } from '../../asset'
@@ -26739,8 +26965,10 @@ import { neighbour, useSwipePages } from './components/swipePages'
 import { MaskImg } from './components/MaskImg'
 import { entryPath, entryUrl } from './entryAssets'
 import { sortIcon } from './icons'
-import { SEARCH, STOCKS_HOME, WALLET } from './ids'
-import { holdingsSummary, marketIndices, portfolioTabs, sortedHoldings, type PortfolioTab } from './portfolioData'
+import { CurrencySwitch, Usd } from '../../../../shared/money'
+import { useUsJourney, type UsJourney } from '../../../../shared/userStatus'
+import { ACTIVATE_US, KYC_START, SEARCH, STOCKS_HOME_ENTRY, WALLET, WALLET_US } from './ids'
+import { holdingsSummary, marketIndices, portfolioTabs, sortedHoldings, usHolding, usHoldingSummary, type Holding, type PortfolioTab } from './portfolioData'
 import { SortSheet, type SortValue } from './sheets/SortSheet'
 import styles from './PortfolioScreen.module.css'
 
@@ -26755,9 +26983,63 @@ function EmptyWallet({ title, text, button, onClick }: { title: string; text: st
   )
 }
 
+/** One holding card (Indian or US). */
+function HoldingRow({ holding }: { holding: Holding }) {
+  return (
+    <li className={styles.hold}>
+      <span className={styles.holdTop}>
+        <RoundLogo src={holding.logo} size={40} />
+        <span className={styles.holdName}>
+          <span className={styles.holdSym}>{holding.name}</span>
+          <span className={styles.holdQty}>Qty {holding.qty}</span>
+        </span>
+        <span className={styles.holdCell} data-end="">
+          <span className={styles.holdLabel}>Returns%</span>
+          <span className={styles.holdFig} data-tone={holding.up ? 'up' : 'down'}>{holding.pct}</span>
+        </span>
+      </span>
+      <hr className={styles.holdRule} />
+      <span className={styles.holdBottom}>
+        <span className={styles.holdCell}>
+          <span className={styles.holdLabel}>Current</span>
+          <span className={styles.holdFig}><Usd text={holding.current} /></span>
+        </span>
+        <span className={styles.holdCell} data-mid="">
+          <span className={styles.holdLabel}>Invested</span>
+          <span className={styles.holdFig}><Usd text={holding.invested} /></span>
+        </span>
+        <span className={styles.holdCell} data-end="">
+          <span className={styles.holdLabel}>Returns</span>
+          <span className={styles.holdFig} data-tone={holding.up ? 'up' : 'down'}><Usd text={holding.returns} align="end" /></span>
+        </span>
+      </span>
+    </li>
+  )
+}
+
+/** The US side of Holdings follows the user status (Settings → User status). */
+function usEmpty(journey: UsJourney): { title: string; text: string; button: string; to: string } {
+  switch (journey) {
+    case 'kyc':
+      return { title: 'Complete your KYC', text: 'Finish your Lemonn KYC to activate US Stocks', button: 'Complete KYC', to: KYC_START }
+    case 'activate':
+      return { title: 'Build Wealth in Dollars', text: 'Activate US Stocks to start investing in US companies', button: 'Activate US Stocks', to: ACTIVATE_US }
+    case 'review':
+    case 'support':
+      return { title: 'Activation under review', text: 'We’re reviewing your US Stocks activation. You’ll see your holdings here once it’s done', button: 'Explore US Market', to: STOCKS_HOME_ENTRY }
+    case 'failed':
+      return { title: 'Activation failed', text: 'We couldn’t activate US Stocks for you. Please try again', button: 'Retry', to: ACTIVATE_US }
+    default:
+      return { title: 'Build Wealth in Dollars', text: 'Seems like you don’t have any US holdings right now', button: 'Explore US Market', to: STOCKS_HOME_ENTRY }
+  }
+}
+
 /** `live` is accepted for the two Figma variants but, as in the original, not used. */
 export function PortfolioScreen(_props: { live?: boolean }) {
   const { go } = useUsNav()
+  const journey = useUsJourney()
+  const usActive = journey === 'activated' || journey === 'onTheWay' || journey === 'ready' || journey === 'holding'
+  const usEmptyState = usEmpty(journey)
   const [tab, setTab] = useState<PortfolioTab>('positions')
   const [market, setMarket] = useState<HoldingsMarket>('in')
   const [sort, setSort] = useState<SortValue>({ key: 'current', dir: 'desc' })
@@ -26784,7 +27066,7 @@ export function PortfolioScreen(_props: { live?: boolean }) {
           actions={
             <>
               <ActionbarAction icon={entryUrl('search.svg')} label="Search" onClick={() => go(SEARCH)} />
-              <ActionbarAction icon={entryUrl('wallet.svg')} label="Wallet" onClick={() => go(WALLET)} />
+              <ActionbarAction icon={entryUrl('wallet.svg')} label="Wallet" onClick={() => go(usActive ? WALLET_US : WALLET)} />
             </>
           }
           bottom={
@@ -26829,7 +27111,12 @@ export function PortfolioScreen(_props: { live?: boolean }) {
                 </div>
               </section>
             )}
-            {tab === 'holdings' && <HoldingsCards market={market} onMarket={setMarket} data={holdingsSummary} />}
+            {tab === 'holdings' && market === 'us' && (
+              <Stack direction="horizontal" justify="end">
+                <CurrencySwitch />
+              </Stack>
+            )}
+            {tab === 'holdings' && <HoldingsCards market={market} onMarket={setMarket} data={journey === 'holding' ? { ...holdingsSummary, us: usHoldingSummary } : holdingsSummary} />}
           </div>
         )}
         <section key={tab} className={styles.sheet} data-section={tab} ref={swipe.contentRef}>
@@ -26866,44 +27153,21 @@ export function PortfolioScreen(_props: { live?: boolean }) {
                   Sort
                 </button>
               </div>
-              {market === 'us' ? (
+              {market === 'us' && journey === 'holding' ? (
+                <ul className={styles.holdList}>
+                  <HoldingRow holding={usHolding} />
+                </ul>
+              ) : market === 'us' ? (
                 <EmptyWallet
-                  title="Build Wealth in Dollars"
-                  text="Seems like you don’t have any US holdings right now"
-                  button="Explore US Market"
-                  onClick={() => go(STOCKS_HOME)}
+                  title={usEmptyState.title}
+                  text={usEmptyState.text}
+                  button={usEmptyState.button}
+                  onClick={() => go(usEmptyState.to)}
                 />
               ) : (
                 <ul className={styles.holdList}>
                   {sortedHoldings(sort).map((holding) => (
-                    <li key={holding.key} className={styles.hold}>
-                      <span className={styles.holdTop}>
-                        <RoundLogo src={holding.logo} size={40} />
-                        <span className={styles.holdName}>
-                          <span className={styles.holdSym}>{holding.name}</span>
-                          <span className={styles.holdQty}>Qty {holding.qty}</span>
-                        </span>
-                        <span className={styles.holdCell} data-end="">
-                          <span className={styles.holdLabel}>Returns%</span>
-                          <span className={styles.holdFig} data-tone={holding.up ? 'up' : 'down'}>{holding.pct}</span>
-                        </span>
-                      </span>
-                      <hr className={styles.holdRule} />
-                      <span className={styles.holdBottom}>
-                        <span className={styles.holdCell}>
-                          <span className={styles.holdLabel}>Current</span>
-                          <span className={styles.holdFig}>{holding.current}</span>
-                        </span>
-                        <span className={styles.holdCell} data-mid="">
-                          <span className={styles.holdLabel}>Invested</span>
-                          <span className={styles.holdFig}>{holding.invested}</span>
-                        </span>
-                        <span className={styles.holdCell} data-end="">
-                          <span className={styles.holdLabel}>Returns</span>
-                          <span className={styles.holdFig} data-tone={holding.up ? 'up' : 'down'}>{holding.returns}</span>
-                        </span>
-                      </span>
-                    </li>
+                    <HoldingRow key={holding.key} holding={holding} />
                   ))}
                 </ul>
               )}
@@ -27409,6 +27673,7 @@ import { ActionbarAction, Actionbar } from '@l3/components/Actionbar'
 import { Button } from '@l3/components/Button'
 import { ButtonGroup } from '@l3/components/ButtonGroup'
 import { Icon } from '@l3/components/Icon'
+import { Usd } from '../../../../shared/money'
 import { Phone } from '../../components/Phone'
 import { openStock, stockFromRow } from '../../data'
 import { useUsNav } from '../../nav'
@@ -27416,7 +27681,7 @@ import { Move, RoundLogo } from './components/Primitives'
 import { SpxChart } from './components/SpxChart'
 import { entryUrl } from './entryAssets'
 import { chevronRight, functionIcon, settings, star, stylus, swapHoriz } from './icons'
-import { STOCKS_HOME } from './ids'
+import { STOCKS_HOME, STOCKS_HOME_ENTRY } from './ids'
 import { InlineSvg } from '../../components/InlineSvg'
 import { indexStocks } from './spxData'
 import styles from './SpxIndex.module.css'
@@ -27444,7 +27709,7 @@ export function SpxIndexScreen() {
       }
       footer={
         <ButtonGroup aria-label="S&P 500" scrollIndicator>
-          <Button variant="primary" size="lg" fullWidth onClick={() => go(STOCKS_HOME)}>
+          <Button variant="primary" size="lg" fullWidth onClick={() => go(STOCKS_HOME_ENTRY)}>
             Explore US Stocks
           </Button>
         </ButtonGroup>
@@ -27528,7 +27793,7 @@ export function SpxIndexScreen() {
                   <span className={styles.stockName}>{stock.name}</span>
                 </span>
                 <span className={styles.stockPrice}>
-                  <span className={styles.symbol}>{stock.price}</span>
+                  <span className={styles.symbol}><Usd text={stock.price} align="end" /></span>
                   <Move value={stock.change} up={stock.up} />
                 </span>
               </button>
@@ -27752,6 +28017,7 @@ export function SpxIndexScreen() {
 // FLAG: hand-made carousel cards (fixed 296px wide), pager dots and returns pill — L3 has Card and PriceChange.
 import { useEffect, useRef, useState } from 'react'
 import { Icon } from '@l3/components/Icon'
+import { Usd } from '../../../../../shared/money'
 import { InlineSvg } from '../../../components/InlineSvg'
 import { unfoldMore } from '../icons'
 import styles from './HoldingsCards.module.css'
@@ -27827,11 +28093,11 @@ export function HoldingsCards({
               <span className={styles.facts}>
                 <span className={styles.fact}>
                   <span className={styles.factLabel}>{labels[id].code} Current Value</span>
-                  <span className={styles.factValue}>{summary.current}</span>
+                  <span className={styles.factValue}><Usd text={summary.current} /></span>
                 </span>
                 <span className={styles.fact} data-end="">
                   <span className={styles.factLabel}>Invested Value</span>
-                  <span className={styles.factValue}>{summary.invested}</span>
+                  <span className={styles.factValue}><Usd text={summary.invested} align="end" /></span>
                 </span>
               </span>
               <span className={styles.fact}>
@@ -27851,7 +28117,7 @@ export function HoldingsCards({
                     <span className={styles.tri} aria-hidden="true" />
                     {returns.pct}
                   </span>
-                  <span className={styles.amount}>{returns.pnl}</span>
+                  <span className={styles.amount}><Usd text={returns.pnl} /></span>
                 </span>
               </span>
             </section>
@@ -28640,6 +28906,13 @@ export const northIcon = symbolPath('M440-160v-487L216-423l-56-57 320-320 320 32
 // Figma node ids this part navigates to.
 /** US Stocks home (the Stocks tab). */
 export const STOCKS_HOME = '5796:91576'
+/** The Stocks flow's Home (the Stocks tab, IND). Its US tab follows the user status. */
+export const STOCKS_HOME_ENTRY = 'stocks-01'
+/** Wallet, US tab (follows the user status). */
+export const WALLET_US = '5852:99057'
+/** Activation / KYC screens in other flows (prototype ids). */
+export const ACTIVATE_US = 'stocks-12'
+export const KYC_START = 'kyc-01'
 /** Search, US tab (this part). */
 export const SEARCH = '5796:89230'
 /** Wallet (the money part). */
@@ -28734,6 +29007,23 @@ export const sortedHoldings = (sort: SortValue): Holding[] =>
 export const holdingsSummary: Record<HoldingsMarket, HoldingsSummary> = {
   in: { pnl: '+₹168.05', pct: '12.61%', up: true, invested: '₹1,332.20', current: '₹1,500.25' },
   us: { pnl: '$0.00', pct: '0.00%', up: true, invested: '$0.00', current: '$0.00' },
+}
+
+/** US P&L card once the user holds NVDA (user status "holding"). */
+export const usHoldingSummary: HoldingsSummary = { pnl: '+$14.60', pct: '9.73%', up: true, invested: '$150.00', current: '$164.60' }
+
+/** The one US holding in the "holding" status (1 NVDA bought at $150.00). */
+export const usHolding: Holding = {
+  key: 'nvda',
+  name: 'NVDA',
+  qty: 1,
+  current: '$164.60',
+  invested: '$150.00',
+  returns: '+$14.60',
+  pct: '+9.73%',
+  day: 1.2,
+  up: true,
+  logo: asset('assets/activation/nvda-logo.svg'),
 }
 ```
 
@@ -29209,8 +29499,9 @@ import { Card } from '@l3/components/Card'
 import { Tabs } from '@l3/components/Tabs'
 import { Phone } from '../../components/Phone'
 import { useUsNav } from '../../nav'
+import { Usd, useUsd } from '../../../../shared/money'
 import { setCurrentEtf } from './currentEtf'
-import { COUNTRIES, ETFS, ETF_PAGE, HOME_ACTIVATED, leveragedGroups, money, type Etf } from './data'
+import { COUNTRIES, ETFS, ETF_PAGE, HOME_IND, leveragedGroups, type Etf } from './data'
 import { EtfDisc, EtfMove, SideTag } from './parts'
 import styles from './Etf.module.css'
 
@@ -29220,15 +29511,16 @@ const TABS = [
 ]
 
 export function EtfRow({ etf, onClick }: { etf: Etf; onClick: () => void }) {
+  const usd = useUsd()
   return (
-    <Card onClick={onClick} className={styles.rowCard} aria-label={`${etf.name}, $${money(etf.price)}, ${etf.change >= 0 ? '+' : '-'}${Math.abs(etf.change)}%`}>
+    <Card onClick={onClick} className={styles.rowCard} aria-label={`${etf.name}, ${usd(etf.price)}, ${etf.change >= 0 ? '+' : '-'}${Math.abs(etf.change)}%`}>
       <EtfDisc sym={etf.sym} />
       <span className={styles.rowText}>
         <span className={styles.rowName}>{etf.sym}</span>
         <span className={styles.rowSub}>{etf.name} · {etf.tracks}</span>
       </span>
       <span className={styles.rowPrice}>
-        <span className={styles.rowValue}>${money(etf.price)}</span>
+        <span className={styles.rowValue}><Usd value={etf.price} align="end" /></span>
         <EtfMove change={etf.change} />
       </span>
     </Card>
@@ -29237,6 +29529,7 @@ export function EtfRow({ etf, onClick }: { etf: Etf; onClick: () => void }) {
 
 export function EtfListScreen({ backdrop }: { backdrop?: boolean }) {
   const { go, back } = useUsNav()
+  const usd = useUsd()
   const [tab, setTab] = useState(() => {
     // The home's "Leveraged" shortcut can ask for the second tab (his sessionStorage hand-off).
     try {
@@ -29261,7 +29554,7 @@ export function EtfListScreen({ backdrop }: { backdrop?: boolean }) {
       header={
         <Actionbar
           title="ETFs"
-          onBack={() => back(HOME_ACTIVATED)}
+          onBack={() => back(HOME_IND)}
           bottom={<Tabs appearance="underline" width="fill" aria-label="ETF type" items={TABS} value={tab} onChange={setTab} />}
         />
       }
@@ -29295,12 +29588,12 @@ export function EtfListScreen({ backdrop }: { backdrop?: boolean }) {
                 <h2 className={styles.groupTitle}>{g.tracks}</h2>
                 <div className={styles.pair}>
                   {g.etfs.map((e) => (
-                    <Card key={e.sym} onClick={() => open(e.sym)} className={styles.sideCard} aria-label={`${e.sym}, ${e.lev} ${e.side}, $${money(e.price)}`}>
+                    <Card key={e.sym} onClick={() => open(e.sym)} className={styles.sideCard} aria-label={`${e.sym}, ${e.lev} ${e.side}, ${usd(e.price)}`}>
                       <SideTag etf={e} />
                       <span className={styles.sideSym}>{e.sym}</span>
                       <span className={styles.sideName}>{e.name}</span>
                       <span className={styles.sidePrice}>
-                        ${money(e.price)} <EtfMove change={e.change} />
+                        <Usd value={e.price} layout="inline" /> <EtfMove change={e.change} />
                       </span>
                     </Card>
                   ))}
@@ -29339,6 +29632,10 @@ export function EtfListScreen({ backdrop }: { backdrop?: boolean }) {
   padding: var(--l3-spacing-08) var(--l3-spacing-16) 0;
   flex-direction: column;
   display: flex;
+}
+
+.currencySwitch {
+  align-self: flex-start;
 }
 
 .titleRow {
@@ -29724,7 +30021,7 @@ export function EtfListScreen({ backdrop }: { backdrop?: boolean }) {
 // FLAG: copy not in copy.json yet (hard-coded).
 // FLAG: price block, chart, range meter and info buttons are hand-made
 // (EtfPage.module.css, copied from the stock page) instead of L3 Chart; same as the stock page.
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { Actionbar, ActionbarAction } from '@l3/components/Actionbar'
 import { Button } from '@l3/components/Button'
 import { ButtonGroup } from '@l3/components/ButtonGroup'
@@ -29736,11 +30033,17 @@ import { Tag } from '@l3/components/Tag'
 import { Phone } from '../../components/Phone'
 import { asset } from '../../asset'
 import { useUsNav } from '../../nav'
+import { useUsJourney } from '../../../../shared/userStatus'
+import { CurrencySwitch, InrEquivalent, Usd, useUsd } from '../../../../shared/money'
+import { activationFooter, type StockState } from '../activation/StockPage'
 import { getCurrentEtf } from './currentEtf'
-import { BUY_PAD, ETF_LIST, PERIODS, detailsFor, issuerLogo, issuerName, money, percent } from './data'
+import { BUY_PAD, ETF_LIST, PERIODS, detailsFor, issuerLogo, issuerName, percent } from './data'
 import { boltIcon, infoIcon } from './icons'
 import { EtfMove } from './parts'
 import styles from './EtfPage.module.css'
+
+/** T03 · Buy · Empty US wallet. */
+const BUY_PAD_EMPTY_WALLET = '5837:96155'
 
 const SECTIONS = [
   { value: 'overview', label: 'Overview' },
@@ -29758,7 +30061,7 @@ function SectionTitle({ title }: { title: string }) {
   )
 }
 
-function Stat({ label, value, end }: { label: string; value: string; end?: boolean }) {
+function Stat({ label, value, end }: { label: string; value: ReactNode; end?: boolean }) {
   return (
     <div className={styles.stat} data-end={end || undefined}>
       <span className={styles.statLabel}>{label}</span>
@@ -29769,6 +30072,7 @@ function Stat({ label, value, end }: { label: string; value: string; end?: boole
 
 export function EtfPage({ backdrop }: { backdrop?: boolean }) {
   const { go, back } = useUsNav()
+  const usd = useUsd()
   const etf = getCurrentEtf()
   const d = detailsFor(etf)
   const leveraged = etf.kind === 'leveraged'
@@ -29794,34 +30098,39 @@ export function EtfPage({ backdrop }: { backdrop?: boolean }) {
     <Actionbar
       onBack={() => back(ETF_LIST)}
       title={scrolled ? etf.sym : undefined}
-      description={scrolled ? <>${money(etf.price)} <EtfMove change={etf.change} /></> : undefined}
+      description={scrolled ? <><Usd value={etf.price} layout="inline" /> <EtfMove change={etf.change} /></> : undefined}
       actions={<ActionbarAction icon={asset('assets/etf/watchlist.svg')} label={`Add ${etf.sym} to watchlist`} onClick={() => {}} />}
     />
   )
 
-  const footer = (
+  const journey = useUsJourney()
+  const gate: StockState | undefined =
+    journey === 'kyc' ? 'kyc-pending' : journey === 'activate' ? 'not-activated' : journey === 'review' || journey === 'support' || journey === 'failed' ? journey : undefined
+  const buyTo = journey === 'activated' || journey === 'onTheWay' ? BUY_PAD_EMPTY_WALLET : BUY_PAD
+  const footer = (gate && activationFooter(gate, (id) => act(() => go(id))())) || (
     <ButtonGroup aria-label={`Trade ${etf.sym}`} direction="horizontal" scrollIndicator>
-      <Button variant="brand" size="lg" onClick={act(() => go(BUY_PAD))}>{leveraged ? 'Go Long' : 'Buy'}</Button>
+      <Button variant="brand" size="lg" onClick={act(() => go(buyTo))}>{leveraged ? 'Go Long' : 'Buy'}</Button>
       <Button variant="secondary" size="lg" onClick={act(() => go(BUY_PAD))}>{leveraged ? 'Go Short' : 'Sell'}</Button>
     </ButtonGroup>
   )
 
-  const dayStats: [string, string][] = [
-    ['Open', `$${money(etf.price - dayChangeAbs * 0.6)}`],
-    ['Prev. Close', `$${money(etf.price - dayChangeAbs)}`],
-    ['AUM', etf.aum],
-    ['Volume', d.volume],
-    ['52-week high', `$${money(d.high52)}`],
-    ['52-week low', `$${money(d.low52)}`],
+  // Values are $ numbers or $ text ('$672B'); <Usd> shows them in the currency picked. Volume is shares / a $ figure as written.
+  const dayStats: [string, ReactNode][] = [
+    ['Open', <Usd value={etf.price - dayChangeAbs * 0.6} align="end" />],
+    ['Prev. Close', <Usd value={etf.price - dayChangeAbs} align="end" />],
+    ['AUM', <Usd text={etf.aum} align="end" />],
+    ['Volume', <Usd text={d.volume} align="end" />],
+    ['52-week high', <Usd value={d.high52} align="end" />],
+    ['52-week low', <Usd value={d.low52} align="end" />],
   ]
-  const fundamentals: [string, string][] = [
+  const fundamentals: [string, ReactNode][] = [
     ['Expense Ratio', percent(etf.expense)],
-    ['NAV', `$${money(d.nav)}`],
+    ['NAV', <Usd value={d.nav} align="end" />],
     ['Index Tracked', d.index],
     ['Issuer', issuer ?? '—'],
     ['Dividend Yield', d.yield],
     ['Holdings', d.holdings],
-    ...(leveraged ? ([['Leverage', `${etf.lev} daily, ${long ? 'long' : 'short'}`]] as [string, string][]) : []),
+    ...(leveraged ? ([['Leverage', `${etf.lev} daily, ${long ? 'long' : 'short'}`]] as [string, ReactNode][]) : []),
   ]
   const at = Math.min(100, Math.max(0, ((etf.price - d.low) / (d.high - d.low)) * 100))
 
@@ -29832,19 +30141,21 @@ export function EtfPage({ backdrop }: { backdrop?: boolean }) {
           <div className={styles.namePrice}>
             <h1 className={styles.name}>{etf.name}</h1>
             <div className={styles.priceRow}>
-              <span className={styles.price}>${money(etf.price)}</span>
+              <span className={styles.price}><Usd value={etf.price} layout="inline" /></span>
               <span className={styles.change}>
                 <PriceChange value={etf.change} size="lg" arrow />
                 <span className={styles.changeAbs} data-down={dayChangeAbs < 0 || undefined}>
-                  ({dayChangeAbs < 0 ? '−' : '+'}{money(Math.abs(dayChangeAbs))})
+                  (<Usd value={dayChangeAbs} sign layout="inline" />)
                 </span>
               </span>
             </div>
+            <InrEquivalent usd={etf.price} />
           </div>
           <span className={styles.logoDisc} style={logo ? ({ '--plate': logo.plate } as React.CSSProperties) : undefined} aria-hidden="true">
             {logo ? <img src={asset(`assets/etf/${logo.file}.png`)} alt="" /> : etf.sym[0]}
           </span>
         </div>
+        <CurrencySwitch className={styles.currencySwitch} />
         <div className={styles.tagsRow}>
           <div className={styles.tags}>
             <Tag variant="tertiary" color="neutral" size="md">ETF</Tag>
@@ -29863,7 +30174,7 @@ export function EtfPage({ backdrop }: { backdrop?: boolean }) {
           <span className={styles.dot} />
         </div>
         <div className={styles.yAxis} aria-hidden="true">
-          {Y_STEPS.map((s) => <span key={s}>{money(etf.price * s)}</span>)}
+          {Y_STEPS.map((s) => <span key={s}>{usd(etf.price * s)}</span>)}
         </div>
       </div>
 
@@ -29902,8 +30213,8 @@ export function EtfPage({ backdrop }: { backdrop?: boolean }) {
                 <SectionTitle title="Daily Performance" />
                 <div className={styles.panel} data-gap="04">
                   <div className={styles.lowHigh}>
-                    <Stat label="1D Low" value={`$${money(d.low)}`} />
-                    <Stat label="1D High" value={`$${money(d.high)}`} end />
+                    <Stat label="1D Low" value={<Usd value={d.low} />} />
+                    <Stat label="1D High" value={<Usd value={d.high} align="end" />} end />
                   </div>
                   <div
                     className={styles.dayRange}
@@ -29917,7 +30228,7 @@ export function EtfPage({ backdrop }: { backdrop?: boolean }) {
                     <span className={styles.dayTick} />
                     <span className={styles.dayBolt}><Icon icon={boltIcon} size={16} /></span>
                   </div>
-                  <p className={styles.ltp}><Icon icon={boltIcon} size={12} />Last Traded Price : ${money(etf.price)}</p>
+                  <p className={styles.ltp}><Icon icon={boltIcon} size={12} />Last Traded Price : <Usd value={etf.price} layout="inline" /></p>
                 </div>
                 <dl className={styles.panel} data-gap="12" data-rows="">
                   {dayStats.map(([k, v], i) => (
@@ -29949,6 +30260,7 @@ export function EtfPage({ backdrop }: { backdrop?: boolean }) {
 // holdings. Reads the current ETF (SPY unless one was tapped).
 // FLAG: copy not in copy.json yet (hard-coded).
 // FLAG: the price line is a hand-drawn SVG from made-up points (L3 has a Chart component).
+import type { ReactNode } from 'react'
 import { Actionbar } from '@l3/components/Actionbar'
 import { Button } from '@l3/components/Button'
 import { ButtonGroup } from '@l3/components/ButtonGroup'
@@ -29956,8 +30268,11 @@ import { Card } from '@l3/components/Card'
 import { Tag } from '@l3/components/Tag'
 import { Phone } from '../../components/Phone'
 import { useUsNav } from '../../nav'
+import { Usd, InrEquivalent } from '../../../../shared/money'
+import { useUsJourney } from '../../../../shared/userStatus'
+import { activationFooter, type StockState } from '../activation/StockPage'
 import { getCurrentEtf, setCurrentEtf } from './currentEtf'
-import { BUY_PAD, ETF_LIST, ETF_PAGE, leveragedOn, money, openHolding, stockName, type Etf } from './data'
+import { BUY_PAD, ETF_LIST, ETF_PAGE, leveragedOn, openHolding, stockName, type Etf } from './data'
 import { EtfDisc, EtfMove, SideTag } from './parts'
 import styles from './Etf.module.css'
 
@@ -29991,13 +30306,17 @@ export function EtfPreviousScreen({ backdrop }: { backdrop?: boolean }) {
   const long = etf.side === 'long'
   const opposite = leveraged ? leveragedOn(etf.tracks).find((e) => e.side !== etf.side) : undefined
   const act = (fn: () => void) => () => { if (!backdrop) fn() }
-  const facts: [string, string][] = [
+  const facts: [string, ReactNode][] = [
     ['Tracks', etf.tracks],
     ['Expense ratio', `${etf.expense.toFixed(2)}%`],
-    ['Fund size (AUM)', etf.aum],
+    ['Fund size (AUM)', <Usd text={etf.aum} align="end" />],
     ['Country', etf.country],
-    ...(leveraged ? ([['Leverage', `${etf.lev} daily`], ['Side', long ? 'Long · gains when it rises' : 'Short · gains when it falls']] as [string, string][]) : []),
+    ...(leveraged ? ([['Leverage', `${etf.lev} daily`], ['Side', long ? 'Long · gains when it rises' : 'Short · gains when it falls']] as [string, ReactNode][]) : []),
   ]
+  const journey = useUsJourney()
+  const gate: StockState | undefined =
+    journey === 'kyc' ? 'kyc-pending' : journey === 'activate' ? 'not-activated' : journey === 'review' || journey === 'support' || journey === 'failed' ? journey : undefined
+  const buyTo = journey === 'activated' || journey === 'onTheWay' ? '5837:96155' : BUY_PAD // T03 · Buy · Empty US wallet
   const [primary, secondary] = leveraged ? ['Go Long', 'Go Short'] : ['Buy', 'Sell']
 
   return (
@@ -30005,10 +30324,12 @@ export function EtfPreviousScreen({ backdrop }: { backdrop?: boolean }) {
       label={etf.name}
       header={<Actionbar title={etf.sym} onBack={() => back(ETF_LIST)} />}
       footer={
-        <ButtonGroup aria-label={`Trade ${etf.sym}`} direction="horizontal">
-          <Button variant="brand" size="lg" onClick={act(() => go(BUY_PAD))}>{primary}</Button>
-          <Button variant="secondary" size="lg" onClick={act(() => go(BUY_PAD))}>{secondary}</Button>
-        </ButtonGroup>
+        (gate && activationFooter(gate, (id) => act(() => go(id))())) || (
+          <ButtonGroup aria-label={`Trade ${etf.sym}`} direction="horizontal">
+            <Button variant="brand" size="lg" onClick={act(() => go(buyTo))}>{primary}</Button>
+            <Button variant="secondary" size="lg" onClick={act(() => go(buyTo))}>{secondary}</Button>
+          </ButtonGroup>
+        )
       }
       gesture="none"
     >
@@ -30017,8 +30338,9 @@ export function EtfPreviousScreen({ backdrop }: { backdrop?: boolean }) {
           <div className={styles.headText}>
             <h2 className={styles.name}>{etf.name}</h2>
             <p className={styles.price}>
-              ${money(etf.price)} <EtfMove change={etf.change} />
+              <Usd value={etf.price} layout="inline" /> <EtfMove change={etf.change} />
             </p>
+            <InrEquivalent usd={etf.price} />
             <div className={styles.tags}>
               <Tag variant="secondary" color="neutral" size="sm">ETF</Tag>
               <Tag variant="secondary" color="neutral" size="sm">{etf.tracks}</Tag>
@@ -30246,8 +30568,8 @@ export const ETF_PAGE = '9001:2'
 export const ETF_PAGE_PREVIOUS = '9001:6'
 /** The order pad (Buy). */
 export const BUY_PAD = '5837:95201'
-/** Home · US tab · activated — the back fallback of the ETF list. */
-export const HOME_ACTIVATED = '5826:92885'
+/** Stocks home (stocks-01, follows the user status) — the back fallback of the ETF list. */
+export const HOME_IND = '5714:64982'
 
 /** A holding's display name (the catalogue's, or the symbol when it isn't in it). */
 export const stockName = (sym: string) => stockFor(sym).name
@@ -30359,11 +30681,13 @@ import { Tab } from '@l3/components/Tabs'
 import { TextField } from '@l3/components/TextField'
 import { Phone } from '../../components/Phone'
 import { useUsNav } from '../../nav'
-import { DEPOSIT_QUICK_ADD_INR, INR_PER_USD, LRS_LIMIT_USD, MIN_DEPOSIT_INR, depositBreakdown } from './amounts'
+import { Usd, formatInr, useUsd, useUsdInrRate } from '../../../../shared/money'
+import { DEPOSIT_QUICK_ADD_INR, LRS_LIMIT_USD, MIN_DEPOSIT_USD, depositBreakdown, depositRate, minDepositInr } from './amounts'
 import { ChargesBreakdownSheet } from './ChargesBreakdownSheet'
-import { formatInr, formatUsd, parseAmount } from './format'
+import { parseAmount } from './format'
 import { setHandoff, takeHandoff } from './handoff'
 import { infoIcon } from './icons'
+import { FIGMA } from '../wallet/data'
 import { moneyIds } from './ids'
 import { MoneyDock } from './MoneyDock'
 import styles from './Money.module.css'
@@ -30380,7 +30704,7 @@ export type AddMoneyScreenProps = {
   /** A sheet is open over the screen (M08): hide the ≈ $ line. */
   sheetBackdrop?: boolean
   /** Fixed ≈ $ and charges text shown until the amount is edited (M07 — the real maths would show other numbers). */
-  frameText?: { lands: string; charges: string }
+  frameText?: { lands: number; charges: number }
   /** The sheet drawn over the screen. */
   sheet?: ReactNode
   /** Drawn behind another screen's sheet: static, not tappable. */
@@ -30392,11 +30716,16 @@ export function AddMoneyScreen({ id, initial, breakdown = false, mismatch = fals
   const [amount, setAmount] = useState(() => takeHandoff(id, initial))
   const [showBreakdown, setShowBreakdown] = useState(breakdown)
   const [edited, setEdited] = useState(false)
-  const b = depositBreakdown(amount)
-  const lands = !edited && frameText ? frameText.lands : formatUsd(b.lands)
-  const charges = !edited && frameText ? frameText.charges : formatInr(b.charges)
-  const belowMin = amount > 0 && amount < MIN_DEPOSIT_INR
-  const aboveLrs = amount > LRS_LIMIT_USD * INR_PER_USD
+  const usd = useUsd()
+  // What you pay is in ₹ (your bank); the rate it converts at follows the live rate, plus the partner's markup.
+  const rate = depositRate(useUsdInrRate())
+  const b = depositBreakdown(amount, rate)
+  const lands = !edited && frameText ? frameText.lands : b.lands
+  const charges = !edited && frameText ? frameText.charges : b.charges
+  const minInr = minDepositInr(rate)
+  const maxInr = Math.round(LRS_LIMIT_USD * rate)
+  const belowMin = amount > 0 && amount < minInr
+  const aboveLrs = amount > maxInr
   const blocked = amount === 0 || belowMin || aboveLrs || mismatch
 
   const change = (next: number) => {
@@ -30409,14 +30738,14 @@ export function AddMoneyScreen({ id, initial, breakdown = false, mismatch = fals
   }
 
   const helper = belowMin ? (
-    <span className={styles.error}>Enter amount within limit · Minimum ₹4,815 ($50) for your first deposit</span>
+    <span className={styles.error}>Enter amount within limit · Minimum {formatInr(minInr, { decimals: 0 })} ({usd(MIN_DEPOSIT_USD, { decimals: 0 })}) for your first deposit</span>
   ) : aboveLrs ? (
-    <span className={styles.error}>Enter amount within limit · Max $250,000 per financial year under LRS</span>
+    <span className={styles.error}>Enter amount within limit · Max {usd(LRS_LIMIT_USD, { decimals: 0 })} per financial year under LRS</span>
   ) : (
     <>
-      Min: ₹{MIN_DEPOSIT_INR.toLocaleString('en-IN')}
+      Min: {formatInr(minInr, { decimals: 0 })}
       <span className={styles.sep}>|</span>
-      Max: ₹{Math.round(LRS_LIMIT_USD * INR_PER_USD).toLocaleString('en-IN')}
+      Max: {formatInr(maxInr, { decimals: 0 })}
     </>
   )
 
@@ -30424,7 +30753,7 @@ export function AddMoneyScreen({ id, initial, breakdown = false, mismatch = fals
     <Phone
       label="Deposit USD"
       overlay={backdrop ? undefined : sheet}
-      header={<Actionbar title="Deposit USD" onBack={() => back(moneyIds.addEntry)} />}
+      header={<Actionbar title="Deposit USD" onBack={() => back(FIGMA.walletUsActivate)} />}
       footer={<MoneyDock amount={amount} blocked={blocked} onAdd={addToWallet} />}
     >
       {mismatch && (
@@ -30439,7 +30768,7 @@ export function AddMoneyScreen({ id, initial, breakdown = false, mismatch = fals
         <KeyValueList variant="card" className={styles.balanceCard} aria-label="US wallet">
           <KeyValueRow
             label="US Wallet Balance"
-            value="$0.00"
+            value={<Usd value={0} layout="inline" />}
             valueEnd={<span className={styles.valueIcon} aria-hidden="true"><Icon icon={infoIcon} size={16} /></span>}
           />
         </KeyValueList>
@@ -30450,7 +30779,7 @@ export function AddMoneyScreen({ id, initial, breakdown = false, mismatch = fals
               inputMode="numeric"
               autoComplete="off"
               placeholder="₹0"
-              value={amount > 0 ? formatInr(amount) : ''}
+              value={amount > 0 ? formatInr(amount, { decimals: 0 }) : ''}
               onChange={(e) => change(parseAmount(e.target.value))}
               helperText={helper}
               helperIcon={false}
@@ -30458,8 +30787,8 @@ export function AddMoneyScreen({ id, initial, breakdown = false, mismatch = fals
               tabIndex={backdrop ? -1 : undefined}
             />
             {!sheetBackdrop && amount > 0 && (
-              <button type="button" className={styles.conversion} onClick={() => setShowBreakdown(true)} aria-label={`About ${lands}: see charges breakdown`}>
-                ≈ {lands}
+              <button type="button" className={styles.conversion} onClick={() => setShowBreakdown(true)} aria-label={`About ${usd(lands)}: see charges breakdown`}>
+                ≈ <Usd value={lands} layout="inline" />
                 <Icon icon={infoIcon} size={16} />
               </button>
             )}
@@ -30467,14 +30796,14 @@ export function AddMoneyScreen({ id, initial, breakdown = false, mismatch = fals
           <div className={styles.chips}>
             {/* FLAG: quick-add chips are L3 Tab (appearance="pill", action) used as buttons — no L3 chip for this. */}
             {DEPOSIT_QUICK_ADD_INR.map((add) => (
-              <Tab key={add} action appearance="pill" emphasis="tertiary" className={styles.chip} onClick={() => change(amount + add)} aria-label={`Add ${formatInr(add)}`}>
-                {`+${formatInr(add)}`}
+              <Tab key={add} action appearance="pill" emphasis="tertiary" className={styles.chip} onClick={() => change(amount + add)} aria-label={`Add ${formatInr(add, { decimals: 0 })}`}>
+                {`+${formatInr(add, { decimals: 0 })}`}
               </Tab>
             ))}
           </div>
         </div>
       </div>
-      <ChargesBreakdownSheet open={showBreakdown} onClose={() => setShowBreakdown(false)} amount={amount} charges={charges} />
+      <ChargesBreakdownSheet open={showBreakdown} onClose={() => setShowBreakdown(false)} amount={amount} rate={rate} charges={charges} />
     </Phone>
   )
 }
@@ -30508,14 +30837,14 @@ import { Button } from '@l3/components/Button'
 import { ButtonGroup } from '@l3/components/ButtonGroup'
 import { KeyValueList, KeyValueRow } from '@l3/components/KeyValueList'
 import { useSheetLayer } from '../../components/Phone'
-import { INR_PER_USD, PARTNER_FEE_USD, depositBreakdown } from './amounts'
+import { Usd, formatInr } from '../../../../shared/money'
+import { PARTNER_FEE_USD, depositBreakdown } from './amounts'
 import { TwoLineLabel } from './components/TwoLineLabel'
-import { formatInr, formatUsd } from './format'
 import styles from './Money.module.css'
 
-export function ChargesBreakdownSheet({ open, onClose, amount, charges }: { open: boolean; onClose: () => void; amount: number; charges: string }) {
+export function ChargesBreakdownSheet({ open, onClose, amount, rate, charges }: { open: boolean; onClose: () => void; amount: number; rate: number; charges: number }) {
   const layer = useSheetLayer()
-  const b = depositBreakdown(amount)
+  const b = depositBreakdown(amount, rate)
   return (
     <BottomSheet
       open={open}
@@ -30523,19 +30852,19 @@ export function ChargesBreakdownSheet({ open, onClose, amount, charges }: { open
       container={layer}
       aria-labelledby="charges-title"
       utility={<div className={styles.gesture} aria-hidden="true"><span /></div>}
-      header={<BottomSheetHeader heading="Charges breakdown" headingId="charges-title" description={`At ₹${INR_PER_USD.toFixed(2)}/$ (indicative) · ${charges} total charges`} />}
+      header={<BottomSheetHeader heading="Charges breakdown" headingId="charges-title" description={`At ${formatInr(rate)}/$ (indicative) · ${formatInr(charges, { decimals: 0 })} total charges`} />}
       footer={
         <ButtonGroup aria-label="Charges breakdown">
           <Button variant="primary" size="lg" fullWidth onClick={onClose}>Got it</Button>
         </ButtonGroup>
       }
     >
-      <KeyValueList aria-label="Charges breakdown" total={{ label: 'Lands in your US wallet', value: `≈ ${formatUsd(b.lands)}` }}>
-        <KeyValueRow label="You pay" value={formatInr(amount)} />
-        <KeyValueRow label={<TwoLineLabel top="GST" sub="(on currency conversion)" />} value={`-${formatInr(b.gst)}`} />
-        <KeyValueRow label={<TwoLineLabel top="Indicative rate" sub="(final rate is set by your bank)" />} value={`₹${INR_PER_USD.toFixed(2)} / $`} />
-        <KeyValueRow label="Converted to $" value={`≈ ${formatUsd(b.converted)}`} />
-        <KeyValueRow label={<TwoLineLabel top="Payment partner fee" sub="(incl. GST)" />} value={`-${formatUsd(PARTNER_FEE_USD)}`} />
+      <KeyValueList aria-label="Charges breakdown" total={{ label: 'Lands in your US wallet', value: <>≈ <Usd value={b.lands} layout="inline" /></> }}>
+        <KeyValueRow label="You pay" value={formatInr(amount, { decimals: 0 })} />
+        <KeyValueRow label={<TwoLineLabel top="GST" sub="(on currency conversion)" />} value={`-${formatInr(b.gst, { decimals: 0 })}`} />
+        <KeyValueRow label={<TwoLineLabel top="Indicative rate" sub="(final rate is set by your bank)" />} value={`${formatInr(rate)} / $`} />
+        <KeyValueRow label="Converted to $" value={<>≈ <Usd value={b.converted} layout="inline" /></>} />
+        <KeyValueRow label={<TwoLineLabel top="Payment partner fee" sub="(incl. GST)" />} value={<Usd value={-PARTNER_FEE_USD} layout="inline" />} />
       </KeyValueList>
     </BottomSheet>
   )
@@ -30922,7 +31251,7 @@ import { Avatar } from '@l3/components/Avatar'
 import { Button } from '@l3/components/Button'
 import { Icon } from '@l3/components/Icon'
 import { asset } from '../../asset'
-import { formatInr } from './format'
+import { formatInr } from '../../../../shared/money'
 import { clockIcon } from './icons'
 import styles from './MoneyDock.module.css'
 
@@ -30956,7 +31285,7 @@ export function MoneyDock({
       </button>
       <div className={styles.main}>
         <Button variant="primary" size="lg" fullWidth disabled={blocked} onClick={onAdd}>
-          {cta ?? (amount > 0 ? `Add ${formatInr(amount)} to US wallet` : 'Add to US wallet')}
+          {cta ?? (amount > 0 ? `Add ${formatInr(amount, { decimals: 0 })} to US wallet` : 'Add to US wallet')}
         </Button>
       </div>
     </div>
@@ -31040,11 +31369,10 @@ import { Button } from '@l3/components/Button'
 import { ButtonGroup } from '@l3/components/ButtonGroup'
 import { KeyValueList, KeyValueRow } from '@l3/components/KeyValueList'
 import { useSheetLayer } from '../../components/Phone'
-import { WITHDRAW_INR_PER_USD } from './amounts'
-import { formatInr, formatUsd } from './format'
+import { Usd, formatInr } from '../../../../shared/money'
 import styles from './Money.module.css'
 
-export function WithdrawBreakdownSheet({ open, onClose, amount }: { open: boolean; onClose: () => void; amount: number }) {
+export function WithdrawBreakdownSheet({ open, onClose, amount, rate }: { open: boolean; onClose: () => void; amount: number; rate: number }) {
   const layer = useSheetLayer()
   return (
     <BottomSheet
@@ -31057,7 +31385,7 @@ export function WithdrawBreakdownSheet({ open, onClose, amount }: { open: boolea
         <BottomSheetHeader
           heading="Withdrawal breakdown"
           headingId="withdraw-breakdown-title"
-          description={`At ₹${WITHDRAW_INR_PER_USD.toFixed(2)}/$ (indicative) · your bank sets the final rate`}
+          description={`At ${formatInr(rate)}/$ (indicative) · your bank sets the final rate`}
         />
       }
       footer={
@@ -31066,9 +31394,9 @@ export function WithdrawBreakdownSheet({ open, onClose, amount }: { open: boolea
         </ButtonGroup>
       }
     >
-      <KeyValueList aria-label="Withdrawal breakdown" total={{ label: 'Lands in your bank', value: `≈ ${formatInr(amount * WITHDRAW_INR_PER_USD)}` }}>
-        <KeyValueRow label="You withdraw" value={formatUsd(amount)} />
-        <KeyValueRow label="Indicative rate" value={`₹${WITHDRAW_INR_PER_USD.toFixed(2)} / $`} />
+      <KeyValueList aria-label="Withdrawal breakdown" total={{ label: 'Lands in your bank', value: `≈ ${formatInr(amount * rate, { decimals: 0 })}` }}>
+        <KeyValueRow label="You withdraw" value={<Usd value={amount} layout="inline" />} />
+        <KeyValueRow label="Indicative rate" value={`${formatInr(rate)} / $`} />
         <KeyValueRow label="To" value="HDFC Bank XX4321" />
       </KeyValueList>
     </BottomSheet>
@@ -31088,9 +31416,9 @@ import { ButtonGroup } from '@l3/components/ButtonGroup'
 import { KeyValueList, KeyValueRow } from '@l3/components/KeyValueList'
 import { Phone } from '../../components/Phone'
 import { useUsNav } from '../../nav'
-import { WITHDRAW_INR_PER_USD } from './amounts'
+import { Usd, formatInr, useUsd, useUsdInrRate } from '../../../../shared/money'
+import { withdrawRate } from './amounts'
 import { MaskImage } from './components/MaskImage'
-import { formatInr, formatUsd } from './format'
 import { takeHandoff } from './handoff'
 import { moneyIds } from './ids'
 import styles from './Money.module.css'
@@ -31098,6 +31426,8 @@ import styles from './Money.module.css'
 export function WithdrawPlacedScreen({ initial }: { initial: number }) {
   const { go } = useUsNav()
   const [amount] = useState(() => takeHandoff(moneyIds.h10, initial))
+  const usd = useUsd()
+  const rate = withdrawRate(useUsdInrRate())
   return (
     <Phone
       label="Withdraw request placed"
@@ -31114,11 +31444,11 @@ export function WithdrawPlacedScreen({ initial }: { initial: number }) {
         </span>
         <div className={styles.resultTitle}>
           <h1 className={styles.resultHeading}>Withdraw Request Placed</h1>
-          <p className={styles.resultSub}>{formatUsd(amount)} is on its way to HDFC Bank XXXX4321</p>
+          <p className={styles.resultSub}>{usd(amount)} is on its way to HDFC Bank XXXX4321</p>
         </div>
         <KeyValueList variant="card" className={styles.balanceCard} aria-label="Withdraw details">
-          <KeyValueRow label="Amount" value={formatUsd(amount)} />
-          <KeyValueRow label="You'll get (approx.)" value={`≈ ${formatInr(amount * WITHDRAW_INR_PER_USD)}`} />
+          <KeyValueRow label="Amount" value={<Usd value={amount} align="end" />} />
+          <KeyValueRow label="You'll get (approx.)" value={`≈ ${formatInr(amount * rate, { decimals: 0 })}`} />
           <KeyValueRow label="To" value="HDFC Bank XX4321" />
           <KeyValueRow label="Credited" value="Usually 1–2 working days" />
         </KeyValueList>
@@ -31143,10 +31473,11 @@ import { Tab } from '@l3/components/Tabs'
 import { TextField } from '@l3/components/TextField'
 import { Phone } from '../../components/Phone'
 import { useUsNav } from '../../nav'
-import { MIN_WITHDRAW_USD, WITHDRAWABLE_USD, WITHDRAW_INR_PER_USD, WITHDRAW_QUICK_PERCENT, cleanUsdText } from './amounts'
-import { formatInr, formatUsd } from './format'
+import { Usd, formatInr, useUsd, useUsdInrRate } from '../../../../shared/money'
+import { MIN_WITHDRAW_USD, WITHDRAWABLE_USD, WITHDRAW_QUICK_PERCENT, cleanUsdText, withdrawRate } from './amounts'
 import { setHandoff, takeHandoff } from './handoff'
 import { infoIcon } from './icons'
+import { FIGMA } from '../wallet/data'
 import { moneyIds } from './ids'
 import { MoneyDock } from './MoneyDock'
 import { WithdrawBreakdownSheet } from './WithdrawBreakdownSheet'
@@ -31160,12 +31491,15 @@ export function WithdrawScreen({ id, initial, backdrop }: { id: string; initial:
   const amount = Number(text || 0)
   const tooMuch = amount > WITHDRAWABLE_USD
   const blocked = amount <= 0 || tooMuch
-  const lands = formatInr(amount * WITHDRAW_INR_PER_USD)
+  const usd = useUsd()
+  // What lands in the bank is genuinely ₹; the rate follows the live rate, plus the bank's spread.
+  const rate = withdrawRate(useUsdInrRate())
+  const lands = formatInr(amount * rate, { decimals: 0 })
 
   return (
     <Phone
       label="Withdraw USD"
-      header={<Actionbar title="Withdraw USD" onBack={() => back(moneyIds.withdrawEntry)} />}
+      header={<Actionbar title="Withdraw USD" onBack={() => back(FIGMA.walletUsActivate)} />}
       footer={
         <MoneyDock
           amount={amount}
@@ -31176,7 +31510,7 @@ export function WithdrawScreen({ id, initial, backdrop }: { id: string; initial:
           }}
           note="Requests before 1 PM IST are reviewed the same day"
           bankLead="To"
-          cta={amount > 0 ? `Withdraw ${formatUsd(amount)}` : 'Withdraw'}
+          cta={amount > 0 ? `Withdraw ${usd(amount)}` : 'Withdraw'}
         />
       }
     >
@@ -31184,7 +31518,7 @@ export function WithdrawScreen({ id, initial, backdrop }: { id: string; initial:
         <KeyValueList variant="card" className={styles.balanceCard} aria-label="US wallet">
           <KeyValueRow
             label="Withdrawable Balance"
-            value={formatUsd(WITHDRAWABLE_USD)}
+            value={<Usd value={WITHDRAWABLE_USD} align="end" />}
             valueEnd={<span className={styles.valueIcon} aria-hidden="true"><Icon icon={infoIcon} size={16} /></span>}
           />
         </KeyValueList>
@@ -31202,9 +31536,9 @@ export function WithdrawScreen({ id, initial, backdrop }: { id: string; initial:
                   <span className={styles.error}>Amt. should be less than withdrawable balance</span>
                 ) : (
                   <>
-                    Min: {formatUsd(MIN_WITHDRAW_USD)}
+                    Min: <Usd value={MIN_WITHDRAW_USD} layout="inline" />
                     <span className={styles.sep}>|</span>
-                    Max: {formatUsd(WITHDRAWABLE_USD)}
+                    Max: <Usd value={WITHDRAWABLE_USD} layout="inline" />
                   </>
                 )
               }
@@ -31237,7 +31571,7 @@ export function WithdrawScreen({ id, initial, backdrop }: { id: string; initial:
           </div>
         </div>
       </div>
-      <WithdrawBreakdownSheet open={showBreakdown} onClose={() => setShowBreakdown(false)} amount={amount} />
+      <WithdrawBreakdownSheet open={showBreakdown} onClose={() => setShowBreakdown(false)} amount={amount} rate={rate} />
     </Phone>
   )
 }
@@ -31248,12 +31582,16 @@ export function WithdrawScreen({ id, initial, backdrop }: { id: string; initial:
 ```ts
 // Rates, limits and the charges maths of add money / withdraw. All indicative sample numbers.
 
-/** ₹ per $ (indicative). */
-export const INR_PER_USD = 96.3
+/** What the add-money rate adds to the live ₹ per $ rate (the partner's markup): 94.87 live → ₹96.30 (indicative). */
+export const DEPOSIT_RATE_MARKUP = 1.43
+/** Add-money rate, ₹ per $: the live rate + the partner's markup. */
+export const depositRate = (liveRate: number) => Math.round((liveRate + DEPOSIT_RATE_MARKUP) * 100) / 100
 /** Payment partner fee, $ (incl. GST). */
 export const PARTNER_FEE_USD = 1.18
-/** First-deposit minimum, ₹ (= $50). */
-export const MIN_DEPOSIT_INR = 4815
+/** First-deposit minimum, $. */
+export const MIN_DEPOSIT_USD = 50
+/** First-deposit minimum, ₹ (= $50 at the add-money rate). */
+export const minDepositInr = (rate: number) => Math.ceil(MIN_DEPOSIT_USD * rate)
 /** LRS limit per financial year, $. */
 export const LRS_LIMIT_USD = 250000
 /** The "+₹…" quick-add chips. */
@@ -31268,20 +31606,22 @@ function conversionGst(inr: number): number {
   return Math.round(charge * 0.18 * 100) / 100
 }
 
-/** What an ₹ amount turns into: GST, $ after conversion, $ that lands in the wallet, total charges (₹). */
-export function depositBreakdown(inr: number) {
+/** What an ₹ amount turns into at `rate` (₹ per $, from depositRate): GST, $ after conversion, $ that lands in the wallet, total charges (₹). */
+export function depositBreakdown(inr: number, rate: number) {
   const gst = inr > 0 ? conversionGst(inr) : 0
-  const converted = inr > 0 ? (inr - gst) / INR_PER_USD : 0
+  const converted = inr > 0 ? (inr - gst) / rate : 0
   return {
     gst,
     converted,
     lands: Math.max(converted - (inr > 0 ? PARTNER_FEE_USD : 0), 0),
-    charges: inr > 0 ? gst + PARTNER_FEE_USD * INR_PER_USD : 0,
+    charges: inr > 0 ? gst + PARTNER_FEE_USD * rate : 0,
   }
 }
 
-/** ₹ per $ when withdrawing (indicative). */
-export const WITHDRAW_INR_PER_USD = 95.8
+/** What the withdraw rate adds to the live ₹ per $ rate (the bank's spread): 94.87 live → ₹95.80 (indicative). */
+export const WITHDRAW_RATE_SPREAD = 0.93
+/** Withdraw rate, ₹ per $: the live rate + the bank's spread. */
+export const withdrawRate = (liveRate: number) => Math.round((liveRate + WITHDRAW_RATE_SPREAD) * 100) / 100
 /** Withdrawable US wallet balance, $. */
 export const WITHDRAWABLE_USD = 417.03
 /** Smallest withdrawal, $. */
@@ -31332,14 +31672,6 @@ export function TwoLineLabel({ top, sub }: { top: string; sub: string }) {
 ### `src/flows/us-stocks/screens/money/format.ts`
 
 ```ts
-const inr = new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 })
-const usd = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-
-/** ₹1,00,000 */
-export const formatInr = (n: number) => `₹${inr.format(Math.round(n))}`
-/** $1,234.50 */
-export const formatUsd = (n: number) => `$${usd.format(n)}`
-
 /** Digits typed into the amount field → a number (whole rupees by default; `decimal` keeps up to 2 decimals). */
 export function parseAmount(text: string, decimal = false): number {
   const cleaned = text.replace(decimal ? /[^0-9.]/g : /[^0-9]/g, '')
@@ -31462,7 +31794,7 @@ const AddMoneyCharges = ({ backdrop }: { backdrop?: boolean }) => <AddMoneyScree
 const AddMoneyBelowMinimum = ({ backdrop }: { backdrop?: boolean }) => <AddMoneyScreen id={moneyIds.m03} initial={2000} backdrop={backdrop} />
 // M07 · above the LRS limit (₹2,50,00,000), with the frame's own ≈ $ and charges text
 const AddMoneyAboveLrs = ({ backdrop }: { backdrop?: boolean }) => (
-  <AddMoneyScreen id={moneyIds.m07} initial={25000000} frameText={{ lands: '$2,59,600', charges: '₹294' }} backdrop={backdrop} />
+  <AddMoneyScreen id={moneyIds.m07} initial={25000000} frameText={{ lands: 259600, charges: 294 }} backdrop={backdrop} />
 )
 // M05 · bank name does not match PAN
 const AddMoneyBankMismatch = ({ backdrop }: { backdrop?: boolean }) => <AddMoneyScreen id={moneyIds.m05} initial={100000} mismatch backdrop={backdrop} />
@@ -31591,6 +31923,7 @@ import { Icon } from '@l3/components/Icon'
 import { KeyValueList, KeyValueRow } from '@l3/components/KeyValueList'
 import { useSheetLayer } from '../../components/Phone'
 import { useUsNav } from '../../nav'
+import { Usd } from '../../../../shared/money'
 import { closeIcon } from '../money/icons'
 import { useSheetClose } from '../money/useSheetClose'
 import { OrderPad } from './OrderPad'
@@ -31598,7 +31931,7 @@ import { tradeIds } from './ids'
 import { orderPads } from './orderPads'
 import styles from './FeeBreakdown.module.css'
 
-const FEES = { total: '$1.13', brokerage: '$0.94', charges: '$0.02', taxes: '$0.17' }
+const FEES = { total: 1.13, brokerage: 0.94, charges: 0.02, taxes: 0.17 }
 
 /** The order pad (Shares state) drawn behind, with the fee sheet on top. */
 export function FeeBreakdownScreen({ backdrop }: { backdrop?: boolean }) {
@@ -31631,24 +31964,24 @@ function FeeBreakdownSheet({ onClose }: { onClose: () => void }) {
     >
       <div className={styles.body}>
         <KeyValueList aria-label="Estimated fee">
-          <KeyValueRow total label="Estimated Fee" value={FEES.total} />
+          <KeyValueRow total label="Estimated Fee" value={<Usd value={FEES.total} align="end" />} />
         </KeyValueList>
         <hr className={styles.divider} />
         <div className={styles.group} data-gap="4">
           <KeyValueList aria-label="Brokerage">
-            <KeyValueRow label="Brokerage" value={FEES.brokerage} />
+            <KeyValueRow label="Brokerage" value={<Usd value={FEES.brokerage} align="end" />} />
           </KeyValueList>
           <p className={styles.small} data-narrow>Note: Brokerage is 0.25% of the order value. GST at 18% is charged on it.</p>
         </div>
         <hr className={styles.divider} />
         <KeyValueList size="sm" aria-label="Charges">
-          <KeyValueRow size="md" label="Charges" value={FEES.charges} />
-          <KeyValueRow label="• IFSCA turnover fee" value={FEES.charges} />
+          <KeyValueRow size="md" label="Charges" value={<Usd value={FEES.charges} align="end" />} />
+          <KeyValueRow label="• IFSCA turnover fee" value={<Usd value={FEES.charges} align="end" />} />
         </KeyValueList>
         <hr className={styles.divider} />
         <KeyValueList size="sm" aria-label="Taxes">
-          <KeyValueRow size="md" label="Taxes" value={FEES.taxes} />
-          <KeyValueRow label="• GST on brokerage" value={FEES.taxes} />
+          <KeyValueRow size="md" label="Taxes" value={<Usd value={FEES.taxes} align="end" />} />
+          <KeyValueRow label="• GST on brokerage" value={<Usd value={FEES.taxes} align="end" />} />
         </KeyValueList>
         <hr className={styles.divider} />
         <p className={styles.small} data-center>Note: The amounts mentioned above are approximate values and may vary slightly at the time of execution.</p>
@@ -31876,9 +32209,10 @@ import { Stepper } from '@l3/components/Stepper'
 import { Tabs } from '@l3/components/Tabs'
 import { Phone } from '../../components/Phone'
 import { useUsNav } from '../../nav'
+import { Usd, useInrEquivalent, useUsd } from '../../../../shared/money'
 import { arrowDropDownIcon, arrowDropUpIcon } from '../money/icons'
 import { MaskImage } from '../money/components/MaskImage'
-import { al, forCurrentStock, il, nl } from './format'
+import { al, forCurrentStock, il } from './format'
 import type { Derived, OrderPadConfig, OrderType, PadMode } from './types'
 import styles from './OrderPad.module.css'
 
@@ -31890,6 +32224,8 @@ const ORDER_TYPES: { value: OrderType; label: string }[] = [
 
 export function OrderPad({ config, backdrop, sheet }: { config: OrderPadConfig; backdrop?: boolean; sheet?: ReactNode }) {
   const { go, back } = useUsNav()
+  const usd = useUsd()
+  const inr = useInrEquivalent()
   // The unit the field is showing; `value` is always kept in the config's own unit (config.mode).
   const [mode, setMode] = useState<PadMode>(config.mode)
   const [value, setValue] = useState(config.value)
@@ -31903,7 +32239,7 @@ export function OrderPad({ config, backdrop, sheet }: { config: OrderPadConfig; 
   const current = shown(mode)
   const setShown = (next: number) => setValue(mode === config.mode ? next : config.mode === 'amount' ? next * unitPrice : next / unitPrice)
 
-  const derived: Derived = config.derive(value, prices, mode)
+  const derived: Derived = config.derive(value, prices, mode, { usd, inr: (n) => inr(n) })
   const ctaDisabled = typeof config.cta.disabled === 'function' ? config.cta.disabled(derived) : config.cta.disabled
   const goTo = (key: keyof NonNullable<OrderPadConfig['to']>) => (config.to?.[key] ? () => go(config.to![key]!) : undefined)
   const onReq = goTo('req')
@@ -31944,7 +32280,7 @@ export function OrderPad({ config, backdrop, sheet }: { config: OrderPadConfig; 
       title={config.stock.symbol}
       description={
         <span className={styles.quote}>
-          <span className={styles.price}>{nl(config.stock.price)}</span>
+          <span className={styles.price}><Usd value={config.stock.price} layout="inline" /></span>
           <span className={styles.change} data-down={down || undefined}>
             <Icon icon={down ? arrowDropDownIcon : arrowDropUpIcon} size={16} className={styles.arrow} />
             {Math.abs(config.stock.change).toFixed(2)}%
@@ -31964,7 +32300,7 @@ export function OrderPad({ config, backdrop, sheet }: { config: OrderPadConfig; 
         <div className={styles.info}>
           <span className={styles.infoItem}>
             <span className={styles.muted}>{config.availLabel}</span>
-            <strong className={styles.strong}>{config.avail}</strong>
+            <strong className={styles.strong}><Usd text={config.avail} layout="inline" /></strong>
           </span>
           {onReq ? (
             <button type="button" className={styles.infoItem} onClick={onReq}>
@@ -32031,7 +32367,7 @@ export function OrderPad({ config, backdrop, sheet }: { config: OrderPadConfig; 
           {(config.prices ?? []).map((price, i) => (
             <div className={styles.field} key={price.label}>
               {fieldLabel(price.label)}
-              <span className={styles.fieldPrice}>{nl(prices[i])}</span>
+              <span className={styles.fieldPrice}><Usd value={prices[i]} layout="inline" /></span>
               <Stepper
                 className={styles.blueStepper}
                 label={`${price.label} % from last price`}
@@ -32056,10 +32392,10 @@ export function OrderPad({ config, backdrop, sheet }: { config: OrderPadConfig; 
               appearance="pill"
               behavior="filter"
               aria-label={mode === 'amount' ? 'Add amount' : 'Shares to sell'}
-              items={config.chips.map((chip) => ({ value: chip.label, label: chip.label }))}
+              items={config.chips.map((chip, i) => ({ value: String(i), label: typeof chip.label === 'function' ? chip.label(usd) : chip.label }))}
               value=""
               onChange={(label) => {
-                const chip = config.chips?.find((c) => c.label === label)
+                const chip = config.chips?.[Number(label)]
                 if (chip) applyChip(chip.apply)
               }}
             />
@@ -32165,6 +32501,7 @@ import { KeyValueList, KeyValueRow } from '@l3/components/KeyValueList'
 import { Phone } from '../../components/Phone'
 import { InlineSvg } from '../../components/InlineSvg'
 import { useUsNav } from '../../nav'
+import { Usd } from '../../../../shared/money'
 import { MaskImage } from '../money/components/MaskImage'
 import { forCurrentStock } from './format'
 import type { OrderResultConfig } from './types'
@@ -32211,7 +32548,7 @@ export function OrderResult({ config }: { config: OrderResultConfig }) {
         </div>
         <KeyValueList variant="card" size="md" aria-label="Order details">
           {config.rows.map(([label, value]) => (
-            <KeyValueRow key={label} label={label} value={value} />
+            <KeyValueRow key={label} label={label} value={<Usd text={value} align="end" />} />
           ))}
         </KeyValueList>
         {config.note && <p className={styles.note}>{forCurrentStock(config.note)}</p>}
@@ -32225,12 +32562,7 @@ export function OrderResult({ config }: { config: OrderResultConfig }) {
 
 ```ts
 import { currentStock } from '../../data'
-import { formatInr, formatUsd } from '../money/format'
 
-/** $1,234.50 — same as the money part's formatter. */
-export const nl = formatUsd
-/** ₹1,235 — same as the money part's formatter. */
-export const rl = formatInr
 /** A share count without float noise: 0.5307, 2.5. */
 export const il = (n: number) => String(Number(n.toFixed(4)))
 /** A price moved by a percentage from the last price. */
@@ -32248,6 +32580,8 @@ export const forCurrentStock = (text: string) => {
 ```ts
 /** Figma node ids of the trade screens (Buy T01–T15, Sell H03–H11), plus the stock pages they go back to. */
 export const tradeIds = {
+  /** Stock page that follows the User status (us-stocks-13) — where the pads and results go back to */
+  stockStatus: '5826:93627',
   /** Stock page, no holding (screen of another part) */
   stockNoHold: '5826:94125',
   /** Stock page, holding (screen of another part) */
@@ -32344,13 +32678,11 @@ export const screens: UsScreenMap = {
 ```tsx
 // The order pad's states — Buy (T01–T10) and Sell (H03–H05, H11) — as data: what the pad shows, what the helper line
 // says, and where the buttons go. OrderPad.tsx renders one of these.
-// NOTE: the numbers are sample values and not consistent with each other: the pad converts at ₹88.20/$, add money
-// at ₹96.30/$ and withdraw at ₹95.80/$.
 import { currentStock } from '../../data'
 import feeStyles from './FeeBreakdown.module.css'
 import { tradeIds as ids } from './ids'
-import { il, nl, rl } from './format'
-import type { Derived, OrderPadConfig, PadChip, PadMode, PadStock } from './types'
+import { il } from './format'
+import type { Derived, OrderPadConfig, PadChip, PadMode, PadMoney, PadStock } from './types'
 
 /** The stock being traded: the one tapped last (read live, so the pad follows the stock page). */
 const liveStock: PadStock = {
@@ -32362,8 +32694,6 @@ const liveStock: PadStock = {
 /** A stock that only trades in whole shares. */
 const brkB: PadStock = { symbol: 'BRK.B', price: 498.3, change: 0.42, exchange: 'NYSE' }
 
-/** ₹ per $ shown on the pad. */
-const PAD_INR_PER_USD = 88.2
 /** Order value → amount charged (0.3% on top). */
 const CHARGE_FACTOR = 1.003
 /** Shares held in the Sell screens. */
@@ -32375,20 +32705,20 @@ const LIVE_NOTE = 'US market is live till 2:30 AM IST'
 export const SELL_NOTE = '👉 Note : Sale money can be withdrawn after 1 working day'
 
 /** "+$10" chip: adds to the current value. */
-const addChip = (usd: number): PadChip => ({ label: `+$${usd}`, apply: (value) => value + usd })
+const addChip = (usd: number): PadChip => ({ label: (fmt) => `+${fmt(usd, { decimals: 0 })}`, apply: (value) => value + usd })
 /** "Max" chip: sets the field to a fixed value. */
-const setChip = (label: string, value: number): PadChip => ({ label, apply: () => value })
+const setChip = (label: PadChip['label'], value: number): PadChip => ({ label, apply: () => value })
 /** "25%" chip: a share of the shares held. */
 const heldChip = (label: string, share: number): PadChip => ({ label, apply: () => HELD_SHARES * share })
 
 /** The helper line + "Req." for a market buy. */
-const marketBuy = () => (value: number, _prices: number[] = [], mode: PadMode = 'amount'): Derived => ({
-  left: mode === 'shares' ? `≈ ${nl(value)}` : `≈ ${(value / liveStock.price).toFixed(4)} shares`,
-  right: `≈ ${rl(value * PAD_INR_PER_USD)}`,
-  req: nl(value * CHARGE_FACTOR),
+const marketBuy = () => (value: number, _prices: number[], mode: PadMode, { usd, inr }: PadMoney): Derived => ({
+  left: mode === 'shares' ? `≈ ${usd(value)}` : `≈ ${(value / liveStock.price).toFixed(4)} shares`,
+  right: inr(value),
+  req: usd(value * CHARGE_FACTOR),
 })
 /** Adds a note under the helper line. */
-const withNote = (derive: OrderPadConfig['derive'], note: string): OrderPadConfig['derive'] => (value, prices, mode) => ({ ...derive(value, prices, mode), note })
+const withNote = (derive: OrderPadConfig['derive'], note: string): OrderPadConfig['derive'] => (value, prices, mode, money) => ({ ...derive(value, prices, mode, money), note })
 
 const heldHint = (value: number, mode: PadMode) => (mode === 'amount' ? `≈ ${il(value)} of your ${il(HELD_SHARES)} shares` : `You hold ${il(HELD_SHARES)} shares`)
 const sellLimitError = (value: number) => (value > HELD_SHARES ? `You can sell up to ${il(HELD_SHARES)} shares` : undefined)
@@ -32400,7 +32730,7 @@ const buy = (config: Partial<OrderPadConfig> & Pick<OrderPadConfig, 'label' | 't
   avail: '$520.40',
   reqLabel: 'Req.',
   cta: { label: 'Buy' },
-  back: ids.stockNoHold,
+  back: ids.stockStatus,
   ...config,
 })
 
@@ -32413,7 +32743,7 @@ const sell = (config: Partial<OrderPadConfig> & Pick<OrderPadConfig, 'label' | '
   availLabel: 'Avail. Qty',
   reqLabel: 'View Charges',
   cta: { label: 'Sell', disabled: (derived) => !!derived.error },
-  back: ids.stockHold,
+  back: ids.stockStatus,
   ...config,
 })
 
@@ -32437,10 +32767,10 @@ export const orderPads: Record<string, OrderPadConfig> = {
     mode: 'shares',
     toggle: true,
     value: SHARES_FOR_100,
-    derive: (value, _prices, mode) => ({
-      left: mode === 'amount' ? `≈ ${il(value)} shares` : `≈ ${nl((value / SHARES_FOR_100) * 100)}`,
-      right: `≈ ${rl(value * liveStock.price * PAD_INR_PER_USD)}`,
-      req: nl((value / SHARES_FOR_100) * 100 * CHARGE_FACTOR),
+    derive: (value, _prices, mode, { usd, inr }) => ({
+      left: mode === 'amount' ? `≈ ${il(value)} shares` : `≈ ${usd((value / SHARES_FOR_100) * 100)}`,
+      right: inr(value * liveStock.price),
+      req: usd((value / SHARES_FOR_100) * 100 * CHARGE_FACTOR),
       note: LIVE_NOTE,
     }),
     to: { limit: ids.T07, sl: ids.T08, cta: ids.T12 },
@@ -32455,7 +32785,7 @@ export const orderPads: Record<string, OrderPadConfig> = {
     cta: { label: 'Add Money' },
     to: { cta: '5776:84630' },
     chips: [addChip(10), addChip(50), addChip(100)],
-    derive: (value, prices, mode) => ({ ...marketBuy()(value, prices, mode), error: 'Your US wallet is empty. Orders start at $1.', note: LIVE_NOTE }),
+    derive: (value, prices, mode, money) => ({ ...marketBuy()(value, prices, mode, money), error: 'Your US wallet is empty. Orders start at $1.', note: LIVE_NOTE }),
   }),
   [ids.T04]: buy({
     label: 'Buy NVDA · Short of money',
@@ -32466,12 +32796,13 @@ export const orderPads: Record<string, OrderPadConfig> = {
     avail: '$42.38',
     cta: { label: 'Add Money' },
     to: { cta: '5776:84630' },
-    chips: [addChip(10), addChip(50), addChip(100), setChip('Max $42.25', 42.25)],
-    derive: (value, prices, mode) => {
+    chips: [addChip(10), addChip(50), addChip(100), setChip((usd) => `Max ${usd(42.25)}`, 42.25)],
+    derive: (value, prices, mode, money) => {
+      const { usd } = money
       const short = value * CHARGE_FACTOR - 42.38
       return short > 0
-        ? { req: nl(value * CHARGE_FACTOR), error: `Available Amount is short by ${nl(short)}`, note: LIVE_NOTE }
-        : { ...marketBuy()(value, prices, mode), note: LIVE_NOTE }
+        ? { req: usd(value * CHARGE_FACTOR), error: `Available Amount is short by ${usd(short)}`, note: LIVE_NOTE }
+        : { ...marketBuy()(value, prices, mode, money), note: LIVE_NOTE }
     },
   }),
   [ids.T09]: buy({
@@ -32503,10 +32834,10 @@ export const orderPads: Record<string, OrderPadConfig> = {
     mode: 'shares',
     value: 1,
     min: 1,
-    derive: (value) => ({
+    derive: (value, _prices, _mode, { usd, inr }) => ({
       left: 'BRK.B trades in whole shares only',
-      right: `≈ ${rl(value * brkB.price * PAD_INR_PER_USD)}`,
-      req: nl(value * brkB.price * CHARGE_FACTOR),
+      right: inr(value * brkB.price),
+      req: usd(value * brkB.price * CHARGE_FACTOR),
       note: LIVE_NOTE,
     }),
     to: { limit: ids.T07, sl: ids.T08, cta: ids.T12 },
@@ -32518,11 +32849,11 @@ export const orderPads: Record<string, OrderPadConfig> = {
     toggle: true,
     value: 100,
     prices: [{ label: 'Limit', pct: -1 }],
-    derive: (value, [limit], mode) => ({
-      left: mode === 'shares' ? `≈ ${nl(value)} at your limit price` : `≈ ${(value / limit).toFixed(4)} shares at your limit price`,
-      right: `≈ ${rl(value * PAD_INR_PER_USD)}`,
-      req: nl(value * CHARGE_FACTOR),
-      note: `Buys only if NVDA trades at ${nl(limit)} or lower today`,
+    derive: (value, [limit], mode, { usd, inr }) => ({
+      left: mode === 'shares' ? `≈ ${usd(value)} at your limit price` : `≈ ${(value / limit).toFixed(4)} shares at your limit price`,
+      right: inr(value),
+      req: usd(value * CHARGE_FACTOR),
+      note: `Buys only if NVDA trades at ${usd(limit)} or lower today`,
     }),
     to: { sl: ids.T08, market: ids.T01, cta: ids.T12 },
   }),
@@ -32533,11 +32864,11 @@ export const orderPads: Record<string, OrderPadConfig> = {
     value: 2,
     min: 1,
     prices: [{ label: 'Trigger Price', pct: 3.5 }, { label: 'Limit', pct: 4 }],
-    derive: (value, [trigger, limit]) => ({
-      left: `≈ ${nl(value * limit)} at your limit price`,
-      right: `≈ ${rl(value * limit * PAD_INR_PER_USD)}`,
-      req: nl(value * limit * CHARGE_FACTOR),
-      note: `Buys at up to ${nl(limit)} once NVDA reaches ${nl(trigger)}`,
+    derive: (value, [trigger, limit], _mode, { usd, inr }) => ({
+      left: `≈ ${usd(value * limit)} at your limit price`,
+      right: inr(value * limit),
+      req: usd(value * limit * CHARGE_FACTOR),
+      note: `Buys at up to ${usd(limit)} once NVDA reaches ${usd(trigger)}`,
     }),
     to: { req: ids.T11, cta: ids.T12, market: ids.T01, limit: ids.T07 },
   }),
@@ -32547,7 +32878,7 @@ export const orderPads: Record<string, OrderPadConfig> = {
     avail: il(HELD_SHARES),
     reqLabel: 'Proceeds',
     chips: heldChips,
-    derive: (value, _prices, mode) => ({ left: heldHint(value, mode), right: '$476.84', req: nl(value * 187.865), error: sellLimitError(value), note: SELL_NOTE }),
+    derive: (value, _prices, mode, { usd }) => ({ left: heldHint(value, mode), right: usd(476.84), req: usd(value * 187.865), error: sellLimitError(value), note: SELL_NOTE }),
     to: { cta: ids.H06 },
   }),
   [ids.H04]: sell({
@@ -32564,7 +32895,7 @@ export const orderPads: Record<string, OrderPadConfig> = {
     avail: il(HELD_SHARES),
     fieldError: (derived) => !!derived.error,
     chips: heldChips,
-    derive: (value, _prices, mode) => ({ left: heldHint(value, mode), right: '$476.84', error: sellLimitError(value), note: SELL_NOTE }),
+    derive: (value, _prices, mode, { usd }) => ({ left: heldHint(value, mode), right: usd(476.84), error: sellLimitError(value), note: SELL_NOTE }),
   }),
   [ids.H11]: sell({
     label: 'Sell NVDA · Open buy order',
@@ -32615,7 +32946,7 @@ export const orderResults: Record<string, OrderResultConfig> = {
     rows: orderRows,
     note: 'The US market is closed. Your order will be sent when it opens at 8:00 PM IST.',
     actions: [brandAction('View Orders')],
-    back: ids.stockNoHold,
+    back: ids.stockStatus,
   },
   [ids.T14]: {
     label: 'Buy order executed',
@@ -32623,8 +32954,8 @@ export const orderResults: Record<string, OrderResultConfig> = {
     title: 'Yay! Buy Order Executed',
     description: 'Execution successful of an order to buy 2 qty of NVDA',
     rows: [['Order Value', '$376.84'], ['Number of Shares', '2'], ['Avg. Price', '$188.42'], ['Validity', 'Day']],
-    actions: detailsAndBrand('Holdings', ids.stockHold),
-    back: ids.stockNoHold,
+    actions: detailsAndBrand('Holdings', ids.stockStatus),
+    back: ids.stockStatus,
   },
   [ids.T15]: {
     label: 'Buy order rejected',
@@ -32633,7 +32964,7 @@ export const orderResults: Record<string, OrderResultConfig> = {
     description: 'We could not place your order to buy NVDA at the exchange: Trading in this stock is temporarily halted',
     rows: orderRows,
     actions: [brandAction('Okay')],
-    back: ids.stockNoHold,
+    back: ids.stockStatus,
   },
   [ids.H06]: {
     label: 'Sell order executed',
@@ -32642,8 +32973,8 @@ export const orderResults: Record<string, OrderResultConfig> = {
     description: 'Execution successful of an order to sell 2 qty of NVDA',
     rows: [['Order Value', '$385.20'], ['Number of Shares', '2'], ['Avg. Price', '$192.60'], ['Validity', 'Day']],
     note: SELL_NOTE,
-    actions: detailsAndBrand('Holdings', ids.stockHold),
-    back: ids.stockHold,
+    actions: detailsAndBrand('Holdings', ids.stockStatus),
+    back: ids.stockStatus,
   },
   [ids.H07]: {
     label: 'Sell order rejected',
@@ -32652,7 +32983,7 @@ export const orderResults: Record<string, OrderResultConfig> = {
     description: 'We could not place your order to sell NVDA at the exchange: Trading in this stock is temporarily halted',
     rows: orderRows,
     actions: [brandAction('Okay')],
-    back: ids.stockHold,
+    back: ids.stockStatus,
   },
 }
 ```
@@ -32661,6 +32992,7 @@ export const orderResults: Record<string, OrderResultConfig> = {
 
 ```ts
 import type { ReactNode } from 'react'
+import type { MoneyFormat } from '../../../../shared/money'
 
 /** The stock the order pad is for. */
 export type PadStock = { symbol: string; price: number; change: number; exchange: string }
@@ -32668,6 +33000,9 @@ export type PadStock = { symbol: string; price: number; change: number; exchange
 export type OrderType = 'market' | 'limit' | 'sl'
 /** What the main field counts: dollars or shares. */
 export type PadMode = 'amount' | 'shares'
+
+/** The money formatters a `derive` gets (hooks can't run in data): `usd` = a $ amount as text (₹ with the switch on ₹), `inr` = the "≈ ₹…" hint (nothing unless "₹ below"). */
+export type PadMoney = { usd: (n: number, format?: MoneyFormat) => string; inr: (n: number) => string | undefined }
 
 /** What the pad shows under the field, worked out from the entered value. */
 export type Derived = {
@@ -32680,7 +33015,7 @@ export type Derived = {
 }
 
 /** A quick-fill chip: sets the field to `apply(current value)`. */
-export type PadChip = { label: string; apply: (current: number) => number }
+export type PadChip = { label: string | ((usd: PadMoney['usd']) => string); apply: (current: number) => number }
 
 /** One order pad screen (Buy / Sell, per state). */
 export type OrderPadConfig = {
@@ -32705,7 +33040,7 @@ export type OrderPadConfig = {
   cta: { label: string; disabled?: boolean | ((derived: Derived) => boolean) }
   /** Screen the back arrow goes to. */
   back: string
-  derive: (value: number, prices: number[], mode: PadMode) => Derived
+  derive: (value: number, prices: number[], mode: PadMode, money: PadMoney) => Derived
   /** Red border on the field. */
   fieldError?: boolean | ((derived: Derived) => boolean)
   /** Where taps go: order type tabs (market / limit / sl), the "Req." link, the main button. */
@@ -33394,9 +33729,13 @@ export type BalanceCardProps = {
   extra?: ReactNode
   /** The withdrawable amount, shown as a ghost button under the balance (`dashed` look). */
   withdrawable?: string
+  /** Which wallet it is. Default: read from the amount's symbol — pass it when a USD balance is shown in ₹ (the $ / ₹ switch). */
+  currency?: 'INR' | 'USD'
+  /** A line under the amount (the "≈ ₹…" equivalent of a $ balance). */
+  below?: ReactNode
 }
 
-export function BalanceCard({ total, facts = [], onDetails, still, look = 'dashed', link, extra, withdrawable }: BalanceCardProps) {
+export function BalanceCard({ total, facts = [], onDetails, still, look = 'dashed', link, extra, withdrawable, currency: wallet, below }: BalanceCardProps) {
   const [flipFrom] = useState(() => {
     const from = still ? null : takeFlipFrom()
     return from && from !== total ? from : null
@@ -33410,7 +33749,7 @@ export function BalanceCard({ total, facts = [], onDetails, still, look = 'dashe
   const [prefix, figures] = splitCurrency(total)
   const compact = compactAmount(total)
   const rollFrom = flipFrom ? (compactAmount(flipFrom)?.figures ?? splitCurrency(flipFrom)[1]) : null
-  const currency = prefix.includes('₹') ? 'INR' : 'USD'
+  const currency = wallet ?? (prefix.includes('₹') ? 'INR' : 'USD')
   const centred = look === 'dashed' || look.startsWith('centred')
   const label = centred ? `${currency} balance` : `${currency} BALANCE`
 
@@ -33448,6 +33787,7 @@ export function BalanceCard({ total, facts = [], onDetails, still, look = 'dashe
           </span>
         )}
       </p>
+      {below && <p className={styles.exact}>{below}</p>}
       {compact && (
         <p className={styles.exact}>
           <Swap key={total} fresh={fresh}>
@@ -33598,6 +33938,7 @@ import { Icon } from '@l3/components/Icon'
 import { KeyValueList, KeyValueRow } from '@l3/components/KeyValueList'
 import { Phone } from '../../components/Phone'
 import { useUsNav } from '../../nav'
+import { Usd } from '../../../../shared/money'
 import { CREDIT_ROWS, DEBIT_ROWS, FIGMA } from './data'
 import { chevronDownIcon } from './lib/icons'
 import styles from './BalanceDetails.module.css'
@@ -33618,8 +33959,8 @@ export function BalanceDetails({ expanded = false }: { expanded?: boolean }) {
 
   const group = (label: string, value: string, rows: [string, string][]) => (
     <KeyValueList size="sm" aria-label={label}>
-      <KeyValueRow size="md" label={label} value={value} valueEnd={toggle(label.toLowerCase())} />
-      {expanded && rows.map(([rowLabel, rowValue]) => <KeyValueRow key={rowLabel} label={rowLabel} value={rowValue} />)}
+      <KeyValueRow size="md" label={label} value={<Usd text={value} align="end" />} valueEnd={toggle(label.toLowerCase())} />
+      {expanded && rows.map(([rowLabel, rowValue]) => <KeyValueRow key={rowLabel} label={rowLabel} value={<Usd text={rowValue} align="end" layout="inline" />} />)}
     </KeyValueList>
   )
 
@@ -33630,7 +33971,7 @@ export function BalanceDetails({ expanded = false }: { expanded?: boolean }) {
       header={
         <Actionbar
           title="Balance Details"
-          onBack={() => back(FIGMA.walletFunded)}
+          onBack={() => back(FIGMA.walletUsActivate)}
           actions={
             <Button variant="ghost" size="sm">
               Help
@@ -33641,21 +33982,21 @@ export function BalanceDetails({ expanded = false }: { expanded?: boolean }) {
     >
       <div className={styles.body}>
         <KeyValueList aria-label="Available balance">
-          <KeyValueRow total label="Available Bal." value="$520.40" />
+          <KeyValueRow total label="Available Bal." value={<Usd text="$520.40" align="end" />} />
         </KeyValueList>
         <hr className={styles.divider} />
         <KeyValueList size="sm" aria-label="Opening balance">
-          <KeyValueRow size="md" label="Opening balance" value="$350.00" />
+          <KeyValueRow size="md" label="Opening balance" value={<Usd text="$350.00" align="end" />} />
         </KeyValueList>
         {group('Credits', '$621.80', CREDIT_ROWS)}
         {group('Debits', '$451.40', DEBIT_ROWS)}
         <hr className={styles.divider} />
         <KeyValueList aria-label="Withdrawable balance">
-          <KeyValueRow total label="Withdrawable Bal." value="$417.03" />
+          <KeyValueRow total label="Withdrawable Bal." value={<Usd text="$417.03" align="end" />} />
         </KeyValueList>
         <div className={styles.settlement}>
           <KeyValueList aria-label="Settlement pending">
-            <KeyValueRow label="Settlement Pending" value="$103.37" />
+            <KeyValueRow label="Settlement Pending" value={<Usd text="$103.37" align="end" />} />
           </KeyValueList>
           <p className={styles.note}>👉 Note : Sale money can be withdrawn after 1 working day</p>
         </div>
@@ -33863,12 +34204,14 @@ export function GrowNudge() {
 ```tsx
 // The warning-coloured status strip above the wallet's Deposit / Withdraw buttons ("$100.00 withdrawal pending" …).
 // FLAG: hand-made banner with a hand-made pill button (not an L3 component).
+import type { ReactNode } from 'react'
 import { Icon } from '@l3/components/Icon'
 import { scheduleIcon } from './lib/icons'
 import styles from './WalletScreen.module.css'
 
 export type PendingBannerProps = {
-  title: string
+  /** Text with its $ amounts in <Usd layout="inline" /> (a tight banner: no ≈ ₹ line). */
+  title: ReactNode
   sub: string
   action?: { label: string; onClick: () => void }
 }
@@ -34068,9 +34411,11 @@ import { Button } from '@l3/components/Button'
 import { ButtonGroup } from '@l3/components/ButtonGroup'
 import { Icon } from '@l3/components/Icon'
 import { Tabs } from '@l3/components/Tabs'
+import { Stack } from '@l3/components/Stack'
 import { Tag } from '@l3/components/Tag'
 import { Phone } from '../../components/Phone'
 import { useUsNav } from '../../nav'
+import { CurrencySwitch, InrEquivalent, parseUsd, useUsd } from '../../../../shared/money'
 import { BalanceCard, FLIP_KEY } from './BalanceCard'
 import { FIGMA } from './data'
 import { GrowNudge } from './GrowNudge'
@@ -34106,6 +34451,7 @@ export type WalletScreenProps = {
   tab: WalletTab
   /** Where tapping the other tab goes (a Figma id); without it the tab flips in place. */
   tabTo?: Partial<Record<WalletTab, string>>
+  /** The balance as written: "$520.40" (a US wallet, shown in the currency the $ / ₹ switch picks) or "₹1,100.00". */
   total: string
   withdrawable: string
   /** `true`: the "Withdrawable" tap opens the sheet; a Figma id also adds "Full balance details" to it. */
@@ -34144,8 +34490,17 @@ export function WalletScreen(props: WalletScreenProps) {
     active === tab ? props : { ...props, ...INR_VIEW, sheet: undefined, noteFlow: false, pending: undefined }
 
   const bigAmounts = useBigAmounts()
-  const shownTotal = bigAmounts ? bigAmount(total, 'total') : total
-  const shownWithdrawable = bigAmounts ? bigAmount(withdrawable, 'withdrawable') : withdrawable
+  const rawTotal = bigAmounts ? bigAmount(total, 'total') : total
+  const rawWithdrawable = bigAmounts ? bigAmount(withdrawable, 'withdrawable') : withdrawable
+  // A "$…" amount turns into ₹ when the switch is on ₹; ₹ amounts (the INR wallet) stay as they are.
+  const usd = useUsd()
+  const localise = (text: string) => {
+    const parsed = parseUsd(text)
+    return parsed ? usd(parsed.value, parsed.format) : text
+  }
+  const shownTotal = localise(rawTotal)
+  const shownWithdrawable = localise(rawWithdrawable)
+  const totalUsd = parseUsd(rawTotal)?.value
   const { go, back } = useUsNav()
 
   const switchTab = (next: WalletTab, animate = false) => {
@@ -34181,8 +34536,8 @@ export function WalletScreen(props: WalletScreenProps) {
         setDetailsState('closing')
         setTimeout(() => setDetailsState(null), 300)
       }}
-      total={shownTotal}
-      withdrawable={shownWithdrawable}
+      total={rawTotal}
+      withdrawable={rawWithdrawable}
       onFullDetails={fullDetailsTo ? () => go(fullDetailsTo) : undefined}
     />
   )
@@ -34194,7 +34549,7 @@ export function WalletScreen(props: WalletScreenProps) {
   const header = (
     <Actionbar
       className={styles.actionbar}
-      onBack={() => (backTo ? go(backTo) : back(FIGMA.homeMoneyReady))}
+      onBack={() => (backTo ? go(backTo) : back('5714:64982'))}
       actions={
         <Button variant="ghost" size="sm" className={styles.link}>
           All Transactions
@@ -34265,9 +34620,16 @@ export function WalletScreen(props: WalletScreenProps) {
           total={shownTotal}
           still={backdrop}
           withdrawable={shownWithdrawable}
+          currency={inr ? 'INR' : 'USD'}
+          below={totalUsd ? <InrEquivalent usd={totalUsd} /> : undefined}
           onDetails={backdrop ? undefined : () => setDetailsState('open')}
         />
         <div className={`${styles.page} ${styles.body}`} data-flow={noteFlow || undefined}>
+          {!inr && (
+            <Stack align="center">
+              <CurrencySwitch />
+            </Stack>
+          )}
           {children}
           {nudge && !inr && <GrowNudge />}
           {!inr && <p className={styles.custodian}>US Stocks wallet · held at ViewTrade IFSC</p>}
@@ -34290,7 +34652,8 @@ export function WalletScreen(props: WalletScreenProps) {
 // The wallet's Figma frames. Each one is the shared WalletScreen with different data.
 import { useState } from 'react'
 import { useUsNav } from '../../nav'
-import { FIGMA } from './data'
+import { Usd } from '../../../../shared/money'
+import { FIGMA, WITHDRAWAL_REQUESTS } from './data'
 import { INR_VIEW, WalletScreen, type WalletDock, type WalletScreenProps } from './WalletScreen'
 import { CancelWithdrawalSheet } from './sheets/CancelWithdrawalSheet'
 import { WithdrawalRequestsSheet } from './sheets/WithdrawalRequestsSheet'
@@ -34317,6 +34680,18 @@ export function WalletUsActivateScreen({ backdrop }: ScreenProps) {
       backdrop={backdrop}
       {...EMPTY}
       dock={{ primary: 'Activate US Stocks', primaryTo: FIGMA.activate, withdraw: false }}
+    />
+  )
+}
+
+/** Wallet · US tab · Lemonn KYC pending: Complete KYC (→ the KYC flow) in place of Activate. Not in Jojo's Figma. */
+export function WalletUsKycPendingScreen({ backdrop }: ScreenProps) {
+  return (
+    <WalletScreen
+      label="Wallet, USD, complete KYC"
+      backdrop={backdrop}
+      {...EMPTY}
+      dock={{ primary: 'Complete KYC', primaryTo: 'kyc-01', withdraw: false }}
     />
   )
 }
@@ -34361,9 +34736,9 @@ export function WalletTransferInProgressScreen({ backdrop }: ScreenProps) {
       {...WITH_BALANCE}
       total="$0"
       withdrawable="$0.00"
-      backTo={FIGMA.homeMoneyOnTheWay}
+      backTo="stocks-01"
       dock={DEPOSIT_ONLY}
-      pending={{ title: '$1,035.37 deposit in progress', sub: 'Arrives in your wallet by Thu 8 PM (or Fri)' }}
+      pending={{ title: <><Usd value={1035.37} layout="inline" /> deposit in progress</>, sub: 'Arrives in your wallet by Thu 8 PM (or Fri)' }}
     />
   )
 }
@@ -34382,7 +34757,7 @@ export function WalletWithdrawalInProgressScreen({ backdrop }: ScreenProps) {
         cancelled
           ? undefined
           : {
-              title: '$100.00 withdrawal pending',
+              title: <><Usd value={100} layout="inline" /> withdrawal pending</>,
               sub: 'Processed by 11 AM next day',
               action: { label: 'Cancel', onClick: () => !backdrop && setAsking(true) },
             }
@@ -34390,7 +34765,7 @@ export function WalletWithdrawalInProgressScreen({ backdrop }: ScreenProps) {
       sheet={
         asking ? (
           <CancelWithdrawalSheet
-            amount="$100.00"
+            amount={100}
             onNo={() => setAsking(false)}
             onYes={() => {
               setAsking(false)
@@ -34411,7 +34786,7 @@ export function WalletWithdrawalSentScreen({ backdrop }: ScreenProps) {
       backdrop={backdrop}
       {...WITH_BALANCE}
       dock={DEPOSIT_ONLY}
-      pending={{ title: '$100.00 withdrawal sent to bank', sub: 'Credited to HDFC Bank by Wed' }}
+      pending={{ title: <><Usd value={100} layout="inline" /> withdrawal sent to bank</>, sub: 'Credited to HDFC Bank by Wed' }}
     />
   )
 }
@@ -34432,7 +34807,7 @@ export function WalletTwoWithdrawalsScreen({ backdrop, sheet }: ScreenProps & { 
       dock={DEPOSIT_ONLY}
       sheet={sheet}
       pending={{
-        title: '$192.45 Total withdrawal pending',
+        title: <><Usd value={WITHDRAWAL_REQUESTS.reduce((sum, request) => sum + request.amount, 0)} layout="inline" /> Total withdrawal pending</>,
         sub: 'Processed by 11 AM next day',
         action: { label: 'View', onClick: () => !backdrop && !sheet && go(FIGMA.withdrawalRequests) },
       }}
@@ -34453,7 +34828,7 @@ export function WalletWithdrawalDelayedScreen({ backdrop }: ScreenProps) {
       backdrop={backdrop}
       {...WITH_BALANCE}
       dock={DEPOSIT_ONLY}
-      pending={{ title: '$100.00 withdrawal pending', sub: 'Taking longer than usual, we’re on it' }}
+      pending={{ title: <><Usd value={100} layout="inline" /> withdrawal pending</>, sub: 'Taking longer than usual, we’re on it' }}
     />
   )
 }
@@ -34509,8 +34884,8 @@ export const BROKERAGE_CREDITS_INR = 1000
 
 /** The two pending withdrawal requests listed in the W3c sheet. */
 export const WITHDRAWAL_REQUESTS = [
-  { id: 'a', amount: '$142.45' },
-  { id: 'b', amount: '$50.00' },
+  { id: 'a', amount: 142.45 },
+  { id: 'b', amount: 50 },
 ]
 ```
 
@@ -34522,6 +34897,7 @@ export const WITHDRAWAL_REQUESTS = [
 // FLAG: all UI copy is hard-coded in the components — copy not in copy.json yet.
 // FLAG: the wallet redraws the app's own wallet/portfolio money screens (duplicates the app's wallet flow) with a hand-made
 //       balance card, tab switch and pending banner.
+import { useUsJourney } from '../../../../shared/userStatus'
 import type { UsScreenMap } from '../types'
 import { BalanceDetails } from './BalanceDetails'
 import {
@@ -34532,6 +34908,7 @@ import {
   WalletTransferInProgressScreen,
   WalletTwoWithdrawalsScreen,
   WalletUnderReviewScreen,
+  WalletUsKycPendingScreen,
   WalletUsActivateScreen,
   WalletWithdrawalCreditedScreen,
   WalletWithdrawalDelayedScreen,
@@ -34541,10 +34918,28 @@ import {
   WalletZeroBalanceScreen,
 } from './WalletScreens'
 
-/** Screens of this part, by Figma node id. */
+/**
+ * The wallet's US tab in the user status picked in the prototype settings (src/shared/userStatus): not activated (or KYC
+ * pending) → Activate US Stocks; under review / contact support / failed; activated → $0, money on the way, or funded.
+ */
+function WalletUsForStatus(props: { backdrop?: boolean }) {
+  switch (useUsJourney()) {
+    case 'kyc': return <WalletUsKycPendingScreen {...props} />
+    case 'review': return <WalletUnderReviewScreen {...props} />
+    case 'support': return <WalletContactSupportScreen {...props} />
+    case 'failed': return <WalletActivationFailedScreen {...props} />
+    case 'activated': return <WalletZeroBalanceScreen {...props} />
+    case 'onTheWay': return <WalletTransferInProgressScreen {...props} />
+    case 'ready':
+    case 'holding': return <WalletFundedScreen {...props} />
+    default: return <WalletUsActivateScreen {...props} />
+  }
+}
+
+/** Screens of this part, by Figma node id. The US tab's "Activate" frame is the one US tab that follows the user status. */
 export const screens: UsScreenMap = {
   '5852:99084': WalletInrScreen,
-  '5852:99057': WalletUsActivateScreen,
+  '5852:99057': WalletUsForStatus,
   '5852:99028': WalletUnderReviewScreen,
   '5852:98999': WalletActivationFailedScreen,
   '5852:98970': WalletContactSupportScreen,
@@ -34853,9 +35248,10 @@ import { BottomSheet, BottomSheetHeader } from '@l3/components/BottomSheet'
 import { Button } from '@l3/components/Button'
 import { ButtonGroup } from '@l3/components/ButtonGroup'
 import { useSheetLayer } from '../../../components/Phone'
+import { Usd } from '../../../../../shared/money'
 import styles from './Sheets.module.css'
 
-export function CancelWithdrawalSheet({ amount, all, onNo, onYes }: { amount: string; all?: boolean; onNo: () => void; onYes: () => void }) {
+export function CancelWithdrawalSheet({ amount, all, onNo, onYes }: { amount: number; all?: boolean; onNo: () => void; onYes: () => void }) {
   const layer = useSheetLayer()
   return (
     <BottomSheet
@@ -34882,7 +35278,7 @@ export function CancelWithdrawalSheet({ amount, all, onNo, onYes }: { amount: st
     >
       <div className={styles.cancelAmount}>
         <span>Total amount</span>
-        <b>{amount}</b>
+        <b><Usd value={amount} align="end" /></b>
       </div>
     </BottomSheet>
   )
@@ -35042,12 +35438,11 @@ import { Button } from '@l3/components/Button'
 import { ButtonGroup } from '@l3/components/ButtonGroup'
 import { KeyValueList, KeyValueRow } from '@l3/components/KeyValueList'
 import { useSheetLayer } from '../../../components/Phone'
+import { Usd, formatInr, parseUsd } from '../../../../../shared/money'
 import { BROKERAGE_CREDITS_INR, SETTLING_USD } from '../data'
 import styles from './Sheets.module.css'
 
 const amountOf = (text: string) => Number(text.replace(/[^\d.]/g, '')) || 0
-const formatUsd = (n: number) => `$${n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-const formatInr = (n: number) => `₹${n.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 
 export function WithdrawableSheet({
   open,
@@ -35058,13 +35453,19 @@ export function WithdrawableSheet({
 }: {
   open: boolean
   onClose: () => void
+  /** As written ("$520.40" or "₹1,100.00"): US amounts show in the currency the $ / ₹ switch picks. */
   total: string
   withdrawable: string
   onFullDetails?: () => void
 }) {
   const layer = useSheetLayer()
   const inr = total.includes('₹')
-  const format = inr ? formatInr : formatUsd
+  // The INR wallet's rows are rupees; the US wallet's go through <Usd> (right-aligned, with the ≈ ₹ line when set).
+  // `minus`: a deduction, shown with a "-". Rows that already have a caption under the value skip the ≈ ₹ line.
+  const money = (n: number, minus = false) => {
+    const value = minus ? -n : n
+    return inr ? formatInr(value) : <Usd value={value} align="end" layout={minus ? 'inline' : 'stack'} />
+  }
   const held = Math.max(0, amountOf(total) - amountOf(withdrawable))
   const settling = Math.min(held, inr ? BROKERAGE_CREDITS_INR : SETTLING_USD)
   const rest = Math.round((held - settling) * 100) / 100
@@ -35096,22 +35497,22 @@ export function WithdrawableSheet({
     >
       <div className={styles.breakdown}>
         <KeyValueList aria-label="Balance breakdown">
-          <KeyValueRow label={inr ? 'INR balance' : 'USD balance'} value={format(amountOf(total))} />
+          <KeyValueRow label={inr ? 'INR balance' : 'USD balance'} value={money(amountOf(total))} />
           {inr ? (
             <>
-              <KeyValueRow label="Brokerage credits" caption="Used for brokerage only" value={`− ${format(settling)}`} />
-              {rest > 0 && <KeyValueRow label="Blocked for orders" caption="Free once they settle" value={`− ${format(rest)}`} />}
+              <KeyValueRow label="Brokerage credits" caption="Used for brokerage only" value={money(settling, true)} />
+              {rest > 0 && <KeyValueRow label="Blocked for orders" caption="Free once they settle" value={money(rest, true)} />}
             </>
           ) : (
             <>
-              <KeyValueRow label="Settling from sales" caption="Free in 1 working day" value={`− ${format(settling)}`} />
-              {rest > 0 && <KeyValueRow label="Withdrawals sent" caption="On the way to your bank" value={`− ${format(rest)}`} />}
+              <KeyValueRow label="Settling from sales" caption="Free in 1 working day" value={money(settling, true)} />
+              {rest > 0 && <KeyValueRow label="Withdrawals sent" caption="On the way to your bank" value={money(rest, true)} />}
             </>
           )}
         </KeyValueList>
         <hr className={styles.rule} />
         <KeyValueList aria-label="Withdrawable">
-          <KeyValueRow total label="Withdrawable" value={withdrawable} />
+          <KeyValueRow total label="Withdrawable" value={parseUsd(withdrawable) ? <Usd text={withdrawable} align="end" /> : withdrawable} />
         </KeyValueList>
       </div>
     </BottomSheet>
@@ -35130,13 +35531,14 @@ import { Button } from '@l3/components/Button'
 import { Icon } from '@l3/components/Icon'
 import { useUsNav } from '../../../nav'
 import { useSheetLayer } from '../../../components/Phone'
+import { Usd, useUsd } from '../../../../../shared/money'
 import { FIGMA, WITHDRAWAL_REQUESTS } from '../data'
 import { checkIcon, hourglassIcon } from '../lib/icons'
 import { useSheetClose } from '../lib/useSheetClose'
 import { CancelWithdrawalSheet } from './CancelWithdrawalSheet'
 import styles from './Sheets.module.css'
 
-type Asking = { id?: string; amount: string }
+type Asking = { id?: string; amount: number }
 
 export function WithdrawalRequestsSheet() {
   const { back } = useUsNav()
@@ -35144,9 +35546,10 @@ export function WithdrawalRequestsSheet() {
   const [cancelled, setCancelled] = useState<string[]>([])
   const [asking, setAsking] = useState<Asking | null>(null)
   const layer = useSheetLayer()
+  const usd = useUsd()
 
   const remaining = WITHDRAWAL_REQUESTS.filter((request) => !cancelled.includes(request.id))
-  const total = remaining.reduce((sum, request) => sum + Number(request.amount.slice(1)), 0)
+  const total = remaining.reduce((sum, request) => sum + request.amount, 0)
 
   return (
     <>
@@ -35159,10 +35562,10 @@ export function WithdrawalRequestsSheet() {
           <BottomSheetHeader
             heading={`Withdrawal request (${WITHDRAWAL_REQUESTS.length})`}
             headingId="w3c-title"
-            description={`Total pending: $${total.toFixed(2)}`}
+            description={`Total pending: ${usd(total)}`}
             trailing={
               remaining.length > 0 && (
-                <button type="button" className={styles.cancelAll} onClick={() => setAsking({ amount: `$${total.toFixed(2)}` })}>
+                <button type="button" className={styles.cancelAll} onClick={() => setAsking({ amount: total })}>
                   Cancel all
                 </button>
               )
@@ -35179,7 +35582,7 @@ export function WithdrawalRequestsSheet() {
                   <Icon icon={done ? checkIcon : hourglassIcon} size={20} />
                 </span>
                 <span className={styles.text}>
-                  <span className={styles.amount}>{request.amount}</span>
+                  <span className={styles.amount}><Usd value={request.amount} layout="inline" /></span>
                   <span className={styles.when}>{done ? 'Returned to wallet balance' : 'Processed by 11 AM next day'}</span>
                 </span>
                 {!done && (
@@ -39131,6 +39534,20 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
    "high52": 54744.33,
    "low52": 45057.28
   }
+ },
+ "fx": {
+  "usdInr": {
+   "symbol": "USDINR=X",
+   "price": 94.87,
+   "open": null,
+   "prevClose": 95.19,
+   "change": -0.32,
+   "changePct": -0.34,
+   "dayHigh": null,
+   "dayLow": null,
+   "high52": null,
+   "low52": null
+  }
  }
 }
 ```
@@ -39223,6 +39640,247 @@ export const viewUsStock = (symbol: string) => { viewed = symbol }
 
 /** The symbol set by the last `viewUsStock`, or undefined if none yet. */
 export const viewedUsStock = () => viewed
+```
+
+### `src/shared/money.module.css`
+
+```css
+/* <Usd> with "₹ below": the $ value in the parent's type style, the ≈ ₹ line small and secondary under it. */
+.stack {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.stack[data-align='end'] {
+  align-items: flex-end;
+}
+.stack[data-align='center'] {
+  align-items: center;
+}
+
+.inr {
+  font: var(--l3-text-description-12);
+  color: var(--l3-content-secondary);
+  white-space: nowrap;
+}
+```
+
+### `src/shared/money.tsx`
+
+```tsx
+// US Stocks money — every value inside US Stocks is in US dollars (the news, prices and filings users read are in $),
+// with its rupee equivalent at the live USD → INR rate available everywhere. How the ₹ shows is a prototype setting
+// ("₹ equivalent" in the User status panel), so the same screens try each idea:
+//   off    — $ only
+//   below  — $ with a small "≈ ₹1,23,456" line under it
+//   switch — a $ / ₹ switch (<CurrencySwitch />); picking ₹ turns every US value into rupees, across every screen
+// Screens never format a US amount themselves: <Usd value={188.42} /> (or useUsd() where only a string fits).
+// The rate is real: USDINR=X in us-market-snapshot.json (`npm run us:snapshot`), ticking around it like the prices
+// (live.ts). FLAG: it's a snapshot + simulated movement, not a live FX feed — the real app reads its partner's rate.
+import { useSyncExternalStore, type ReactNode } from 'react'
+import { Tabs } from '@l3/components/Tabs'
+import type { FlowOption } from '../flows/types'
+import snapshot from './data/us-market-snapshot.json'
+import { liveDrift, useLiveTick } from './data/live'
+import { useFlowOption } from './prototype'
+import { USER_STATUS } from './userStatus'
+import styles from './money.module.css'
+
+// ── The rate ────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+/** ₹ per $ in the snapshot (the fallback is the 2 Nov 2026 close, should the snapshot lose it). */
+export const USD_INR_SNAPSHOT: number = (snapshot as { fx?: { usdInr?: { price: number } } }).fx?.usdInr?.price ?? 94.87
+
+/** The USD → INR rate right now: the snapshot's, moving a little every 2 s like a live quote. */
+export function useUsdInrRate(): number {
+  const at = useLiveTick()
+  return Math.round(USD_INR_SNAPSHOT * (1 + liveDrift('USDINR', at) / 4) * 100) / 100
+}
+
+// ── Formatting ──────────────────────────────────────────────────────────────────────────────────────────────────────
+
+export type MoneyFormat = {
+  /** Digits after the point (default 2). */
+  decimals?: number
+  /** '+' on positive values (gains and changes). Negative values always get '-'. */
+  sign?: boolean
+  /** Short big numbers: $4.59T / $812.40B / $12.3M, and ₹4.35 L Cr / ₹12.40 Cr / ₹3.20 L. */
+  compact?: boolean
+}
+
+const fixed = (n: number, locale: string, decimals: number) =>
+  n.toLocaleString(locale, { minimumFractionDigits: decimals, maximumFractionDigits: decimals })
+const signOf = (n: number, sign?: boolean) => (n < 0 ? '-' : sign && n > 0 ? '+' : '')
+
+/** $1,234.50 · +$12.30 · $4.59T */
+export function formatUsd(n: number, { decimals = 2, sign, compact }: MoneyFormat = {}): string {
+  const a = Math.abs(n)
+  if (compact) {
+    const unit = a >= 1e12 ? ['T', 1e12] : a >= 1e9 ? ['B', 1e9] : a >= 1e6 ? ['M', 1e6] : undefined
+    if (unit) return `${signOf(n, sign)}$${fixed(a / (unit[1] as number), 'en-US', 2)}${unit[0]}`
+  }
+  return `${signOf(n, sign)}$${fixed(a, 'en-US', decimals)}`
+}
+
+/** ₹1,23,456.78 · +₹1,064 · ₹4.35 L Cr (Indian grouping and units) */
+export function formatInr(n: number, { decimals = 2, sign, compact }: MoneyFormat = {}): string {
+  const a = Math.abs(n)
+  if (compact) {
+    const unit = a >= 1e12 ? [' L Cr', 1e12] : a >= 1e7 ? [' Cr', 1e7] : a >= 1e5 ? [' L', 1e5] : undefined
+    if (unit) return `${signOf(n, sign)}₹${fixed(a / (unit[1] as number), 'en-IN', 2)}${unit[0]}`
+  }
+  return `${signOf(n, sign)}₹${fixed(a, 'en-IN', decimals)}`
+}
+
+/**
+ * A $ amount written as text → the number and how it was written, so sample strings can go through <Usd text="…" />:
+ * '$188.42' → 188.42 · '+$12.30' → 12.3 · '-$5' → -5 · '$4.59T' → 4.59e12. Not a $ amount → undefined.
+ */
+export function parseUsd(text: string): { value: number; format: MoneyFormat } | undefined {
+  const m = /^\s*([+-−])?\s*\$\s*([\d,]+(?:\.\d+)?)\s*([KMBT])?\s*$/.exec(text)
+  if (!m) return undefined
+  const digits = m[2].replace(/,/g, '')
+  const scale = { K: 1e3, M: 1e6, B: 1e9, T: 1e12 }[m[3] as 'K' | 'M' | 'B' | 'T'] ?? 1
+  const value = Number(digits) * scale * (m[1] === '-' || m[1] === '−' ? -1 : 1)
+  return { value, format: { decimals: digits.split('.')[1]?.length ?? 0, sign: m[1] === '+', compact: scale >= 1e6 } }
+}
+
+// ── The setting and the switch ──────────────────────────────────────────────────────────────────────────────────────
+
+export type InrDisplay = 'off' | 'below' | 'switch'
+export type UsCurrency = 'usd' | 'inr'
+
+/** The app-level setting (shown in the User status panel, beside the phone on the US screens that show most money). */
+export const moneyOptions: FlowOption[] = [
+  {
+    id: 'inrDisplay',
+    group: 'US Stocks money',
+    label: '₹ equivalent',
+    values: [{ value: 'off', label: '$ only' }, { value: 'below', label: '₹ below' }, { value: 'switch', label: '$ / ₹ switch' }],
+    default: 'below',
+    floatOn: ['stocks-01', 'us-stocks-13', 'us-stocks-54'],
+  },
+]
+
+const useInrDisplay = () => useFlowOption(USER_STATUS, 'inrDisplay', moneyOptions[0].default) as InrDisplay
+
+// The currency picked on the switch: one for the whole app, remembered on this device (like a real app's preference).
+const CURRENCY_KEY = 'us-currency'
+let currency: UsCurrency = (() => {
+  try {
+    return localStorage.getItem(CURRENCY_KEY) === 'inr' ? 'inr' : 'usd'
+  } catch {
+    return 'usd'
+  }
+})()
+const currencyListeners = new Set<() => void>()
+const subscribeCurrency = (l: () => void) => (currencyListeners.add(l), () => void currencyListeners.delete(l))
+
+export function setUsCurrency(next: UsCurrency) {
+  currency = next
+  try {
+    localStorage.setItem(CURRENCY_KEY, next)
+  } catch {
+    /* private window: just this session */
+  }
+  currencyListeners.forEach((l) => l())
+}
+
+export type MoneyDisplay = {
+  /** How the ₹ shows (the setting). */
+  inr: InrDisplay
+  /** The currency values are in right now: ₹ only when the switch is on and set to ₹. */
+  currency: UsCurrency
+  /** ₹ per $ right now. */
+  rate: number
+}
+
+export function useMoneyDisplay(): MoneyDisplay {
+  const inr = useInrDisplay()
+  const picked = useSyncExternalStore(subscribeCurrency, () => currency, () => 'usd' as UsCurrency)
+  return { inr, currency: inr === 'switch' ? picked : 'usd', rate: useUsdInrRate() }
+}
+
+/**
+ * A US amount as text, in the currency showing: `const usd = useUsd(); usd(188.42)` → "$188.42" (or "₹17,875.40" with
+ * the switch on ₹). For places that only take a string (a button label, a sentence, a chart axis). No "≈ ₹" line.
+ */
+export function useUsd() {
+  const { currency, rate } = useMoneyDisplay()
+  return (usd: number, format: MoneyFormat = {}) =>
+    currency === 'inr' ? formatInr(usd * rate, { ...format, decimals: format.compact ? 2 : format.decimals ?? 2 }) : formatUsd(usd, format)
+}
+
+/** The rupee line on its own ("≈ ₹17,875"), only with the "₹ below" setting. For a ₹ line that sits apart from its $. */
+export function useInrEquivalent() {
+  const { inr, rate } = useMoneyDisplay()
+  return (usd: number, format: MoneyFormat = {}) => (inr === 'below' ? `≈ ${formatInr(usd * rate, { decimals: 0, ...format })}` : undefined)
+}
+
+// ── Components ──────────────────────────────────────────────────────────────────────────────────────────────────────
+
+export type UsdProps = MoneyFormat & {
+  /** The amount in $ … */
+  value?: number
+  /** … or a $ amount written as text ('$188.42', '+$12.30', '$4.59T'); anything else shows as it is. */
+  text?: string
+  /**
+   * `stack` (default): the ≈ ₹ line goes under the value. `inline`: no ₹ line (inside a sentence, a button, a tight
+   * row) — the switch still turns it into ₹.
+   */
+  layout?: 'stack' | 'inline'
+  /** Text-align of the stack (a right-aligned column → 'end'). */
+  align?: 'start' | 'end' | 'center'
+  className?: string
+}
+
+/**
+ * A US amount. Shows $ (or ₹ with the switch on ₹) in the parent's own type style, and with "₹ below" a small
+ * secondary "≈ ₹…" line under it. `<Usd value={1234.5} />` · `<Usd text="+$12.30" />` · `<Usd value={4.59e12} compact />`
+ */
+export function Usd({ value, text, layout = 'stack', align = 'start', className, ...format }: UsdProps) {
+  const usd = useUsd()
+  const below = useInrEquivalent()
+  const parsed = value === undefined && text !== undefined ? parseUsd(text) : undefined
+  if (value === undefined && !parsed) return <span className={className}>{text}</span>
+  const amount = value ?? parsed!.value
+  const f: MoneyFormat = parsed ? { ...parsed.format, ...format } : format
+  const main = usd(amount, f)
+  const line = layout === 'stack' ? below(amount, { sign: f.sign, compact: f.compact }) : undefined
+  if (!line) return <span className={className}>{main}</span>
+  return (
+    <span className={[styles.stack, className].filter(Boolean).join(' ')} data-align={align}>
+      <span>{main}</span>
+      <span className={styles.inr}>{line}</span>
+    </span>
+  )
+}
+
+/** Just the "≈ ₹…" line, for a layout that puts it apart from the $ (under a big balance, say). Nothing unless "₹ below". */
+export function InrEquivalent({ usd, className, ...format }: MoneyFormat & { usd: number; className?: string }): ReactNode {
+  const line = useInrEquivalent()(usd, format)
+  return line ? <span className={[styles.inr, className].filter(Boolean).join(' ')}>{line}</span> : null
+}
+
+/**
+ * The $ / ₹ switch (L3 pill group, small). Shows only with the "$ / ₹ switch" setting; the pick applies to every US
+ * value in the app. Put it where the money is: the wallet's balance, the portfolio's value, a stock page's price.
+ */
+export function CurrencySwitch({ className }: { className?: string }) {
+  const { inr, currency } = useMoneyDisplay()
+  if (inr !== 'switch') return null
+  return (
+    <Tabs
+      className={className}
+      appearance="pill-group"
+      size="sm"
+      aria-label="Show values in"
+      items={[{ value: 'usd', label: '$ USD' }, { value: 'inr', label: '₹ INR' }]}
+      value={currency}
+      onChange={(v) => setUsCurrency(v as UsCurrency)}
+    />
+  )
+}
 ```
 
 ### `src/shared/prototype.ts`
@@ -39406,4 +40064,105 @@ export const goToTab = (go: (id: string) => void, section: Section) => {
   const id = tabScreens[section]
   if (id) go(id)
 }
+```
+
+### `src/shared/userStatus.ts`
+
+```ts
+// Where the user is in the app — the prototype's app-level settings ("User status" in the preview panel, the phone's
+// settings sheet and a floating card beside the phone). Every screen that depends on it reads it here, so they all stay
+// in sync: pick "US Stocks: activated · money on the way" once and the Home's US tab, a US stock page and the wallet all
+// show that state. Picking never moves on by itself; taps in the prototype don't change it.
+// In a real app these come from the user's account (KYC status, US Stocks activation, wallet, holdings).
+import type { FlowOption } from '../flows/types'
+import { useFlowOption } from './prototype'
+
+/** The settings' owner in the preview (as a flow id: where the picks are remembered). */
+export const USER_STATUS = 'app'
+
+export type KycStatus = 'done' | 'pending'
+export type UsActivation = 'kyc' | 'off' | 'review' | 'support' | 'failed' | 'active'
+export type UsWallet = 'empty' | 'onTheWay' | 'funded'
+export type UsHoldings = 'none' | 'some'
+
+/**
+ * Screens that change with the user status: the settings float beside the phone on these (desktop preview). The Home,
+ * a US stock page and the wallet's US tab.
+ */
+const STATUS_SCREENS = ['stocks-01', 'us-stocks-13', 'us-stocks-54']
+
+/** The settings, parent first: each one below only matters (and shows) while the one above has the listed values. */
+export const userStatusOptions: FlowOption[] = [
+  {
+    // One list for the whole way in, in order: Lemonn KYC first (US Stocks can't be activated until it's done), then
+    // the activation steps.
+    id: 'us',
+    group: 'User status',
+    label: 'US Stocks activation',
+    picker: 'dropdown',
+    values: [
+      { value: 'kyc', label: 'Lemonn KYC pending' },
+      { value: 'off', label: 'KYC done · not activated' },
+      { value: 'review', label: 'Activation under review' },
+      { value: 'support', label: 'Under review · contact support' },
+      { value: 'failed', label: 'Activation failed' },
+      { value: 'active', label: 'Activated' },
+    ],
+    default: 'off',
+    floatOn: STATUS_SCREENS,
+  },
+  {
+    id: 'usWallet',
+    group: 'User status',
+    label: 'USD wallet',
+    values: [{ value: 'empty', label: '$0' }, { value: 'onTheWay', label: 'Money on the way' }, { value: 'funded', label: 'Has money' }],
+    default: 'empty',
+    showIf: { us: ['active'] },
+    floatOn: STATUS_SCREENS,
+  },
+  {
+    id: 'usHoldings',
+    group: 'User status',
+    label: 'US holdings',
+    picker: 'toggle',
+    values: [{ value: 'none', label: 'None' }, { value: 'some', label: 'Holds NVDA' }],
+    default: 'none',
+    showIf: { usWallet: ['funded'] },
+    floatOn: STATUS_SCREENS,
+  },
+]
+
+const option = (id: string) => userStatusOptions.find((o) => o.id === id)!
+const useStatus = (id: string) => useFlowOption(USER_STATUS, id, option(id).default)
+
+export type UserStatus = { kyc: KycStatus; us: UsActivation; usWallet: UsWallet; usHoldings: UsHoldings }
+
+/** The user status as picked (settings under one that's off keep their last pick). KYC comes from the activation list. */
+export function useUserStatus(): UserStatus {
+  const us = useStatus('us') as UsActivation
+  return {
+    kyc: us === 'kyc' ? 'pending' : 'done',
+    us,
+    usWallet: useStatus('usWallet') as UsWallet,
+    usHoldings: useStatus('usHoldings') as UsHoldings,
+  }
+}
+
+/**
+ * Where the user is with US Stocks, as one step: KYC pending → 'kyc'; not activated → 'activate'; under review /
+ * contact support / failed; activated → $0 'activated', 'onTheWay', or with money 'ready' / 'holding'.
+ * (The Stocks flow's UsState uses the same names.)
+ */
+export type UsJourney = 'kyc' | 'activate' | 'review' | 'support' | 'failed' | 'activated' | 'onTheWay' | 'ready' | 'holding'
+
+export function usJourney({ kyc, us, usWallet, usHoldings }: UserStatus): UsJourney {
+  if (kyc === 'pending' || us === 'kyc') return 'kyc'
+  if (us === 'off') return 'activate'
+  if (us !== 'active') return us
+  if (usWallet === 'empty') return 'activated'
+  if (usWallet === 'onTheWay') return 'onTheWay'
+  return usHoldings === 'some' ? 'holding' : 'ready'
+}
+
+export const useUsJourney = () => usJourney(useUserStatus())
 ```

@@ -242,7 +242,10 @@
     "src/shared/data/live.ts",
     "src/shared/data/us-market-snapshot.json",
     "src/shared/data/usStocks.ts",
+    "src/shared/money.module.css",
+    "src/shared/money.tsx",
     "src/shared/prototype.ts",
-    "src/shared/ui/MainNav.tsx"
+    "src/shared/ui/MainNav.tsx",
+    "src/shared/userStatus.ts"
   ]
 }

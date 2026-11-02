@@ -10,7 +10,7 @@ Prototype: https://kirtanyak-pe.github.io/lemonn-app-prototype/#/stocks · machi
 
 | Id | Screen | Figma | Taps go to | Note |
 |---|---|---|---|---|
-| `stocks-01` | Home | [5714:64982]() | `profile-01` | Top of the page: search, indices, holdings, products, shortcuts. |
+| `stocks-01` | Home | [5714:64982]() | — | The Stocks home in the user status picked in the prototype settings (User status: US Stocks activation — Lemonn KYC pending → … → Activated —, USD wallet, US holdings — the same settings the US stock page and the wallet follow). Picking a status shows its US tab. Each state is also a screen of its own (hidden in the list), which the activation and add-money taps go to. |
 | `stocks-02` | Home · top movers & watchlists | — | `profile-01` | Same page, scrolled. |
 | `stocks-03` | Home · top losers | — | `profile-01` | The "Top losers" chip picked. |
 | `stocks-04` | Home · Smart Invest | — | `profile-01` | Same page, scrolled: managed strategies, then the announcement. |
@@ -130,9 +130,10 @@ One long, scrolling L1 page. The board shows it as frames scrolled to each part,
 ### Homepage versions (prototype option)
 
 Jojo's US Stocks design has nine versions of the home (`designs/lemonn-us-stocks-design.html`, its "Homepage version"
-switch). Here they are the flow option **Homepage version** (`homeVersion`, default V2, a floating card beside every
+switch). Here they are the flow option **Homepage version** (`homeVersion`, default V7, a floating card beside every
 Home screen); `components/homeVersions.ts` lists them and `screens/Home.tsx` reads the choice. Only the top of the page
-changes — the feeds are the same. (V1, the current homepage with no switch, is no longer in the list.)
+changes — the feeds are the same. (V1, the current homepage with no switch, is no longer in the list. V2–V6 and V9, archived
+for a while, are back in the picker.)
 
 | Version | Figma | IND / US switch | Tiles | Other |
 |---|---|---|---|---|
@@ -256,6 +257,8 @@ lower on the page is scrolled into view first). `components/MarketSwitchGuide.ts
 
 ### L3 gaps
 
+- **Select hover underline** — L3 Select underlines its label on hover; the holdings switcher (Home V2–V4) wants
+  none, so `.holdingsSelect` in components/Home.module.css turns it off (FLAG). Needs a Select option upstream.
 - **Notched market tabs** (IND / US strip with an SVG outline and a flipping label) — no L3 component; hand-made in
   `components/MarketTabs.tsx` (the pinned compact version is a plain L3 Tabs).
 - **Homepage versions** — no flag icons in L3 (round flag SVGs of our own in `assets/flags`, not emoji, so they look the same on every device); V9's "Graphite segmented" has no L3 style of
@@ -275,6 +278,51 @@ lower on the page is scrolled into view first). `components/MarketSwitchGuide.ts
 
 ### Changelog
 
+- 2026-11-02 — Shortcuts V1: 8 more space above the circles (every home version), so the "New" tags clear the tabs above.
+- 2026-11-02 — Shortcut icons are Jojo's custom two-tone set (`assets/shortcuts/*.svg`: analysis, IPO, watchlist, referral, ETF; success green + its light surface, drawn inline by `components/ShortcutArt`), not L3 system icons. "Market switch guide" is off by default.
+- 2026-11-02 — Shortcut "New" tags: the slide animation is reverted; the tag (red L3 Tag) sits over the icon's top edge again, like the count.
+- 2026-11-02 — Shortcuts: V1 (circles) is the default again; the prototype setting just says V1 / V2.
+- 2026-11-02 — Homepage versions V2, V3, V4, V5, V6 and V9 are back in the "Homepage version" picker (no longer
+  `archived`); every version, V2–V13, can be picked again. The default stays V7.
+- 2026-11-02 — Shortcuts **V2 · One card** (new default; option "Shortcuts", V1 · Circles keeps the old row): one
+  outlined L3 Card with the four shortcuts side by side, hairline dividers, a plain green icon over a grey label, and the
+  count / "New" off the icon's top-right.
+- 2026-11-02 — Shortcut "New" tags (IPO "5 New", Referral "New") no longer sit over the icon: the icon shows, then
+  slides out to the left as a black L3 Tag (neutral primary) slides in from the right, and back — icon 3.5 s, tag
+  2.5 s. Still on the icon with reduced motion or while the page is hidden. Both shortcut versions.
+- 2026-11-02 — V2 · One card: the hairlines between the shortcuts float, 12 short of the card's top and bottom edges.
+- 2026-11-02 — Home V2, V3, V4 (the IND / US tabs over the feed): the tabs belong to the feed, not the page. The top
+  keeps the holdings with their own switch — the label itself is an L3 Select (switcher, ↕): "Overall holdings"
+  (default; Indian + US in ₹, the US part at today's USD/INR rate, return on the combined invested amount) → "IN
+  holdings" → "US holdings" ($0.00 until the user holds a US stock), each tap the next (`HoldingsSwitcher` in
+  components/Overview). Switching the feed tabs
+  changes only the feed and the index marquee, never the holdings. The US activation card (activate → review → money
+  → ready) sits at the top of the US tab's feed. Lemonn KYC pending: the KYC card takes the holdings' place (switch
+  and all) and isn't repeated in the US feed. The product tiles stay under the top on every tab.
+- 2026-11-02 — US tab: the status card sits **in place of the holdings** on every homepage version (not under the
+  products): KYC → activation → $0 wallet → money on the way → ready to buy. Only when every step is done and the user
+  holds a US stock (User status: KYC done · Activated · Has money · Holds NVDA) does the US holdings summary replace the
+  card. "Ready" (money in, nothing bought) keeps its card. The US holdings value follows the US money setting (`useUsd`,
+  `<InrEquivalent>` — src/shared/money); Top Movers, Titans, Brands and heatmap prices too (≈ ₹ under mover rows, inline
+  elsewhere). IN-tab values stay ₹.
+- 2026-11-02 — V2 archived too; the default homepage version is now V7 (`DEFAULT_HOME_VERSION`). The picker offers
+  V7, V8 and V10–V13.
+- 2026-11-02 — Homepage versions V3, V4, V5, V6 and V9 archived: out of the "Homepage version" picker (kept in
+  `homeVersions.ts`, `archived: true`). The picker offers V2, V7, V8 and V10–V13.
+- 2026-11-02 — The "Home state" flow option is gone. Where the user is (Lemonn KYC, US Stocks activation, USD wallet,
+  US holdings) is now the app-level "User status" setting (`src/shared/userStatus.ts`; top of the preview panel, the
+  phone's Prototype sheet and a card beside the phone on this Home). Home reads `useUsJourney()`: KYC pending, not
+  activated, under review (and contact support), failed, activated, money on the way, money ready, or holding. The
+  wallet icon opens the INR wallet (`us-stocks-53`) until US Stocks is activated, then the US wallet (`us-stocks-54`);
+  a US stock opens `us-stocks-13`. Each state is still a screen (stocks-02…21, `hidden` in the list).
+- 2026-11-02 — One Home in the prototype's list: a "Home state" setting (and a card beside the phone) picks where the
+  user is with US Stocks: KYC pending, not activated, activation in progress (and contact support), failed, activated,
+  money on the way, money ready, or holding US stocks. Picking one shows the US tab. Each state is still a screen
+  (stocks-02…21, `hidden` in the list), so taps from other flows land on it.
+- 2026-11-02 — V5's compact IND / US switch in the top bar: the track is surface/primary with a 1px edge (like the
+  wallet), and the unselected pill has no fill, so it no longer merges into the bar's grey.
+- 2026-11-02 — US Stocks intro (FTUX) sheet: the flag artwork scales to the sheet's width (drawn on 360), so the flag
+  runs edge to edge on every phone. Before, the 360 frame was only centred, leaving a gap at the left on 392 / 412.
 - 2026-11-02 — V13's market button animates a switch: the flag and name slide (up going to US, down going back to IN),
   and the page swaps vertically instead of sideways: the summary and feed on screen slide down 24 and fade out
   (150 ms, accelerate), then the other market's slide up into place and fade in (250 ms, decelerate). The index strip
@@ -653,6 +701,68 @@ D�W�k��&�� �?��DQ�y�� !i� ���n]�G��FS�
     </g>
   </g>
   <circle cx="12" cy="12" r="11.75" fill="none" stroke="#000000" stroke-opacity="0.12" stroke-width="0.5"/>
+</svg>
+```
+
+### `src/flows/stocks/assets/shortcuts/analysis.svg`
+
+```tsx
+<svg viewBox="0 0 19.8232 19.8213" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g>
+<path style="fill:var(--l3-surface-accent-success-light)" d="M9.11459 3.48246C8.78715 3.9418 8.60119 4.5007 8.60119 5.0896C8.60119 6.14081 9.19585 7.09496 10.1246 7.5617L10.3144 7.6482L12.0847 8.37643C12.1507 8.4037 12.2061 8.4504 12.2452 8.50896L12.2786 8.57034L13.0069 10.3407C13.4337 11.3774 14.379 11.5777 15.5001 11.5777C16.0892 11.5777 16.1249 11.5777 16.3393 11.5777V17.7682C16.3393 18.5572 15.6997 19.1967 14.9107 19.1967H2.05357C1.26459 19.1967 0.625 18.5572 0.625 17.7682V4.91103C0.625 4.12206 1.26459 3.48246 2.05357 3.48246H9.11459Z"/>
+<g>
+<path style="fill:var(--l3-content-accent-success-default)" d="M13.7585 2.55993L14.4872 0.790156C14.5284 0.690243 14.6258 0.625035 14.7338 0.625035C14.8418 0.625035 14.9392 0.690243 14.9804 0.790156L15.7091 2.55993C15.9992 3.26446 16.5587 3.82392 17.2632 4.11402L19.033 4.84276C19.133 4.88389 19.1981 4.98126 19.1981 5.08932C19.1981 5.19738 19.133 5.29475 19.033 5.33588L17.2632 6.06462C16.5587 6.35472 15.9992 6.91418 15.7091 7.61871L14.9804 9.38849C14.9392 9.48839 14.8418 9.55361 14.7338 9.55361C14.6258 9.55361 14.5284 9.48839 14.4872 9.38849L13.7585 7.61871C13.4684 6.91418 12.909 6.35472 12.2044 6.06462L10.4346 5.33588C10.3347 5.29475 10.2695 5.19738 10.2695 5.08932C10.2695 4.98126 10.3347 4.88389 10.4346 4.84276L12.2044 4.11402C12.909 3.82392 13.4684 3.26446 13.7585 2.55993Z"/>
+</g>
+<g>
+<path style="fill:var(--l3-content-accent-success-default)" d="M8.66113 2.85742C9.00612 2.85765 9.28613 3.13738 9.28613 3.48242C9.28613 3.82746 9.00612 4.1072 8.66113 4.10742H2.05371C1.60991 4.10742 1.25 4.46733 1.25 4.91113V13.8379L3.38965 11.6689L3.39062 11.668C3.63629 11.4223 3.9432 11.2999 4.2998 11.2998C4.65657 11.2998 4.96421 11.4222 5.20996 11.668L6.52344 12.9941L9.00684 10.5352H8.52246C8.32314 10.5351 8.14805 10.4664 8.00879 10.3271C7.86954 10.1879 7.79983 10.0128 7.7998 9.81348C7.7998 9.61412 7.86954 9.43908 8.00879 9.2998C8.14806 9.16054 8.3231 9.09083 8.52246 9.09082H10.7451C10.9443 9.09094 11.1196 9.16066 11.2588 9.2998C11.3979 9.43903 11.4668 9.61425 11.4668 9.81348V12.0352C11.4668 12.2343 11.3978 12.4096 11.2588 12.5488C11.1196 12.688 10.9443 12.7577 10.7451 12.7578C10.5458 12.7578 10.3697 12.6881 10.2305 12.5488C10.0915 12.4096 10.0225 12.2343 10.0225 12.0352V11.5488L7.43164 14.1396C7.18593 14.3853 6.87911 14.5078 6.52246 14.5078C6.16581 14.5078 5.85899 14.3852 5.61328 14.1396L4.2998 12.8262L1.47363 15.6533C1.40749 15.7195 1.33221 15.7683 1.25 15.8018V17.7686C1.25023 18.2122 1.61004 18.5713 2.05371 18.5713H14.9111C15.3546 18.5711 15.7136 18.212 15.7139 17.7686V11.9941C15.7139 11.6492 15.9939 11.3694 16.3389 11.3691C16.684 11.3691 16.9638 11.649 16.9639 11.9941V17.7686C16.9636 18.9024 16.045 19.8211 14.9111 19.8213H2.05371C0.9197 19.8213 0.00022674 18.9025 0 17.7686V4.91113C0 3.77697 0.919556 2.85742 2.05371 2.85742H8.66113ZM5.80176 14.0879C5.80388 14.0897 5.80646 14.091 5.80859 14.0928C5.78195 14.0705 5.75568 14.0467 5.73047 14.0215L5.80176 14.0879ZM14.7334 0C15.0494 0 15.3386 0.167004 15.498 0.432617L15.5586 0.551758L16.2871 2.32227C16.5138 2.8725 16.9507 3.30952 17.501 3.53613L19.2705 4.26465C19.605 4.4022 19.8231 4.72791 19.8232 5.08887C19.8232 5.44999 19.6051 5.77645 19.2705 5.91406L17.501 6.64258C16.9507 6.86921 16.5138 7.30617 16.2871 7.85645L15.5586 9.62598C15.421 9.9601 15.0946 10.1787 14.7334 10.1787C14.3724 10.1785 14.0467 9.95997 13.9092 9.62598L13.1807 7.85645C12.954 7.3062 12.517 6.86924 11.9668 6.64258L10.1963 5.91406C9.86231 5.77644 9.64453 5.45008 9.64453 5.08887C9.6447 4.72784 9.86246 4.40223 10.1963 4.26465L11.9668 3.53613C12.517 3.3095 12.954 2.87247 13.1807 2.32227L13.9092 0.551758L13.9697 0.432617C14.1291 0.167157 14.4175 0.000147311 14.7334 0ZM7.99707 10.0059C7.99904 10.0115 8.00175 10.0169 8.00391 10.0225C7.99214 9.99187 7.98269 9.96005 7.97656 9.92676L7.99707 10.0059ZM11.2998 9.81348L11.2939 9.72754C11.2933 9.72291 11.2917 9.71845 11.291 9.71387C11.2961 9.74589 11.2998 9.77901 11.2998 9.81348ZM8.01758 9.57129C8.01505 9.57671 8.01308 9.58238 8.01074 9.58789C8.02344 9.55801 8.03839 9.52918 8.05664 9.50195L8.01758 9.57129ZM11.1406 9.41797L11.0781 9.36328C11.0732 9.3596 11.0675 9.35701 11.0625 9.35352C11.0896 9.37234 11.1162 9.39354 11.1406 9.41797ZM10.7441 9.25781C10.8192 9.25781 10.8887 9.27071 10.9521 9.29492C10.9221 9.28337 10.891 9.27361 10.8584 9.26758C10.8223 9.2609 10.7844 9.25784 10.7451 9.25781H10.7441ZM14.3369 2.79785C13.9834 3.65649 13.301 4.33882 12.4424 4.69238L11.4775 5.08887L12.4424 5.48633C13.301 5.83989 13.9834 6.52222 14.3369 7.38086L14.7334 8.34473L15.1309 7.38086C15.4845 6.52225 16.1667 5.83989 17.0254 5.48633L17.9893 5.08887L17.0254 4.69238C16.1667 4.33882 15.4845 3.65646 15.1309 2.79785L14.7334 1.83301L14.3369 2.79785Z"/>
+</g>
+</g>
+</svg>
+```
+
+### `src/flows/stocks/assets/shortcuts/etf.svg`
+
+```tsx
+<svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path style="fill:var(--l3-surface-accent-success-light);stroke:var(--l3-content-accent-success-default)" d="M9 11V3.5A7.5 7.5 0 1 0 16.5 11Z" stroke-width="1.4" stroke-linejoin="round"/>
+<path style="stroke:var(--l3-content-accent-success-default)" d="M9 11L3.7 16.3" stroke-width="1.4" stroke-linecap="round"/>
+<path style="fill:var(--l3-content-accent-success-default)" d="M11 9V1.5A7.5 7.5 0 0 1 18.5 9Z"/>
+</svg>
+```
+
+### `src/flows/stocks/assets/shortcuts/ipo.svg`
+
+```tsx
+<svg viewBox="0 0 19.999 19.9991" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g>
+<path style="fill:var(--l3-content-accent-success-default)" d="M0.713867 16.1284L10.3567 5.7998L15.3567 14.4569L1.59958 17.6427L0.713867 16.1284Z"/>
+<path style="fill:var(--l3-content-accent-success-default)" d="M9.71193 4.67366C10.0533 4.47671 10.4901 4.59337 10.6875 4.9344L16.2705 14.6043C16.4675 14.9459 16.3502 15.3827 16.0088 15.5799C15.6672 15.7769 15.2304 15.6597 15.0332 15.3182L15.0039 15.2684L9.78713 16.4793C9.91962 16.9502 9.92929 17.4511 9.80275 17.9325C9.61582 18.6431 9.15429 19.2506 8.51955 19.6209C7.88487 19.9912 7.12889 20.0952 6.41799 19.908C5.70732 19.7211 5.09983 19.2594 4.72951 18.6248L4.72853 18.6219L4.23537 17.7684L1.75685 18.3446C1.45065 18.4156 1.13376 18.2779 0.976579 18.0057L0.0957194 16.4793C-0.0613575 16.2071 -0.0222558 15.8632 0.192399 15.6336L9.47951 5.69905L9.45119 5.64925C9.25427 5.30781 9.37074 4.87097 9.71193 4.67366ZM5.68947 17.4305L5.96291 17.9041C6.14232 18.2116 6.43714 18.4356 6.78127 18.5262L6.91213 18.5535C7.21686 18.6021 7.53077 18.5445 7.79982 18.3875C8.10725 18.2082 8.33131 17.9135 8.42189 17.5692C8.48876 17.3146 8.47797 17.0484 8.39552 16.8026L5.68947 17.4305ZM1.59572 16.2225L1.94826 16.8328L14.2578 13.9744L10.2266 6.99202L1.59572 16.2225Z"/>
+<path style="fill:var(--l3-content-accent-success-default)" d="M2.63574 9.28516C3.03023 9.28516 3.35059 9.60453 3.35059 9.99902C3.35059 10.3935 3.03023 10.7129 2.63574 10.7129H0.713867C0.319378 10.7129 0 10.3935 0 9.99902C0 9.60453 0.319378 9.28516 0.713867 9.28516H2.63574ZM19.2842 9.28516C19.6787 9.28516 19.999 9.60453 19.999 9.99902C19.999 10.3935 19.6787 10.7129 19.2842 10.7129H17.3623C16.9678 10.7129 16.6484 10.3935 16.6484 9.99902C16.6484 9.60453 16.9678 9.28516 17.3623 9.28516H19.2842ZM2.92773 2.92773C3.20668 2.64879 3.65856 2.64879 3.9375 2.92773L5.29688 4.28613C5.57582 4.56508 5.57581 5.01793 5.29688 5.29688C5.01793 5.57582 4.56508 5.57582 4.28613 5.29688L2.92773 3.9375C2.64879 3.65855 2.64879 3.20668 2.92773 2.92773ZM16.0596 2.92773C16.3385 2.64879 16.7914 2.64879 17.0703 2.92773C17.349 3.20663 17.349 3.6586 17.0703 3.9375L15.7109 5.29688C15.432 5.57558 14.9801 5.57558 14.7012 5.29688C14.4222 5.01793 14.4222 4.56508 14.7012 4.28613L16.0596 2.92773ZM9.99902 0C10.3935 0 10.7129 0.319378 10.7129 0.713867V2.63574C10.7129 3.03023 10.3935 3.35059 9.99902 3.35059C9.60453 3.35059 9.28516 3.03023 9.28516 2.63574V0.713867C9.28516 0.319378 9.60453 0 9.99902 0Z"/>
+</g>
+</svg>
+```
+
+### `src/flows/stocks/assets/shortcuts/referral.svg`
+
+```tsx
+<svg viewBox="0 0 18.3926 18.3926" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g>
+<path style="fill:var(--l3-surface-accent-success-light)" d="M16.7337 16.3395V9.04297H1.66016V16.3395C1.66016 17.1285 2.29976 17.768 3.08873 17.768H15.3051C16.0941 17.768 16.7337 17.1285 16.7337 16.3395Z"/>
+<path style="fill:var(--l3-content-accent-success-default)" d="M17.7679 6.04165V7.61422C17.7679 8.40321 17.1283 9.04279 16.3393 9.04279H2.05363C1.26466 9.04279 0.625061 8.40321 0.625061 7.61422V6.04165C0.625061 5.25266 1.26466 4.61308 2.05363 4.61308H16.3393C17.1283 4.61308 17.7679 5.25266 17.7679 6.04165Z"/>
+<path style="fill:var(--l3-content-accent-success-default)" d="M12.6846 0C13.657 0 14.4099 0.287715 14.8984 0.829102C15.3815 1.3647 15.5188 2.05189 15.4639 2.67383C15.4231 3.13433 15.276 3.59147 15.0527 3.98828H16.3389C17.473 3.98828 18.3926 4.90783 18.3926 6.04199V7.61426C18.3925 8.37684 17.9756 9.04034 17.3584 9.39453V16.3398C17.3582 17.4738 16.4387 18.3926 15.3047 18.3926H3.08887C1.95486 18.3926 1.03537 17.4739 1.03516 16.3398V9.39551C0.417362 9.04147 7.40396e-05 8.37728 0 7.61426V6.04199C0 4.90784 0.919594 3.98831 2.05371 3.98828H3.34082C3.11754 3.59149 2.97044 3.13438 2.92969 2.67383C2.87472 2.05188 3.01109 1.36471 3.49414 0.829102C3.98264 0.287562 4.73556 5.99149e-05 5.70801 0C7.04718 0 8.08333 0.886404 8.74512 1.80469C8.91192 2.03617 9.06313 2.28114 9.19629 2.53027C9.32936 2.28112 9.48065 2.03619 9.64746 1.80469C10.3092 0.886372 11.3454 0.000144661 12.6846 0ZM2.28516 16.3398C2.28537 16.7835 2.6452 17.1426 3.08887 17.1426H8.57031V9.66797H2.28516V16.3398ZM9.82031 17.1426H15.3047C15.7484 17.1426 16.1082 16.7835 16.1084 16.3398V9.66797H9.82031V17.1426ZM2.05371 5.23828C1.60994 5.23831 1.25 5.59821 1.25 6.04199V7.61426C1.25011 8.05795 1.61001 8.41794 2.05371 8.41797H16.3389C16.7826 8.41797 17.1425 8.05798 17.1426 7.61426V6.04199C17.1426 5.59818 16.7827 5.23828 16.3389 5.23828H2.05371ZM12.6846 1.25C11.9303 1.25015 11.2216 1.7597 10.6621 2.53613C10.307 3.02898 10.0649 3.55811 9.93457 3.98828H13.2197C13.3646 3.98828 13.5852 3.89269 13.8105 3.60449C14.0289 3.32521 14.1853 2.94106 14.2188 2.56348C14.2518 2.18879 14.1618 1.87897 13.9707 1.66699C13.7849 1.46092 13.415 1.25 12.6846 1.25ZM5.70801 1.25C4.9778 1.25006 4.60868 1.46095 4.42285 1.66699C4.23158 1.87907 4.14163 2.18945 4.1748 2.56445C4.20829 2.94173 4.36392 3.32536 4.58203 3.60449C4.8072 3.89245 5.02795 3.98812 5.17285 3.98828H8.45898C8.3286 3.5581 8.0865 3.02896 7.73145 2.53613C7.17187 1.75958 6.46244 1.25 5.70801 1.25Z"/>
+</g>
+</svg>
+```
+
+### `src/flows/stocks/assets/shortcuts/watchlist.svg`
+
+```tsx
+<svg viewBox="0 0 19.8223 19.8221" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g>
+<path style="fill:var(--l3-surface-accent-success-light)" d="M16.3392 6.93546C15.7591 6.98869 15.213 7.24336 14.7981 7.65912L8.08379 14.3877C7.70114 14.7711 7.45342 15.2685 7.37786 15.805L6.94929 18.8478C6.9329 18.9641 6.92485 19.0805 6.92483 19.1964H2.05353C1.67465 19.1964 1.31129 19.0458 1.04338 18.778C0.775469 18.5101 0.624959 18.1467 0.624959 17.7678V2.05353C0.624959 1.67465 0.775469 1.31129 1.04338 1.04338C1.31129 0.775469 1.67465 0.624959 2.05353 0.624959H11.3392L16.3392 5.62496V6.93546Z" fill-rule="evenodd" clip-rule="evenodd"/>
+<path style="fill:var(--l3-content-accent-success-default)" d="M19.1972 12.0544L12.4686 18.7829L9.42578 19.1972L9.85435 16.1543L16.5686 9.42578L19.1972 12.0544Z"/>
+<path style="fill:var(--l3-content-accent-success-default)" d="M16.5684 8.80078C16.7341 8.80071 16.8935 8.86621 17.0107 8.9834L19.6387 11.6123C19.7559 11.7295 19.8223 11.8889 19.8223 12.0547C19.8222 12.2203 19.7558 12.379 19.6387 12.4961L12.9102 19.2246C12.8135 19.3212 12.6881 19.3839 12.5527 19.4023L9.50977 19.8164C9.31588 19.8427 9.12047 19.7764 8.98242 19.6377C8.84467 19.499 8.77949 19.3039 8.80664 19.1104L9.23535 16.0674L9.25781 15.9688C9.28769 15.8727 9.34038 15.7848 9.41211 15.7129L16.126 8.98438C16.2431 8.86696 16.4025 8.80087 16.5684 8.80078ZM11.3389 0C11.5045 1.07367e-05 11.6641 0.0655475 11.7812 0.182617L16.7812 5.18262C16.8984 5.29982 16.9639 5.45926 16.9639 5.625V6.33887C16.9638 6.68401 16.684 6.96385 16.3389 6.96387C15.9939 6.96364 15.7139 6.68389 15.7139 6.33887V5.88379L11.0801 1.25H2.05371C1.84059 1.25 1.63605 1.33465 1.48535 1.48535C1.33465 1.63605 1.25 1.84059 1.25 2.05371V17.7676C1.25001 17.9807 1.33474 18.1853 1.48535 18.3359C1.63611 18.4866 1.84067 18.5713 2.05371 18.5713H6.33887C6.68398 18.5713 6.96379 18.8512 6.96387 19.1963C6.96385 19.5414 6.68401 19.8213 6.33887 19.8213H2.05371C1.50902 19.8213 0.986615 19.6047 0.601562 19.2197C0.216455 18.8346 1.07878e-05 18.3121 0 17.7676V2.05371C0 1.50906 0.216446 0.986681 0.601562 0.601562C0.986681 0.216446 1.50906 0 2.05371 0H11.3389ZM10.4443 16.4473L10.1592 18.4658L12.1738 18.1924L18.3125 12.0537L16.5684 10.3096L10.4443 16.4473ZM6.90234 9.39062C7.10293 9.10981 7.49355 9.04465 7.77441 9.24512C8.05529 9.44574 8.12053 9.83631 7.91992 10.1172L5.58984 13.3789C5.48306 13.5283 5.31586 13.6235 5.13281 13.6387C4.94993 13.6537 4.76948 13.5877 4.63965 13.458L3.24121 12.0596C2.99748 11.8155 2.99743 11.4198 3.24121 11.1758C3.48529 10.9317 3.8819 10.9317 4.12598 11.1758L5.00195 12.0518L6.90234 9.39062ZM6.90234 3.58594C7.10293 3.30512 7.49355 3.23996 7.77441 3.44043C8.05529 3.64106 8.12053 4.03162 7.91992 4.3125L5.58984 7.57422C5.48306 7.72365 5.31586 7.81883 5.13281 7.83398C4.94993 7.84905 4.76948 7.78299 4.63965 7.65332L3.24121 6.25488C2.99748 6.01085 2.99743 5.61509 3.24121 5.37109C3.48529 5.12701 3.8819 5.12702 4.12598 5.37109L5.00195 6.24707L6.90234 3.58594Z"/>
+</g>
 </svg>
 ```
 
@@ -19421,12 +19531,63 @@ import { inr } from '../../../shared/data/format'
 import { watchlists } from '../../../shared/data/portfolio'
 import { Rail } from '../../../shared/ui/Rail'
 import { useMarketSnapshot } from '../../../shared/data/companies'
+import { useFlowOption } from '../../../shared/prototype'
 import { shortcuts, topMovers, type MoverList, type Shortcut } from '../data'
 import { t } from '../copy'
+import { ShortcutArt } from './ShortcutArt'
 import styles from './Home.module.css'
 
-/** "Do more with Lemonn": four feature shortcuts, with a count or "New" where there's something to see. */
-export function Shortcuts({ onOpen, items = shortcuts, titled = false }: { onOpen?: (id: string) => void; /** The US tab swaps IPO for ETFs (data.ts usShortcuts). */ items?: Shortcut[]; /** Home versions V8, V9: the "Do More With Lemonn" title shows (components/homeVersions.ts). */ titled?: boolean }) {
+/** Which shortcuts design the Home shows (prototype option "Shortcuts", flow options in index.tsx): V1 is the default. */
+export type ShortcutsVersion = 'v1' | 'v2'
+export const DEFAULT_SHORTCUTS: ShortcutsVersion = 'v1'
+
+/**
+ * "Do more with Lemonn": four feature shortcuts, with a count or "New" where there's something to see.
+ * V1: a green icon in a 40 outlined circle over each label. V2: one outlined card, the four side by side split by
+ * hairlines, a plain green icon over a secondary label.
+ */
+export function Shortcuts(props: ShortcutsProps) {
+  const version = useFlowOption('stocks', 'shortcuts', DEFAULT_SHORTCUTS) as ShortcutsVersion
+  return version === 'v1' ? <ShortcutsCircles {...props} /> : <ShortcutsCard {...props} />
+}
+
+type ShortcutsProps = { onOpen?: (id: string) => void; /** The US tab swaps IPO for ETFs (data.ts usShortcuts). */ items?: Shortcut[]; /** Home versions V8, V9: the "Do More With Lemonn" title shows (components/homeVersions.ts). */ titled?: boolean }
+
+/** The count or the "New" tag ("5 New", "New") over the shortcut icon's top edge. */
+function ShortcutBadge({ s }: { s: Shortcut }) {
+  if (s.badge?.count !== undefined) return <span className={styles.overIcon}><Badge count={s.badge.count} color="neutral" label={t('shortcuts.watchlistBadge', { count: s.badge.count })} /></span>
+  if (s.badge?.text) return <span className={styles.overIcon}><Tag color="error" variant="primary" size="sm">{s.badge.text}</Tag></span>
+  return null
+}
+
+/** V2: one outlined card, four columns split by hairlines. */
+function ShortcutsCard({ onOpen, items = shortcuts, titled = false }: ShortcutsProps) {
+  return (
+    <Stack as="section" gap="16" aria-label={t('shortcuts.title')}>
+      {titled && <Inset paddingInline="16" paddingBlock="00"><SectionHeader title={t('shortcuts.title')} /></Inset>}
+      <Inset paddingInline="16" paddingBlock="00">
+        <Card padding="none" className={styles.shortcutsPanel}>
+          <Grid columns={4} gap="00">
+            {items.map((s) => (
+              <Card key={s.id} variant="flat" padding="none" className={styles.shortcutCard} onClick={() => onOpen?.(s.id)}>
+                <span className={`${styles.shortcut} ${styles.shortcutPlain}`}>
+                  <span className={styles.shortcutIcon}>
+                    <span className={styles.shortcutGlyph} aria-hidden="true"><ShortcutArt art={s.art} /></span>
+                    <ShortcutBadge s={s} />
+                  </span>
+                  <span className={styles.shortcutPlainLabel}>{s.label}</span>
+                </span>
+              </Card>
+            ))}
+          </Grid>
+        </Card>
+      </Inset>
+    </Stack>
+  )
+}
+
+/** V1: a 40 outlined circle per shortcut. */
+function ShortcutsCircles({ onOpen, items = shortcuts, titled = false }: ShortcutsProps) {
   return (
     <Stack as="section" gap="16" aria-label={t('shortcuts.title')}>
       {titled && <Inset paddingInline="16" paddingBlock="00"><SectionHeader title={t('shortcuts.title')} /></Inset>}
@@ -19436,11 +19597,8 @@ export function Shortcuts({ onOpen, items = shortcuts, titled = false }: { onOpe
             <Card key={s.id} variant="flat" padding="none" className={styles.shortcutCard} onClick={() => onOpen?.(s.id)}>
               <span className={styles.shortcut}>
                 <span className={styles.shortcutIcon}>
-                  <span className={styles.shortcutCircle} aria-hidden="true"><Icon icon={s.icon} size={24} /></span>
-                  {s.badge?.count !== undefined && (
-                    <span className={styles.overIcon}><Badge count={s.badge.count} color="neutral" label={t('shortcuts.watchlistBadge', { count: s.badge.count })} /></span>
-                  )}
-                  {s.badge?.text && <span className={styles.overIcon}><Tag color="error" variant="primary" size="sm">{s.badge.text}</Tag></span>}
+                  <span className={styles.shortcutCircle} aria-hidden="true"><ShortcutArt art={s.art} /></span>
+                  <ShortcutBadge s={s} />
                 </span>
                 <span className={styles.shortcutLabel}>{s.label}</span>
               </span>
@@ -19593,6 +19751,19 @@ export function Watchlists({ onOpen, onCreate }: { onOpen?: (id: string) => void
   font: var(--l3-text-heading-28);
 }
 
+/* V2–V4: the holdings' IN / US switch, at the page margin. */
+.holdingsSwitch {
+  padding-inline: var(--l3-spacing-16);
+}
+
+/* FLAG: L3 Select underlines its label on hover; the designer wants none on the holdings switcher (2026-11-02). Listed
+   as an L3 gap in the README — drop this once Select has a no-underline option. */
+@media (hover: hover) {
+  .holdingsSelect.holdingsSelect:hover > span {
+    text-decoration: none;
+  }
+}
+
 /* The round "→" that says the whole block opens Portfolio. */
 .roundArrow {
   display: grid;
@@ -19680,9 +19851,11 @@ export function Watchlists({ onOpen, onCreate }: { onOpen?: (id: string) => void
   left: 0;
 }
 
-/* Room for a "New" tag on a card's top edge — only when a card has one (no empty gap above the rail otherwise). */
+/* No top padding above the products: the rail is pulled up over the 24 section gap, leaving only the 12 a "New" tag
+   on a card's top edge needs (the sideways-scrolling rail would clip it) — on every version. */
 .onEdgeRoom {
   padding-top: var(--l3-spacing-12);
+  margin-top: calc(-1 * var(--l3-spacing-24));
 }
 
 /* ---- Do more with Lemonn: four shortcuts (an Inset around a 4-column Grid) ---- */
@@ -19691,6 +19864,8 @@ export function Watchlists({ onOpen, onCreate }: { onOpen?: (id: string) => void
   flex-direction: column;
   align-items: center;
   gap: var(--l3-spacing-08);
+  /* V1: 8 above the circles, so the "New" tags over them clear what's above (V2 sets its own 12, .shortcutPlain). */
+  padding-top: var(--l3-spacing-08);
   text-align: center;
 }
 
@@ -19716,6 +19891,56 @@ export function Watchlists({ onOpen, onCreate }: { onOpen?: (id: string) => void
 
 .shortcutLabel {
   font: var(--l3-text-label-12);
+}
+
+/* V2 shortcuts: one outlined card (L3 Card, static) with the four side by side, a hairline between them. */
+/* No padding on the outer card (padding="none", which also clips): the four shortcuts fill it edge to edge, so their
+   hover grey does too, square inside the card's rounded corners. They bring the 12 above and below themselves. */
+.shortcutsPanel .shortcutCard[data-variant='flat'][data-padding='none'] {
+  border-radius: 0;
+}
+/* The divider is a straight line between two shortcuts, not on the cards (a shadow on a rounded card curves round its corners).
+   It floats: 12 short of the card's top and bottom edges. */
+.shortcutsPanel .shortcutCard + .shortcutCard {
+  position: relative;
+}
+.shortcutsPanel .shortcutCard + .shortcutCard::before {
+  content: '';
+  position: absolute;
+  inset-block: var(--l3-spacing-12);
+  left: 0;
+  border-left: 1px solid var(--l3-border-light); /* 1px divider */
+}
+.shortcutPlain {
+  padding-block: var(--l3-spacing-12);
+  gap: var(--l3-spacing-04);
+}
+/* A plain 24 icon (no circle), in the success green like V1's. */
+.shortcutGlyph {
+  display: grid;
+  place-items: center;
+  color: var(--l3-content-accent-success-default);
+}
+/* The custom shortcut icon: its 20 art in a 24 icon box, like an L3 icon's glyph inside its frame. */
+.shortcutArt {
+  display: grid;
+  place-items: center;
+  width: var(--l3-icon-size-24);
+  height: var(--l3-icon-size-24);
+}
+.shortcutArt svg {
+  width: var(--l3-icon-size-20);
+  height: var(--l3-icon-size-20);
+}
+.shortcutPlainLabel {
+  font: var(--l3-text-description-12);
+  color: var(--l3-content-secondary);
+  white-space: nowrap;
+}
+/* V2's count sits off the icon's top-right corner (as in the design), not centred over it. */
+.shortcutPlain .overIcon {
+  left: 50%;
+  transform: none;
 }
 
 /* ---- Smart Invest strategy card: a Section (12 padding, 12 gap); the head is a horizontal Stack ---- */
@@ -20475,7 +20700,9 @@ function findSwitch(from: HTMLElement): HTMLElement | null {
   margin-bottom: var(--l3-spacing-12);
 }
 
-.switch[data-place='top'] [role='tablist'][data-appearance='pill-group'] {
+/* V5's compact switch in the top bar: on the bar's grey, the track is surface/primary with the wallet's 1px edge. */
+.switch[data-place='top'] [role='tablist'][data-appearance='pill-group'],
+.switch[data-compact] [role='tablist'][data-appearance='pill-group'] {
   background: var(--l3-surface-primary);
   box-shadow: inset 0 0 0 1px var(--l3-border-light); /* 1px edge */
 }
@@ -20904,6 +21131,7 @@ import { Card } from '@l3/components/Card'
 import { Icon } from '@l3/components/Icon'
 import { PriceChange } from '@l3/components/PriceChange'
 import { Stack } from '@l3/components/Stack'
+import { Select } from '@l3/components/Select'
 import { Tag } from '@l3/components/Tag'
 import { msArrowForward, msChevronRight } from '@l3/icons/material'
 import { liveQuote, useLiveTick } from '../../../shared/data/live'
@@ -20913,6 +21141,7 @@ import { inr } from '../../../shared/data/format'
 import { Rail } from '../../../shared/ui/Rail'
 import { products, type Product } from '../data'
 import { usHoldings } from './us/data'
+import { InrEquivalent, useUsd, useUsdInrRate } from '../../../shared/money'
 import { t } from '../copy'
 import styles from './Home.module.css'
 
@@ -20944,23 +21173,64 @@ export function IndexStrip({ onIndex, items = indices, label = t('indices.label'
 }
 
 /** Current value of the holdings and the overall return — the page's headline number. The block opens Portfolio. */
-export function HoldingsSummary({ onOpen, us = false }: { onOpen?: () => void; /** The US tab of a user who holds US stocks: the US holdings in dollars. */ us?: boolean }) {
-  const label = us ? t('us.holdings.label') : t('holdings.label')
-  const value = us ? `$${usHoldings.value.toLocaleString('en-US', { minimumFractionDigits: 2 })}` : inr(holdings.current)
-  const returnPct = us ? usHoldings.returnPct : holdings.returnPct
+export function HoldingsSummary({ onOpen, us = false, overall = false, label: labelOverride, usEmpty = false }: { onOpen?: () => void; /** The US tab of a user who holds US stocks: the US holdings in dollars. */ us?: boolean; /** Indian + US together, in ₹ (the US part at today's USD/INR rate). */ overall?: boolean; /** The label above the number (default: "Current holdings" / "US holdings"); null: none (HoldingsSwitcher draws its own). */ label?: string | null; /** Nothing bought in the US yet: $0.00 and no return (and nothing US in the overall). */ usEmpty?: boolean }) {
+  const label = labelOverride === undefined ? (us ? t('us.holdings.label') : t('holdings.label')) : labelOverride
+  const usd = useUsd()
+  const rate = useUsdInrRate()
+  const usValue = usEmpty ? 0 : usHoldings.value
+  let value: string
+  let returnPct: number | undefined
+  if (overall) {
+    // Overall return on what was invested: each side's invested amount is its value ÷ (1 + its return).
+    const usInr = usValue * rate
+    const invested = holdings.current / (1 + holdings.returnPct / 100) + (usEmpty ? 0 : usInr / (1 + usHoldings.returnPct / 100))
+    const current = holdings.current + usInr
+    value = inr(current)
+    returnPct = Math.round(((current - invested) / invested) * 10000) / 100
+  } else if (us) {
+    value = usd(usValue)
+    returnPct = usEmpty ? undefined : usHoldings.returnPct
+  } else {
+    value = inr(holdings.current)
+    returnPct = holdings.returnPct
+  }
   return (
     <Card variant="flat" padding="none" onClick={onOpen}>
       <span className={styles.holdings}>
         <span className={styles.holdingsText}>
-          <span className={styles.holdingsLabel}>{label}</span>
+          {label && <span className={styles.holdingsLabel}>{label}</span>}
           <span className={styles.holdingsValue}>
             {value}
-            <PriceChange value={returnPct} size="lg" arrow />
+            {returnPct !== undefined && <PriceChange value={returnPct} size="lg" arrow />}
           </span>
+          {us && !overall && <InrEquivalent usd={usValue} />}
         </span>
         <span className={styles.roundArrow} aria-hidden="true"><Icon icon={msArrowForward} /></span>
       </span>
     </Card>
+  )
+}
+
+/** What the Home V2–V4 holdings show: everything (in ₹), or one market. */
+export type HoldingsView = 'overall' | 'in' | 'us'
+const nextView: Record<HoldingsView, HoldingsView> = { overall: 'in', in: 'us', us: 'overall' }
+const viewLabel = { overall: 'holdings.overallLabel', in: 'holdings.inLabel', us: 'us.holdings.label' } as const
+
+/**
+ * Home V2–V4: the holdings' label is the switch — an L3 Select (switcher, ↕): "Overall holdings" → "IN holdings" →
+ * "US holdings", each tap the next. It sits over the number, outside the holdings block (both are buttons). It is
+ * not the page's market tabs: those sit lower, over the feed, and never change it.
+ */
+export function HoldingsSwitcher({ view, onView, usEmpty, onOpen }: { view: HoldingsView; onView: (view: HoldingsView) => void; /** Nothing bought in the US yet: US $0.00, overall = Indian. */ usEmpty?: boolean; onOpen?: () => void }) {
+  return (
+    <Stack gap="04">
+      <span className={styles.holdingsSwitch}>
+        <Select size="sm" subtle className={styles.holdingsSelect} onClick={() => onView(nextView[view])}>
+          {t(viewLabel[view])}
+        </Select>
+      </span>
+      <HoldingsSummary us={view === 'us'} overall={view === 'overall'} label={null} usEmpty={usEmpty} onOpen={onOpen} />
+    </Stack>
   )
 }
 
@@ -20984,6 +21254,21 @@ export function ProductCards({ onProduct, items = products }: { onProduct?: (id:
       ))}
     </Rail>
   )
+}
+```
+
+### `src/flows/stocks/components/ShortcutArt.tsx`
+
+```tsx
+// The shortcuts' own two-tone icons (Jojo's custom set, not L3 system icons), drawn inline so their var(--l3-…)
+// colours (success green + its light surface) follow light / dark.
+import type { ShortcutArt as Art } from '../data'
+import styles from './Home.module.css'
+
+const svgs = import.meta.glob('../assets/shortcuts/*.svg', { eager: true, query: '?raw', import: 'default' }) as Record<string, string>
+
+export function ShortcutArt({ art }: { art: Art }) {
+  return <span className={styles.shortcutArt} aria-hidden="true" dangerouslySetInnerHTML={{ __html: svgs[`../assets/shortcuts/${art}.svg`] }} />
 }
 ```
 
@@ -21779,7 +22064,7 @@ export function UsIntroStory({ onView, onClose }: { onView: () => void; onClose:
 // "Homepage version" switch: Figma "Homepage versions", nodes below). They differ only in the IND / US switch (where it
 // sits and how it looks), the product tiles, the index ticker and the shortcuts' title; the feeds are the same.
 // V10–V13 ("two homes", no Figma yet) split the page at the top: the market is picked first and everything below is its own.
-// The prototype picks one with the flow option `homeVersion` (index.tsx), default V2 as in Jojo's file.
+// The prototype picks one with the flow option `homeVersion` (index.tsx), default V7 (V2 is the default in Jojo’s file).
 
 export type HomeVersionId = 'v2' | 'v3' | 'v4' | 'v5' | 'v6' | 'v7' | 'v8' | 'v9' | 'v10' | 'v11' | 'v12' | 'v13'
 
@@ -21812,6 +22097,8 @@ export type HomeVersion = {
   ticker: boolean
   /** The shortcuts get a "Do more with Lemonn" title. */
   doMore: boolean
+  /** Archived: kept in code, but no longer offered in the "Homepage version" picker. */
+  archived?: boolean
 }
 
 export const homeVersions: HomeVersion[] = [
@@ -21831,7 +22118,17 @@ export const homeVersions: HomeVersion[] = [
   { id: 'v13', name: 'Two homes · market picker', figma: '', place: 'picker', scope: 'page', look: 'pill', labels: 'stocks', flags: true, usNew: false, tiles: 'today', ticker: true, doMore: false },
 ]
 
-export const homeVersion = (id: string) => homeVersions.find((v) => v.id === id) ?? homeVersions[0]
+// Archived 2026-11-02 (V2, V3, V4, V5, V6, V9), back in the picker the same day.
+
+/** The version shown until one is picked (and in place of an archived pick). */
+export const DEFAULT_HOME_VERSION: HomeVersionId = 'v7'
+
+/** The versions the "Homepage version" picker offers. */
+export const activeHomeVersions = homeVersions.filter((v) => !v.archived)
+
+/** A version by id; an archived one (still picked from before) falls back to the default. */
+export const homeVersion = (id: string) =>
+  activeHomeVersions.find((v) => v.id === id) ?? activeHomeVersions.find((v) => v.id === DEFAULT_HOME_VERSION)!
 ```
 
 ### `src/flows/stocks/components/us/UsActivationCard.tsx`
@@ -22209,7 +22506,7 @@ export function UsActivationCard({ state, onCta }: { state: Exclude<UsState, 'ho
   flex-direction: row;
   align-items: center;
   gap: var(--l3-spacing-10);
-  border-radius: var(--l3-radius-08);
+  border-radius: var(--l3-radius-12); /* the L3 card radius */
 }
 
 .rowText {
@@ -22484,6 +22781,7 @@ import { msChevronRight, msUnfoldMore } from '@l3/icons/material'
 import { handToMarket } from '../../../../shared/data/marketHandoff'
 import { useLiveQuote } from '../../../../shared/data/live'
 import { usLogo, viewUsStock } from '../../../../shared/data/usStocks'
+import { Usd, useUsd } from '../../../../shared/money'
 import { usShortcuts } from '../../data'
 import { t } from '../../copy'
 import { Shortcuts } from '../Discover'
@@ -22491,7 +22789,6 @@ import {
   brandRows,
   capBuckets,
   formatPct,
-  formatUsd,
   heatStrength,
   heatmapIndices,
   moverFilters,
@@ -22621,7 +22918,7 @@ export function UsHome({ usState = 'activate', onActivate, onStock, onMarket, on
                     <Avatar src={usLogo(brand.sym)} initials={brand.sym} size={40} />
                     <span className={styles.brandText}>
                       <span className={styles.brandName}>{brand.name}</span>
-                      <span className={styles.brandCap}>{brand.cap}</span>
+                      <span className={styles.brandCap}><Usd text={brand.cap} layout="inline" /></span>
                     </span>
                   </Card>
                 ))}
@@ -22650,7 +22947,7 @@ export function UsHome({ usState = 'activate', onActivate, onStock, onMarket, on
               <button key={tile.sym} type="button" className={styles.tile} data-up={tile.pct >= 0 || undefined} style={{ '--heat': heatStrength(tile.pct) } as CSSProperties} onClick={() => open(tile.sym)}>
                 <span className={styles.tileSym}>{tile.sym}</span>
                 <span className={styles.tileChange}>{formatPct(tile.pct)}</span>
-                <span className={styles.tilePrice}>{formatUsd(tile.price)}</span>
+                <span className={styles.tilePrice}><Usd value={tile.price} layout="inline" /></span>
               </button>
             ))}
           </Grid>
@@ -22690,16 +22987,16 @@ function MoverRow({ mover, onOpen }: { mover: MoverToday; onOpen: (sym: string) 
   // A gainer stays a gainer (and a loser a loser) while it ticks: the list was picked by today's direction.
   const up = mover.up
   const pct = Math.max(0.01, up ? live.changePct : -live.changePct)
-  const price = live.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  const usd = useUsd()
   return (
-    <Card onClick={() => onOpen(mover.sym)} className={styles.rowCard} aria-label={`${mover.name}, $${price}, ${sign(up)}${pct.toFixed(2)}%`}>
+    <Card onClick={() => onOpen(mover.sym)} className={styles.rowCard} aria-label={`${mover.name}, ${usd(live.price)}, ${sign(up)}${pct.toFixed(2)}%`}>
       <Avatar src={usLogo(mover.sym)} initials={mover.sym} size={24} />
       <span className={styles.rowText}>
         <span className={styles.rowName}>{mover.name}</span>
         <span className={styles.rowSub}>{mover.sym}</span>
       </span>
       <span className={styles.rowPrice}>
-        <span className={styles.rowValue}>${price}</span>
+        <span className={styles.rowValue}><Usd value={live.price} align="end" /></span>
         <span className={styles.rowChange} data-up={up || undefined}>{sign(up)}{pct.toFixed(2)}%</span>
       </span>
     </Card>
@@ -22715,7 +23012,7 @@ function TitanFoot({ sym, cap }: { sym: string; cap: string }) {
     <>
       <img src={up ? sparkUp : sparkDown} alt="" className={styles.spark} data-flip={!up || undefined} />
       <span className={styles.titanFoot}>
-        <span>{cap}</span>
+        <Usd text={cap} layout="inline" />
         <span className={styles.titanChange} data-up={up || undefined}>{formatPct(live.changePct)}</span>
       </span>
     </>
@@ -23105,8 +23402,9 @@ export function RiskDisclosureSheet({ onAgree, onClose }: { onAgree?: () => void
 }
 
 .art {
+  /* Laid out on a 360 frame and scaled to the sheet's width (--art-scale, set in UsFtuxSheet), so the flag is edge to edge. */
   transform-origin: 0 0;
-  width: 100%;
+  width: 360px; /* FLAG: raw px */
   height: 0;
   scale: var(--art-scale,1);
   top: 0;
@@ -23125,13 +23423,6 @@ export function RiskDisclosureSheet({ onAgree, onClose }: { onAgree?: () => void
 .bloomRed,
 .bloomBlue {
   transform-origin: 0 0;
-}
-
-/* The artwork was laid out in a 360px frame: centre that 360 area in the sheet (no shift at 360, +26px at 412). */
-.bloomRed,
-.bloomBlue,
-.flagMask {
-  margin-left: calc(50% - 180px);
 }
 
 .bloomRed {
@@ -23410,7 +23701,7 @@ export function RiskDisclosureSheet({ onAgree, onClose }: { onAgree?: () => void
 // FLAG: hand-made sheet + scrim (layer / overlay / sheet in UsFtuxSheet.module.css) instead of L3 BottomSheet / Overlay.
 // FLAG: hand-made close button, logo avatars and benefits list instead of L3 Button / Avatar / Card.
 // FLAG: the artwork is positioned in px on a 360 frame (flag, blooms) — kept as the prototype drew it.
-import { useState, type CSSProperties } from 'react'
+import { useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
 import { Button } from '@l3/components/Button'
 import { ButtonGroup } from '@l3/components/ButtonGroup'
 import { Icon } from '@l3/components/Icon'
@@ -23428,6 +23719,9 @@ import markMsft from '../../../assets/us/ftux/mark-msft.svg'
 import markNvda from '../../../assets/us/ftux/mark-nvda.svg'
 import tsla from '../../../assets/us/ftux/tsla.png'
 import styles from './UsFtuxSheet.module.css'
+
+/** The width (px) the prototype drew the FTUX artwork on. */
+const ART_FRAME = 360
 
 type CompanyLogo = { name: string; src: string; size?: number; dark?: boolean; round?: boolean }
 
@@ -23457,13 +23751,27 @@ export function UsFtuxSheet({ onActivate, onClose }: { onActivate?: () => void; 
   }
   const close = () => leave(onClose)
 
+  // The artwork (flag, blooms) is drawn on a 360-wide frame: scale it to the sheet's width so the flag runs edge to edge
+  // on every phone (360, 392, 412), instead of centring the 360 frame and leaving a gap at the sides.
+  const sheet = useRef<HTMLElement>(null)
+  const [artScale, setArtScale] = useState(1)
+  useLayoutEffect(() => {
+    const el = sheet.current
+    if (!el) return
+    const sync = () => setArtScale((el.offsetWidth || ART_FRAME) / ART_FRAME)
+    sync()
+    const observer = new ResizeObserver(sync)
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
+
   return (
     <div className={styles.layer} data-closing={closing || undefined} onKeyDown={(e) => e.key === 'Escape' && close()}>
       <div className={styles.overlay} onClick={close} aria-hidden="true" />
-      <section className={styles.sheet} role="dialog" aria-modal="true" aria-labelledby="us-ftux-title">
+      <section ref={sheet} className={styles.sheet} role="dialog" aria-modal="true" aria-labelledby="us-ftux-title">
         <div className={styles.decor} aria-hidden="true">
           <span className={styles.backdrop} />
-          <div className={styles.art}>
+          <div className={styles.art} style={{ '--art-scale': artScale } as CSSProperties}>
             <span className={styles.bloomRed}><img src={bloomRed} alt="" /></span>
             <span className={styles.bloomBlue}><img src={bloomBlue} alt="" /></span>
             <span className={styles.scrim} />
@@ -23795,6 +24103,8 @@ export function useSwipeBetween({ canGo, onSwitch, page }: { canGo: (direction: 
   "top.profile": "Profile and settings",
   "indices.label": "Market indices",
   "holdings.label": "Current holdings",
+  "holdings.overallLabel": "Overall holdings",
+  "holdings.inLabel": "IN holdings",
   "products.label": "Products",
   "products.new": "New",
   "shortcuts.title": "Do More With Lemonn",
@@ -23966,7 +24276,6 @@ export const t = makeCopy('stocks', copy)
 ### `src/flows/stocks/data.ts`
 
 ```ts
-import { msAddChart, msAnalytics, msCampaign, msEditNote, msPieChart, msRedeem } from '@l3/icons/material'
 import jioIpoBanner from './assets/announcement-jio-ipo.jpg'
 import { stocks, type Stock } from '../../shared/data/market'
 import { companies, companiesByChange, type Company } from '../../shared/data/companies'
@@ -24000,20 +24309,22 @@ export const productsUs: Product[] = [
 ]
 
 /** "Do more with Lemonn": feature shortcuts, each with an optional count or "New" flag. */
-export type Shortcut = { id: string; label: string; icon: string; badge?: { count?: number; text?: string } }
+/** `art` names the shortcut's custom two-tone icon (Jojo's, assets/shortcuts/<art>.svg — not an L3 system icon). */
+export type ShortcutArt = 'analysis' | 'ipo' | 'watchlist' | 'referral' | 'etf'
+export type Shortcut = { id: string; label: string; art: ShortcutArt; badge?: { count?: number; text?: string } }
 export const shortcuts: Shortcut[] = [
-  { id: 'trade-ideas', label: 'Trade Ideas', icon: msAddChart },
-  { id: 'ipo', label: 'IPO', icon: msCampaign, badge: { text: '5 New' } },
-  { id: 'watchlist', label: 'Watchlist', icon: msEditNote, badge: { count: 3 } },
-  { id: 'referral', label: 'Referral', icon: msRedeem, badge: { text: 'New' } },
+  { id: 'trade-ideas', label: 'Trade Ideas', art: 'analysis' },
+  { id: 'ipo', label: 'IPO', art: 'ipo', badge: { text: '5 New' } },
+  { id: 'watchlist', label: 'Watchlist', art: 'watchlist' },
+  { id: 'referral', label: 'Referral', art: 'referral', badge: { text: 'New' } },
 ]
 
 /** The US Stocks tab's shortcuts: Analysis · ETFs · Watchlist · Referral (no badges). */
 export const usShortcuts: Shortcut[] = [
-  { id: 'analysis', label: 'Analysis', icon: msAnalytics },
-  { id: 'etfs', label: 'ETFs', icon: msPieChart },
-  { id: 'watchlist', label: 'Watchlist', icon: msEditNote },
-  { id: 'referral', label: 'Referral', icon: msRedeem },
+  { id: 'analysis', label: 'Analysis', art: 'analysis' },
+  { id: 'etfs', label: 'ETFs', art: 'etf' },
+  { id: 'watchlist', label: 'Watchlist', art: 'watchlist' },
+  { id: 'referral', label: 'Referral', art: 'referral' },
 ]
 
 /**
@@ -24111,8 +24422,9 @@ import type { Flow } from '../types'
 import { goToTab } from '../../shared/ui/MainNav'
 import type { Go } from '../types'
 import { Home } from './screens/Home'
-import { homeVersions } from './components/homeVersions'
+import { activeHomeVersions, DEFAULT_HOME_VERSION } from './components/homeVersions'
 import type { UsState } from './components/us/data'
+import { useUsJourney } from '../../shared/userStatus'
 import { ActivationApprovedSheet } from './components/us/sheets/ActivationApprovedSheet'
 import { ActivationSubmittedSheet } from './components/us/sheets/ActivationSubmittedSheet'
 import { RiskDisclosureSheet } from './components/us/sheets/RiskDisclosureSheet'
@@ -24135,6 +24447,29 @@ const usHome = (go: Go, usState: UsState, extra: Partial<ComponentProps<typeof H
   <Home market="us" usState={usState} {...chrome(go)} {...usNav(go)} onWallet={() => go(walletFor[usState])} {...extra} />
 )
 
+/** Each state's own taps on the Home (the card's button, a US stock), as on that state's screen. */
+const stateTaps = (go: Go, usState: UsState): Partial<ComponentProps<typeof Home>> => {
+  switch (usState) {
+    case 'kyc': return { onActivateUs: () => go('kyc-01'), onUsStock: () => go('us-stocks-74') }
+    case 'activated': return { onActivateUs: () => go('us-stocks-20') }
+    case 'onTheWay': return { onActivateUs: () => go('us-stocks-28') }
+    case 'ready': return { onActivateUs: () => go('stocks-17') }
+    case 'holding': return { onUsStock: (sym) => go(sym === 'NVDA' ? 'us-stocks-32' : 'us-stocks-31') }
+    default: return {}
+  }
+}
+
+/**
+ * stocks-01: the Home in the user status picked in the prototype settings (src/shared/userStatus — KYC, US Stocks
+ * activation, USD wallet, holdings). Picking a status shows its US tab. A US stock opens the stock page and the wallet
+ * the wallet's US tab, which follow the same status (the wallet opens on the Indian tab until US Stocks is activated).
+ */
+function HomeInState({ go }: { go: Go }) {
+  const usState: UsState = useUsJourney()
+  const wallet = usState === 'kyc' || usState === 'activate' ? 'us-stocks-53' : 'us-stocks-54'
+  return <Home usState={usState} {...chrome(go)} {...usNav(go)} {...stateTaps(go, usState)} onUsStock={() => go('us-stocks-13')} onWallet={() => go(wallet)} />
+}
+
 /**
  * Stocks — the Stocks tab, the app's home after login. Built from the live app's screenshots (shared 2026-10-17,
  * re-matched to the live app over ADB on 2026-10-22; there's no Figma for it yet). One long page; the board shows it as frames scrolled to each part.
@@ -24151,35 +24486,37 @@ export const stocks: Flow = {
       group: 'Home',
       label: 'Homepage version',
       picker: 'dropdown',
-      values: homeVersions.map((v) => ({ value: v.id, label: `${v.id.toUpperCase()} · ${v.name}` })),
-      default: 'v2',
+      values: activeHomeVersions.map((v) => ({ value: v.id, label: `${v.id.toUpperCase()} · ${v.name}` })),
+      default: DEFAULT_HOME_VERSION,
       floatOn: ['stocks-01', 'stocks-02', 'stocks-03', 'stocks-04', 'stocks-05', 'stocks-06', 'stocks-07', 'stocks-09', 'stocks-10', 'stocks-11', 'stocks-12', 'stocks-13', 'stocks-14', 'stocks-15', 'stocks-16', 'stocks-17', 'stocks-18', 'stocks-21', 'stocks-22'],
     },
     // FTUX guide for the IND / US switch: dims the screen, lights the switch with a tooltip. Shown every time a Home
     // opens (and again after a version change) while on; tap anywhere or ✕ to end it.
-    { id: 'switchGuide', group: 'Home', label: 'Market switch guide', picker: 'toggle', values: [{ value: 'off', label: 'Off' }, { value: 'on', label: 'On' }], default: 'on' },
+    // "Do more with Lemonn" shortcuts: V1 circles, V2 one outlined card with dividers (default).
+    { id: 'shortcuts', group: 'Home', label: 'Shortcuts', values: [{ value: 'v1', label: 'V1' }, { value: 'v2', label: 'V2' }], default: 'v1' },
+    { id: 'switchGuide', group: 'Home', label: 'Market switch guide', picker: 'toggle', values: [{ value: 'off', label: 'Off' }, { value: 'on', label: 'On' }], default: 'off' },
   ],
   screens: [
-    { id: 'stocks-01', name: 'Home', badge: 'changed', badgeNote: 'Header hides on scroll; DASH pill removed; back returns to the IND / US tab you left', figma: '5714:64982', group: 'ftux', note: 'Top of the page: search, indices, holdings, products, shortcuts.', tab: true, render: (go) => <Home onTab={(t) => goToTab(go, t)} onSearch={(m) => go(searchFor(m))} onProfile={() => go('profile-01')} {...usNav(go)} /> },
-    { id: 'stocks-02', name: 'Home · top movers & watchlists', badge: 'changed', badgeNote: 'Compact IND / US tabs under the index strip when scrolled; switching tabs keeps the scroll', figma: '', note: 'Same page, scrolled.', tab: true, render: (go) => <Home onTab={(t) => goToTab(go, t)} onSearch={(m) => go(searchFor(m))} onProfile={() => go('profile-01')} {...usNav(go)} scrollTo="movers" /> },
-    { id: 'stocks-03', name: 'Home · top losers', figma: '', note: 'The "Top losers" chip picked.', tab: true, render: (go) => <Home onTab={(t) => goToTab(go, t)} onSearch={(m) => go(searchFor(m))} onProfile={() => go('profile-01')} {...usNav(go)} scrollTo="movers" movers="losers" /> },
-    { id: 'stocks-04', name: 'Home · Smart Invest', figma: '', note: 'Same page, scrolled: managed strategies, then the announcement.', tab: true, render: (go) => <Home onTab={(t) => goToTab(go, t)} onSearch={(m) => go(searchFor(m))} onProfile={() => go('profile-01')} {...usNav(go)} scrollTo="invest" /> },
-    { id: 'stocks-05', name: 'Home · sectors & highlights', figma: '', note: 'Same page, scrolled.', tab: true, render: (go) => <Home onTab={(t) => goToTab(go, t)} onSearch={(m) => go(searchFor(m))} onProfile={() => go('profile-01')} {...usNav(go)} scrollTo="sectors" /> },
-    { id: 'stocks-06', name: 'Home · highlights & idea baskets', figma: '', note: 'Same page, scrolled. (The live app no longer has Trade ideas here — removed 2026-10-22.)', tab: true, render: (go) => <Home onTab={(t) => goToTab(go, t)} onSearch={(m) => go(searchFor(m))} onProfile={() => go('profile-01')} {...usNav(go)} scrollTo="highlights" /> },
-    { id: 'stocks-07', name: 'Home · idea baskets & disclosure', figma: '', note: 'The end of the page: the disclosure, four lines and Read More.', tab: true, render: (go) => <Home onTab={(t) => goToTab(go, t)} onSearch={(m) => go(searchFor(m))} onProfile={() => go('profile-01')} {...usNav(go)} scrollTo="more" /> },
-    { id: 'stocks-21', name: 'Home · US tab · KYC not done', badge: 'new', badgeNote: 'Not in Jojo\'s Figma: a user whose Lemonn KYC isn\'t complete', figma: '9001:20', group: 'us-activate', note: 'The US tab for a user who hasn\'t finished their Lemonn (Indian) KYC: US Stocks can\'t be activated yet, so the card asks for KYC first. Complete KYC → the KYC flow (kyc-01). A US stock opens its page with Complete KYC in place of Activate (us-stocks-74). Everything else on the tab is as for a not-activated user (stocks-09).', tab: true, render: (go) => usHome(go, 'kyc', { onActivateUs: () => go('kyc-01'), onUsStock: () => go('us-stocks-74') }) },
-    { id: 'stocks-09', name: 'Home · US Stocks tab', figma: '5756:74756', group: 'us-activate', note: 'The US Stocks tab for a user who has not activated US Stocks: US indices, the Activate US Stocks card (→ risk disclosure sheet, stocks-12), shortcuts, Top Movers, Trillion Dollar Titans, Brands, Heatmap, themes. A US stock opens its page (not activated). Designed in the US Stocks flow (Figma Home · US tab · Activate US Stocks card); here it is the tab on the app\'s own Stocks home.', tab: true, render: (go) => usHome(go, 'activate') },
-    { id: 'stocks-10', name: 'Home · US Stocks tab · scrolled', figma: '', note: 'Same tab, scrolled past the tabs: the compact IND / US tabs are pinned under the top bar.', tab: true, render: (go) => usHome(go, 'activate', { scrollTo: 'movers' }) },
+    { id: 'stocks-01', name: 'Home', badge: 'changed', badgeNote: 'Header hides on scroll; DASH pill removed; back returns to the IND / US tab you left', figma: '5714:64982', group: 'ftux', note: 'The Stocks home in the user status picked in the prototype settings (User status: US Stocks activation — Lemonn KYC pending → … → Activated —, USD wallet, US holdings — the same settings the US stock page and the wallet follow). Picking a status shows its US tab. Each state is also a screen of its own (hidden in the list), which the activation and add-money taps go to.', tab: true, render: (go) => <HomeInState go={go} /> },
+    { id: 'stocks-02', hidden: true, name: 'Home · top movers & watchlists', badge: 'changed', badgeNote: 'Compact IND / US tabs under the index strip when scrolled; switching tabs keeps the scroll', figma: '', note: 'Same page, scrolled.', tab: true, render: (go) => <Home onTab={(t) => goToTab(go, t)} onSearch={(m) => go(searchFor(m))} onProfile={() => go('profile-01')} {...usNav(go)} scrollTo="movers" /> },
+    { id: 'stocks-03', hidden: true, name: 'Home · top losers', figma: '', note: 'The "Top losers" chip picked.', tab: true, render: (go) => <Home onTab={(t) => goToTab(go, t)} onSearch={(m) => go(searchFor(m))} onProfile={() => go('profile-01')} {...usNav(go)} scrollTo="movers" movers="losers" /> },
+    { id: 'stocks-04', hidden: true, name: 'Home · Smart Invest', figma: '', note: 'Same page, scrolled: managed strategies, then the announcement.', tab: true, render: (go) => <Home onTab={(t) => goToTab(go, t)} onSearch={(m) => go(searchFor(m))} onProfile={() => go('profile-01')} {...usNav(go)} scrollTo="invest" /> },
+    { id: 'stocks-05', hidden: true, name: 'Home · sectors & highlights', figma: '', note: 'Same page, scrolled.', tab: true, render: (go) => <Home onTab={(t) => goToTab(go, t)} onSearch={(m) => go(searchFor(m))} onProfile={() => go('profile-01')} {...usNav(go)} scrollTo="sectors" /> },
+    { id: 'stocks-06', hidden: true, name: 'Home · highlights & idea baskets', figma: '', note: 'Same page, scrolled. (The live app no longer has Trade ideas here — removed 2026-10-22.)', tab: true, render: (go) => <Home onTab={(t) => goToTab(go, t)} onSearch={(m) => go(searchFor(m))} onProfile={() => go('profile-01')} {...usNav(go)} scrollTo="highlights" /> },
+    { id: 'stocks-07', hidden: true, name: 'Home · idea baskets & disclosure', figma: '', note: 'The end of the page: the disclosure, four lines and Read More.', tab: true, render: (go) => <Home onTab={(t) => goToTab(go, t)} onSearch={(m) => go(searchFor(m))} onProfile={() => go('profile-01')} {...usNav(go)} scrollTo="more" /> },
+    { id: 'stocks-21', hidden: true, name: 'Home · US tab · KYC not done', badge: 'new', badgeNote: 'Not in Jojo\'s Figma: a user whose Lemonn KYC isn\'t complete', figma: '9001:20', group: 'us-activate', note: 'The US tab for a user who hasn\'t finished their Lemonn (Indian) KYC: US Stocks can\'t be activated yet, so the card asks for KYC first. Complete KYC → the KYC flow (kyc-01). A US stock opens its page with Complete KYC in place of Activate (us-stocks-74). Everything else on the tab is as for a not-activated user (stocks-09).', tab: true, render: (go) => usHome(go, 'kyc', { onActivateUs: () => go('kyc-01'), onUsStock: () => go('us-stocks-74') }) },
+    { id: 'stocks-09', hidden: true, name: 'Home · US Stocks tab', figma: '5756:74756', group: 'us-activate', note: 'The US Stocks tab for a user who has not activated US Stocks: US indices, the Activate US Stocks card (→ risk disclosure sheet, stocks-12), shortcuts, Top Movers, Trillion Dollar Titans, Brands, Heatmap, themes. A US stock opens its page (not activated). Designed in the US Stocks flow (Figma Home · US tab · Activate US Stocks card); here it is the tab on the app\'s own Stocks home.', tab: true, render: (go) => usHome(go, 'activate') },
+    { id: 'stocks-10', hidden: true, name: 'Home · US Stocks tab · scrolled', figma: '', note: 'Same tab, scrolled past the tabs: the compact IND / US tabs are pinned under the top bar.', tab: true, render: (go) => usHome(go, 'activate', { scrollTo: 'movers' }) },
     { id: 'stocks-11', name: 'Home · US Stocks intro (FTUX) sheet', figma: '5756:68986', group: 'ftux', note: 'First launch after release: the IND tab with the US Stocks intro (FTUX) sheet — animated flag, five company logos, three benefits. Activate US Stocks → the risk disclosure (stocks-12); ✕ → Home (stocks-01).', tab: true, render: (go) => <Home {...chrome(go)} {...usNav(go)} sheet={<UsFtuxSheet onActivate={() => go('stocks-12')} onClose={() => go('stocks-01')} />} /> },
     { id: 'stocks-12', name: 'Home · US tab · risk disclosure sheet', figma: '5756:71475', group: 'us-activate', note: 'The Risk disclosure (For US Stocks) sheet over the US tab. Agree and Continue submits the activation → under review (stocks-13); closing it → the tab (stocks-09).', tab: true, render: (go) => usHome(go, 'activate', { sheet: <RiskDisclosureSheet onAgree={() => go('stocks-13')} onClose={() => go('stocks-09')} /> }) },
-    { id: 'stocks-13', name: 'Home · US tab · activation under review', figma: '5756:75539', group: 'us-review', note: 'US tab, activation under review (honey card, up to 1 working day). In the prototype it moves on to "activated" (stocks-15) by itself after 2 s; the wallet opens the wallet with the review banner.', tab: true, render: (go) => usHome(go, 'review', { autoNext: 'stocks-22' }) },
+    { id: 'stocks-13', hidden: true, name: 'Home · US tab · activation under review', figma: '5756:75539', group: 'us-review', note: 'US tab, activation under review (honey card, up to 1 working day). In the prototype it moves on to "activated" (stocks-15) by itself after 2 s; the wallet opens the wallet with the review banner.', tab: true, render: (go) => usHome(go, 'review', { autoNext: 'stocks-22' }) },
     { id: 'stocks-22', name: 'Home · US tab · activation approved sheet', badge: 'new', badgeNote: 'Not in Jojo\'s Figma: tells the user the review was approved', figma: '9001:21', group: 'us-review', note: 'The review is approved: the activated US tab with the "US Stocks is active" sheet (success spot). Add Money to US wallet → the $0 USD wallet (us-stocks-20); Later or closing → the activated Home (stocks-15). The under-review Home (stocks-13) moves here by itself after 2 s.', tab: true, render: (go) => usHome(go, 'activated', { onActivateUs: () => go('us-stocks-20'), sheet: <ActivationApprovedSheet onAddMoney={() => go('us-stocks-20')} onLater={() => go('stocks-15')} /> }) },
-    { id: 'stocks-14', name: 'Home · US tab · activation failed', figma: '5776:81034', note: 'US tab, activation failed (PAN could not be verified): red card, Retry Activation → the risk disclosure (stocks-12).', tab: true, render: (go) => usHome(go, 'failed') },
-    { id: 'stocks-15', name: 'Home · US tab · activated · add money', figma: '5776:81870', note: 'US tab, activation successful: green card with the unlocked benefits, Add Money to US wallet → the $0 USD wallet (us-stocks-20). The wallet icon goes there too.', tab: true, render: (go) => usHome(go, 'activated', { onActivateUs: () => go('us-stocks-20') }) },
-    { id: 'stocks-16', name: 'Home · US tab · money ready', figma: '5796:87332', note: 'Money reached the US wallet: a "Your money is ready" toast above the navbar (times out after 6 s; no card, as in his design); tapping the toast → the activated page (stocks-17). Wallet → the funded USD wallet (us-stocks-59).', tab: true, render: (go) => usHome(go, 'ready', { onActivateUs: () => go('stocks-17') }) },
-    { id: 'stocks-17', name: 'Home · US tab · activated · holding', figma: '5826:92885', note: 'US tab for an activated user who holds US stocks: no card, the summary shows US holdings ($). A US stock opens its stock page — NVDA (held) with Buy / Sell, others Buy only. Wallet → the funded USD wallet.', tab: true, render: (go) => usHome(go, 'holding', { onUsStock: (sym) => go(sym === 'NVDA' ? 'us-stocks-32' : 'us-stocks-31') }) },
-    { id: 'stocks-19', name: 'Home · US tab · under review · Contact Support', badge: 'new', badgeNote: 'Added from Jojo\'s Figma (A00 · Home · Under review · Contact Support)', figma: '5776:80202', group: 'us-review', note: 'Activation still under review after a working day: the honey card gains a Contact Support button. Figma has no support screen, so the button goes nowhere yet (L3 gap / missing screen). The wallet opens the wallet\'s Contact Support state (us-stocks-57).', tab: true, render: (go) => usHome(go, 'support') },
-    { id: 'stocks-20', name: 'Home · US tab · money on the way', badge: 'new', badgeNote: 'Added from Jojo\'s Figma (A00 · Home · Money on the way)', figma: '5796:86490', note: 'After paying on the bank page: the honey "Money on the way" card (trade from Thu 8 PM) with what happens next (debited, converted, credited). Track Transfer and the wallet open the wallet\'s transfer in progress (us-stocks-28). In the prototype it moves on to "money ready" (stocks-16) by itself after 2 s, as in his prototype.', tab: true, render: (go) => usHome(go, 'onTheWay', { onActivateUs: () => go('us-stocks-28'), autoNext: 'stocks-16' }) },
+    { id: 'stocks-14', hidden: true, name: 'Home · US tab · activation failed', figma: '5776:81034', note: 'US tab, activation failed (PAN could not be verified): red card, Retry Activation → the risk disclosure (stocks-12).', tab: true, render: (go) => usHome(go, 'failed') },
+    { id: 'stocks-15', hidden: true, name: 'Home · US tab · activated · add money', figma: '5776:81870', note: 'US tab, activation successful: green card with the unlocked benefits, Add Money to US wallet → the $0 USD wallet (us-stocks-20). The wallet icon goes there too.', tab: true, render: (go) => usHome(go, 'activated', { onActivateUs: () => go('us-stocks-20') }) },
+    { id: 'stocks-16', hidden: true, name: 'Home · US tab · money ready', figma: '5796:87332', note: 'Money reached the US wallet: a "Your money is ready" toast above the navbar (times out after 6 s; no card, as in his design); tapping the toast → the activated page (stocks-17). Wallet → the funded USD wallet (us-stocks-59).', tab: true, render: (go) => usHome(go, 'ready', { onActivateUs: () => go('stocks-17') }) },
+    { id: 'stocks-17', hidden: true, name: 'Home · US tab · activated · holding', figma: '5826:92885', note: 'US tab for an activated user who holds US stocks: no card, the summary shows US holdings ($). A US stock opens its stock page — NVDA (held) with Buy / Sell, others Buy only. Wallet → the funded USD wallet.', tab: true, render: (go) => usHome(go, 'holding', { onUsStock: (sym) => go(sym === 'NVDA' ? 'us-stocks-32' : 'us-stocks-31') }) },
+    { id: 'stocks-19', hidden: true, name: 'Home · US tab · under review · Contact Support', badge: 'new', badgeNote: 'Added from Jojo\'s Figma (A00 · Home · Under review · Contact Support)', figma: '5776:80202', group: 'us-review', note: 'Activation still under review after a working day: the honey card gains a Contact Support button. Figma has no support screen, so the button goes nowhere yet (L3 gap / missing screen). The wallet opens the wallet\'s Contact Support state (us-stocks-57).', tab: true, render: (go) => usHome(go, 'support') },
+    { id: 'stocks-20', hidden: true, name: 'Home · US tab · money on the way', badge: 'new', badgeNote: 'Added from Jojo\'s Figma (A00 · Home · Money on the way)', figma: '5796:86490', note: 'After paying on the bank page: the honey "Money on the way" card (trade from Thu 8 PM) with what happens next (debited, converted, credited). Track Transfer and the wallet open the wallet\'s transfer in progress (us-stocks-28). In the prototype it moves on to "money ready" (stocks-16) by itself after 2 s, as in his prototype.', tab: true, render: (go) => usHome(go, 'onTheWay', { onActivateUs: () => go('us-stocks-28'), autoNext: 'stocks-16' }) },
     { id: 'stocks-18', name: 'Home · activation submitted sheet', figma: '5756:73797', group: 'us-review', note: 'The under-review US tab with the "US Stocks activation under review" sheet (we\'ll let you know as soon as it\'s active). Okay → the under-review Home (stocks-13). Reached from Confirm details in the US Stocks flow.', tab: true, render: (go) => usHome(go, 'review', { sheet: <ActivationSubmittedSheet onOkay={() => go('stocks-13')} /> }) },
   ],
 }
@@ -24192,7 +24529,7 @@ export const stocks: Flow = {
  * Stocks home — page layout. A grey summary area (indices, holdings, products) and, over its bottom edge, the feed on
  * a rounded sheet (radius 32 at the top), like the live app. The grey area is intentional and high-emphasis (the
  * account summary), so a large surface/secondary block is allowed here (DESIGN_SYSTEM 7.2). The layout is L3 Stack /
- * Section; what those blocks don't cover lives here: uneven padding (16 / 48, 32 / 24), the feed's overlap and
+ * Section; what those blocks don't cover lives here: uneven padding (16 / 48, 16 / 24), the feed's overlap and
  * top-only radius, the default surface and the accent tints.
  */
 .summary {
@@ -24203,7 +24540,7 @@ export const stocks: Flow = {
 .feed {
   position: relative;
   margin-top: calc(-1 * var(--l3-spacing-24));
-  padding: var(--l3-spacing-32) 0 var(--l3-spacing-24);
+  padding: var(--l3-spacing-16) 0 var(--l3-spacing-24); /* 16 from the sheet's top edge to the first section */
   border-radius: var(--l3-radius-32) var(--l3-radius-32) 0 0;
   background: var(--l3-surface-default);
 }
@@ -24241,7 +24578,7 @@ export const stocks: Flow = {
 }
 
 /* The feed under that head starts right after its 16 (no 32 of its own on top). */
-.feedUnderHead {
+.feedTabbed.feedUnderHead {
   padding-top: 0;
 }
 
@@ -24254,6 +24591,7 @@ export const stocks: Flow = {
    the strip's line and notch are the sheet's top edge. */
 .feedTabbed {
   margin-top: 0;
+  padding-top: var(--l3-spacing-24); /* 24 under the tabs' line (the rounded sheet without tabs has 16) */
   border-radius: 0;
 }
 
@@ -24411,9 +24749,9 @@ import { MainNav, rememberStocksHome, takeStocksTab, type Section as NavSection 
 import { Screen } from '../../../shared/ui/Screen'
 import { Disclosure, IdeaBaskets } from '../components/Ideas'
 import { Announcement, Highlights, Sectors, SmartInvest } from '../components/Invest'
-import { HoldingsSummary, IndexStrip, ProductCards } from '../components/Overview'
+import { HoldingsSummary, HoldingsSwitcher, IndexStrip, ProductCards, type HoldingsView } from '../components/Overview'
 import { MarketSwitch, MarketTabs, PinnedMarketTabs, type Market } from '../components/MarketTabs'
-import { homeVersion, type HomeVersion } from '../components/homeVersions'
+import { DEFAULT_HOME_VERSION, homeVersion, type HomeVersion } from '../components/homeVersions'
 import { MarketSwitchGuide } from '../components/MarketSwitchGuide'
 import { TopBar } from '../components/TopBar'
 import { usIndices, type UsState } from '../components/us/data'
@@ -24487,10 +24825,10 @@ export function Home({ scrollTo = 'top', market = 'in', movers, onTab, onSearch,
   useAutoAdvance(autoNext, 2000)
   const page = useRef<HTMLDivElement>(null)
   // The design version (the prototype's "Homepage version" option): where the IND / US switch sits and how it looks.
-  const version = homeVersion(useFlowOption('stocks', 'homeVersion', 'v2'))
+  const version = homeVersion(useFlowOption('stocks', 'homeVersion', DEFAULT_HOME_VERSION))
   // The market switch guide (prototype setting, on by default) shows every time this Home opens, and again for each
   // homepage version picked; ending it hides it for this version until the Home opens again.
-  const guideOn = useFlowOption('stocks', 'switchGuide', 'on') === 'on'
+  const guideOn = useFlowOption('stocks', 'switchGuide', 'off') === 'on'
   const [guideDoneFor, setGuideDoneFor] = useState<string | null>(null)
   const guiding = guideOn && !sheet && guideDoneFor !== version.id
   const hasSwitch = version.place !== 'none'
@@ -24625,6 +24963,13 @@ export function Home({ scrollTo = 'top', market = 'in', movers, onTab, onSearch,
     setStripSlides(true)
     setTab(next)
   }
+  // Prototype: a new US Stocks state picked in the settings ("Home state") is shown on the US tab, where it changes things.
+  const shownState = useRef(usState)
+  useEffect(() => {
+    if (usState === shownState.current) return
+    shownState.current = usState
+    switchTo('us', true)
+  }, [usState])
   // V13's market button swaps the page vertically instead: the summary and feed on screen slide down and fade out, then
   // the other market's slide up into place and fade in (no sideways slide, the index strip just changes).
   const swappingUp = useRef(false)
@@ -24681,8 +25026,14 @@ export function Home({ scrollTo = 'top', market = 'in', movers, onTab, onSearch,
 
   // Under a switch in the middle the feed starts right below it; otherwise it overlaps the summary on a rounded sheet.
   const switchInPage = (next: Market) => switchTo(next, true)
-  // The US home's summary (two homes): the activation card while there is one, else the US holdings in dollars.
-  const usCard = usState !== 'holding' && usState !== 'ready'
+  // The US tab's summary: the status card (KYC → activation → add money → buy) in place of the holdings until every
+  // step is done and the user holds a US stock; then the US holdings in dollars replace the card.
+  const usCard = usState !== 'holding'
+  // V2–V4 (the switch over the feed): the tabs are the feed's, not the page's. The top keeps "Current holdings" with its
+  // own IN / US switch, whatever tab the feed is on; only the index marquee follows the tabs. The US activation card
+  // moves into the US tab's feed — except Lemonn KYC pending, which takes the holdings' place (and leaves the feed).
+  const feedTabs = version.place === 'mid' && !twoHomes
+  const [holdingsView, setHoldingsView] = useState<HoldingsView>('overall')
   const onProduct = (id: string) => {
     if (id === 'us-stocks') switchTo('us', true)
     else if (id === 'us-etfs') onUsEtfs?.()
@@ -24731,9 +25082,20 @@ export function Home({ scrollTo = 'top', market = 'in', movers, onTab, onSearch,
             {usCard ? <Inset paddingInline="16" paddingBlock="00"><UsActivationCard state={usState as Exclude<UsState, 'holding'>} onCta={onActivateUs} /></Inset> : <HoldingsSummary us />}
             <ProductCards items={productsUs} onProduct={onProduct} />
           </Stack>
+        ) : feedTabs ? (
+          <Stack key="summary-feed-tabs" gap="24" className={styles.summary}>
+            {usState === 'kyc'
+              ? <Inset paddingInline="16" paddingBlock="00"><UsActivationCard state="kyc" onCta={onActivateUs} /></Inset>
+              : <HoldingsSwitcher view={holdingsView} onView={setHoldingsView} usEmpty={usState !== 'holding'} />}
+            <ProductCards key={version.tiles} items={tiles[version.tiles]} onProduct={onProduct} />
+          </Stack>
         ) : (
           <Stack key="summary-in" gap="24" className={styles.summary} data-swap>
-            <HoldingsSummary us={!twoHomes && tab === 'us' && usState === 'holding'} />
+            {tab === 'us' && usCard ? (
+              <Inset paddingInline="16" paddingBlock="00"><UsActivationCard state={usState as Exclude<UsState, 'holding'>} onCta={onActivateUs} /></Inset>
+            ) : (
+              <HoldingsSummary us={tab === 'us'} />
+            )}
             <ProductCards key={version.tiles} items={twoHomes ? products : tiles[version.tiles]} onProduct={onProduct} />
           </Stack>
         )}
@@ -24752,7 +25114,7 @@ export function Home({ scrollTo = 'top', market = 'in', movers, onTab, onSearch,
           </Stack>
         ) : (
           <Stack key="us" gap="32" className={feedClass} data-swap style={{ '--stk-gap': 'var(--l3-spacing-28)' } as CSSProperties} ref={swipe.contentRef}>
-            <UsHome card={!twoHomes} usState={usState} onActivate={onActivateUs} onStock={onUsStock} onMarket={onUsMarket} onEtfs={onUsEtfs} />
+            <UsHome card={feedTabs && usState !== 'kyc'} usState={usState} onActivate={onActivateUs} onStock={onUsStock} onMarket={onUsMarket} onEtfs={onUsEtfs} />
           </Stack>
         )}
       </Stack>
@@ -44582,6 +44944,20 @@ export const watchlists: Watchlist[] = [
    "high52": 54744.33,
    "low52": 45057.28
   }
+ },
+ "fx": {
+  "usdInr": {
+   "symbol": "USDINR=X",
+   "price": 94.87,
+   "open": null,
+   "prevClose": 95.19,
+   "change": -0.32,
+   "changePct": -0.34,
+   "dayHigh": null,
+   "dayLow": null,
+   "high52": null,
+   "low52": null
+  }
  }
 }
 ```
@@ -44710,6 +45086,247 @@ export const bankAccount: BankAccount = {
   ifsc: 'HDFC0001234',
   type: 'Savings',
   branch: 'Andheri West, Mumbai',
+}
+```
+
+### `src/shared/money.module.css`
+
+```css
+/* <Usd> with "₹ below": the $ value in the parent's type style, the ≈ ₹ line small and secondary under it. */
+.stack {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.stack[data-align='end'] {
+  align-items: flex-end;
+}
+.stack[data-align='center'] {
+  align-items: center;
+}
+
+.inr {
+  font: var(--l3-text-description-12);
+  color: var(--l3-content-secondary);
+  white-space: nowrap;
+}
+```
+
+### `src/shared/money.tsx`
+
+```tsx
+// US Stocks money — every value inside US Stocks is in US dollars (the news, prices and filings users read are in $),
+// with its rupee equivalent at the live USD → INR rate available everywhere. How the ₹ shows is a prototype setting
+// ("₹ equivalent" in the User status panel), so the same screens try each idea:
+//   off    — $ only
+//   below  — $ with a small "≈ ₹1,23,456" line under it
+//   switch — a $ / ₹ switch (<CurrencySwitch />); picking ₹ turns every US value into rupees, across every screen
+// Screens never format a US amount themselves: <Usd value={188.42} /> (or useUsd() where only a string fits).
+// The rate is real: USDINR=X in us-market-snapshot.json (`npm run us:snapshot`), ticking around it like the prices
+// (live.ts). FLAG: it's a snapshot + simulated movement, not a live FX feed — the real app reads its partner's rate.
+import { useSyncExternalStore, type ReactNode } from 'react'
+import { Tabs } from '@l3/components/Tabs'
+import type { FlowOption } from '../flows/types'
+import snapshot from './data/us-market-snapshot.json'
+import { liveDrift, useLiveTick } from './data/live'
+import { useFlowOption } from './prototype'
+import { USER_STATUS } from './userStatus'
+import styles from './money.module.css'
+
+// ── The rate ────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+/** ₹ per $ in the snapshot (the fallback is the 2 Nov 2026 close, should the snapshot lose it). */
+export const USD_INR_SNAPSHOT: number = (snapshot as { fx?: { usdInr?: { price: number } } }).fx?.usdInr?.price ?? 94.87
+
+/** The USD → INR rate right now: the snapshot's, moving a little every 2 s like a live quote. */
+export function useUsdInrRate(): number {
+  const at = useLiveTick()
+  return Math.round(USD_INR_SNAPSHOT * (1 + liveDrift('USDINR', at) / 4) * 100) / 100
+}
+
+// ── Formatting ──────────────────────────────────────────────────────────────────────────────────────────────────────
+
+export type MoneyFormat = {
+  /** Digits after the point (default 2). */
+  decimals?: number
+  /** '+' on positive values (gains and changes). Negative values always get '-'. */
+  sign?: boolean
+  /** Short big numbers: $4.59T / $812.40B / $12.3M, and ₹4.35 L Cr / ₹12.40 Cr / ₹3.20 L. */
+  compact?: boolean
+}
+
+const fixed = (n: number, locale: string, decimals: number) =>
+  n.toLocaleString(locale, { minimumFractionDigits: decimals, maximumFractionDigits: decimals })
+const signOf = (n: number, sign?: boolean) => (n < 0 ? '-' : sign && n > 0 ? '+' : '')
+
+/** $1,234.50 · +$12.30 · $4.59T */
+export function formatUsd(n: number, { decimals = 2, sign, compact }: MoneyFormat = {}): string {
+  const a = Math.abs(n)
+  if (compact) {
+    const unit = a >= 1e12 ? ['T', 1e12] : a >= 1e9 ? ['B', 1e9] : a >= 1e6 ? ['M', 1e6] : undefined
+    if (unit) return `${signOf(n, sign)}$${fixed(a / (unit[1] as number), 'en-US', 2)}${unit[0]}`
+  }
+  return `${signOf(n, sign)}$${fixed(a, 'en-US', decimals)}`
+}
+
+/** ₹1,23,456.78 · +₹1,064 · ₹4.35 L Cr (Indian grouping and units) */
+export function formatInr(n: number, { decimals = 2, sign, compact }: MoneyFormat = {}): string {
+  const a = Math.abs(n)
+  if (compact) {
+    const unit = a >= 1e12 ? [' L Cr', 1e12] : a >= 1e7 ? [' Cr', 1e7] : a >= 1e5 ? [' L', 1e5] : undefined
+    if (unit) return `${signOf(n, sign)}₹${fixed(a / (unit[1] as number), 'en-IN', 2)}${unit[0]}`
+  }
+  return `${signOf(n, sign)}₹${fixed(a, 'en-IN', decimals)}`
+}
+
+/**
+ * A $ amount written as text → the number and how it was written, so sample strings can go through <Usd text="…" />:
+ * '$188.42' → 188.42 · '+$12.30' → 12.3 · '-$5' → -5 · '$4.59T' → 4.59e12. Not a $ amount → undefined.
+ */
+export function parseUsd(text: string): { value: number; format: MoneyFormat } | undefined {
+  const m = /^\s*([+-−])?\s*\$\s*([\d,]+(?:\.\d+)?)\s*([KMBT])?\s*$/.exec(text)
+  if (!m) return undefined
+  const digits = m[2].replace(/,/g, '')
+  const scale = { K: 1e3, M: 1e6, B: 1e9, T: 1e12 }[m[3] as 'K' | 'M' | 'B' | 'T'] ?? 1
+  const value = Number(digits) * scale * (m[1] === '-' || m[1] === '−' ? -1 : 1)
+  return { value, format: { decimals: digits.split('.')[1]?.length ?? 0, sign: m[1] === '+', compact: scale >= 1e6 } }
+}
+
+// ── The setting and the switch ──────────────────────────────────────────────────────────────────────────────────────
+
+export type InrDisplay = 'off' | 'below' | 'switch'
+export type UsCurrency = 'usd' | 'inr'
+
+/** The app-level setting (shown in the User status panel, beside the phone on the US screens that show most money). */
+export const moneyOptions: FlowOption[] = [
+  {
+    id: 'inrDisplay',
+    group: 'US Stocks money',
+    label: '₹ equivalent',
+    values: [{ value: 'off', label: '$ only' }, { value: 'below', label: '₹ below' }, { value: 'switch', label: '$ / ₹ switch' }],
+    default: 'below',
+    floatOn: ['stocks-01', 'us-stocks-13', 'us-stocks-54'],
+  },
+]
+
+const useInrDisplay = () => useFlowOption(USER_STATUS, 'inrDisplay', moneyOptions[0].default) as InrDisplay
+
+// The currency picked on the switch: one for the whole app, remembered on this device (like a real app's preference).
+const CURRENCY_KEY = 'us-currency'
+let currency: UsCurrency = (() => {
+  try {
+    return localStorage.getItem(CURRENCY_KEY) === 'inr' ? 'inr' : 'usd'
+  } catch {
+    return 'usd'
+  }
+})()
+const currencyListeners = new Set<() => void>()
+const subscribeCurrency = (l: () => void) => (currencyListeners.add(l), () => void currencyListeners.delete(l))
+
+export function setUsCurrency(next: UsCurrency) {
+  currency = next
+  try {
+    localStorage.setItem(CURRENCY_KEY, next)
+  } catch {
+    /* private window: just this session */
+  }
+  currencyListeners.forEach((l) => l())
+}
+
+export type MoneyDisplay = {
+  /** How the ₹ shows (the setting). */
+  inr: InrDisplay
+  /** The currency values are in right now: ₹ only when the switch is on and set to ₹. */
+  currency: UsCurrency
+  /** ₹ per $ right now. */
+  rate: number
+}
+
+export function useMoneyDisplay(): MoneyDisplay {
+  const inr = useInrDisplay()
+  const picked = useSyncExternalStore(subscribeCurrency, () => currency, () => 'usd' as UsCurrency)
+  return { inr, currency: inr === 'switch' ? picked : 'usd', rate: useUsdInrRate() }
+}
+
+/**
+ * A US amount as text, in the currency showing: `const usd = useUsd(); usd(188.42)` → "$188.42" (or "₹17,875.40" with
+ * the switch on ₹). For places that only take a string (a button label, a sentence, a chart axis). No "≈ ₹" line.
+ */
+export function useUsd() {
+  const { currency, rate } = useMoneyDisplay()
+  return (usd: number, format: MoneyFormat = {}) =>
+    currency === 'inr' ? formatInr(usd * rate, { ...format, decimals: format.compact ? 2 : format.decimals ?? 2 }) : formatUsd(usd, format)
+}
+
+/** The rupee line on its own ("≈ ₹17,875"), only with the "₹ below" setting. For a ₹ line that sits apart from its $. */
+export function useInrEquivalent() {
+  const { inr, rate } = useMoneyDisplay()
+  return (usd: number, format: MoneyFormat = {}) => (inr === 'below' ? `≈ ${formatInr(usd * rate, { decimals: 0, ...format })}` : undefined)
+}
+
+// ── Components ──────────────────────────────────────────────────────────────────────────────────────────────────────
+
+export type UsdProps = MoneyFormat & {
+  /** The amount in $ … */
+  value?: number
+  /** … or a $ amount written as text ('$188.42', '+$12.30', '$4.59T'); anything else shows as it is. */
+  text?: string
+  /**
+   * `stack` (default): the ≈ ₹ line goes under the value. `inline`: no ₹ line (inside a sentence, a button, a tight
+   * row) — the switch still turns it into ₹.
+   */
+  layout?: 'stack' | 'inline'
+  /** Text-align of the stack (a right-aligned column → 'end'). */
+  align?: 'start' | 'end' | 'center'
+  className?: string
+}
+
+/**
+ * A US amount. Shows $ (or ₹ with the switch on ₹) in the parent's own type style, and with "₹ below" a small
+ * secondary "≈ ₹…" line under it. `<Usd value={1234.5} />` · `<Usd text="+$12.30" />` · `<Usd value={4.59e12} compact />`
+ */
+export function Usd({ value, text, layout = 'stack', align = 'start', className, ...format }: UsdProps) {
+  const usd = useUsd()
+  const below = useInrEquivalent()
+  const parsed = value === undefined && text !== undefined ? parseUsd(text) : undefined
+  if (value === undefined && !parsed) return <span className={className}>{text}</span>
+  const amount = value ?? parsed!.value
+  const f: MoneyFormat = parsed ? { ...parsed.format, ...format } : format
+  const main = usd(amount, f)
+  const line = layout === 'stack' ? below(amount, { sign: f.sign, compact: f.compact }) : undefined
+  if (!line) return <span className={className}>{main}</span>
+  return (
+    <span className={[styles.stack, className].filter(Boolean).join(' ')} data-align={align}>
+      <span>{main}</span>
+      <span className={styles.inr}>{line}</span>
+    </span>
+  )
+}
+
+/** Just the "≈ ₹…" line, for a layout that puts it apart from the $ (under a big balance, say). Nothing unless "₹ below". */
+export function InrEquivalent({ usd, className, ...format }: MoneyFormat & { usd: number; className?: string }): ReactNode {
+  const line = useInrEquivalent()(usd, format)
+  return line ? <span className={[styles.inr, className].filter(Boolean).join(' ')}>{line}</span> : null
+}
+
+/**
+ * The $ / ₹ switch (L3 pill group, small). Shows only with the "$ / ₹ switch" setting; the pick applies to every US
+ * value in the app. Put it where the money is: the wallet's balance, the portfolio's value, a stock page's price.
+ */
+export function CurrencySwitch({ className }: { className?: string }) {
+  const { inr, currency } = useMoneyDisplay()
+  if (inr !== 'switch') return null
+  return (
+    <Tabs
+      className={className}
+      appearance="pill-group"
+      size="sm"
+      aria-label="Show values in"
+      items={[{ value: 'usd', label: '$ USD' }, { value: 'inr', label: '₹ INR' }]}
+      value={currency}
+      onChange={(v) => setUsCurrency(v as UsCurrency)}
+    />
+  )
 }
 ```
 
@@ -45288,4 +45905,105 @@ export function Spot({ icon, tone = 'brand', size = 'lg' }: { icon: string; tone
     </span>
   )
 }
+```
+
+### `src/shared/userStatus.ts`
+
+```ts
+// Where the user is in the app — the prototype's app-level settings ("User status" in the preview panel, the phone's
+// settings sheet and a floating card beside the phone). Every screen that depends on it reads it here, so they all stay
+// in sync: pick "US Stocks: activated · money on the way" once and the Home's US tab, a US stock page and the wallet all
+// show that state. Picking never moves on by itself; taps in the prototype don't change it.
+// In a real app these come from the user's account (KYC status, US Stocks activation, wallet, holdings).
+import type { FlowOption } from '../flows/types'
+import { useFlowOption } from './prototype'
+
+/** The settings' owner in the preview (as a flow id: where the picks are remembered). */
+export const USER_STATUS = 'app'
+
+export type KycStatus = 'done' | 'pending'
+export type UsActivation = 'kyc' | 'off' | 'review' | 'support' | 'failed' | 'active'
+export type UsWallet = 'empty' | 'onTheWay' | 'funded'
+export type UsHoldings = 'none' | 'some'
+
+/**
+ * Screens that change with the user status: the settings float beside the phone on these (desktop preview). The Home,
+ * a US stock page and the wallet's US tab.
+ */
+const STATUS_SCREENS = ['stocks-01', 'us-stocks-13', 'us-stocks-54']
+
+/** The settings, parent first: each one below only matters (and shows) while the one above has the listed values. */
+export const userStatusOptions: FlowOption[] = [
+  {
+    // One list for the whole way in, in order: Lemonn KYC first (US Stocks can't be activated until it's done), then
+    // the activation steps.
+    id: 'us',
+    group: 'User status',
+    label: 'US Stocks activation',
+    picker: 'dropdown',
+    values: [
+      { value: 'kyc', label: 'Lemonn KYC pending' },
+      { value: 'off', label: 'KYC done · not activated' },
+      { value: 'review', label: 'Activation under review' },
+      { value: 'support', label: 'Under review · contact support' },
+      { value: 'failed', label: 'Activation failed' },
+      { value: 'active', label: 'Activated' },
+    ],
+    default: 'off',
+    floatOn: STATUS_SCREENS,
+  },
+  {
+    id: 'usWallet',
+    group: 'User status',
+    label: 'USD wallet',
+    values: [{ value: 'empty', label: '$0' }, { value: 'onTheWay', label: 'Money on the way' }, { value: 'funded', label: 'Has money' }],
+    default: 'empty',
+    showIf: { us: ['active'] },
+    floatOn: STATUS_SCREENS,
+  },
+  {
+    id: 'usHoldings',
+    group: 'User status',
+    label: 'US holdings',
+    picker: 'toggle',
+    values: [{ value: 'none', label: 'None' }, { value: 'some', label: 'Holds NVDA' }],
+    default: 'none',
+    showIf: { usWallet: ['funded'] },
+    floatOn: STATUS_SCREENS,
+  },
+]
+
+const option = (id: string) => userStatusOptions.find((o) => o.id === id)!
+const useStatus = (id: string) => useFlowOption(USER_STATUS, id, option(id).default)
+
+export type UserStatus = { kyc: KycStatus; us: UsActivation; usWallet: UsWallet; usHoldings: UsHoldings }
+
+/** The user status as picked (settings under one that's off keep their last pick). KYC comes from the activation list. */
+export function useUserStatus(): UserStatus {
+  const us = useStatus('us') as UsActivation
+  return {
+    kyc: us === 'kyc' ? 'pending' : 'done',
+    us,
+    usWallet: useStatus('usWallet') as UsWallet,
+    usHoldings: useStatus('usHoldings') as UsHoldings,
+  }
+}
+
+/**
+ * Where the user is with US Stocks, as one step: KYC pending → 'kyc'; not activated → 'activate'; under review /
+ * contact support / failed; activated → $0 'activated', 'onTheWay', or with money 'ready' / 'holding'.
+ * (The Stocks flow's UsState uses the same names.)
+ */
+export type UsJourney = 'kyc' | 'activate' | 'review' | 'support' | 'failed' | 'activated' | 'onTheWay' | 'ready' | 'holding'
+
+export function usJourney({ kyc, us, usWallet, usHoldings }: UserStatus): UsJourney {
+  if (kyc === 'pending' || us === 'kyc') return 'kyc'
+  if (us === 'off') return 'activate'
+  if (us !== 'active') return us
+  if (usWallet === 'empty') return 'activated'
+  if (usWallet === 'onTheWay') return 'onTheWay'
+  return usHoldings === 'some' ? 'holding' : 'ready'
+}
+
+export const useUsJourney = () => usJourney(useUserStatus())
 ```

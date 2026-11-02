@@ -16,10 +16,8 @@
       "id": "stocks-01",
       "name": "Home",
       "figma": "5714:64982",
-      "note": "Top of the page: search, indices, holdings, products, shortcuts.",
-      "goesTo": [
-        "profile-01"
-      ],
+      "note": "The Stocks home in the user status picked in the prototype settings (User status: US Stocks activation — Lemonn KYC pending → … → Activated —, USD wallet, US holdings — the same settings the US stock page and the wallet follow). Picking a status shows its US tab. Each state is also a screen of its own (hidden in the list), which the activation and add-money taps go to.",
+      "goesTo": [],
       "figmaUrl": ""
     },
     {
@@ -220,6 +218,11 @@
     "src/flows/stocks/assets/announcement-jio-ipo.jpg",
     "src/flows/stocks/assets/flags/india.svg",
     "src/flows/stocks/assets/flags/us.svg",
+    "src/flows/stocks/assets/shortcuts/analysis.svg",
+    "src/flows/stocks/assets/shortcuts/etf.svg",
+    "src/flows/stocks/assets/shortcuts/ipo.svg",
+    "src/flows/stocks/assets/shortcuts/referral.svg",
+    "src/flows/stocks/assets/shortcuts/watchlist.svg",
     "src/flows/stocks/assets/us/benefit-bolt.svg",
     "src/flows/stocks/assets/us/ftux/bloom-blue.svg",
     "src/flows/stocks/assets/us/ftux/bloom-red.svg",
@@ -247,6 +250,7 @@
     "src/flows/stocks/components/MarketTabs.module.css",
     "src/flows/stocks/components/MarketTabs.tsx",
     "src/flows/stocks/components/Overview.tsx",
+    "src/flows/stocks/components/ShortcutArt.tsx",
     "src/flows/stocks/components/TopBar.module.css",
     "src/flows/stocks/components/TopBar.tsx",
     "src/flows/stocks/components/UsIntroStory.module.css",
@@ -294,6 +298,8 @@
     "src/shared/data/us-market-snapshot.json",
     "src/shared/data/usStocks.ts",
     "src/shared/data/user.ts",
+    "src/shared/money.module.css",
+    "src/shared/money.tsx",
     "src/shared/prototype.ts",
     "src/shared/ui/MainNav.tsx",
     "src/shared/ui/Rail.module.css",
@@ -303,6 +309,7 @@
     "src/shared/ui/Sheet.module.css",
     "src/shared/ui/Sheet.tsx",
     "src/shared/ui/Spot.module.css",
-    "src/shared/ui/Spot.tsx"
+    "src/shared/ui/Spot.tsx",
+    "src/shared/userStatus.ts"
   ]
 }

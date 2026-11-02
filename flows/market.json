@@ -19,7 +19,7 @@
       "note": "The filter bar shows \"Apply filters\" until something is applied.",
       "goesTo": [
         "search-24",
-        "us-stocks-31"
+        "us-stocks-13"
       ],
       "figmaUrl": ""
     },
@@ -30,7 +30,7 @@
       "note": "Same layout — only the list changes.",
       "goesTo": [
         "search-24",
-        "us-stocks-31"
+        "us-stocks-13"
       ],
       "figmaUrl": ""
     },
@@ -41,7 +41,7 @@
       "note": "",
       "goesTo": [
         "search-24",
-        "us-stocks-31"
+        "us-stocks-13"
       ],
       "figmaUrl": ""
     },
@@ -52,7 +52,7 @@
       "note": "",
       "goesTo": [
         "search-24",
-        "us-stocks-31"
+        "us-stocks-13"
       ],
       "figmaUrl": ""
     },
@@ -63,7 +63,7 @@
       "note": "Side tabs on the left (grey rail, the open one connected to the pane); only the open group on the right. Opens on Sort by.",
       "goesTo": [
         "search-24",
-        "us-stocks-31"
+        "us-stocks-13"
       ],
       "figmaUrl": ""
     },
@@ -74,7 +74,7 @@
       "note": "Indices open — Nifty 500 picked (one choice); its side tab shows 1. Each option says how many stocks it gives.",
       "goesTo": [
         "search-24",
-        "us-stocks-31"
+        "us-stocks-13"
       ],
       "figmaUrl": ""
     },
@@ -85,7 +85,7 @@
       "note": "Sectors open — Banking and IT picked (any number); sort and index picked too. Sectors with no stocks in Nifty 500 are off.",
       "goesTo": [
         "search-24",
-        "us-stocks-31"
+        "us-stocks-13"
       ],
       "figmaUrl": ""
     },
@@ -96,7 +96,7 @@
       "note": "One removable chip per pick; the filter button gets a dot.",
       "goesTo": [
         "search-24",
-        "us-stocks-31"
+        "us-stocks-13"
       ],
       "figmaUrl": ""
     },
@@ -104,10 +104,10 @@
       "id": "market-09",
       "name": "Market · US stocks",
       "figma": "",
-      "note": "The picker left of the tabs is on US: $ prices, US logos; tapping a stock opens its US stock page (us-stocks-31).",
+      "note": "The picker left of the tabs is on US: $ prices, US logos; tapping a stock opens its US stock page (us-stocks-13, which follows the user status).",
       "goesTo": [
         "search-24",
-        "us-stocks-31"
+        "us-stocks-13"
       ],
       "figmaUrl": ""
     },
@@ -118,7 +118,7 @@
       "note": "US list with the S&P 500 index applied (the US Stocks flow\\",
       "goesTo": [
         "search-24",
-        "us-stocks-31"
+        "us-stocks-13"
       ],
       "figmaUrl": ""
     }
