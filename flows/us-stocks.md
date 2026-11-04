@@ -1,6 +1,6 @@
 # Flow: US Stocks (`us-stocks`)
 
-> One self-contained file for converting this flow to another platform. Read https://kirtanyak-pe.github.io/lemonn-app-prototype/CONVERT.md first. Design system: Lemonnade V3 @ `e34cfaf` (components, tokens and rules: https://kirtanyak-pe.github.io/lemonnade-v3-docs/llms.txt).
+> One self-contained file for converting this flow to another platform. Read https://kirtanyak-pe.github.io/lemonn-app-prototype/CONVERT.md first. Design system: Lemonnade V3 @ `4afbde2` (components, tokens and rules: https://kirtanyak-pe.github.io/lemonnade-v3-docs/llms.txt).
 
 Activate US Stocks, add money to the USD wallet, buy and sell, withdraw (teammate import, under review).
 
@@ -73,6 +73,77 @@ Two screens follow the app-level User status (`src/shared/userStatus.ts`, read t
 other flows land on them) but not listed in the preview. `FlowScreen.hidden` is in `src/flows/types.ts`; the list uses
 `listed()` in `src/preview/screenTree.ts`.
 
+### Add money (`us-stocks-21`…`26`, `screens/money/AddMoneyScreen.tsx`)
+
+Groww-style $ entry (user's 3 Nov ask; reference `references/2026-11-03/wallet/1-us-add-money-keypad.png`). The user types
+**US dollars**, what they want in the wallet; the ₹ it costs is the line under the amount.
+
+- Top: L3 Actionbar "Add money", back → wallet; description "$0.00 available" (the wallet balance, left-aligned).
+- Body: the shared `AmountEntry` (`src/shared/ui/AmountEntry`): big centred `$` amount with a caret, empty = grey `$0`;
+  under it "You pay ≈ ₹X · incl. charges", a Tertiary Small button that opens the charges breakdown sheet; under that the
+  quick-add chips +$50 / +$100 / +$500 (they add to the amount).
+- Dock (`AmountDock`): a "Net Banking (Remittance) · HDFC Bank ••1861" ListCell between hairlines (no bank change in this
+  flow, so no "Change"), the app's number keypad with "." (up to 2 decimals, 7 whole digits), and a Large primary
+  "Add $X" button, disabled while the amount is empty, invalid or the bank name mismatches.
+- Limits: minimum $50 (`MIN_DEPOSIT_USD`; red "Minimum $50" under the amount when below), maximum $2,50,000 a year under
+  LRS (`LRS_LIMIT_USD`; red "Maximum $250,000 per financial year under LRS"). An empty amount shows "Minimum $50" in grey.
+- ₹ maths (`money/amounts.ts`): `inr = inrForUsd(usd, rate)` is the exact inverse of `depositBreakdown(inr, rate).lands`
+  (rate = live + ₹1.43; partner fee $1.18; GST on the conversion charge). The "≈ ₹X" is that, rounded up to whole rupees.
+  The sheet (`ChargesBreakdownSheet`) shows the same ₹ and its breakdown; "Lands in your US wallet" = the typed $.
+- Amounts on this screen are plain `$` (`formatUsd`), not the app's "₹ equivalent" setting: the entry is in $ and the ₹ line
+  is always there, because paying is in ₹, so a second ≈ ₹ (or a ₹ switch) would only repeat or contradict it.
+- Next: "Add $X" → the bank page directly → wallet (no "pay on your bank's page" sheet; M08 was removed 3 Nov). Back on
+  the bank page keeps the typed $.
+- States (same Figma nodes as before): M01 `5776:84630` $1,000 · M02 `5776:85779` charges sheet open · M03 `5776:84513`
+  below minimum, prefilled "20" · M07 `5796:86175` above LRS, prefilled 300000 · M05 `5796:86009` bank name mismatch
+  (Aerobar, button disabled). (M08 `5776:84258`, the pay-on-bank sheet, is dropped: Add $X opens the bank's page.)
+- Copy: `copy.json` (`addMoney.*`), read with `t()` from `screens/money/copy.ts`.
+
+**Differences from Figma:** M01 had a ₹ TextField with min / max helper text, a "US Wallet Balance" card, ₹ chips
+(+5,000…) and a bank strip + timing note in the dock; here the amount is typed in $ on an in-app keypad, the balance moves to
+the Actionbar description, the chips are +$, the bank is a ListCell and the timing note is dropped. M03 / M07 keep their
+meaning (below minimum / above LRS) with $ limits; the ₹ limits in the Figma helper text are gone.
+
+**L3 gaps:** no big amount input and no in-app number keypad (both drawn in `AmountEntry`, on L3 tokens, flagged there);
+quick-add chips are L3 Tabs (pill, action) used as buttons.
+
+### Orders & Positions (`screens/orders/`, Portfolio's Orders and Positions tabs)
+
+Layout from the F&O dev-handoff file's "Positions & orders" (Figma `nLs24dTJdPz9A5pu3AWMbe`, `6754:65598`), drawn there
+for commodities; US content here. The data contract is `screens/orders/data.ts`: an order has one status, and its list,
+tags, timeline and dock follow from it.
+
+- **Orders tab (USD side):** Open (n) · History (n) (no SIP for US), "All orders ⇕" picker (All / Stocks / ETFs),
+  Filters sheet (Side, Order type, and Status on History) with a count badge. Card: "Limit · Day", status + Buy/Sell
+  tags, logo + symbol, Qty (filled/qty while partly filled), LTP (live) and At limit / Trigger / Mkt / Avg. Empty
+  states for no orders, a narrowed picker and filters that match nothing. Sample orders show for the "holding" user
+  status only.
+- **Statuses:** Open list — open, queued (placed while the US market is closed), partly filled. History — executed,
+  partly executed (rest cancelled at the close), failed, cancelled, expired (Day order not filled by the close).
+- **Order Details (`us-stocks-79`, and one preview screen per status `us-stocks-81`…`90`):** asset row (→ stock / ETF
+  page), status line with filled/qty shares, the reason (Aerobar) for failed / cancelled / expired / partly executed,
+  details (KeyValueList), Order status timeline (L3 Steps). Dock: Cancel order + Modify (open, queued, partly filled;
+  Cancel asks in a sheet first), Repeat order (executed), Retry (failed), Place again (cancelled, expired).
+- **Positions tab:** Indian Stocks / US Stocks tabs as on Holdings. US positions are today's trades before they settle
+  into Holdings (T+1): Today's returns (unrealised / realised) and position cards. Empty state for an activated user
+  with no trades today.
+- **Position Details (`us-stocks-80`):** header (shares, live LTP), Bought / Sold today block, Returns ⓘ (sheet on
+  realised vs unrealised). Dock: Buy more + Exit position for a buy; Buy again for a sell.
+- **Sample story (data.ts):** every sell is of shares the user holds — the one US holding is 12 NVDA (13 bought
+  27 Oct + 5 of 8 on 28 Oct, minus 6 sold today by the partly filled sell). Today's executed AMD and VTI buys and that
+  NVDA sale are the Positions (prices inside today's live range). Times are IST: the US market runs 8:00 PM – 2:30 AM
+  since US daylight time ended on 1 Nov, 7:00 PM – 1:30 AM before.
+- **Back:** Order Details goes back to Portfolio on Orders, USD side (`us-stocks-91`), Position Details to Portfolio
+  on Positions, US Stocks (`us-stocks-92`); the Orders tab keeps its Open / History, picker and filters.
+- **Differences from Figma (US Stocks rules):** no Intraday, Convert to delivery / intraday, tender-period margin,
+  Target profit / Trailing SL or Manage TP/SL; Buy / Sell tags are profit / loss coloured (L3), not blue; done timeline
+  steps show L3's green tick, not grey dots; cards are 16 apart (L3), not 12.
+- **L3 gaps:** Steps has no tone (the current step's colour is overridden in CSS); no status-dot component; no
+  destructive button for "Cancel order"; no text link with a badge (Filters is an action pill + Badge); sheet ListCell
+  rows need a -16 inset to line up with section titles; PriceChange formats ₹ only (signed $ coloured by hand); no card
+  with a grey title strip (Position Details uses a section header over a KeyValueList card); a clickable Card announces
+  itself as a toggle (`aria-pressed`). No sell Limit / SL pad yet, so Modify / Retry on a sell open the plain sell pad.
+
 ### Navigation
 
 Every tap he wired is kept. The main path: FTUX sheet → Activate → Risk disclosure → Under review → Approved → Add money
@@ -80,207 +151,62 @@ Every tap he wired is kept. The main path: FTUX sheet → Activate → Risk disc
 
 ### Changelog
 
-- 2026-11-03 — **ETF page Events: the US stock page's layout**: an "Events" heading, then the stock page's rows — date box, title, detail and tag — with its own styles (the old ETF list had none and broke).
-- 2026-11-03 — **Boosted ETF page strip: the gold bolt**: the trend arrow gives way to the ETF list's gold bolt (20), sliding in from the left.
-- 2026-11-03 — **Boosted note "Text": the gold bolt**: the arrow and its green circle give way to the Boosted tab's gold bolt (20, no tile), still sliding in from the left; Description 12 so it stays two lines.
-- 2026-11-03 — **Boosted note "Text": on the gold strip**: the ETF page's gold gradient and gold bar behind the description; the 1% and 3% in solid white (no green).
-- 2026-11-03 — **Boosted note "Text": a description about returns**: "For every 1% the market goes up in a day, a 3x
-  Boosted ETF aims to return 3%." in Description 14 (secondary, the 1% and 3% green), led by the up-trend arrow in a soft
-  green round tile that slides in from the left when the tab opens (no slide with reduced motion).
-- 2026-11-03 — **Every ETF page lists at least six top holdings**. The smaller funds' sample holdings now carry their
-  real top six to eight (rounded sample weights): ITA (Boeing, TransDigm…), XLE (EOG, Williams…), BOTZ (Keyence, Fanuc…),
-  UFO (Iridium, EchoStar…), INDA and EPI (Reliance, TCS, Bharti Airtel, SBI — with their NSE logos), MCHI and KWEB
-  (Tencent, Meituan, JD…), EWJ (Hitachi, SMFG…), VGK (Nestlé, AstraZeneca…), EWY (KB, Hyundai…). NVDL / NVD still list
-  NVIDIA alone (they follow one stock). Stock pages are unchanged.
-- 2026-11-03 — **Boosted note "Text": blends in**: Description 12 in the tertiary colour, the 1% / 3% a step brighter (secondary, semibold, no green), a small muted arrow, balanced lines.
-- 2026-11-03 — **Boosted note "Text": a sentence**: the up-trend arrow, then "If the market goes up 1% in a day, a 3x Boosted ETF aims to go up 3%." over two lines (the 1% and 3% in green); no box.
-- 2026-11-03 — **Boosted note "Card" is now "Text"**: no box, border or tile — the bolt in the accent, then "Market ▲ 1% → 3x Boosted ▲ 3%" over "In one day" (no (i) while How Boosted ETFs work is off).
-- 2026-11-03 — **Boosted ticker: five versions** (flow option "Boosted ticker", a dropdown that floats on the ETF list;
-  default V1). V1 Arrows at the edges ("↗ Market moves +1% → [3x Long] moves +3% ↗"), V2 Compact (centred, no "moves":
-  "↗ Market +1% → [3x Long] +3%"), V3 Two chips ("[↗ Market +1%] → [3x Long ↗ +3%]"), V4 Big number ("Market +1% → [3x
-  Long]" with a large +3% at the right), V5 Bolt lead ("[⚡ 3x] Market +1% → Long +3%", the side in green / red). All
-  on the gold strip, as a ticker. FLAG: hand-made.
-- 2026-11-03 — **Boosted ticker: arrows at the strip's edges**: the first arrow at the left edge, the last pinned to the right edge, the words between.
-- 2026-11-03 — **Gold Boosted strips: gold icons**: on the gold strips (the Boosted tab and a Boosted ETF's page) the trend arrows and the "→" are gold; the words stay white and the moves green / red.
-- 2026-11-03 — **Boosted ticker: arrows at both ends**: "↗ Market moves +1% → [3x Long] moves +3% ↗" (the first arrow follows the market, down for the 3x Short line).
-- 2026-11-03 — **Boosted tab: the ETF page's gold card**. The ticker sits on the same gold gradient strip as a Boosted
-  ETF's page ("Boosted line" now starts at Gold), 36 tall, and each move has its trend arrow after it: "Market moves
-  +1% ↗ → [3x Long] moves +3% ↗" and "Market moves −1% ↘ → [3x Short] moves +3% ↗" (the +3% in green). The
-  leading icon is gone.
-- 2026-11-03 — **How Boosted ETFs work: off for now** (`BOOST_SHEET` in BoostedSheet.tsx). The Boosted strips on the ETF
-  list and on a Boosted ETF's page are plain notes: not tappable, no (i). On the page the (i) gives way to the trend icon
-  (up green, down red). The sheet stays in the code; set the flag to bring it back.
-- 2026-11-03 — **Boosted tab: gold bolt**, selected or not.
-- 2026-11-03 — **ETF list header: "ETFs" and a search button**. The bar shows the "ETFs" heading with a search action on
-  the right; tapping it opens the search field (focused) in the bar, and back closes it and clears the search.
-- 2026-11-03 — **Boosted tab: gold bolt**: the tab's lightning is gold (zing), selected or not.
-- 2026-11-03 — **Top holdings page: name first**: each card reads the company's name (Label 16) over its ticker.
-- 2026-11-03 — **Top holdings page: no weight bar**: the cards are the Market page's own — logo, ticker over name, the share on the right — 66 tall.
-- 2026-11-03 — **Top holdings page: the Market page's cards**. Each holding is an L3 ListCell card, 16 apart: the logo
-  (40), the ticker (Label 16) over the company name, a thin weight bar under the name (against the biggest holding),
-  and the share on the right (Label 16). Cards are 76 tall (the Market's 66 plus the bar). The header reads "Top 50 of
-  503 · Weight"; a Boosted fund counts the index it follows ("Top 50 of 101" for TQQQ, not "of 50").
-- 2026-11-03 — **Boosted ETF page strip**: the fund's "up 3%" is now green (the up colour), not gold.
-- 2026-11-03 — **Boosted ETF page: the strip above About, About says what it's built on**. The gold strip moves above
-  About and is two lines again on the gold gradient: "If the Nasdaq-100 moves up 1% in a day, TQQQ aims to move up 3%."
-  (short: "moves down 1% … aims to move up 3%"), the (i) leading. About now explains each Boosted fund: the index or
-  stock it follows and what's in it (e.g. "the index QQQ tracks: the 100 biggest non-financial companies on the
-  Nasdaq…"), how it gets the 2x / 3x (swaps), and that it resets every day.
-- 2026-11-03 — **Boosted ETF page: the gold Boosted strip**. Under About, the old leverage box gives way to the ETF list's
-  strip, in gold, one line for the fund: "↗ Nasdaq-100 moves +1% → TQQQ moves +3%" (short: "↘ Nasdaq-100 moves −1% →
-  SQQQ moves +3%"; NVDL / NVD show +2%). A tap opens How Boosted ETFs work. The strip is one component now
-  (`BoostStrip.tsx`), shared by the list's ticker and the page.
-- 2026-11-03 — **Boosted ticker: 5 s a cycle**: each line holds 2.1 s, then a 0.4 s slide.
-- 2026-11-03 — **Boosted ticker: the side tags, on grey**. Each line names the side with the cards' own L3 Tag: "Market
-  moves +1% → [3x Long] moves +3%" (green tag) and "Market moves −1% → [3x Short] moves +3%" (red tag); the +3% stays
-  green (each side gains in its case). "Boosted line" now starts at Grey (surface-secondary, a neutral bar).
-- 2026-11-03 — **Boosted strip: a ticker**. Two lines take turns, sliding up every 3 s (hold 2.6 s, slide 0.4 s): "↗
-  Market moves +1% → 3x Long moves +3%" and "↘ Market moves −1% → 3x Short moves +3%" — the market's move in the up /
-  down colour, the Boosted side in green. Screen readers hear both lines; with reduced motion the first line stays.
-- 2026-11-03 — **Boosted strip: "3x Long moves +3%", bar on the left again**: "↗ Market moves +1% → 3x Long moves +3%"
-  (the second half in the accent), left-aligned on the solid tint with the 2 bar on the left (square there, radius 2 on
-  the right) and the (i) at the right end.
-- 2026-11-03 — **Boosted strip, after CoinSwitch's leverage note**: one centred line, 32 tall, on a solid tint (no
-  gradient): trend-up icon, "Market moves +1%", an arrow, "You make +3%" in the accent, a quiet (i). "Boosted line" now
-  starts at Green (the up colour; Gold, Blue, Purple and Grey stay). The strip opens How Boosted ETFs work, which covers
-  falls, short funds and the daily reset.
-- 2026-11-03 — **Boosted strip: two lines**: "If the market goes up 1% in a day, a 3x Boosted ETF aims to go up 3%.",
-  at most two lines, with the slim 8 padding and the 14 (i).
-- 2026-11-03 — **Boosted note: the Strip, slimmer, is the default** (Card and Chip stay in "Boosted note"). One line, 32
-  tall: a 14 (i) in the accent, then "Market up 1% in a day → 3x Boosted aims for 3%" (ends in "…" if a narrower phone
-  can't fit it), 8 padding top and bottom.
-- 2026-11-03 — **Boosted note: small, colourful, always there** (flow option "Boosted note": Card, the default, Chip or
-  Strip; "Boosted line" sets its colour). Card: a 52-tall card like the fund cards (12 radius, hairline) with a 32 tile
-  in the soft accent and the bolt, "Market ▲ 1% → 3x Boosted ▲ 3%" (the boosted 3% in the accent) over "In one day ·
-  Tap to see how it works", and the (i). Chip: the same line in a 28-tall tinted pill. Strip: the sentence on the
-  tinted strip. Each opens How Boosted ETFs work. FLAG: hand-made.
-- 2026-11-03 — **Boosted line: the (i) leads**. The bolt in the strip is now the (i), in the strip's accent (gold by
-  default), and the whole strip is a button that opens How Boosted ETFs work. The inline (i) after the text is gone.
-- 2026-11-03 — **Boosted line, simpler**: "If the market goes up 1% in a day, a 3x Boosted ETF aims to go up 3%." with
-  the (i) right after it (falls, short funds and the daily reset are in How Boosted ETFs work). The bolt is centred on the
-  lines. The strip is square on the left (the bar runs straight) and has a 2 radius on the right.
-- 2026-11-03 — **Boosted line: tinted background** (flow option "Boosted line": Gold, the default, Blue, Purple or Grey).
-  The strip takes an L3 accent's light surface (zing / discover / purple; dark gold, dark blue and dark purple in dark
-  mode) as a gradient, full on the left and fading to none on the right, with the left bar and the bolt in the same
-  accent.
-- 2026-11-03 — **"Leveraged" is now "Boosted"** on the ETF list: the second tab reads "⚡ Boosted". The intro line is a
-  highlighted strip (grey, a 2 lime bar on the left, a lime bolt): "If the market rises 1% in a day, a 3x Boosted ETF
-  aims to rise 3%. Falls are boosted too." An (i) at its end opens **How Boosted ETFs work** (`BoostedSheet.tsx`), a
-  bottom sheet that plays one day: the Market bar rises 1%, 3x Long rises 3%, 3x Short falls 3% (it loops; it holds still
-  with reduced motion). Then three points: long, short, and "It resets every day". Got it closes it. The old line ("Go long
-  if you expect a rise…") is gone. FLAG: hand-made strip, bars and animation.
-- 2026-11-03 — **Leverage tag: all eight versions in the prototype settings** (ETFs → Leverage tag; V5 After heading,
-  the current design, is the default): V1 Logo foot, V2 Logo badge, V3 Logo ring, V4 Card corner, V5 After heading, V6
-  Pill on foot, V7 Slice, V8 Notch. A/B test plan in `ab-tests/leverage-tag.md`: a comprehension pre-test of all eight
-  (does the user read the direction right?), then a live test of the best two against V5. FLAG: hand-made pills, band
-  and mask; overridden Tag radii.
-- 2026-11-03 — **Leveraged cards: the tag goes with the heading**. Each heading is now what the fund follows, short (Nasdaq
-  100, Chip stocks, NVIDIA, S&P 500), with the "3x Long" / "3x Short" L3 Tag right after it: "Nasdaq 100 [3x Long]".
-  The tag no longer sits on the logo. Every heading fits on one line at 360.
-- 2026-11-03 — **Leveraged ETF page: what the leverage does, in numbers**. Under About, a highlighted strip (grey
-  surface, a 2 bar on the left in the fund's side colour) reads "Nasdaq-100 ▲ 1% → TQQQ ▲ 3%" ("SQQQ ▼ 3%" for a
-  short fund), then "In one day. Over longer periods the result can differ from 3x." Screen readers hear "If Nasdaq-100
-  moves up 1% in a day, TQQQ aims to move up 3%." The About text's "… more" now shows only when the text is longer
-  than its 3 lines. FLAG: hand-made strip.
-- 2026-11-03 — **Leverage tag: V1 Logo foot, chosen from eight versions** (logo foot, logo badge, logo ring, card
-  corner, after heading, pill on foot, slice, notch). "3x Long" / "3x Short" (L3 Tag, profit / loss) sits across the
-  logo's foot, sticking out 4 on the left, with both ends round and a 2 ring of the card's colour. The switch and the
-  other versions are gone. FLAG: Tag radius overridden.
-- 2026-11-03 — **Leverage tag: one version, the pill on the logo's foot** (chosen from five: logo foot, logo badge, logo
-  ring, card corner, after the heading). A "3x ▲" / "3x ▼" pill in the up / down colours sits centred on the logo's
-  foot and hangs 8 below it, with a 2 ring of the card's colour. The switch and the other four versions are gone.
-  FLAG: hand-made pill.
-- 2026-11-03 — **Leveraged tab shows every Market and Sector chip**, the same as Regular. A chip with no leveraged fund
-  says so: "No leveraged ETFs for China yet — Leveraged ETFs here follow US indices and stocks: try US, Technology or
-  Chips."
-- 2026-11-03 — **Leveraged tab has the Market / Sector filter too**: the same switch and chips as Regular, above the
-  intro line. Chips show only when a fund in the tab has them: the leveraged funds are all US-listed, so Market is
-  All · US and Sector is All · Technology (TQQQ, SQQQ) · Chips (SOXL, SOXS, NVDL, NVD). Switching tabs goes back to All.
-- 2026-11-03 — **Top holdings page (us-stocks-75, 9001:12)**: the ETF page's "Others" row now opens a full page,
-  "Top holdings" (the fund's name under it). It lists the top 50 holdings, biggest first, in the same rows as the ETF
-  page, under a "Top 50 of 503 · Weight" header. A row opens its stock page. Others gets a chevron. The S&P 500 and
-  Nasdaq-100 sample holdings now carry 50 names each (rounded sample weights); smaller funds list what the sample has.
-- 2026-11-03 — **Leveraged tab is one list, with the tag on the logo**: no index headings (Nasdaq 100, Semiconductors…);
-  each long fund sits above its short one. The "3x Long" / "3x Short" tag moved from the second line onto the logo's
-  foot: straight on the left, round on the right, with a 2 ring of the card's colour. FLAG: Tag radius overridden.
-- 2026-11-03 — **Every ETF page shows the logo stack and "+N"**. Stock counts added for BOTZ 81, UFO 68, INDA 169,
-  EPI 558, KWEB 45 and EWY 82 (from the funds' holdings pages, Oct 2026), so the regular funds' "positions" lines
-  update too. Leveraged funds hold mostly swaps, so their stack shows the stocks of the index they follow:
-  TQQQ / SQQQ 101, SPXL / SPXS 503, SOXL / SOXS 30 (ICE Semiconductor Index), and NVDL / NVD just NVIDIA's logo with no
-  count. Screen readers say "Holds 81 stocks" or "Follows 101 stocks" (`stocksBehind` in data.ts).
-- 2026-11-03 — **Leveraged tab uses the Regular card**: under each index heading, the long then the short fund as the
-  same ListCell card (fund logo, plain heading, price over the change). The second line starts with the "3x Long" /
-  "3x Short" tag, then "TQQQ · ProShares UltraPro QQQ" (the name ends in "…"). The two-up pair cards are gone from the
-  list; EtfPreviousScreen still uses their styles.
-- 2026-11-03 — **Regular / Leveraged tabs are back** on the ETF list (`LEVERAGED = true`). Regular keeps the Market /
-  Sector switch and the fund cards. Leveraged shows the long / short pairs by index (Nasdaq 100, Semiconductors,
-  NVIDIA, S&P 500). The combined list with corner tags (and its "Leveraged ETFs" flow option) is removed.
-- 2026-11-03 — **Leveraged ETFs in the ETF list** (flow option "Leveraged ETFs": In the list, the default, or Off).
-  One combined list: each leveraged pair comes right after the regular fund it follows (SPY → SPXL, SPXS; QQQ → TQQQ,
-  SQQQ; SMH → SOXL, SOXS, NVDL, NVD). They use the same card, with the same plain heading as that fund. A "3x Long" /
-  "3x Short" L3 Tag (profit / loss) is cut into the card's top-right corner: square on the card's edges, the card's 12
-  radius at the corner. They follow the Market / Sector chips (US; Technology / Chips) and search. FLAG: Tag radius
-  overridden for the corner.
-- 2026-11-03 — **ETF list: Market / Sector switch** before the chips, like the Stocks home's Mega Cap chip: an
-  outlined "Market ⇅" pill and a divider. Tapping it flips to "Sector", and the chips change from All · US · China ·
-  Japan · Europe · Korea to All · Technology · Chips · Oil & gas · Defence · Robots & AI · Space · Internet. Each switch
-  goes back to All. Each fund's sector is set in `etfSector` (data.ts); whole-market and country funds have none and
-  show under All only. FLAG: hand-made switch chip and divider.
-- 2026-11-03 — **ETF page: "+500" is a capsule in the logo stack**. It is 24 tall with round ends, in the tags' grey,
-  and it overlaps the last holding logo by 8 like the logos overlap each other (a 2 gap cut out of the logo behind).
-  FLAG: hand-made, since L3 Avatar has no "+N" and Tag has no full radius.
-- 2026-11-03 — **ETF page, what's inside: three logos and "+35"**. Three of the biggest holdings' logos, then the
-  rest of the fund as a "+N" tag (ITA holds 38: three logos + 35). Still only for funds whose count we know. Lockheed
-  Martin's logo is a white mark, so it now sits on the black plate (src/shared/data/usStocks.ts).
-- 2026-11-03 — **ETF page: what's inside.** On the right of the tags, two of the fund's biggest holdings' logos (24,
-  overlapping) and a "101 stocks" tag. It shows only for funds whose stock count we know (SPY, QQQ, VTI, SMH, ITA, XLE,
-  EWJ, MCHI, VGK); the others show just their tags. The issuer logos moved to src/shared/assets/etf-issuers
-  (src/shared/data/etfIssuers.ts), so the Stocks home's Discover ETFs can use them too.
-- 2026-11-03 — **ETF headings say what is inside**: Nasdaq's top 100, Top 25 chip stocks, US defence stocks, US oil &
-  gas stocks, Robotics & AI stocks, Space stocks, Profitable Indian stocks (Top 500 US stocks, The whole US market and
-  the country names stay). They are used here, on the ETF page and in Discover ETFs. All fit on one line at 360.
-- 2026-11-03 — **ETF card "Fund logo": plain name first.** The plain name is now the heading ("The whole US
-  market"), with "VTI · Vanguard Total Stock Market" under it (ticker secondary, name tertiary, the name ends in "…").
-  The plain names are shorter so every heading fits on one line at 360: Top 500 US stocks, Nasdaq top 100, The whole
-  US market, Defence & aerospace, Big Indian stocks, Profitable Indian firms, Big Chinese / Japanese / European / Korean
-  stocks, China internet stocks. The same names show on the ETF page and in the Stocks home's Discover ETFs.
-- 2026-11-03 — **ETF card "Fund logo"** (flow option "ETF card": Fund logo, the default, or Holding logos; it floats
-  on the ETF list). The fund's own logo (40) is on the left. Line 1 is the ticker, then the fund name in Label 14
-  secondary ("SPY SPDR S&P 500 ETF"); the ticker always shows and the name ends in "…" first. Line 2 is the plain name,
-  with the price over the change on the right. The QQQ plain name is now "Top 100 Nasdaq companies", here and on the
-  Stocks home's Discover ETFs. ITA is now "iShares Aerospace & Defense".
-- 2026-11-03 — **ETF card, logos on the left**: a slightly bigger card (84 tall). On the left, two of the fund's holdings'
-  logos (28) overlapping on the diagonal, with the "+501" count under them. Then the fund name and ticker
-  ("SPDR S&P 5… SPY"), the plain name under it, and the price over the change on the right. The holding logos no
-  longer sit in the description line.
-- 2026-11-03 — **One ETF card**: the two-line one without a fund logo, chosen from the five; the "ETF card" switch and
-  the other versions are gone. It is now the L3 ListCell card, like the Market page's stock rows (same size and type):
-  label = the fund's name with the ticker as the label suffix (the name ends in "…" first), description = holding
-  logos + "+501" + the plain name, trailing = $ (Label 16) over the change. 66 tall, 16 between cards (as on the
-  Market page).
-  Widths: name at most 176, ticker at most 56, the two together at most 192, numbers at most 96 — the name block at
-  the left edge, the numbers at the right edge, spare width between them.
-- 2026-11-03 — ETF card versions (flow option "ETF card", now a dropdown): Current · Ticker-led (fund logo; full name ·
-  ticker; plain name; holding logos) · three **two-line** ones, 60 tall — line 1 full name · ticker | price, line 2
-  the plain name with 16 holding logos and "+501" | change: logos first, logos last, or no fund logo. Overlapping
-  logos are cut with a mask (the gap is always the card's colour, hovered or not); fund-logo plates lost their grey
-  edge.
-- 2026-11-03 — **ETF card "Ticker-led"** (flow option "ETF card": Current / Ticker-led, default Ticker-led; also floats
-  beside the ETF list): the fund's logo (issuer, 40) on the left — a ticker text tile was tried first — then the plain
-  name with the ticker after it (the name ends in "…" first, so the ticker always shows), the companies people know, and two holding logos with a "+501" Tag (four or fewer holdings: all their logos); $ price
-  over the change on the right (▼ no sign, as everywhere on ETF screens). Built like the US Stocks home's list cards
-  (Top Movers): 12 padding, 10 gap, 12 type (name and change bold, ticker and companies grey, change in the indicator
-  colours); the fund logo is 32 (the movers' 24 looked lost beside three lines). 84 tall. `TickerRow` in EtfListScreen.
-- 2026-11-03 — ETF page header: the ticker line reads "SMH · NASDAQ" (exchange from the US snapshot, after Perplexity).
-  "Today" after the change and a "Market open · closes 2:30 AM IST" line were tried and removed. About's "more" /
-  "Less" have no underline.
-- 2026-11-03 — ETF page tags: after "ETF", one or two short tags on what's in it ("Top 500 · US", "Chips · Global",
-  "India · Profitable"; `tagsFor` in data.ts) — plain facts, no "best" / "safe" labels.
-- 2026-11-03 — Tried an ETF page "With extras" (Key information, Performance vs the S&P 500, If you'd invested, Countries,
-  Risk level, Next dividend, Invest every month, News, Documents — Mobbin ideas, after Fundamentals) and removed it.
-- 2026-11-03 — ETF page: **About** in place of "About this ETF" in a box — a light heading, the text with no box,
-  led by the ticker ("SPY tracks the S&P 500 — …", `aboutFor`), cut to 3 lines with an inline "… more" over the end
-  of the third line, and "Less" after the last word once open (after N26's fund page and Finimize). "Buying one share spreads your money across all 500" removed (read as advice).
+- 2026-11-04 — **Wallet tabs stay on the page:** the wallet's INR and USD screens (us-stocks-53 / 54) are one page (screen group `wallet`), so tapping USD Wallet no longer pushes a new screen. Only the wallet content swaps, as it already did going back to INR.
+- 2026-11-04 — **Order type switch stays on the page:** the order pads are one page (screen group `order-pad`), so Market / Limit / SL no longer pushes a new screen. The header, tabs and dock stay put and only the fields under the tabs slide in: from the right going Market → Limit → SL, from the left going back.
+- 2026-11-03 — **Analyst Ratings ring has gaps between its arcs:** Buy, Hold and Sell are drawn from their shares (78.13 / 18.75 / 3.12%), starting at the top, with a small gap between each one like the Allocation donut. Before, three fixed overlapping paths.
+- 2026-11-03 — **Key Holders drawn like the ETF's Allocation:** a donut with the biggest holder's share in the middle (47.24% Institutions) and the legend beside it, in place of four progress bars. One component for both, `ShareDonut` in `screens/etf/EtfHoldings.tsx`.
+- 2026-11-03 — **Portfolio Positions are F&O only:** the Indian / US tabs are gone (F&O is Indian; US buys land in Holdings), the empty state's Explore F&O opens the F&O tab (fno-01). US positions and Position Details (us-stocks-80) are no longer reached from Portfolio. **US holding card** presses (scale to `motion/scale/press-default`) and hovers like a clickable L3 Card. **Orders:** the All orders · Stocks · ETFs picker steps on each tap (no sheet); order cards have no shadow, border only (L3 gap: a clickable Card has no shadow-free option — `OrderCard.module.css`); the USD / IND pill is one width (`size/80`), so switching doesn't move the Open / History pills.
+- 2026-11-03 — **Orders & Positions: review fixes.** Sample orders tell one story (sells only of the NVDA the user holds, today's executed buys match Positions, weekday dates, 1:30 AM close before 1 Nov); Back from Order / Position Details returns to the US Orders / Positions tab (new preview screens us-stocks-91, 92) with the list as it was.
+- 2026-11-03 — **Orders & Positions for US Stocks** (from the F&O "Positions & orders" design): Open / History order lists with picker, filters and empty states; Order Details for all eight statuses with the status timeline, cancel sheet and per-status dock (preview screens us-stocks-79, 81–90); US positions on the Positions tab and Position Details (us-stocks-80). See "Orders & Positions".
+- 2026-11-03 — **Portfolio opens on Holdings; the US holding opens its stock page.** Tapping the NVDA row goes to NVIDIA's page in its Your Holdings state. Both screens now read one sample holding (`NVDA_HOLDING` in data.ts: 12 shares at $172.50, valued at the live price), so Portfolio's row and P&L card show the same numbers as the stock page. Indian holdings stay non-tappable (no Indian stock page in the prototype).
+- 2026-11-03 — **Order pad laid out like the commodity options pad (F&O fno-25).** Header: symbol over its price and signed change (no ▲ / ▼), the exchange on the right, the Actionbar's line from the start (`Phone topLine`); small pill order types with Day as a Tag (US orders are Day only); 40-high bordered rows with the L3 Stepper Small as it is (the blue US stepper override is gone); dock with the note, Avail. · Req. (an underlined link when it opens the fee breakdown) and a Large button — Buy is Brand, as on the commodity pad. Content is unchanged: amount in $ or shares, limit / trigger as % from the last price, chips, helper line.
+- 2026-11-03 — **Boosted strip versions from jojo:** the ETF list's Boosted strip has jojo's five ticker layouts (flow option "Boosted ticker": V1 Arrows at the edges, V2 Compact, V3 Two chips, V4 Big number, V5 Bolt lead) on jojo's gradient, the "Text" note (gold bolt sliding in, "For every 1% …"), and the gold bolt on the Boosted tab. A Boosted ETF's page has its own option, "ETF page strip": the sentence (default), jojo's bolt-led sentence, or any of the five ticker layouts with that fund's line. Kept from the playground: no tertiary text, nothing under 12 (jojo's 10s raised), "+" / "−" not ▲ / ▼, the grey default tone.
+- 2026-11-03 — **Portfolio opens on Holdings** (was Positions); Positions and Orders are one tap away.
+- 2026-11-03 — **Long / Short tags are border only** (no fill — the filled tag drew the eye from the name): one app component, `LevTag` / `SideTag` in `screens/etf/parts.tsx`, now used everywhere a "3x Long" / "3x Short" shows — ETF cards, the Boosted strip, the ETF page and the stock page's leveraged ETFs. The tag on a logo's foot (Leverage tag V1) keeps its fill so it reads over the logo. **L3 gap:** Tag has no outline-only variant; the fill is cleared in `Etf.module.css` (`.outlineTag`).
+- 2026-11-03 — **Every ETF has an Allocation:** sample sector splits added for the 11 playground funds and the Boosted ones (which use the split of the index or stock they're built on); before, their Allocation title showed over nothing. **Scrolled top bar (stock and ETF pages):** the full name ("iShares MSCI Japan Small-Cap ETF", "NVIDIA Corp") over the price, not the ticker, cut to one line with "…".
+- 2026-11-03 — **ETF cards say what's inside:** the second line is the ticker and the kind of companies the fund holds, with a known name ("QQQ · Mostly big tech, like Apple"), about 28 characters so it fits one line; it was the fund's legal name, which stays on the ETF page. The 11 playground funds without an About text (XLF, XLV, FXI, CQQQ, DXJ, HEWJ, SCJ, FEZ, EZU, IEUR, FLKR) got one. **About card (stock and ETF pages):** Read more shows only when the text is cut at three lines, and it's in Content tertiary, not the Discover link colour.
+- 2026-11-03 — **Top holdings weight, five versions to test** (prototype option "Holding weight", on the ETF page): V1 bar under the name, V2 no bar, V3 a short 40 bar just before the % (now the default), V4 the % on a pill shaded Discover-light as far as its share against the biggest, V5 the % on a plain Discover-light pill.
+- 2026-11-03 — **News (stock and ETF pages):** stories with a hairline between them (16 above and below each), a 64 × 80 picture with 12 corners (as tall as a two-line title, source and reason), the title in Label 14, source · time in Description 12 and the ▲ / ▼ reason in Label 12. Events are unchanged.
+- 2026-11-03 — **Top holdings page (us-stocks-78) audit:** the Actionbar's line shows from the start (`Phone topLine`; other US screens still show it once scrolled); the page is L3 `Section`s — 24 under the bar, 16 at the sides, cards 12 apart as the Market list (was 16 all round, cards 16 apart). The list ends with a note: "That's the top 50 of 503. The other 453 stocks are 40.4% of the fund together." — big funds hold up to thousands of stocks, the page lists the biggest 50.
+- 2026-11-03 — ETF page: the holdings logos and "+500" on the right of the tags row open the Top holdings page (us-stocks-78).
+- 2026-11-03 — ETF page header: "QQQ · NASDAQ" now sits above the fund's name, and the name is Heading 14 (was 18).
+- 2026-11-03 — **ETF page takes the stock page's sections:** About Fund is the stock page's About card (`AboutCard`:
+  card, three lines, Read more / Read less); Daily Performance is the stock page's `DailyPerformance` (range meter, then
+  the day's numbers as a 3 × 2 grid: Open, Prev. Close, AUM, Volume, 52-week high / low); the second tab is **News &
+  Events**, as on the stock page (Events / News pills, the stock page's `Events` and `News`; ETF news from `newsFor`).
+  **Allocation is a donut** now, laid out like the Analyst Ratings card: the donut on the left with the biggest sector's
+  share and name in the middle, the legend beside it (dot, name, share; "Other" grey). The stacked bar, its two-column
+  legend and the `SECTOR_NAMES` sizer are gone from the page. Fundamentals keeps its rows.
+- 2026-11-03 — **Top holdings page (us-stocks-78) on the shared stock card:** its rows are now `StockListCard` (flat, no shadow, as the Market list and the ETF list): logo · ticker over company name · weight on the right. `StockListCard`'s `changePct` is optional for rows whose number isn't a price. Every other imported list already used it (ETF list, Boosted, S&P 500, US home); the ETF page's six-row Top holdings panel keeps its weight bars, and Portfolio holding cards and the stock page's peer table are not stock list cards.
+- 2026-11-03 — **One stock card everywhere:** the Boosted ETF rows are now the shared `StockListCard` (as the Regular tab and the Market list): Avatar logo, name in Label 14 with the "3x Long" Tag after it, "TQQQ · fund name", price over the signed change. `StockListCard` gained a `logo` slot so the leverage versions (logo foot, badge, ring, pill, slice, notch) still mark the logo. Day changes are "+" / "−" with no ▲ / ▼ across US Stocks: `EtfMove` is now L3 PriceChange (ETF page, scrolled headers), and the Boosted note and sheet read "+1% → +3%".
+- 2026-11-03 — ETFs page: the fund cards (Regular and Boosted) are flat — no raised shadow, only the hairline border.
+- 2026-11-03 — Stock page: Company financials' y-axis no longer runs off the card — labels drop trailing zeros ($200B) and the plot leaves room for the longest one (also in ₹).
+- 2026-11-03 — Stock page: About Company shows each company's real profile (what it does, where it's based, when it was founded — `screens/activation/companyProfiles.ts`, 25 companies), three lines until Read more expands it (Read less folds it back); a stock without one gets a one-line listing note and no link. Text stays 14 (description 14). Daily Performance's and Fundamentals' grids have 12 padding on every side. Tapping a peer opens its page fresh: at the top, on Overview. Key Holders shows the latest quarter only (the quarter pills are gone).
+- 2026-11-03 — Stock page Daily Performance: Open, Prev. Close, Mkt. Cap, Volume and the 52-week high / low are a 3 × 2 grid (label over value, as in Fundamentals), not one long list.
+- 2026-11-03 — Stock page Analyst Ratings (and every progress bar on the page): the Buy / Hold / Sell bars and the ring's arcs take L3's surface accent colours (indicator up, warning, indicator down) instead of the darker text colours, so Hold is yellow, not mustard.
+- 2026-11-03 — Stock page Peers: the stock itself is always the first row (styled like the other rows); the Overview / Returns / Ratios switcher in the header is discover blue; rows show the company name only (no ticker line), also for stocks outside the peer list (their page's price and returns). The best figure in each % column (Today, 1M, 3M, 1Y) has a light yellow highlight (warning light). Stock and ETF pages: no 10px text left — every 10 text style is now its 12 (Lemonn's minimum; the 10s came from CoinSwitch).
+- 2026-11-03 — **ETF page (us-stocks-72) imported from jojo for every fund**: no more playground-only layout for regular funds — the "About" heading with the text cut to 3 lines and "… more", the logos of the stocks inside with a "+N" capsule in the header, and Top holdings' Others opening the full list. The Top holdings page (us-stocks-78) is jojo's plain Market cards: name over ticker, the share on the right, no weight bar. How Boosted ETFs work is off on the page (`BOOST_SHEET = false`): the Boosted strip is a plain note led by a trend icon. Kept from the playground: the ≈ ₹ line under the price (no $ / ₹ switch), Buy / Sell in the buy / sell colours (as the stock page), the three-stop day-range gradient, the 10 price axis and secondary (not tertiary) text.
+- 2026-11-03 — Chart price axis (stock and ETF pages): the y-axis labels are Description 10 (were 12).
+- 2026-11-03 — **ETFs from the jojo branch.** Content for every fund: plain names ("Top 500 US stocks"; the playground's 11 extra funds written the same way), the list card reads plain name over "SPY · fund name", the ETF page's ticker · exchange line, short tags after "ETF", jojo's About text ("SPY tracks …") and Others in Top holdings opening the full Top holdings page (new us-stocks-78, 9001:12; issuers moved to `shared/data/etfIssuers`). Regular funds keep the playground's design (Country / Sector bar, StockListCard rows, the boxed "About this ETF"). The leveraged side takes jojo's whole redesign: the tab is **Boosted** (bolt), with the Boosted note (strip / card / chip, "Boosted note" and "Boosted line" options) that opens How Boosted ETFs work, one list of fund-logo cards with the leverage shown eight ways ("Leverage tag" option, V5 After heading by default); a Boosted ETF page gets the gold strip above About, About cut to 3 lines with "… more", and the logos of the stocks behind it. No filter row on the Boosted tab (every fund is US-listed). Tertiary text in these parts is secondary.
+- 2026-11-03 — Portfolio holding cards: the top-right figure is today's return, labelled “1D Returns” (the holding's 1D %, the same number Sort's 1D returns uses), not the total Returns% again.
+- 2026-11-03 — Portfolio's holdings cards: 12 padding on every side; wide enough that 32 of the next card peeks in (was 296 fixed); the Total / 1D Returns switcher uses the filled ↕ (`lmSwitchArrowVertical`, as on Home's chips); the Lemonn leaves are gone, and the market's glow moved from the top-left to the bottom-right corner.
+- 2026-11-03 — Portfolio's underline tabs (Positions · Holdings · Orders, Indian · US Stocks) draw their line in border intense instead of L3's border light, so it shows in dark mode. L3 gap: underline Tabs have no line-colour option.
+- 2026-11-03 — Portfolio looks like Stocks home: the page is surface secondary (grey) under the surface-default top bar and tabs, and the body is a surface-default sheet with 32 round top corners over it.
+- 2026-11-03 — Day range bar (stock and ETF pages): the gradient runs between the light Indicator down / up surface tokens (`--l3-surface-accent-indicator-down-light` → `-up-light`) instead of the strong content colours.
+- 2026-11-03 — Add money: "Add $X" goes straight to the bank's page; the "Pay on HDFC Bank's page" sheet (M08, us-stocks-26) is removed. The "Pay from" sheet lists the banks as bordered ListCell cards (variant card, 8 apart; the chosen one gets border-dark).
+- 2026-11-03 — Daily Performance's day range bar (stock and ETF pages) is a three-stop gradient: surface Indicator down default → Surface primary → Indicator up default, fading through the middle instead of jumping red to green.
+- 2026-11-03 — New hidden screen us-stocks-77 · Portfolio · Holdings · US: the Portfolio page opened on Holdings with the US Stocks card upfront — where Stocks home's US holdings card goes.
+- 2026-11-03 — **₹ hidden by default**: the "₹ equivalent" setting starts on "$ only". The two asset pages — the stock page and the ETF page (the one with more details: About, Allocation, Top holdings) — always show ≈ ₹ under the price. The wallet's ≈ ₹ line under the balance follows the setting. Add money / Withdraw stay in ₹ (real rupee money).
+- 2026-11-03 — **Asset pages copied over from the jojo branch** (stock page, ETF page with About / Allocation / Top holdings, holding logos, ₹ line under the price, `EtfMove` with no sign, `<Usd>` inline by default). The ETF list (us-stocks-71) and the user status picker stay as they were here, so the jojo notes below about the list's search and holding-logo cards don't apply to it.
+- 2026-11-03 — ETF catalogue: nine more funds for Stocks home's Discover ETFs (FXI, CQQQ, DXJ, HEWJ, SCJ, FEZ, EZU, IEUR, FLKR; real prices from the snapshot, sample expense / size / holdings). The ETF page also reads the shared `viewUsStock`, so a fund opened from another flow shows.
+- 2026-11-03 — Wallet status bar (deposit in progress, withdrawal pending …) is now the L3 Aerobar, full width (edge to edge), warning tint — no more hand-made `PendingBanner` CSS. The deposit bar is tappable (chevron) and opens “Why it takes 1–2 days” (`sheets/DepositProgressSheet`, L3 Steps: Paid → Sent to US → Ready to trade); withdrawals keep their Ghost action (View / Cancel). Money in progress means a bank is linked, so the “Add a bank account” bar never shows with it (`useLinkedBanks` counts one when the US wallet isn't empty). Text that was tertiary is now secondary (tertiary is for placeholders only). **L3 gap:** Aerobar's paragraph is secondary at 60% (≈ tertiary) — can't change it here.
+- 2026-11-03 — ETF list (us-stocks-71): the Regular tab's filters are fixed at the top with the tabs (Actionbar bottom), as one bar. First a switcher chip (Country ⇄ Sector, like Top Movers' cap chip on Home) and a divider, then that filter's chips: countries with flags, or sectors (Broad market · Technology · Financials · Healthcare · Energy · Industrials; switching starts at All). Every regular ETF has a `sector`; two sector funds added (XLF, XLV).
+- 2026-11-03 — Bank accounts (User status → Bank accounts): the add-money bank row has a chevron that opens “Pay from” (us-stocks-76: pick a bank, add another → deposit-12); no bank → us-stocks-75 (“Add bank account”). The wallet with no bank shows an “Add a bank account to deposit or withdraw” bar, Deposit opens the no-bank add money, Withdraw is off. “Add $X” carries the ₹ it costs in small type: “Add $1,000 (₹86,950)”.
+- 2026-11-03 — Add money is entered in US dollars, Groww-style: big $ amount, "You pay ≈ ₹X · incl. charges" (opens the charges sheet) under it, +$ chips, bank ListCell, number keypad and "Add $X" in the dock. New `inrForUsd` (inverse of `depositBreakdown`); M03 / M07 are $ states; add-money copy moved to `copy.json`.
+- 2026-11-03 — ETF list: Regular rows are the shared `StockListCard` (issuer logo, flat, 16 apart); country chips have round flags (new shared `Flag`, `shared/assets/flags`, All = L3 globe); Leveraged tab is a SectionHeader per index (24 apart) with the same cards and a "3x Long / 3x Short" tag.
+- 2026-11-03 — Stock lists match the Market cards: the S&P 500 "Stocks in S&P 500" rows are the shared `StockListCard` (flat, Avatar 40, $ via `<Usd>`); Portfolio holding cards use an L3 Avatar 40, Label 16 / Description 12 and the 12 radius (their Qty / returns grid stays).
+- 2026-11-03 — No $ / ₹ switch on the stock page, ETF page or wallet (`<CurrencySwitch />` is used nowhere now): the
+  price or USD balance always has its rupee value under it ("≈ ₹19,426.53", 10, secondary, live rate; none on a $0 wallet).
 - 2026-11-03 — **No "≈ ₹" lines outside the order pad.** `<Usd>` is inline by default now (`layout="stack"` asks for
   the ₹ line); only the order pad keeps them — its own ₹ estimate and its Fee breakdown sheet. Gone from listing
   cards, stock / ETF pages, the wallet balance and every sheet. The "₹ below" setting therefore only shows in the
@@ -329,7 +255,7 @@ Every tap he wired is kept. The main path: FTUX sheet → Activate → Risk disc
   marks) — `logoPlate` in data.ts.
 - 2026-11-02 — **ETF card** (one version, after comparing four): on the left, three holding logos + "+500" in a
   circle, the ETF's name · ticker, the plain name as a one-line description ("Top 500 US companies"); $ price over %
-  change on the right. The ETF page's title is the fund's name ("SPDR S&P 500 ETF") with the ticker under it; no plain name there. See `EtfRow`.
+  change on the right. The ETF page's title is the fund's name ("SPDR S&P 500 ETF") with the ticker under it; no plain name there. See `EtfCard` (regular) and `FundRow` (Boosted) in EtfListScreen.
 
 - 2026-11-02 — **ETFs say what they are.** Tickers (QQQ, VTI, SMH) mean nothing to a new user, so every ETF leads
   with a plain name and keeps the ticker as an alias ("Top 500 US companies · SPY", like Zomato / Eternal), then 2–3
@@ -444,7 +370,7 @@ branch `jojo`, **as he built it**. Nothing below is fixed: every item is marked 
 
 ## Assets
 
-- US company logos are 67 PNGs (`src/shared/assets/us-logos`, shared with the Market flow) — L3 has Indian company logos only → **L3 gap**.
+- US company logos are full-colour SVGs from TradingView (`npm run us:logos`; a PNG for the few without one) in `src/shared/assets/us-logos`, shared with the Market flow — L3 has Indian company logos only → **L3 gap**. The L3 Avatar's grey fill (meant for white marks) is hidden by these edge-to-edge logos; removing it from Avatar itself is a design-system change.
 - The FTUX `flag.gif` was a 29 MB GIF → converted to `flag.webp` (4 MB, same animation; now in `src/flows/stocks/assets/us/ftux/`). `entry/portfolio/us-flag.gif`
   (2.9 MB) and `wallet-3d.gif` are still GIFs.
 - 30 images are byte-identical duplicates under different names (e.g. the same logo in `entry/` and `activation/`).
@@ -21267,6 +21193,78 @@ h��ha�E�  @����=O������S��m���㡦8�
 </svg>
 ```
 
+### `src/flows/us-stocks/assets/etf/logos/direxion.svg`
+
+```tsx
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#FFFFFF"/><image href="data:image/png;base64,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" x="14" y="14" width="72" height="72" preserveAspectRatio="xMidYMid meet"/></svg>
+```
+
+### `src/flows/us-stocks/assets/etf/logos/globalx.svg`
+
+```tsx
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#FFFFFF"/><image href="data:image/png;base64,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" x="14" y="14" width="72" height="72" preserveAspectRatio="xMidYMid meet"/></svg>
+```
+
+### `src/flows/us-stocks/assets/etf/logos/graniteshares.svg`
+
+```tsx
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#FFFFFF"/><image href="data:image/png;base64,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" x="0" y="0" width="100" height="100" preserveAspectRatio="xMidYMid slice"/></svg>
+```
+
+### `src/flows/us-stocks/assets/etf/logos/invesco.svg`
+
+```tsx
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#000000"/><image href="data:image/png;base64,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" x="14" y="14" width="72" height="72" preserveAspectRatio="xMidYMid meet"/></svg>
+```
+
+### `src/flows/us-stocks/assets/etf/logos/ishares.svg`
+
+```tsx
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#000000"/><image href="data:image/png;base64,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" x="0" y="0" width="100" height="100" preserveAspectRatio="xMidYMid slice"/></svg>
+```
+
+### `src/flows/us-stocks/assets/etf/logos/kraneshares.svg`
+
+```tsx
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#FFFFFF"/><image href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAABmJLR0QA/wD/AP+gvaeTAAADn0lEQVR4nO3dTUgUcRzG8Wd2V9fN0tqtdC3NIC1IU6tbgdAb9EZCECJZ17DoEHSKDhF0CIIOUUFhh7CI6lj0gkSHSg29WB4i0i1i7WC+RC+6rtuh3NhetIadmWeb53Ncduf/gy/zn3Fld42hD2MJCA2P0wNIKgUhoyBkFISMgpBREDIKQkZByCgIGQUhoyBkFISMgpBREDIKQkZByCgIGQUhoyBkFISMz8qDt1y+h/7ogJVL2C5cNBcNuzdadnxLg7Te70TP814rl7Dd8orFlgbRlkVGQcgoCBlLryG/EwrloTAcsntZU6LRAbwfGLF1TduDrN+4GocO19u9rCmnTl7F9WsPbF1TWxYZBSGjIGQUhIyCkLH9Lmsq4/EEPo7F/+q5M/1eeD0GACCRAEa+jJtaMzfbC5/XMPVaK1AFedI7iP1Xuqd93uaK+ThRtwzAtxjHb73Aja6oqTXPNVRizZKgqddaIeO2rG0rCnCiblny7Dh596XpGIyozpDp7KguxLHt5fAY32Kcbn2Flo63Dk+VXhkTZOfKMI5uLUvGOP8wguZHbxyeKv0yIsiuVUU4sqUM31vg0uM3OPuwz9mhLEIfxOcxUmLE4hMom5+Lsw2V/3Scj6NxHL7ZY8GE6UUfBAaSMQAgy+vBWhN3RUOfYmkcyjoZd5f1v1MQMgpCRkHIKAgZBSGjIGRcHSSYm4XSuTOcHiOFa4PMm5WN5j3VWDA7x+lRUvD/pW6Bwnw/LjZWoSQYcHqUX7guyMI5ObjQWEV3ZkxyVZDSUAAXGqtQkOcHAHS9HoZhADXF+Q5P9oNrriGBbC+a91YnY3RGhtF0pRufRv/uf/h2cc0Z4vd54J+ZDQB42jeEA1ef4XOMKwbgojNkUkcvbwzARWcIALS9GsTBa8/wJTbh9Ch/RB8kHk9g25mOtByrf3gUY3HeGEAGBEkAeP3+s9Nj2MZ11xB2CkJGQchQXUMWBQNoqi21dc1isvezqIKUBAPYV7vI6TEcpS2LjIKQURAyCkJGQcjYfpcV6evHndvtdi9rSiTyzvY1bQ/S3taD9jb+jwU4RVsWGQUhoyBkHHnrxOD5nP6UEg78BqrtQXbVr9P3ZU1BWxYZBSFj6Za1YdNqVFQuTnmsZmW5lUumVc2qpTB+uuCFi6z9vkhDP9/NRVsWGQUhoyBkFISMgpBREDIKQkZByCgIGQUhoyBkFISMgpBREDIKQkZByCgIGQUhoyBkFITMV6PHr8zQbVMmAAAAAElFTkSuQmCC" x="0" y="0" width="100" height="100" preserveAspectRatio="xMidYMid slice"/></svg>
+```
+
+### `src/flows/us-stocks/assets/etf/logos/procure.svg`
+
+```tsx
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#FFFFFF"/><image href="data:image/png;base64,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" x="0" y="0" width="100" height="100" preserveAspectRatio="xMidYMid slice"/></svg>
+```
+
+### `src/flows/us-stocks/assets/etf/logos/proshares.svg`
+
+```tsx
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#FFFFFF"/><image href="data:image/png;base64,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" x="14" y="14" width="72" height="72" preserveAspectRatio="xMidYMid meet"/></svg>
+```
+
+### `src/flows/us-stocks/assets/etf/logos/spdr.svg`
+
+```tsx
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#FFFFFF"/><image href="data:image/png;base64,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" x="14" y="14" width="72" height="72" preserveAspectRatio="xMidYMid meet"/></svg>
+```
+
+### `src/flows/us-stocks/assets/etf/logos/vaneck.svg`
+
+```tsx
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#000000"/><image href="data:image/png;base64,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" x="14" y="14" width="72" height="72" preserveAspectRatio="xMidYMid meet"/></svg>
+```
+
+### `src/flows/us-stocks/assets/etf/logos/vanguard.svg`
+
+```tsx
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#FFFFFF"/><image href="data:image/png;base64,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" x="14" y="14" width="72" height="72" preserveAspectRatio="xMidYMid meet"/></svg>
+```
+
+### `src/flows/us-stocks/assets/etf/logos/wisdomtree.svg`
+
+```tsx
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#FFFFFF"/><image href="data:image/png;base64,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" x="14" y="14" width="72" height="72" preserveAspectRatio="xMidYMid meet"/></svg>
+```
+
 ### `src/flows/us-stocks/assets/etf/price-line-1d.svg`
 
 ```tsx
@@ -22006,6 +22004,7 @@ export function Phone({
   overlay,
   label,
   bodyRef,
+  topLine,
   className,
   style,
 }: {
@@ -22021,6 +22020,8 @@ export function Phone({
   overlay?: ReactNode
   label?: string
   bodyRef?: Ref<HTMLDivElement>
+  /** The top bar's line from the start (L3's own default), not only once the page has scrolled under it. */
+  topLine?: boolean
   className?: string
   style?: CSSProperties
 }) {
@@ -22035,7 +22036,7 @@ export function Phone({
           {layer && (
             <>
               {backdropArt && <div className={styles.art} aria-hidden="true">{backdropArt}</div>}
-              <header className={styles.top} data-statusbar={statusbar ?? surface} data-scrolled={scrolled || undefined}>{header}</header>
+              <header className={styles.top} data-statusbar={statusbar ?? surface} data-scrolled={topLine || scrolled || undefined}>{header}</header>
               <div className={styles.body} ref={bodyRef} onScroll={(e) => setScrolled(e.currentTarget.scrollTop > 0)}>{children}</div>
               {overlay}
               {footer && <footer className={styles.footer} data-surface={surface === 'default' ? undefined : surface}>{footer}</footer>}
@@ -22063,6 +22064,33 @@ export function UsMainNav({ value }: { value: Section }) {
 }
 ```
 
+### `src/flows/us-stocks/copy.json`
+
+```json
+{
+  "addMoney.title": "Add money",
+  "addMoney.available": "{amount} available",
+  "addMoney.minHint": "Minimum {min}",
+  "addMoney.errorMin": "Minimum {min}",
+  "addMoney.errorMax": "Maximum {max} per financial year under LRS",
+  "addMoney.pay": "You pay ≈ {inr} · incl. charges",
+  "addMoney.payLabel": "You pay about {inr}, including charges. See the charges breakdown",
+  "addMoney.chipLabel": "Add {amount}",
+  "addMoney.methodLabel": "Net Banking (Remittance)",
+  "addMoney.cta": "Add {amount}",
+  "addMoney.ctaEmpty": "Add money",
+  "addMoney.mismatchHeading": "Update your bank account",
+  "addMoney.mismatchText": "The name on HDFC Bank ••1861 does not match your PAN. Banks reject transfers abroad when names differ.",
+  "addMoney.landsBy": "lands by Thu 8 PM",
+  "addMoney.addTitle": "Add a bank account",
+  "addMoney.addDescription": "Only from an account in your name",
+  "addMoney.sheetTitle": "Pay from",
+  "addMoney.addAnother": "Add another bank account",
+  "addMoney.addBankCta": "Add bank account",
+  "addMoney.ctaInr": "({inr})"
+}
+```
+
 ### `src/flows/us-stocks/data.ts`
 
 ```ts
@@ -22078,10 +22106,21 @@ export { catalogue }
 const aliases: Record<string, string> = { GOGL: 'GOOGL' }
 
 /** NVIDIA — the stock the flow is designed around. */
-export const NVDA: UsStock = { sym: 'NVDA', ...catalogue.NVDA, logo: 'assets/activation/nvda-logo.svg' }
+// Price and day change are read from the catalogue each time, so they follow the runtime refresh of the US snapshot.
+export const NVDA: UsStock = {
+  sym: 'NVDA',
+  ...catalogue.NVDA,
+  get price() { return catalogue.NVDA.price },
+  get change() { return catalogue.NVDA.change },
+  logo: 'assets/activation/nvda-logo.svg',
+}
 
 // The symbol of the stock being viewed lives in the shared store (the Market tab sets it too); `current` keeps the
 // details a list row passed along (its price / name strings) for that same symbol.
+/** The sample US holding (user status "holding"): 12 NVDA bought at $172.50. Its value follows the live price.
+ * The stock page's Your Holdings and Portfolio's Holdings both read it, so they always agree. */
+export const NVDA_HOLDING = { qty: 12, avg: 172.5 }
+
 let current: UsStock = NVDA
 /** The stock page / order pad's stock: the one tapped last (here or on the Market tab). */
 export const currentStock = (): UsStock => {
@@ -22136,11 +22175,7 @@ export function openStock(go: (figma: string) => void, stock: UsStock) {
 }
 
 // Indian companies listed in the US as ADRs (ETF holdings): their logo is the design system's NSE one.
-const ADR_NSE: Record<string, string> = {
-  HDB: 'HDFCBANK', IBN: 'ICICIBANK', INFY: 'INFY',
-  // Indian companies an India ETF holds directly (3 Nov): their NSE logo.
-  RELIANCE: 'RELIANCE', TCS: 'TCS', BHARTIARTL: 'BHARTIARTL', SBIN: 'SBIN',
-}
+const ADR_NSE: Record<string, string> = { HDB: 'HDFCBANK', IBN: 'ICICIBANK', INFY: 'INFY' }
 
 /** The logo of a US company (PNG), an Indian ADR's NSE logo, or undefined (show initials). */
 export const logoFor = (sym: string) => usLogo(sym) ?? (ADR_NSE[sym] ? companyLogo(ADR_NSE[sym]) : undefined)
@@ -22172,6 +22207,7 @@ import type { Flow } from '../types'
 import { UsNavProvider } from './nav'
 import { registry } from './registry'
 import { allScreens } from './screens'
+import { orderPads } from './screens/trade/orderPads'
 
 /**
  * US Stocks — happy flow, imported from the teammate's prototype (US-Stocks-Happy-Flow.html, 2026-10-30) on branch
@@ -22190,19 +22226,20 @@ export const usStocks: Flow = {
     { id: 'wallet', title: 'USD wallet' },
   ],
   options: [
-    // ETF list card versions (3 Nov): the fund's own logo with ticker / name / plain name, or two holding logos.
+    // The Boosted tab's note (3 Nov): one line on a strip, a small card, or a chip.
     {
-      id: 'etfCard',
+      id: 'boostNote',
       group: 'ETFs',
-      label: 'ETF card',
+      label: 'Boosted note',
       values: [
-        { value: 'fund', label: 'Fund logo' },
-        { value: 'holdings', label: 'Holding logos' },
+        { value: 'strip', label: 'Strip' },
+        { value: 'card', label: 'Text' },
+        { value: 'chip', label: 'Chip' },
       ],
-      default: 'fund',
+      default: 'strip',
       floatOn: ['us-stocks-71'],
     },
-    // The Boosted ticker's layout (3 Nov): five versions to compare.
+    // The Boosted ticker's layout (3 Nov, from jojo): five versions to compare.
     {
       id: 'boostTicker',
       group: 'ETFs',
@@ -22218,18 +22255,39 @@ export const usStocks: Flow = {
       default: 'edges',
       floatOn: ['us-stocks-71'],
     },
-    // The Boosted tab's note (3 Nov): one line on a strip, a small card, or a chip.
+    // A Boosted ETF's strip on its page (3 Nov): the sentence, jojo's bolt-led sentence, or one of the ticker layouts.
     {
-      id: 'boostNote',
+      id: 'etfBoostStrip',
       group: 'ETFs',
-      label: 'Boosted note',
+      label: 'ETF page strip',
+      picker: 'dropdown',
       values: [
-        { value: 'strip', label: 'Strip' },
-        { value: 'card', label: 'Text' },
-        { value: 'chip', label: 'Chip' },
+        { value: 'sentence', label: 'Sentence (current)' },
+        { value: 'bolt', label: 'Bolt sentence' },
+        { value: 'edges', label: 'V1 · Arrows at the edges' },
+        { value: 'compact', label: 'V2 · Compact' },
+        { value: 'chips', label: 'V3 · Two chips' },
+        { value: 'big', label: 'V4 · Big number' },
+        { value: 'bolt-lead', label: 'V5 · Bolt lead' },
       ],
-      default: 'strip',
-      floatOn: ['us-stocks-71'],
+      default: 'sentence',
+      floatOn: ['us-stocks-72'],
+    },
+    // How a Top holdings row shows its share of the fund (3 Nov): five versions to test.
+    {
+      id: 'holdingWeight',
+      group: 'ETFs',
+      label: 'Holding weight',
+      picker: 'dropdown',
+      values: [
+        { value: 'bar', label: 'V1 · Bar under name' },
+        { value: 'none', label: 'V2 · No bar' },
+        { value: 'mini', label: 'V3 · Small bar before % (current)' },
+        { value: 'fill', label: 'V4 · % on a filled pill' },
+        { value: 'pill', label: 'V5 · % on a Discover pill' },
+      ],
+      default: 'mini',
+      floatOn: ['us-stocks-72'],
     },
     // The Boosted note's colour (3 Nov).
     {
@@ -22237,13 +22295,13 @@ export const usStocks: Flow = {
       group: 'ETFs',
       label: 'Boosted line',
       values: [
-        { value: 'gold', label: 'Gold' },
         { value: 'grey', label: 'Grey' },
         { value: 'green', label: 'Green' },
+        { value: 'gold', label: 'Gold' },
         { value: 'blue', label: 'Blue' },
         { value: 'purple', label: 'Purple' },
       ],
-      default: 'gold',
+      default: 'grey',
       floatOn: ['us-stocks-71'],
     },
     // Where a leveraged fund's leverage shows on its card (3 Nov): eight versions to compare (and A/B test).
@@ -22276,6 +22334,9 @@ export const usStocks: Flow = {
     badge: s.badge,
     badgeNote: s.badgeNote,
     hidden: s.hidden,
+    // Every order pad (Buy / Sell, Market / Limit / SL, amount / shares) is one page in different states: switching the
+    // order type swaps the body in place instead of pushing a new screen. Same for the wallet's INR / USD tabs.
+    group: s.figma in orderPads ? 'order-pad' : s.group,
     render: (go) => {
       const Screen = allScreens[s.figma]
       return (
@@ -22380,24 +22441,30 @@ export type UsScreenEntry = {
   tab?: 'stocks' | 'market' | 'portfolio' | 'mutualFund'
   id: string; section: 'entry' | 'ftux' | 'activated' | 'wallet'; name: string; note: string; badge?: 'new' | 'changed'; badgeNote?: string
   /** A state the user-status settings already show on another screen (the stock page, the wallet's US tab): not listed in the preview, still a screen taps go to. */
-  hidden?: boolean }
+  hidden?: boolean
+  /** Screens of one group are one page in different states: moving between them doesn't push (the wallet's INR / USD tabs). */
+  group?: string }
 
 export const registry: UsScreenEntry[] = [
   { figma: '5796:89422', id: 'us-stocks-02', section: 'entry', name: "E1a · S&P 500 index · market open", note: "S&P 500 index page while the US market is open." },
   { figma: '5796:88668', tab: 'portfolio', id: 'us-stocks-05', badge: 'changed', badgeNote: "Empty states: L3 Empty state with its default illustration, centred", section: 'entry', name: "E4 · Portfolio · US market banner", note: "Portfolio before 8 PM IST. Banner says US markets open tonight." },
   { figma: '5796:92301', tab: 'portfolio', id: 'us-stocks-06', badge: 'changed', badgeNote: "Empty states: L3 Empty state with its default illustration, centred", section: 'entry', name: "E4 · Portfolio · US market banner · live", note: "Portfolio after 8 PM IST. Banner turns LIVE till 2:30 AM IST." },
+  { figma: '9001:30', tab: 'portfolio', id: 'us-stocks-77', hidden: true, badge: 'new', badgeNote: "Not in Figma: where Home's US holdings card goes", section: 'entry', name: "Portfolio · Holdings · US", note: "Home's US holdings card opens Portfolio on Holdings with the US Stocks P&L card upfront and the US Stocks tab picked (the same page as the Portfolio tab, opened on its US side)." },
+  { figma: '9001:31', tab: 'portfolio', id: 'us-stocks-91', badge: 'new', badgeNote: "Orders · US, from the F&O Positions & orders design", section: 'entry', name: "Portfolio · Orders · US", note: "Portfolio on its Orders tab, USD side: Open (n) / History (n), the All orders / Stocks / ETFs picker and Filters. A card opens Order Details (us-stocks-79), whose back returns here." },
+  { figma: '9001:32', tab: 'portfolio', id: 'us-stocks-92', badge: 'new', badgeNote: "Positions: F&O only, no Indian / US tabs", section: 'entry', name: "Portfolio · Positions", note: "Portfolio on Positions. Positions are F&O only (Indian), so there are no Indian / US tabs: market indices, Your positions and its empty state; Explore F&O opens the F&O tab (fno-01). Position Details (us-stocks-80) is no longer reached from here." },
   { figma: '5796:88163', tab: 'mutualFund', id: 'us-stocks-07', section: 'entry', name: "E5 · Mutual Fund home · US banner", note: "Mutual Fund home with a US Stocks on Lemonn banner." },
   { figma: '5826:93627', id: 'us-stocks-13', badge: 'changed', badgeNote: "Follows the user status in the prototype settings", section: 'ftux', name: "S03 · Stock page", note: "The US stock page in the user status picked in the prototype settings (User status): KYC pending → Complete KYC (as us-stocks-74); not activated, under review or failed → Activate US Stocks in place of Buy / Sell; activated → Buy / Sell (us-stocks-31), with Your Holdings when the user holds NVDA (us-stocks-32). Home, Search and Market open this page." },
   { figma: '9001:10', id: 'us-stocks-74', hidden: true, badge: 'new', badgeNote: "Not in Jojo's Figma: a user whose Lemonn KYC isn't done", section: 'ftux', name: "Stock page · KYC not done", note: "Stock page for a user whose Lemonn (Indian) KYC isn't complete: US Stocks can't be activated yet, so the button is Complete KYC (→ the KYC flow, kyc-01) in place of Activate. Back → the US tab with the KYC card (stocks-21)." },
   { figma: '5756:71475', id: 'us-stocks-14', section: 'ftux', name: "Risk disclosure sheet", note: "Risk disclosure sheet. Agree and Continue submits the activation and lands on the under-review home (or wallet); Confirm Details and the result sheet are skipped." },
   { figma: '5756:72486', id: 'us-stocks-15', section: 'ftux', name: "Confirm details", note: "Confirm KYC details and accept the declarations before activating." },
   { figma: '5776:83524', id: 'us-stocks-20', badge: 'changed', badgeNote: "Nudge copy: the dollar has historically gained against the rupee", section: 'ftux', name: "W1 · Wallet · US tab · $0 balance", note: "USD Wallet with $0 balance. Add Money and Withdraw." },
-  { figma: '5776:84630', id: 'us-stocks-21', badge: 'changed', badgeNote: "Dock note: “arrives in your wallet by Thu 8 PM”", section: 'ftux', name: "M01 · Add money · enter ₹", note: "Add money: enter a ₹ amount, see the $ estimate and charges." },
-  { figma: '5776:85779', id: 'us-stocks-22', badge: 'changed', badgeNote: "Dock note: “arrives in your wallet by Thu 8 PM”", section: 'ftux', name: "M02 · Add money · charges breakdown", note: "Charges breakdown expanded before confirming the amount." },
-  { figma: '5776:84513', id: 'us-stocks-23', badge: 'changed', badgeNote: "Dock note: “arrives in your wallet by Thu 8 PM”", section: 'ftux', name: "M03 · Add money · below minimum", note: "Error: amount is below the first-deposit minimum of ₹4,815 ($50)." },
-  { figma: '5796:86175', id: 'us-stocks-24', badge: 'changed', badgeNote: "Dock note: “arrives in your wallet by Thu 8 PM”", section: 'ftux', name: "M07 · Add money · above LRS limit", note: "Error: amount is above the LRS limit of $250,000 per year." },
-  { figma: '5796:86009', id: 'us-stocks-25', badge: 'changed', badgeNote: "Dock note: “arrives in your wallet by Thu 8 PM”", section: 'ftux', name: "M05 · Add money · bank name mismatch", note: "Edge case: bank account name doesn't match KYC. Prompts a bank update." },
-  { figma: '5776:84258', id: 'us-stocks-26', badge: 'changed', badgeNote: "Dock note: “arrives in your wallet by Thu 8 PM”", section: 'ftux', name: "M08 · Add money · pay on bank page sheet", note: "Sheet explaining the user will pay on their bank’s page." },
+  { figma: '5776:84630', id: 'us-stocks-21', badge: 'changed', badgeNote: "Timing is now in the bank row: “lands by Thu 8 PM”", section: 'ftux', name: "M01 · Add money · enter $", note: "Add money: type the $ to land in the US wallet on the app keypad; the ₹ you pay (incl. charges) is the line under it. Groww-style $ entry replaces Figma's ₹ field (3 Nov)." },
+  { figma: '5776:85779', id: 'us-stocks-22', badge: 'changed', badgeNote: "Timing is now in the bank row: “lands by Thu 8 PM”", section: 'ftux', name: "M02 · Add money · charges breakdown", note: "Charges breakdown expanded before confirming the amount." },
+  { figma: '5776:84513', id: 'us-stocks-23', badge: 'changed', badgeNote: "Timing is now in the bank row: “lands by Thu 8 PM”", section: 'ftux', name: "M03 · Add money · below minimum", note: "Error: amount is below the first-deposit minimum of $50." },
+  { figma: '5796:86175', id: 'us-stocks-24', badge: 'changed', badgeNote: "Timing is now in the bank row: “lands by Thu 8 PM”", section: 'ftux', name: "M07 · Add money · above LRS limit", note: "Error: amount is above the LRS limit of $250,000 per year." },
+  { figma: '5796:86009', id: 'us-stocks-25', badge: 'changed', badgeNote: "Timing is now in the bank row: “lands by Thu 8 PM”", section: 'ftux', name: "M05 · Add money · bank name mismatch", note: "Edge case: bank account name doesn't match KYC. Prompts a bank update." },
+  { figma: '9001:20', id: 'us-stocks-75', badge: 'new', badgeNote: "Not in Figma: no bank account linked", section: 'ftux', name: "Add money · no bank account", note: "No bank linked (User status → Bank accounts: None): the bank row reads “Add a bank account” and the button is “Add bank account” → Add bank account (deposit-12), which comes back here." },
+  { figma: '9001:21', id: 'us-stocks-76', badge: 'new', badgeNote: "Not in Figma: change the bank", section: 'ftux', name: "Add money · change bank", note: "The bank row (chevron) opens “Pay from”: linked banks as radio rows, picking one closes it; “Add another bank account” → Add bank account (deposit-12)." },
   { figma: '5796:86336', id: 'us-stocks-27', section: 'ftux', name: "Bank app (placeholder)", note: "Placeholder for the bank's payment page." },
   { figma: '5776:84195', id: 'us-stocks-28', badge: 'changed', badgeNote: "Pending card: “Arrives in your wallet by Thu 8 PM”", section: 'ftux', name: "Wallet · US tab · Add money transfer in progress", note: "Back from the bank. USD Wallet shows the transfer status." },
   { figma: '5826:94125', id: 'us-stocks-31', hidden: true, badge: 'changed', badgeNote: "Overview / News & Events tabs; Related ETFs and Key Holders sections", section: 'activated', name: "S03b · Stock page · activated · no holdings", note: "Stock page, activated with no holdings. Buy only." },
@@ -22422,8 +22489,8 @@ export const registry: UsScreenEntry[] = [
   { figma: '5837:95391', id: 'us-stocks-50', section: 'activated', name: "H11 · Sell · Open buy order", note: "An open buy order exists, so some shares are on hold." },
   { figma: '5837:95371', id: 'us-stocks-51', section: 'activated', name: "H06 · Sell result · executed", note: "Sell order executed. Proceeds withdrawable after 1 working day." },
   { figma: '5837:95352', id: 'us-stocks-52', section: 'activated', name: "H07 · Sell result · rejected", note: "Sell order rejected." },
-  { figma: '5852:99084', id: 'us-stocks-53', section: 'wallet', name: "W0 · Wallet · Indian tab", note: "Wallet opens on the INR tab. USD Wallet tab is marked NEW." },
-  { figma: '5852:99057', id: 'us-stocks-54', badge: 'changed', badgeNote: "Follows the user status in the prototype settings", section: 'wallet', name: "W0 · Wallet · US tab", note: "The USD wallet in the user status picked in the prototype settings (User status): not activated → Activate US Stocks card; under review, contact support, failed (us-stocks-55–57); activated → $0 (us-stocks-58), money on the way (us-stocks-28) or funded (us-stocks-59). The Indian tab's USD tab opens it." },
+  { figma: '5852:99084', id: 'us-stocks-53', group: 'wallet', section: 'wallet', name: "W0 · Wallet · Indian tab", note: "Wallet opens on the INR tab. USD Wallet tab is marked NEW." },
+  { figma: '5852:99057', id: 'us-stocks-54', group: 'wallet', badge: 'changed', badgeNote: "Follows the user status in the prototype settings", section: 'wallet', name: "W0 · Wallet · US tab", note: "The USD wallet in the user status picked in the prototype settings (User status): not activated → Activate US Stocks card; under review, contact support, failed (us-stocks-55–57); activated → $0 (us-stocks-58), money on the way (us-stocks-28) or funded (us-stocks-59). The Indian tab's USD tab opens it." },
   { figma: '5852:99028', id: 'us-stocks-55', hidden: true, badge: 'changed', badgeNote: "Nudge copy: the dollar has historically gained against the rupee", section: 'wallet', name: "W0 · Wallet · US tab · Activation under review", note: "Activation under review, up to 1 working day." },
   { figma: '5852:98999', id: 'us-stocks-56', hidden: true, badge: 'changed', badgeNote: "Nudge copy: the dollar has historically gained against the rupee", section: 'wallet', name: "W0 · Wallet · US tab · Activation failed", note: "Activation failed: PAN couldn't be verified. Retry Activation." },
   { figma: '5852:98970', id: 'us-stocks-57', hidden: true, badge: 'changed', badgeNote: "Nudge copy: the dollar has historically gained against the rupee", section: 'wallet', name: "W0 · Wallet · US tab · Under review · Contact Support", note: "Review taking longer than 1 day. Contact Support." },
@@ -22440,10 +22507,22 @@ export const registry: UsScreenEntry[] = [
   { figma: '5852:98614', id: 'us-stocks-68', section: 'wallet', name: "W3b · 2 withdrawals pending", note: "Two or more withdrawals pending, grouped in one tracker." },
   { figma: '5852:98522', id: 'us-stocks-69', section: 'wallet', name: "W3c · Withdrawal requests sheet", note: "Sheet listing each pending withdrawal request." },
   { figma: '5852:98459', id: 'us-stocks-70', section: 'wallet', name: "W3d · Withdrawal taking longer", note: "Transfer delayed: taking longer than usual." },
-  { figma: '9001:1', id: 'us-stocks-71', badge: 'new', badgeNote: "ETF list: Regular / Boosted tabs, Market / Sector filter", section: 'activated', name: "ETFs", note: "The ETF list from the ETFs quick action: Regular and Boosted (leveraged) tabs, each with the Market / Sector filter and fund cards. The Boosted tab's highlighted line has an (i) that opens How Boosted ETFs work." },
+  { figma: '9001:1', id: 'us-stocks-71', badge: 'new', badgeNote: "ETF list: Regular / Boosted tabs", section: 'activated', name: "ETFs · Regular & Boosted", note: "The ETF list from the ETFs quick action. Regular: the Country / Sector filter under the tabs and fund cards named in plain words. Boosted (leveraged): a line on what 3x means that opens How Boosted ETFs work, then the long and short funds with their leverage (eight looks in the prototype settings)." },
   { figma: '9001:2', id: 'us-stocks-72', badge: 'new', badgeNote: "ETF page: price, chart, Overview / Events, Buy / Sell", section: 'activated', name: "ETF page", note: "An ETF in the stock page layout: price and chart, Overview (1D and 52W range, fund details) and Events. Leveraged ETFs trade long or short." },
   { figma: '9001:6', id: 'us-stocks-73', badge: 'new', badgeNote: "Jojo's first ETF page, kept to compare", section: 'activated', name: "ETF page · previous", note: "The first ETF page (31 Oct): price line, about, opposite side and holdings, kept to compare." },
-  { figma: '9001:12', id: 'us-stocks-75', badge: 'new', badgeNote: "Top holdings: the full list behind the ETF page's Others row", section: 'activated', name: "ETF · Top holdings", note: "Tap Others in the ETF page's Top holdings: a full page of the fund's top 50 holdings (as many as the sample has), biggest first — logo, name, ticker, a weight bar and the share. A row opens its stock page; back returns to the ETF page." },
+  { figma: '9001:12', id: 'us-stocks-78', badge: 'new', badgeNote: "Top holdings: the full list behind the ETF page's Others row", section: 'activated', name: "ETF · Top holdings", note: "Tap Others in the ETF page's Top holdings: a full page of the fund's top 50 holdings (as many as the sample has), biggest first — logo, name, ticker, a weight bar and the share. A row opens its stock page; back returns to the ETF page." },
+  { figma: '9001:40', id: 'us-stocks-79', badge: 'new', badgeNote: "Order Details, from the F&O Positions & orders design", section: 'activated', name: "Order Details", note: "Tap an order in Portfolio → Orders (US): the order's page in its status — open, queued, partly filled, executed, partly executed, failed, cancelled or expired — with its details, the Order Status timeline and the actions that status allows." },
+  { figma: '9001:41', id: 'us-stocks-80', badge: 'new', badgeNote: "Position Details, from the F&O Positions & orders design", section: 'activated', name: "Position Details", note: "Tap a US position in Portfolio → Positions: what was bought or sold today, the returns, Buy more / Exit position." },
+  { figma: '9001:42', id: 'us-stocks-81', badge: 'new', section: 'activated', name: "Order Details · Open · Limit buy", note: "AAPL: a limit buy waiting for its price. Cancel order / Modify." },
+  { figma: '9001:43', id: 'us-stocks-82', badge: 'new', section: 'activated', name: "Order Details · Queued · ETF market buy", note: "QQQ: placed while the US market was closed, sent when it opens. No exchange ID yet." },
+  { figma: '9001:44', id: 'us-stocks-83', badge: 'new', section: 'activated', name: "Order Details · Partly filled · Limit sell", note: "NVDA: 6 of 10 held shares sold at $206, the rest still waiting." },
+  { figma: '9001:45', id: 'us-stocks-84', badge: 'new', section: 'activated', name: "Order Details · Open · Stop-loss sell", note: "NVDA: sells 2 held shares if the price falls to $195." },
+  { figma: '9001:46', id: 'us-stocks-85', badge: 'new', section: 'activated', name: "Order Details · Executed · Market buy", note: "NVDA: all 13 shares bought (27 Oct). Repeat order." },
+  { figma: '9001:47', id: 'us-stocks-86', badge: 'new', section: 'activated', name: "Order Details · Executed · ETF limit buy", note: "VTI: a fractional ETF buy (1.2 shares), today — in Positions." },
+  { figma: '9001:48', id: 'us-stocks-87', badge: 'new', section: 'activated', name: "Order Details · Partly executed · Limit buy", note: "NVDA: 5 of 8 bought, the rest cancelled at the close (reason shown)." },
+  { figma: '9001:49', id: 'us-stocks-88', badge: 'new', section: 'activated', name: "Order Details · Failed", note: "META: rejected — not enough USD balance. Retry." },
+  { figma: '9001:50', id: 'us-stocks-89', badge: 'new', section: 'activated', name: "Order Details · Cancelled · Limit sell", note: "NVDA: a sell the user cancelled. Place again." },
+  { figma: '9001:51', id: 'us-stocks-90', badge: 'new', section: 'activated', name: "Order Details · Expired", note: "GOOGL: a Day limit order that never reached its price. Place again." },
 ]
 
 export const idForFigma = new Map(registry.map((s) => [s.figma, s.id]))
@@ -22474,8 +22553,10 @@ export const idForFigma = new Map(registry.map((s) => [s.figma, s.id]))
   display: flex;
 }
 
-.currencySwitch {
-  align-self: flex-start;
+/* ≈ ₹ under the $ price: 10, secondary. */
+.priceInr {
+  font: var(--l3-text-description-12);
+  color: var(--l3-content-secondary);
 }
 
 .titleRow {
@@ -22658,16 +22739,9 @@ export const idForFigma = new Map(registry.map((s) => [s.figma, s.id]))
   border-radius: var(--l3-radius-full);
   background: linear-gradient(
     90deg,
-    color-mix(
-      in srgb,
-      var(--l3-content-accent-indicator-down-default) 55%,
-      var(--l3-surface-primary)
-    ),
-    color-mix(
-      in srgb,
-      var(--l3-content-accent-indicator-up-default) 55%,
-      var(--l3-surface-primary)
-    )
+    var(--l3-surface-accent-indicator-down-default),
+    var(--l3-surface-primary),
+    var(--l3-surface-accent-indicator-up-default)
   );
   position: relative;
 }
@@ -22951,7 +23025,7 @@ export const idForFigma = new Map(registry.map((s) => [s.figma, s.id]))
   text-align: right;
 }
 
-/* FLAG: hand-made progress bar (L3 ProgressBar) */
+/* FLAG: hand-made progress bar (L3 ProgressBar). Fills take the surface accent colours (they are shapes, not text). */
 .track {
   border-radius: var(--l3-radius-full);
   background: var(--l3-surface-tertiary);
@@ -22981,15 +23055,15 @@ export const idForFigma = new Map(registry.map((s) => [s.figma, s.id]))
 }
 
 .fill[data-tone="up"] {
-  background: var(--l3-content-accent-indicator-up-default);
+  background: var(--l3-surface-accent-indicator-up-default);
 }
 
 .fill[data-tone="warning"] {
-  background: var(--l3-content-accent-warning-default);
+  background: var(--l3-surface-accent-warning-default);
 }
 
 .fill[data-tone="down"] {
-  background: var(--l3-content-accent-indicator-down-default);
+  background: var(--l3-surface-accent-indicator-down-default);
 }
 
 .caption {
@@ -23000,7 +23074,7 @@ export const idForFigma = new Map(registry.map((s) => [s.figma, s.id]))
 
 .notice {
   font: var(--l3-text-description-12);
-  color: var(--l3-content-tertiary);
+  color: var(--l3-content-secondary);
   margin: 0;
 }
 
@@ -23044,30 +23118,22 @@ export const idForFigma = new Map(registry.map((s) => [s.figma, s.id]))
   margin: 0;
 }
 
+/* Collapsed: the first three lines; Read more shows the whole profile. */
+.about p[data-collapsed] {
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  display: -webkit-box;
+  overflow: hidden;
+}
+
 .link {
   font: var(--l3-text-description-14);
-  color: var(--l3-content-accent-discover-default);
+  color: var(--l3-content-tertiary); /* Read more / Read less in tertiary, not the Discover link colour (3 Nov, asked) */
   cursor: pointer;
   background: 0 0;
   border: 0;
   padding: 0;
-}
-
-.holder {
-  gap: var(--l3-spacing-08);
-  flex-direction: column;
-  display: flex;
-}
-
-.holderName {
-  font: var(--l3-text-label-14);
-  color: var(--l3-content-primary);
-}
-
-.holderBar {
-  align-items: center;
-  gap: var(--l3-spacing-12);
-  display: flex;
 }
 
 .financials {
@@ -23086,7 +23152,7 @@ export const idForFigma = new Map(registry.map((s) => [s.figma, s.id]))
 
 .legend {
   gap: var(--l3-spacing-16);
-  font: var(--l3-text-label-10);
+  font: var(--l3-text-label-12);
   color: var(--l3-content-secondary);
   display: flex;
 }
@@ -23117,19 +23183,20 @@ export const idForFigma = new Map(registry.map((s) => [s.figma, s.id]))
 
 .grid {
   border-top: 1px solid var(--l3-border-light);
-  width: calc(100% - 40px); /* FLAG: raw px */
+  width: calc(100% - var(--axis)); /* --axis: room for the longest label, set by Financials */
   position: absolute;
   left: 0;
 }
 
 .grid span {
-  width: 36px; /* FLAG: raw px */
-  font: var(--l3-text-label-10);
-  color: var(--l3-content-tertiary);
+  width: var(--axis);
+  font: var(--l3-text-label-12);
+  color: var(--l3-content-secondary);
   text-align: right;
+  white-space: nowrap;
   position: absolute;
   top: -6px; /* FLAG: raw px */
-  left: calc(100% + 4px); /* FLAG: raw px */
+  left: 100%;
 }
 
 .year {
@@ -23167,8 +23234,8 @@ export const idForFigma = new Map(registry.map((s) => [s.figma, s.id]))
 }
 
 .fy {
-  font: var(--l3-text-label-10);
-  color: var(--l3-content-tertiary);
+  font: var(--l3-text-label-12);
+  color: var(--l3-content-secondary);
   white-space: nowrap;
   position: absolute;
   top: 142px; /* FLAG: raw px */
@@ -23204,7 +23271,7 @@ export const idForFigma = new Map(registry.map((s) => [s.figma, s.id]))
 
 .yoy {
   width: 72px; /* FLAG: raw px */
-  font: var(--l3-text-label-10);
+  font: var(--l3-text-label-12);
   color: var(--l3-content-secondary);
   text-align: right;
 }
@@ -23251,8 +23318,9 @@ export const idForFigma = new Map(registry.map((s) => [s.figma, s.id]))
 }
 
 /* FLAG: hand-made news list (L3 ListCell) */
+/* News (3 Nov, stock and ETF pages): stories one under another with a hairline between, 16 above and below each. */
 .news {
-  gap: var(--l3-spacing-16);
+  gap: 0;
   flex-direction: column;
   margin: 0;
   padding: 0;
@@ -23263,11 +23331,24 @@ export const idForFigma = new Map(registry.map((s) => [s.figma, s.id]))
 .news li {
   align-items: flex-start;
   gap: var(--l3-spacing-12);
+  padding-block: var(--l3-spacing-16);
   display: flex;
 }
 
+.news li:first-child { padding-top: 0; }
+.news li:last-child { padding-bottom: 0; }
+
+.news li + li {
+  box-shadow: inset 0 1px 0 var(--l3-border-light); /* 1px hairline */
+}
+
+/* A story's source · time a little apart (title Label 14, meta Description 12, reason Label 12 — in step). */
+.news .newsMeta { gap: var(--l3-spacing-06); }
+
 .news img {
-  border-radius: var(--l3-radius-08);
+  width: var(--l3-size-64);
+  height: var(--l3-size-80); /* as tall as a story's two-line title, source and reason */
+  border-radius: var(--l3-radius-12);
   object-fit: cover;
   flex: none;
 }
@@ -23298,7 +23379,7 @@ export const idForFigma = new Map(registry.map((s) => [s.figma, s.id]))
 }
 
 .newsMeta span {
-  color: var(--l3-content-tertiary);
+  color: var(--l3-content-secondary);
 }
 
 /* FLAG: restyles L3 Select */
@@ -23396,16 +23477,23 @@ export const idForFigma = new Map(registry.map((s) => [s.figma, s.id]))
   );
 }
 
-.arcRed {
-  fill: var(--l3-content-accent-indicator-down-default);
+/* One arc per rating (butt ends, gaps come from the dash lengths, as in the ETF Allocation donut). */
+.ring .arc {
+  fill: none;
+  stroke-width: 5px; /* FLAG: raw px (svg units) */
+  stroke-linecap: butt;
 }
 
-.arcYellow {
-  fill: var(--l3-content-accent-warning-default);
+.ring .arc[data-tone='up'] {
+  stroke: var(--l3-surface-accent-indicator-up-default);
 }
 
-.arcGreen {
-  fill: var(--l3-content-accent-indicator-up-default);
+.ring .arc[data-tone='warning'] {
+  stroke: var(--l3-surface-accent-warning-default);
+}
+
+.ring .arc[data-tone='down'] {
+  stroke: var(--l3-surface-accent-indicator-down-default);
 }
 
 .rateCard .gauge strong,
@@ -23434,20 +23522,20 @@ export const idForFigma = new Map(registry.map((s) => [s.figma, s.id]))
 
 .rateCard .ratingLabel {
   width: auto;
-  font: var(--l3-text-label-10);
+  font: var(--l3-text-label-12);
   color: var(--l3-content-secondary);
 }
 
 .rateCard .ratingValue {
   width: auto;
-  font: var(--l3-text-label-10);
+  font: var(--l3-text-label-12);
   text-align: left;
 }
 
 .rateFoot {
   padding-top: var(--l3-spacing-12);
   border-top: 1px solid var(--l3-border-light);
-  font: var(--l3-text-label-10);
+  font: var(--l3-text-label-12);
   color: var(--l3-content-secondary);
   justify-content: space-between;
   align-items: center;
@@ -23462,9 +23550,13 @@ export const idForFigma = new Map(registry.map((s) => [s.figma, s.id]))
 
 .fundGrid {
   gap: var(--l3-spacing-16);
-  padding: var(--l3-spacing-16) var(--l3-spacing-12);
+  padding: var(--l3-spacing-12);
   grid-template-columns: repeat(2, minmax(0, 1fr));
   display: grid;
+}
+
+.fundGrid[data-columns="3"] {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .fundCell {
@@ -23475,7 +23567,7 @@ export const idForFigma = new Map(registry.map((s) => [s.figma, s.id]))
 }
 
 .fundCell dt {
-  font: var(--l3-text-label-10);
+  font: var(--l3-text-label-12);
   color: var(--l3-content-secondary);
 }
 
@@ -23499,7 +23591,7 @@ export const idForFigma = new Map(registry.map((s) => [s.figma, s.id]))
 
 .why {
   align-items: center;
-  gap: var(--l3-spacing-04);
+  gap: var(--l3-spacing-06);
   margin: var(--l3-spacing-04) 0 0;
   font: var(--l3-text-label-12);
   color: var(--l3-content-accent-indicator-up-default);
@@ -23548,7 +23640,7 @@ export const idForFigma = new Map(registry.map((s) => [s.figma, s.id]))
   border-radius: var(--l3-radius-08);
   background: var(--l3-surface-primary);
   box-shadow: inset 0 0 0 1px var(--l3-border-light);
-  font: var(--l3-text-label-10);
+  font: var(--l3-text-label-12);
   color: var(--l3-content-secondary);
   flex-direction: column;
   flex: none;
@@ -23615,7 +23707,7 @@ export const idForFigma = new Map(registry.map((s) => [s.figma, s.id]))
   height: var(--l3-size-24);
   border-radius: var(--l3-radius-full);
   background: var(--l3-surface-secondary);
-  font: var(--l3-text-label-10);
+  font: var(--l3-text-label-12);
   color: var(--l3-content-primary);
   flex: none;
   justify-content: center;
@@ -23655,6 +23747,7 @@ export const idForFigma = new Map(registry.map((s) => [s.figma, s.id]))
 // stock tapped last (currentStock()), scaled from the NVIDIA sample numbers.
 // FLAG: copy not in copy.json yet (all UI text in this part is hard-coded).
 // FLAG: price block, chart and period picker are hand-made (module CSS) instead of L3 Chart; see StockPage.module.css.
+import { emailSupport } from '../../../../shared/support'
 import { useEffect, useState, type CSSProperties } from 'react'
 import { Actionbar, ActionbarAction } from '@l3/components/Actionbar'
 import { Button } from '@l3/components/Button'
@@ -23668,13 +23761,13 @@ import { asset } from '../../asset'
 import { currentStock } from '../../data'
 import { useLiveQuote } from '../../../../shared/data/live'
 import { usQuote } from '../../../../shared/data/usStocks'
-import { CurrencySwitch, Usd, useUsd } from '../../../../shared/money'
+import { Usd, formatInr, useUsd, useUsdInrRate } from '../../../../shared/money'
 import { useUsNav } from '../../nav'
 import { ImgIcon } from './components/ImgIcon'
 import { NEWS, PERIODS, periodReturn, priceSeries, type NewsItem } from './data'
 import { swapIcon } from './icons'
 import {
-  AboutCompany, AnalystRatings, DailyPerformance, Events, Financials, Fundamentals, HoldingsSection, KeyHolders, News, Peers, RelatedEtfs,
+  AboutCompany, AnalystRatings, DailyPerformance, Events, Financials, Fundamentals, HoldingsSection, KeyHolders, News, Peers, RelatedEtfs, stockDayStats,
 } from './sections'
 import {
   BUY_PAD, KYC_START, RISK_DISCLOSURE, SELL_PAD_HOLDING, SELL_PAD_NO_HOLDINGS,
@@ -23697,8 +23790,7 @@ export function activationFooter(state: StockState, go: (figma: string) => void)
     state === 'kyc-pending' ? <Button variant="primary" size="lg" fullWidth onClick={() => go(KYC_START)}>Complete KYC</Button>
     : state === 'not-activated' ? <Button variant="primary" size="lg" fullWidth onClick={() => go(RISK_DISCLOSURE)}>Activate US Stocks</Button>
     : state === 'review' ? <Button variant="primary" size="lg" fullWidth disabled>Activation under review</Button>
-    // FLAG: Contact support has no destination yet.
-    : state === 'support' ? <Button variant="primary" size="lg" fullWidth onClick={() => {}}>Contact support</Button>
+    : state === 'support' ? <Button variant="primary" size="lg" fullWidth onClick={() => emailSupport('US Stocks activation still under review')}>Contact support</Button>
     : state === 'failed' ? <Button variant="primary" size="lg" fullWidth onClick={() => go(RISK_DISCLOSURE)}>Retry activation</Button>
     : null
   if (!button) return null
@@ -23712,6 +23804,7 @@ export function StockPage({ state, backdrop, emptyWallet }: { state: StockState;
   // The price ticks around its real (snapshot) level: live.ts.
   const live = useLiveQuote(snapshotStock.sym, snapshotStock.price, snapshotStock.change)
   const stock = { ...snapshotStock, price: live.price, change: live.changePct }
+  const usdInr = useUsdInrRate()
   const quote = usQuote(stock.sym)
   const isNvda = stock.sym === 'NVDA'
   const shortName = isNvda ? 'NVIDIA' : stock.name.split(' ')[0]
@@ -23754,7 +23847,7 @@ export function StockPage({ state, backdrop, emptyWallet }: { state: StockState;
   const header = (
     <Actionbar
       onBack={() => back('stocks-01')}
-      title={scrolled ? stock.sym : undefined}
+      title={scrolled ? stock.name : undefined}
       description={scrolled ? <><Usd value={stock.price} layout="inline" /> <EtfMove change={stock.change} /></> : undefined}
       actions={<ActionbarAction icon={asset('assets/activation/watchlist.svg')} label={`Add ${stock.sym} to watchlist`} onClick={() => {}} />}
     />
@@ -23762,8 +23855,8 @@ export function StockPage({ state, backdrop, emptyWallet }: { state: StockState;
 
   const footer = activationFooter(state, go) ?? (
     <ButtonGroup aria-label={`Trade ${shortName}`} direction="horizontal" scrollIndicator>
-      <Button variant="brand" size="lg" onClick={() => go(emptyWallet ? BUY_PAD_EMPTY_WALLET : BUY_PAD)}>Buy</Button>
-      <Button variant="secondary" size="lg" onClick={() => go(state === 'holding' ? SELL_PAD_HOLDING : SELL_PAD_NO_HOLDINGS)}>
+      <Button variant="buy" size="lg" onClick={() => go(emptyWallet ? BUY_PAD_EMPTY_WALLET : BUY_PAD)}>Buy</Button>
+      <Button variant="sell" size="lg" onClick={() => go(state === 'holding' ? SELL_PAD_HOLDING : SELL_PAD_NO_HOLDINGS)}>
         Sell
       </Button>
     </ButtonGroup>
@@ -23778,7 +23871,7 @@ export function StockPage({ state, backdrop, emptyWallet }: { state: StockState;
             <div className={styles.priceRow}>
               <span className={styles.price}><Usd value={stock.price} layout="inline" /></span>
               <span className={styles.change}>
-                <PriceChange value={periodPct} size="lg" arrow />
+                <PriceChange value={periodPct} size="lg" />
                 <span
                   className={styles.changeAbs}
                   data-down={periodChangeAbs < 0 || undefined}
@@ -23788,6 +23881,8 @@ export function StockPage({ state, backdrop, emptyWallet }: { state: StockState;
                 </span>
               </span>
             </div>
+            {/* The price in rupees at the live rate, always, small under the $ (no $ / ₹ switch on this page). */}
+            <span className={styles.priceInr}>≈ {formatInr(stock.price * usdInr)}</span>
           </div>
           {isNvda ? (
             <img src={asset('assets/activation/nvda-logo.svg')} alt="" width={44} height={44} />
@@ -23801,7 +23896,6 @@ export function StockPage({ state, backdrop, emptyWallet }: { state: StockState;
             </span>
           )}
         </div>
-        <CurrencySwitch className={styles.currencySwitch} />
         <div className={styles.tagsRow}>
           <div className={styles.tags}>
             <Tag variant="tertiary" color="neutral" size="md">Technology</Tag>
@@ -23877,11 +23971,11 @@ export function StockPage({ state, backdrop, emptyWallet }: { state: StockState;
           ) : (
             <div className={styles.overview}>
               {state === 'holding' && <HoldingsSection stock={stock} dayChange={dayChangeAbs} />}
-              <DailyPerformance stock={stock} low={low} high={high} />
+              <DailyPerformance price={stock.price} low={low} high={high} stats={stockDayStats(stock)} />
               <AnalystRatings />
               <Fundamentals />
               <AboutCompany stock={stock} />
-              <Peers sym={stock.sym} />
+              <Peers stock={stock} />
               {/* Related ETFs (leveraged only) are off for now (2 Nov). */}
               {false && <RelatedEtfs sym={stock.sym} />}
               <KeyHolders />
@@ -23898,6 +23992,67 @@ export const StockKycPending = (props: { backdrop?: boolean }) => <StockPage sta
 export const StockNotActivated = (props: { backdrop?: boolean }) => <StockPage state="not-activated" {...props} />
 export const StockNoHoldings = (props: { backdrop?: boolean }) => <StockPage state="no-holdings" {...props} />
 export const StockHolding = (props: { backdrop?: boolean }) => <StockPage state="holding" {...props} />
+```
+
+### `src/flows/us-stocks/screens/activation/companyProfiles.ts`
+
+```ts
+// About Company: a real, short profile of each US company the prototype shows (what it does, where it's based, when it
+// was founded). The first sentence is the summary the card shows collapsed; Read more shows the rest.
+// A stock without a profile here falls back to a one-line note (see AboutCompany in sections.tsx).
+
+export const COMPANY_PROFILES: Record<string, string> = {
+  NVDA:
+    'NVIDIA designs graphics processors (GPUs) and the chips, systems and software that power AI data centres, gaming PCs and self-driving cars. Its data-centre GPUs and the CUDA software platform are the most widely used tools for training and running AI models. Founded in 1993 by Jensen Huang, who is still its CEO, it is based in Santa Clara, California.',
+  AAPL:
+    'Apple makes the iPhone, Mac, iPad, Apple Watch and AirPods, and runs services such as the App Store, iCloud, Apple Music and Apple Pay. The iPhone brings in about half of its revenue, while services are its fastest-growing part. Founded in 1976 by Steve Jobs, Steve Wozniak and Ronald Wayne, it is based in Cupertino, California.',
+  MSFT:
+    'Microsoft makes Windows and Office (Microsoft 365), runs the Azure cloud platform, and owns LinkedIn, GitHub and the Xbox gaming business. Azure and its AI services, built in partnership with OpenAI, are now its biggest source of growth. Founded in 1975 by Bill Gates and Paul Allen, it is based in Redmond, Washington.',
+  GOOGL:
+    'Alphabet is the parent company of Google: Search, YouTube, Android, Chrome, Gmail and Google Maps, plus Google Cloud and the Gemini AI models. Most of its revenue comes from advertising across Search and YouTube. It also owns Waymo (self-driving cars). Google was founded in 1998 by Larry Page and Sergey Brin; Alphabet is based in Mountain View, California.',
+  GOOG:
+    'Alphabet is the parent company of Google: Search, YouTube, Android, Chrome, Gmail and Google Maps, plus Google Cloud and the Gemini AI models. Most of its revenue comes from advertising across Search and YouTube. GOOG shares carry no voting rights (GOOGL shares do). Alphabet is based in Mountain View, California.',
+  TSLA:
+    'Tesla makes electric cars (Model 3, Model Y, Model S, Model X and the Cybertruck), home and grid batteries, and solar panels. It also builds its own self-driving software and is working on robotaxis and humanoid robots. Founded in 2003 and led by Elon Musk, it is based in Austin, Texas.',
+  AMZN:
+    'Amazon runs the world’s largest online store and Amazon Web Services (AWS), the biggest cloud computing platform. It also owns Prime Video, Alexa, Whole Foods and a fast-growing advertising business. Founded in 1994 by Jeff Bezos, it is based in Seattle, Washington.',
+  META:
+    'Meta Platforms owns Facebook, Instagram, WhatsApp and Messenger, used by over 3 billion people every day. Almost all its revenue comes from advertising; it also invests heavily in AI (the Llama models) and in virtual and augmented reality (Quest headsets, Ray-Ban Meta glasses). Founded as Facebook in 2004 by Mark Zuckerberg, it is based in Menlo Park, California.',
+  NFLX:
+    'Netflix is the world’s largest video streaming service, with over 300 million paid memberships in more than 190 countries. It makes and licenses films and series, and has added an ad-supported plan, live events and games. Founded in 1997 by Reed Hastings and Marc Randolph as a DVD-by-mail service, it is based in Los Gatos, California.',
+  NKE:
+    'Nike designs and sells sports shoes, clothing and equipment under the Nike, Jordan and Converse brands. It is the world’s largest sportswear company, selling through its own stores and app as well as through other retailers. Founded in 1964 by Phil Knight and Bill Bowerman, it is based in Beaverton, Oregon.',
+  MCD:
+    'McDonald’s is the world’s largest fast-food restaurant chain, with over 40,000 restaurants in more than 100 countries. About 95% of them are run by franchisees, who pay McDonald’s rent and royalties. The first McDonald’s opened in 1940; the company is based in Chicago, Illinois.',
+  KO:
+    'The Coca-Cola Company makes the syrups and concentrates behind Coca-Cola, Sprite, Fanta, Thums Up, Minute Maid and over 200 other drink brands, sold in more than 200 countries. Bottling partners mix, bottle and distribute most of the drinks. Founded in 1892, it is based in Atlanta, Georgia, and has raised its dividend every year for over 60 years.',
+  SBUX:
+    'Starbucks is the world’s largest coffeehouse chain, with about 40,000 stores across more than 80 countries. It also sells packaged coffee and ready-to-drink beverages through grocery stores. In India it runs as Tata Starbucks, a joint venture with Tata Consumer Products. Founded in 1971, it is based in Seattle, Washington.',
+  V:
+    'Visa runs the world’s largest card payments network, connecting banks, shops and card holders in over 200 countries. It doesn’t lend money or issue cards itself: it earns a small fee on each payment that goes over its network. Founded in 1958, it is based in San Francisco, California.',
+  UBER:
+    'Uber connects riders with drivers (Mobility), delivers food and groceries (Uber Eats), and matches shippers with truckers (Uber Freight), in about 70 countries. Founded in 2009 by Travis Kalanick and Garrett Camp, it is based in San Francisco, California.',
+  AMD:
+    'Advanced Micro Devices (AMD) designs processors and graphics chips: Ryzen CPUs for PCs, EPYC CPUs for servers, Radeon graphics, and Instinct accelerators for AI data centres. It also makes the custom chips inside the PlayStation and Xbox consoles. Its chips are made by TSMC. Founded in 1969, it is based in Santa Clara, California, and led by Lisa Su.',
+  AVGO:
+    'Broadcom designs chips for networking, wireless, broadband and storage, and custom AI chips for large cloud companies. Since buying VMware in 2023 it is also a big infrastructure software company. Based in Palo Alto, California, it is led by Hock Tan.',
+  MU:
+    'Micron Technology makes memory and storage chips — DRAM, NAND flash and the high-bandwidth memory (HBM) used next to AI processors — sold under the Micron and Crucial brands. It is the largest memory maker based in the US. Founded in 1978, it is based in Boise, Idaho, and is building a chip assembly and test plant in Sanand, Gujarat.',
+  QCOM:
+    'Qualcomm designs the Snapdragon processors and modems inside many Android phones, and licenses its wireless patents (4G, 5G) to almost every phone maker. It is growing into chips for cars, PCs and connected devices. Founded in 1985, it is based in San Diego, California.',
+  INTC:
+    'Intel designs and makes processors for PCs (Core) and servers (Xeon), and is building a contract chip-making business (Intel Foundry) to make chips for other companies. It is one of the few companies that both designs and manufactures its own chips. Founded in 1968 by Gordon Moore and Robert Noyce, it is based in Santa Clara, California.',
+  LULU:
+    'Lululemon Athletica designs and sells athletic and leisure clothing — yoga pants, running and training gear, and accessories — mostly through its own stores and website. Founded in 1998 in Vancouver, Canada, by Chip Wilson, it is now based there and in Seattle.',
+  JPM:
+    'JPMorgan Chase is the largest bank in the US by assets. It runs Chase (consumer banking, cards and home loans), J.P. Morgan (investment banking and markets) and a large asset and wealth management business. Its roots go back to 1799; it is based in New York and led by Jamie Dimon.',
+  LYFT:
+    'Lyft runs a ride-hailing app in the US and Canada, connecting riders with drivers, plus bike and scooter sharing in several cities. In 2025 it bought FreeNow, taking its service to Europe. Founded in 2012 by Logan Green and John Zimmer, it is based in San Francisco, California.',
+  ETSY:
+    'Etsy runs an online marketplace for handmade, vintage and one-of-a-kind items, with millions of independent sellers. It earns fees on listings, sales, payments and ads; it also owns the resale app Depop. Founded in 2005, it is based in Brooklyn, New York.',
+  SONO:
+    'Sonos makes wireless speakers, soundbars, headphones and home-theatre systems that connect over Wi-Fi and play together around the home. Founded in 2002, it is based in Santa Barbara, California.',
+}
 ```
 
 ### `src/flows/us-stocks/screens/activation/components/ImgIcon.tsx`
@@ -23926,6 +24081,12 @@ export function ImgIcon({ src, w, h = w, className }: { src: string; w: number; 
   background: var(--l3-surface-primary);
   box-shadow: inset 0 0 0 1px var(--l3-border-light);
   overflow: hidden;
+}
+
+/* The Overview / Returns / Ratios switcher in the header: discover blue, so it reads as tappable. */
+.viewSwitch.viewSwitch,
+.viewSwitch.viewSwitch * {
+  color: var(--l3-content-accent-discover-default);
 }
 
 .viewName {
@@ -23973,7 +24134,7 @@ export function ImgIcon({ src, w, h = w, className }: { src: string; w: number; 
   margin-bottom: var(--l3-spacing-04);
   padding-block: var(--l3-spacing-12);
   border-bottom: 1px solid var(--l3-border-light);
-  font: var(--l3-text-label-10);
+  font: var(--l3-text-label-12);
   color: var(--l3-content-secondary);
   cursor: default;
 }
@@ -23987,10 +24148,6 @@ export function ImgIcon({ src, w, h = w, className }: { src: string; w: number; 
   cursor: default;
 }
 
-.tr[data-self] .cardName {
-  color: var(--l3-content-accent-discover-default);
-}
-
 .company {
   align-items: center;
   gap: var(--l3-spacing-08);
@@ -23998,12 +24155,6 @@ export function ImgIcon({ src, w, h = w, className }: { src: string; w: number; 
   display: flex;
 }
 
-.companyText {
-  gap: var(--l3-spacing-04);
-  flex-direction: column;
-  min-width: 0;
-  display: flex;
-}
 
 .num {
   font: var(--l3-text-label-12);
@@ -24025,7 +24176,7 @@ export function ImgIcon({ src, w, h = w, className }: { src: string; w: number; 
   height: var(--l3-size-24);
   border-radius: var(--l3-radius-full);
   background: var(--l3-surface-tertiary);
-  font: var(--l3-text-label-10);
+  font: var(--l3-text-label-12);
   color: var(--l3-content-primary);
   flex: none;
   place-items: center;
@@ -24049,11 +24200,6 @@ export function ImgIcon({ src, w, h = w, className }: { src: string; w: number; 
   padding: 0;
 }
 
-.ticker {
-  font: var(--l3-text-label-10);
-  letter-spacing: 0.08em;
-  color: var(--l3-content-tertiary);
-}
 
 .cardName {
   font: var(--l3-text-label-12);
@@ -24062,19 +24208,33 @@ export function ImgIcon({ src, w, h = w, className }: { src: string; w: number; 
   white-space: nowrap;
   overflow: hidden;
 }
+
+/* The best figure of a % column: a light yellow highlight behind it. */
+.figure {
+  display: inline-block;
+  padding: var(--l3-spacing-02) var(--l3-spacing-04);
+  border-radius: var(--l3-radius-04);
+}
+
+.num[data-best] .figure {
+  background: var(--l3-surface-accent-warning-light);
+}
 ```
 
 ### `src/flows/us-stocks/screens/activation/components/PeerTable.tsx`
 
 ```tsx
-// "Peers" section: this stock and five peers; the header cell cycles Overview / Returns / Ratios, rows open the peer's page.
+// "Peers" section: this stock first (styled like the others, so it's easy to compare against) and five peers; the
+// header cell cycles Overview / Returns / Ratios, rows open the peer's page. In each % column the best figure sits on a
+// light yellow (warning light) highlight.
 // FLAG: hand-made table (div role=table) with row buttons and a hand-made logo disc — L3 has no table; the logo is not L3 Avatar / BrandLogo.
 // FLAG: layout is raw display:flex/grid + gap/padding instead of L3 Stack/Grid.
 import { useState } from 'react'
 import { Select } from '@l3/components/Select'
 import { Usd, formatUsd } from '../../../../../shared/money'
 import { homeLogoFor, isFullBleedLogo, logoFor, plateFor } from '../../../data'
-import { PEERS, type Peer } from '../data'
+import { PEERS, periodReturn, type Peer } from '../data'
+import type { UsStock } from '../../../data'
 import styles from './PeerTable.module.css'
 
 const percent = (n: number) => `${n >= 0 ? '+' : '−'}${Math.abs(n).toFixed(2)}%`
@@ -24099,7 +24259,8 @@ function CompanyLogo({ sym }: { sym: string }) {
 
 /** `usd`: the text is a $ amount, shown in the currency picked (inline, no ₹ line: it's a table cell). */
 type Cell = { text: string; tone?: 'up' | 'down'; usd?: boolean }
-type Column = { label: string; v: (p: Peer) => Cell }
+/** `best`: the column's figure to compare — the highest one gets the highlight. */
+type Column = { label: string; v: (p: Peer) => Cell; best?: (p: Peer) => number }
 
 const VIEWS = [
   { value: 'overview', label: 'Overview' },
@@ -24111,13 +24272,13 @@ type View = (typeof VIEWS)[number]['value']
 const COLUMNS: Record<View, Column[]> = {
   overview: [
     { label: 'Price', v: (p) => ({ text: formatUsd(p.price), usd: true }) },
-    { label: 'Today', v: (p) => ({ text: percent(p.change), tone: toneOf(p.change) }) },
+    { label: 'Today', v: (p) => ({ text: percent(p.change), tone: toneOf(p.change) }), best: (p) => p.change },
     { label: 'Mkt Cap', v: (p) => ({ text: p.cap, usd: true }) },
   ],
   returns: [
-    { label: '1M', v: (p) => ({ text: percent(p.r1m), tone: toneOf(p.r1m) }) },
-    { label: '3M', v: (p) => ({ text: percent(p.r3m), tone: toneOf(p.r3m) }) },
-    { label: '1Y', v: (p) => ({ text: percent(p.r1y), tone: toneOf(p.r1y) }) },
+    { label: '1M', v: (p) => ({ text: percent(p.r1m), tone: toneOf(p.r1m) }), best: (p) => p.r1m },
+    { label: '3M', v: (p) => ({ text: percent(p.r3m), tone: toneOf(p.r3m) }), best: (p) => p.r3m },
+    { label: '1Y', v: (p) => ({ text: percent(p.r1y), tone: toneOf(p.r1y) }), best: (p) => p.r1y },
   ],
   ratios: [
     { label: 'P/E', v: (p) => ({ text: p.pe }) },
@@ -24126,12 +24287,21 @@ const COLUMNS: Record<View, Column[]> = {
   ],
 }
 
-export function PeerTable({ sym, onOpen }: { sym: string; onOpen: (peer: { sym: string; name: string; logo?: string }) => void }) {
+/** The stock being looked at as a table row: its peer data where it has some, else its page's price and returns. */
+function selfRow(stock: UsStock): Peer {
+  const known = PEERS.find((p) => p.sym === stock.sym)
+  if (known) return known
+  const ret = (period: string) => periodReturn(stock.sym, period, stock.change)
+  return { sym: stock.sym, name: stock.name, price: stock.price, change: stock.change, cap: '—', pe: '—', pb: '—', r1m: ret('1M'), r3m: ret('3M'), r1y: ret('1Y') }
+}
+
+export function PeerTable({ stock, onOpen }: { stock: UsStock; onOpen: (peer: { sym: string; name: string; logo?: string }) => void }) {
   const [view, setView] = useState<View>('returns')
-  const self = PEERS.find((p) => p.sym === sym)
-  const rows = [...(self ? [self] : []), ...PEERS.filter((p) => p.sym !== sym).slice(0, 5)]
+  const self = selfRow(stock)
+  const rows = [self, ...PEERS.filter((p) => p.sym !== stock.sym).slice(0, 5)]
   const current = VIEWS.find((v) => v.value === view)!
   const columns = COLUMNS[view]
+  const bestOf = columns.map((c) => (c.best ? Math.max(...rows.map(c.best)) : undefined))
   return (
     <div className={styles.stack}>
       <div className={styles.table} role="table" aria-label="Peer comparison">
@@ -24140,6 +24310,7 @@ export function PeerTable({ sym, onOpen }: { sym: string; onOpen: (peer: { sym: 
             <Select
               size="sm"
               subtle
+              className={styles.viewSwitch}
               onClick={() => setView(VIEWS[(VIEWS.findIndex((v) => v.value === view) + 1) % VIEWS.length].value)}
               aria-label={`Showing ${current.label}, tap to switch`}
             >
@@ -24161,15 +24332,16 @@ export function PeerTable({ sym, onOpen }: { sym: string; onOpen: (peer: { sym: 
           >
             <span className={styles.company} role="cell">
               <CompanyLogo sym={p.sym} />
-              <span className={styles.companyText}>
-                <span className={styles.cardName}>{p.name}</span>
-                <span className={styles.ticker}>{p.sym}</span>
-              </span>
+              {/* The company's name only, no ticker line under it (3 Nov). */}
+              <span className={styles.cardName}>{p.name}</span>
             </span>
-            {columns.map((c) => {
+            {columns.map((c, i) => {
               const cell = c.v(p)
+              const best = c.best && c.best(p) === bestOf[i]
               return (
-                <span key={c.label} role="cell" className={styles.num} data-tone={cell.tone}>{cell.usd ? <Usd text={cell.text} layout="inline" /> : cell.text}</span>
+                <span key={c.label} role="cell" className={styles.num} data-tone={cell.tone} data-best={best || undefined}>
+                  <span className={styles.figure}>{cell.usd ? <Usd text={cell.text} layout="inline" /> : cell.text}</span>
+                </span>
               )
             })}
           </button>
@@ -24183,15 +24355,24 @@ export function PeerTable({ sym, onOpen }: { sym: string; onOpen: (peer: { sym: 
 ### `src/flows/us-stocks/screens/activation/components/RatingRing.tsx`
 
 ```tsx
-// The rating gauge's ring: a disc with three arcs (sell red, hold yellow, buy green) drawn as raw SVG paths.
-// FLAG: hand-drawn gauge — L3 has no rating gauge; arcs are raw path data.
+// The rating gauge's ring: a disc with one arc per rating (buy green, hold yellow, sell red), sized by its share and
+// starting at the top, with a small gap between arcs — the same way the ETF page's Allocation donut is drawn.
+// FLAG: hand-drawn gauge — L3 has no rating gauge; arcs are raw SVG circles.
+import { RATINGS } from '../data'
 import styles from '../StockPage.module.css'
 
-const ARC_RED = 'M7.02433 12.5424C11.2093 6.86631 16.9586 2.55802 23.5445 0.129517C24.7125 -0.301152 25.9716 0.383166 26.3283 1.57576V1.57576C26.6851 2.76835 26.0038 4.0167 24.8397 4.45783C19.1891 6.59921 14.2574 10.3283 10.6526 15.2175C6.60067 20.7132 4.4446 27.3769 4.50927 34.2045C4.57394 41.0321 6.85585 47.6537 11.0112 53.0716C15.1665 58.4895 20.9701 62.4102 27.5474 64.2428C34.1248 66.0754 41.1196 65.7207 47.4779 63.2322C53.8361 60.7436 59.2134 56.256 62.7993 50.4456C66.3853 44.6351 67.9857 37.8166 67.3594 31.0175C66.8022 24.9686 64.5094 19.2266 60.7803 14.4718C60.0121 13.4923 60.0744 12.0715 60.9965 11.2352V11.2352C61.9186 10.3989 63.3501 10.4643 64.1271 11.4369C68.5083 16.9211 71.2014 23.5817 71.8482 30.604C72.5642 38.3764 70.7347 46.1709 66.6354 52.8131C62.5362 59.4552 56.3892 64.5852 49.1208 67.43C41.8524 70.2747 33.8564 70.6802 26.3375 68.5852C18.8186 66.4903 12.1843 62.0084 7.43421 55.815C2.6841 49.6215 0.0755437 42.0521 0.0016158 34.2472C-0.0723121 26.4422 2.39239 18.8247 7.02433 12.5424Z'
-const ARC_YELLOW = 'M16.3895 3.22342C15.6661 2.21037 14.2533 1.97017 13.2875 2.75551C7.84137 7.18397 3.79494 13.1205 1.67121 19.8452C-0.679327 27.2882 -0.547218 35.2934 2.04763 42.6547C4.64249 50.016 9.5595 56.3346 16.0578 60.6583C22.556 64.9821 30.2835 67.0767 38.0758 66.6267C45.8681 66.1766 53.303 63.2062 59.2603 58.1631C65.2175 53.12 69.3744 46.2773 71.1045 38.6662C72.8346 31.0551 72.0442 23.0879 68.8523 15.965C65.9685 9.52953 61.2655 4.09834 55.3458 0.326344C54.296 -0.34258 52.9202 0.0586743 52.3183 1.14827V1.14827C51.7163 2.23787 52.117 3.60246 53.1607 4.28076C58.2276 7.57354 62.2546 12.2651 64.7386 17.8084C67.5308 24.0394 68.2222 31.0089 66.7088 37.667C65.1953 44.3251 61.559 50.3109 56.3477 54.7225C51.1364 59.1342 44.6324 61.7326 37.8159 62.1263C30.9993 62.52 24.2395 60.6877 18.5549 56.9053C12.8703 53.123 8.56902 47.5956 6.29909 41.1561C4.02916 34.7165 3.91359 27.7137 5.9698 21.2028C7.79912 15.4103 11.2592 10.2863 15.9133 6.43207C16.872 5.6381 17.1129 4.23647 16.3895 3.22342V3.22342Z'
-const ARC_GREEN = 'M0.746204 43.2357C-0.682164 36.3298 -0.0476931 29.1734 2.54447 22.6502C3.00417 21.4934 4.35449 21.0135 5.48029 21.5447V21.5447C6.60609 22.0759 7.07995 23.4168 6.63065 24.5777C4.44955 30.2131 3.93027 36.3741 5.16063 42.3227C6.54358 49.0091 10.0622 55.0649 15.1862 59.5776C20.3103 64.0903 26.7621 66.8154 33.5697 67.3423C40.3772 67.8693 47.1716 66.1695 52.9291 62.499C58.6865 58.8286 63.0951 53.3864 65.4905 46.9925C67.8859 40.5985 68.1384 33.5993 66.2099 27.0494C64.2815 20.4995 60.2765 14.7538 54.7984 10.678C49.9249 7.05203 44.1204 4.92255 38.0909 4.52143C36.8488 4.4388 35.8332 3.44328 35.8268 2.19849V2.19849C35.8204 0.953692 36.8253 -0.0679537 38.0681 0.00353769C45.0759 0.406671 51.8314 2.85182 57.4893 7.06139C63.7514 11.7205 68.3297 18.2887 70.5343 25.7762C72.7388 33.2636 72.4502 41.2648 69.7119 48.5739C66.9735 55.8831 61.9339 62.1043 55.3523 66.3001C48.7707 70.496 41.0038 72.4391 33.2218 71.8368C25.4398 71.2344 18.0644 68.1192 12.2069 62.9605C6.34937 57.8018 2.32712 50.8792 0.746204 43.2357Z'
+const RING = { r: 32, gap: 2 }
 
 export function RatingRing() {
+  const length = 2 * Math.PI * RING.r
+  const total = RATINGS.reduce((sum, r) => sum + r.value, 0)
+  let start = 0
+  const arcs = RATINGS.map((r) => {
+    const size = (r.value / total) * length
+    const arc = { tone: r.tone, label: r.label, dash: Math.max(size - RING.gap, 0.5), offset: -start }
+    start += size
+    return arc
+  })
   return (
     <svg className={styles.ring} viewBox="0 0 72 72" aria-hidden="true">
       <defs>
@@ -24201,9 +24382,21 @@ export function RatingRing() {
         </linearGradient>
       </defs>
       <circle cx="36" cy="36" r="34" fill="url(#rating-disc)" className={styles.ringTrack} />
-      <path d={ARC_RED} transform="translate(0 2.0952)" className={styles.arcRed} />
-      <path d={ARC_YELLOW} transform="translate(0 5.3136)" className={styles.arcYellow} />
-      <path d={ARC_GREEN} className={styles.arcGreen} />
+      {/* Rotated a quarter turn so the first arc (Buy) starts at 12 o'clock and runs clockwise. */}
+      <g transform="rotate(-90 36 36)">
+        {arcs.map((a) => (
+          <circle
+            key={a.label}
+            cx="36"
+            cy="36"
+            r={RING.r}
+            className={styles.arc}
+            data-tone={a.tone}
+            strokeDasharray={`${a.dash} ${length - a.dash}`}
+            strokeDashoffset={a.offset}
+          />
+        ))}
+      </g>
     </svg>
   )
 }
@@ -24282,7 +24475,7 @@ export const PERIODS = ['1D', '1W', '1M', '1Y', '3Y', '5Y']
 
 /** How much NVDA moved over each chart period, in %; 1D is the live day change. Other stocks: their peer-table
  *  returns where they have them, else NVDA's scaled by a per-symbol factor (sample data). */
-export const PERIOD_RETURNS: Record<string, number> = { '1W': 3.2, '1M': 6.8, '1Y': 41.5, '3Y': 612.4, '5Y': 1840.6 }
+export const PERIOD_RETURNS: Record<string, number> = { '1W': 3.2, '1M': 6.8, '3M': 14.2, '1Y': 41.5, '3Y': 612.4, '5Y': 1840.6 }
 
 /** How far the price wanders around its trend per chart period (share of the price). */
 const PERIOD_VOLATILITY: Record<string, number> = { '1D': 0.004, '1W': 0.012, '1M': 0.025, '1Y': 0.06, '3Y': 0.1, '5Y': 0.12 }
@@ -24302,6 +24495,7 @@ export function periodReturn(sym: string, period: string, dayChangePct: number):
   if (period === '1D') return dayChangePct
   const peer = PEERS.find((p) => p.sym === sym)
   if (peer && period === '1M') return peer.r1m
+  if (peer && period === '3M') return peer.r3m
   if (peer && period === '1Y') return peer.r1y
   const factor = sym === 'NVDA' ? 1 : 0.15 + seeded(sym)() * 0.6
   return Number((PERIOD_RETURNS[period] * factor).toFixed(2))
@@ -24556,12 +24750,14 @@ export { StockHolding, StockKycPending, StockNoHoldings, StockNotActivated, Stoc
  */
 function StockForStatus(props: { backdrop?: boolean }) {
   const journey = useUsJourney()
-  if (journey === 'kyc') return <StockKycPending {...props} />
-  if (journey === 'activate') return <StockNotActivated {...props} />
-  if (journey === 'review' || journey === 'support' || journey === 'failed') return <StockPage state={journey} {...props} />
-  if (journey === 'holding' && currentStock().sym === 'NVDA') return <StockHolding {...props} />
+  // Keyed by the stock: opening another stock from this page (a peer) starts a fresh page — at the top, on Overview.
+  const sym = currentStock().sym
+  if (journey === 'kyc') return <StockKycPending key={sym} {...props} />
+  if (journey === 'activate') return <StockNotActivated key={sym} {...props} />
+  if (journey === 'review' || journey === 'support' || journey === 'failed') return <StockPage key={sym} state={journey} {...props} />
+  if (journey === 'holding' && sym === 'NVDA') return <StockHolding key={sym} {...props} />
   // Activated with $0 or money on the way: Buy goes to the empty-wallet pad.
-  return <StockPage state="no-holdings" emptyWallet={journey === 'activated' || journey === 'onTheWay'} {...props} />
+  return <StockPage key={sym} state="no-holdings" emptyWallet={journey === 'activated' || journey === 'onTheWay'} {...props} />
 }
 
 /** Screens of this part, by Figma node id. The not-activated frame's id is the one stock page that follows the user status. */
@@ -24582,7 +24778,7 @@ export const screens: UsScreenMap = {
 // The scrolling sections of the stock page, top to bottom: holdings (holding state only), daily performance, analyst
 // ratings, fundamentals, about, peers, related ETFs, key holders, company financials; and the News & Events tab (events, news).
 // FLAG: layout is raw display:flex + gap/padding (module CSS) instead of L3 Stack/Section/Inset/Grid; panels, rows and bars are hand-made.
-import { useState, type CSSProperties } from 'react'
+import { useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { Card } from '@l3/components/Card'
 import { Icon } from '@l3/components/Icon'
 import { PriceChange } from '@l3/components/PriceChange'
@@ -24590,17 +24786,20 @@ import { Select } from '@l3/components/Select'
 import { Tabs } from '@l3/components/Tabs'
 import { Tag } from '@l3/components/Tag'
 import { asset } from '../../asset'
-import { openStock, plateFor, stockFor, type UsStock } from '../../data'
+import { NVDA_HOLDING, openStock, plateFor, stockFor, type UsStock } from '../../data'
 import { useUsNav } from '../../nav'
 import { usQuote } from '../../../../shared/data/usStocks'
 import { Usd, formatUsd, useUsd } from '../../../../shared/money'
 import { setCurrentEtf } from '../etf/currentEtf'
+import { ShareDonut } from '../etf/EtfHoldings'
+import { LevTag } from '../etf/parts'
+import { COMPANY_PROFILES } from './companyProfiles'
 import { PeerTable } from './components/PeerTable'
 import { RatingRing } from './components/RatingRing'
 import { SectionTitle } from './components/SectionTitle'
 import { Stat } from './components/Stat'
 import {
-  DAY_STATS, EVENTS, FINANCIALS, FUNDAMENTALS, HOLDERS, QUARTERS, RATINGS, STATEMENTS, relatedEtfs, type Frequency, type NewsItem, type Statement,
+  DAY_STATS, EVENTS, FINANCIALS, FUNDAMENTALS, HOLDERS, QUARTERS, RATINGS, STATEMENTS, relatedEtfs, type EventItem, type Frequency, type NewsItem, type Statement,
 } from './data'
 import { boltIcon, chevronLeftIcon, chevronRightIcon, historyIcon, infoIcon } from './icons'
 import styles from './StockPage.module.css'
@@ -24621,8 +24820,13 @@ function dayStats(stock: UsStock): [string, string][] {
   return DAY_STATS.map(([value, label]) => [real[label] ?? value, label])
 }
 
-/** The sample holding: 12 shares bought at $172.50; its value follows the live price. */
-const HOLDING = { qty: 12, avg: 172.5 }
+/** The stock's day stats as Daily Performance cells: label, then the value in the currency picked. */
+export function stockDayStats(stock: UsStock): [string, ReactNode][] {
+  return dayStats(stock).map(([value, label]) => [label, <Usd text={value} />])
+}
+
+/** The sample holding (data.ts), shared with Portfolio's Holdings. */
+const HOLDING = NVDA_HOLDING
 
 /** "Total Returns" / "1D Returns" (the Select switches between them). */
 export function HoldingsSection({ stock, dayChange }: { stock: UsStock; dayChange: number }) {
@@ -24676,9 +24880,11 @@ export function HoldingsSection({ stock, dayChange }: { stock: UsStock; dayChang
   )
 }
 
-export function DailyPerformance({ stock, low, high }: { stock: UsStock; low: number; high: number }) {
+/** Daily Performance (stock and ETF pages): the day's low → high with the last traded price on it, then the day's
+ *  numbers (`stats`: label, value) as a 3 × 2 grid. */
+export function DailyPerformance({ price, low, high, stats }: { price: number; low: number; high: number; stats: [string, ReactNode][] }) {
   const usd = useUsd()
-  const at = Math.min(100, Math.max(0, ((stock.price - low) / (high - low)) * 100))
+  const at = Math.min(100, Math.max(0, ((price - low) / (high - low)) * 100))
   return (
     <section className={styles.section}>
       <SectionTitle title="Daily Performance" info />
@@ -24693,8 +24899,8 @@ export function DailyPerformance({ stock, low, high }: { stock: UsStock; low: nu
           aria-label="Last traded price within today's range"
           aria-valuemin={low}
           aria-valuemax={high}
-          aria-valuenow={stock.price}
-          aria-valuetext={`${usd(stock.price)}, between ${usd(low)} and ${usd(high)}`}
+          aria-valuenow={price}
+          aria-valuetext={`${usd(price)}, between ${usd(low)} and ${usd(high)}`}
           style={{ '--at': `${at}%` } as CSSProperties}
         >
           <span className={styles.dayTick} />
@@ -24704,14 +24910,15 @@ export function DailyPerformance({ stock, low, high }: { stock: UsStock; low: nu
         </div>
         <p className={styles.ltp}>
           <Icon icon={boltIcon} size={12} />
-          Last Traded Price : <Usd value={stock.price} layout="inline" />
+          Last Traded Price : <Usd value={price} layout="inline" />
         </p>
       </div>
-      <dl className={styles.panel} data-gap="12" data-rows="">
-        {dayStats(stock).map(([value, label], i) => (
-          <div className={styles.kv} data-sep={i > 0 || undefined} key={label}>
+      {/* The day's numbers as a 3 × 2 grid (label over value), like Fundamentals. */}
+      <dl className={styles.fundGrid} data-columns="3">
+        {stats.map(([label, value]) => (
+          <div className={styles.fundCell} key={label}>
             <dt>{label}</dt>
-            <dd><Usd text={value} align="end" /></dd>
+            <dd>{value}</dd>
           </div>
         ))}
       </dl>
@@ -24770,67 +24977,83 @@ export function Fundamentals() {
   )
 }
 
+/** About Company: the company's real profile (companyProfiles.ts), three lines until Read more expands it (Read less folds
+ *  it back). A stock with no profile gets a one-line note and no link. */
 export function AboutCompany({ stock }: { stock: UsStock }) {
-  const isNvda = stock.sym === 'NVDA'
+  const profile = COMPANY_PROFILES[stock.sym]
+  return profile
+    ? <AboutCard title="About Company" text={profile} />
+    : <AboutCard title="About Company" text={`${stock.name} is listed on the ${stock.exchange ?? 'NASDAQ'} and trades in US dollars.`} short />
+}
+
+/** The About card (stock and ETF pages): the text in a card, three lines until Read more (Read less folds it back).
+ *  Read more shows only when the text is cut (3 Nov: a one-line About had a Read more with nothing more to read).
+ *  `short`: a one-liner with no link. */
+export function AboutCard({ title, text, short }: { title: string; text: string; short?: boolean }) {
+  const [open, setOpen] = useState(false)
+  const [cut, setCut] = useState(false)
+  const para = useRef<HTMLParagraphElement>(null)
+  useLayoutEffect(() => {
+    const p = para.current
+    if (!p || short || open) return
+    const measure = () => setCut(p.scrollHeight > p.clientHeight + 1)
+    measure()
+    const watch = new ResizeObserver(measure)
+    watch.observe(p)
+    return () => watch.disconnect()
+  }, [text, short, open])
   return (
     <section className={styles.section}>
-      <SectionTitle title="About Company" />
+      <SectionTitle title={title} />
       <Card surface="primary">
         <div className={styles.about}>
-          <p>
-            {isNvda
-              ? 'NVIDIA designs graphics processors and chips for data centres, gaming and cars. Based in Santa Clara, California.'
-              : `${stock.name} trades on the ${stock.exchange ?? 'NASDAQ'} in US dollars. (Company details are sample text in this prototype.)`}
-          </p>
-          <button type="button" className={styles.link}>Read more</button>
+          <p ref={para} data-collapsed={(!short && !open) || undefined}>{text}</p>
+          {!short && (cut || open) && (
+            <button type="button" className={styles.link} aria-expanded={open} onClick={() => setOpen(!open)}>
+              {open ? 'Read less' : 'Read more'}
+            </button>
+          )}
         </div>
       </Card>
     </section>
   )
 }
 
-export function Peers({ sym }: { sym: string }) {
+/** The nearest part of the page that scrolls (the stock page's body). */
+function scrollParent(el: HTMLElement | null): HTMLElement | null {
+  for (let at = el?.parentElement; at; at = at.parentElement) {
+    if (/(auto|scroll)/.test(getComputedStyle(at).overflowY)) return at
+  }
+  return null
+}
+
+export function Peers({ stock }: { stock: UsStock }) {
   const { go } = useUsNav()
+  const section = useRef<HTMLElement>(null)
   return (
-    <section className={styles.section}>
+    <section ref={section} className={styles.section}>
       <SectionTitle title="Peers" />
       <PeerTable
-        sym={sym}
-        onOpen={(peer) =>
+        stock={stock}
+        onOpen={(peer) => {
+          // The peer opens on this same page: start it at the top, like a new page.
+          const body = scrollParent(section.current)
           openStock(go, stockFor(peer.sym, { name: peer.name, logo: peer.logo, plate: peer.logo ? plateFor(peer.sym) : undefined }))
-        }
+          if (body) body.scrollTop = 0
+        }}
       />
     </section>
   )
 }
 
+/** Key Holders: who holds the stock, for the latest quarter only (no quarter picker, 3 Nov). Drawn like the ETF
+ *  page's Allocation (3 Nov): a donut with the biggest holder in the middle, the legend beside it. */
 export function KeyHolders() {
-  const [quarter, setQuarter] = useState(QUARTERS[0])
+  const parts = HOLDERS[QUARTERS[0]].map(([name, pct]) => ({ name, weight: pct }))
   return (
     <section className={styles.section}>
       <SectionTitle title="Key Holders" />
-      <div className={styles.panel} data-gap="16">
-        <Tabs
-          appearance="pill"
-          emphasis="primary"
-          size="sm"
-          aria-label="Quarter"
-          value={quarter}
-          onChange={setQuarter}
-          items={QUARTERS.map((q) => ({ value: q, label: q }))}
-        />
-        {HOLDERS[quarter].map(([name, pct]) => (
-          <div className={styles.holder} key={name}>
-            <span className={styles.holderName}>{name}</span>
-            <div className={styles.holderBar}>
-              <span className={styles.track} data-size="10">
-                <span className={styles.fill} style={{ width: `${pct}%` }} />
-              </span>
-              <span className={styles.ratingValue}>{pct.toFixed(2)}%</span>
-            </div>
-          </div>
-        ))}
-      </div>
+      <ShareDonut parts={parts} of="the shares" legendLabel="Who holds the shares" format={(n) => `${n.toFixed(2)}%`} />
     </section>
   )
 }
@@ -24859,6 +25082,9 @@ export function Financials() {
   const top = step * 4
   // Chart pixels: the 0 line sits at 136px and the top line at 6px (130px for the axis' top value).
   const barTop = (v: number) => 136 - (v / top) * 130
+  // Axis labels drop trailing zeros ($200B, not $200.00B); the plot leaves room on its right for the longest one.
+  const axisLabels = [4, 3, 2, 1, 0].map((n) => (n === 0 ? usd(0, { decimals: 0 }) : billions(step * n).replace(/\.0+(?=\D*$)/, '')))
+  const axisWidth = `calc(${Math.max(...axisLabels.map((l) => l.length))}ch + var(--l3-spacing-08))`
   const third = (i: number) => (spec.thirdIsPercent ? (b[i] / a[i]) * 100 : a[i] - b[i])
   const change = (now: number, before: number, points: boolean) => (points ? now - before : ((now - before) / Math.abs(before)) * 100)
   const rows: [string, string, number, string][] = [
@@ -24890,12 +25116,13 @@ export function Financials() {
           </div>
           <div
             className={styles.bars}
+            style={{ '--axis': axisWidth } as CSSProperties}
             role="img"
             aria-label={`${spec.series[0]} and ${spec.series[1].toLowerCase()}, ${book.periods[1]} to ${book.periods[last]}. ${book.periods[picked]}: ${billions(a[picked])} and ${billions(b[picked])}.`}
           >
-            {[4, 3, 2, 1, 0].map((n, i) => (
-              <span className={styles.grid} style={{ top: 6 + i * 32.5 }} key={n}>
-                <span>{n === 0 ? usd(0, { decimals: 0 }) : billions(step * n)}</span>
+            {axisLabels.map((label, i) => (
+              <span className={styles.grid} style={{ top: 6 + i * 32.5 }} key={i}>
+                <span>{label}</span>
               </span>
             ))}
             {book.short.slice(1).map((label, k) => {
@@ -24905,7 +25132,7 @@ export function Financials() {
                   type="button"
                   className={styles.year}
                   data-active={i === picked || undefined}
-                  style={{ left: `calc((100% - 40px) * ${(17 + k * 52.75) / 264})` }}
+                  style={{ left: `calc((100% - var(--axis)) * ${(17 + k * 52.75) / 264})` }}
                   aria-label={`Show ${book.periods[i]}`}
                   onClick={() => setPicked(i)}
                   key={label}
@@ -24986,12 +25213,13 @@ export function News({ items, stock }: { items: NewsItem[]; stock: string }) {
   )
 }
 
-export function Events() {
+/** Events (stock and ETF pages): date block, title, detail and a type Tag. `items`: the ETF passes its own. */
+export function Events({ items = EVENTS }: { items?: EventItem[] }) {
   return (
     <section className={styles.section}>
       <SectionTitle title="Events" />
       <ul className={styles.events}>
-        {EVENTS.map((e) => (
+        {items.map((e) => (
           <li key={e.title}>
             <span className={styles.eventDate} aria-hidden="true">
               <b>{e.day}</b>
@@ -25031,9 +25259,7 @@ export function RelatedEtfs({ sym }: { sym: string }) {
                 <span className={styles.etfDisc} aria-hidden="true">{e.sym.slice(0, 2)}</span>
                 <b>{e.sym}</b>
               </span>
-              <Tag variant="secondary" color={e.side === 'long' ? 'profit' : 'loss'} size="sm">
-                {e.lev} {e.side === 'long' ? 'Long' : 'Short'}
-              </Tag>
+              <LevTag long={e.side === 'long'}>{e.lev} {e.side === 'long' ? 'Long' : 'Short'}</LevTag>
             </span>
             <span className={styles.etfName}>{e.name}</span>
             <span className={styles.etfPrice}>
@@ -26601,7 +26827,7 @@ export function MutualFundHomeScreen() {
 /* FLAG: raw display:flex/grid + gap/padding layout instead of L3 Stack/Section/Inset/Grid (whole file) */
 
 .page {
-  background: var(--l3-surface-primary);
+  background: var(--l3-surface-secondary); /* as on Stocks home: grey above, the white sheet over it */
   flex-direction: column;
   min-height: 100%;
   display: flex;
@@ -26675,11 +26901,11 @@ export function MutualFundHomeScreen() {
   display: flex;
 }
 
-/* FLAG: hand-made grey sheet on the page */
+/* FLAG: hand-made sheet on the page — surface default with 32 round top corners over the grey, as on Stocks home. */
 .sheet {
   gap: var(--l3-spacing-16);
   padding: var(--l3-spacing-24) var(--l3-spacing-16);
-  border-radius: var(--l3-radius-24) var(--l3-radius-24) 0 0;
+  border-radius: var(--l3-radius-32) var(--l3-radius-32) 0 0;
   background: var(--l3-surface-default);
   flex-direction: column;
   flex: 1;
@@ -26795,7 +27021,7 @@ export function MutualFundHomeScreen() {
 
 .index .label {
   font: var(--l3-text-label-12);
-  color: var(--l3-content-tertiary);
+  color: var(--l3-content-secondary);
 }
 
 .holdTotal {
@@ -26877,18 +27103,27 @@ export function MutualFundHomeScreen() {
 
 /* FLAG: hand-made holding card — use L3 Card / ListCell */
 .hold {
+  width: 100%; /* also a button (a US holding opens its stock page, 3 Nov) */
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  -webkit-tap-highlight-color: transparent;
   gap: var(--l3-spacing-12);
   padding: var(--l3-spacing-12);
   border: 1px solid var(--l3-border-light);
-  border-radius: var(--l3-radius-16);
+  border-radius: var(--l3-radius-12);
   background: var(--l3-surface-primary);
   flex-direction: column;
   display: flex;
 }
 
+button.hold {
+  cursor: pointer;
+}
+
 .holdTop {
   align-items: center;
-  gap: var(--l3-spacing-08);
+  gap: var(--l3-spacing-12);
   display: flex;
 }
 
@@ -26901,16 +27136,18 @@ export function MutualFundHomeScreen() {
 }
 
 .holdSym {
-  font: var(--l3-text-heading-14);
+  font: var(--l3-text-label-14);
   color: var(--l3-content-primary);
 }
 
 .holdQty {
-  font: var(--l3-text-label-12);
-  color: var(--l3-content-tertiary);
+  font: var(--l3-text-description-12);
+  color: var(--l3-content-secondary);
 }
 
 .holdRule {
+  display: block;
+  flex: none;
   background: var(--l3-border-light);
   border: 0;
   width: 100%;
@@ -26941,7 +27178,7 @@ export function MutualFundHomeScreen() {
 
 .holdLabel {
   font: var(--l3-text-description-12);
-  color: var(--l3-content-tertiary);
+  color: var(--l3-content-secondary);
 }
 
 .holdFig {
@@ -26984,20 +27221,35 @@ export function MutualFundHomeScreen() {
   outline-offset: var(--l3-spacing-04);
   border-radius: var(--l3-radius-04);
 }
+
+/* The underline tabs' line (Positions · Holdings · Orders, Indian · US Stocks) is border intense, not L3's border light,
+   so it shows in dark mode too. L3 gap: underline Tabs have no line-colour option. */
+.screen [role='tablist'][data-appearance='underline'],
+.screen [role='tablist'][data-appearance='underline'] > [role='tab'] {
+  box-shadow: inset 0 -1px 0 var(--l3-border-intense);
+}
+
+/* A tappable holding (US: opens its stock page) presses and hovers like a clickable L3 Card. */
+button.hold { cursor: pointer; transition: transform var(--l3-motion-duration-short) var(--l3-motion-easing-standard); }
+button.hold:active { transform: scale(var(--l3-motion-scale-press-default)); }
+@media (hover: hover) {
+  button.hold:hover { background-image: linear-gradient(var(--l3-state-layer-dark-hover), var(--l3-state-layer-dark-hover)); }
+}
 ```
 
 ### `src/flows/us-stocks/screens/entry/PortfolioScreen.tsx`
 
 ```tsx
 // E4 · Portfolio tab (before 8 PM IST / after 8 PM IST): Positions · Holdings · Orders. Holdings has Indian / US tabs
-// and a Sort sheet; the US side is empty with an "Explore US Market" button that leads to US Stocks home.
+// and a Sort sheet; the page opens on Holdings (3 Nov, was Positions). The US side is empty with an "Explore US Market" button that leads to US Stocks home.
 // NOTE: both variants render the same — his `live` prop is not read anywhere, and the US-market banner that the Figma
 // frames show ("opens tonight" / "LIVE till 2:30 AM IST") is no longer drawn (OrdersTab keeps an unused `banner` slot).
 // FLAG: redraws the app's Portfolio tab (no portfolio flow in src/flows yet) for this prototype.
-// FLAG: hand-made Sort text button and holding cards
+// FLAG: hand-made Sort text button and holding cards (card edge, Avatar 40, Label 16 / Description 12 match StockListCard)
 // (see PortfolioScreen.module.css) — L3 Button / Card exist. Empty tabs use L3 EmptyState.
 import { useState } from 'react'
 import { Actionbar, ActionbarAction } from '@l3/components/Actionbar'
+import { Avatar } from '@l3/components/Avatar'
 import { Button } from '@l3/components/Button'
 import { EmptyState } from '@l3/components/EmptyState'
 import { Card } from '@l3/components/Card'
@@ -27008,19 +27260,20 @@ import { Tag } from '@l3/components/Tag'
 import { asset } from '../../asset'
 import { Phone } from '../../components/Phone'
 import { UsMainNav } from '../../components/UsMainNav'
+import { openStock, stockFor } from '../../data'
 import { useUsNav } from '../../nav'
 import { HoldingsCards, type HoldingsMarket } from './components/HoldingsCards'
 import { OrdersTab } from './components/OrdersTab'
-import { RoundLogo } from './components/Primitives'
 import { SlidingTabs } from './components/SlidingTabs'
 import { neighbour, useSwipePages } from './components/swipePages'
 import { MaskImg } from './components/MaskImg'
 import { entryPath, entryUrl } from './entryAssets'
 import { sortIcon } from './icons'
 import { Usd } from '../../../../shared/money'
+import { useUsMarketSnapshot } from '../../../../shared/data/usStocks'
 import { useUsJourney, type UsJourney } from '../../../../shared/userStatus'
-import { ACTIVATE_US, KYC_START, SEARCH, STOCKS_HOME_ENTRY, WALLET, WALLET_US } from './ids'
-import { holdingsSummary, marketIndices, portfolioTabs, sortedHoldings, usHolding, usHoldingSummary, type Holding, type PortfolioTab } from './portfolioData'
+import { ACTIVATE_US, KYC_START, SEARCH, STOCKS_HOME, STOCKS_HOME_ENTRY, WALLET, WALLET_US, FNO_HOME } from './ids'
+import { holdingsSummary, marketIndices, portfolioTabs, sortedHoldings, usHoldingNow, type Holding, type PortfolioTab } from './portfolioData'
 import { SortSheet, type SortValue } from './sheets/SortSheet'
 import styles from './PortfolioScreen.module.css'
 
@@ -27035,36 +27288,40 @@ function EmptyWallet({ title, text, button, onClick }: { title: string; text: st
   )
 }
 
-/** One holding card (Indian or US). */
-function HoldingRow({ holding }: { holding: Holding }) {
+/** One holding card (Indian or US): today's return (1D %) on top, current · invested · total returns below.
+ *  `onOpen` (US, 3 Nov): the card is a button that opens the stock's page, with its Your Holdings card. */
+function HoldingRow({ holding, onOpen }: { holding: Holding; onOpen?: () => void }) {
+  const Box = onOpen ? 'button' : 'div'
   return (
-    <li className={styles.hold}>
-      <span className={styles.holdTop}>
-        <RoundLogo src={holding.logo} size={40} />
-        <span className={styles.holdName}>
-          <span className={styles.holdSym}>{holding.name}</span>
-          <span className={styles.holdQty}>Qty {holding.qty}</span>
+    <li>
+      <Box {...(onOpen ? { type: 'button' as const, onClick: onOpen, 'aria-label': `${holding.name}, open its stock page` } : {})} className={styles.hold}>
+        <span className={styles.holdTop}>
+          <Avatar src={holding.logo} initials={holding.name.slice(0, 2)} size={40} label={holding.name} />
+          <span className={styles.holdName}>
+            <span className={styles.holdSym}>{holding.name}</span>
+            <span className={styles.holdQty}>Qty {holding.qty}</span>
+          </span>
+          <span className={styles.holdCell} data-end="">
+            <span className={styles.holdLabel}>1D Returns</span>
+            <span className={styles.holdFig} data-tone={holding.day >= 0 ? 'up' : 'down'}>{`${holding.day >= 0 ? '+' : '−'}${Math.abs(holding.day).toFixed(2)}%`}</span>
+          </span>
         </span>
-        <span className={styles.holdCell} data-end="">
-          <span className={styles.holdLabel}>Returns%</span>
-          <span className={styles.holdFig} data-tone={holding.up ? 'up' : 'down'}>{holding.pct}</span>
+        <span className={styles.holdRule} aria-hidden="true" />
+        <span className={styles.holdBottom}>
+          <span className={styles.holdCell}>
+            <span className={styles.holdLabel}>Current</span>
+            <span className={styles.holdFig}><Usd text={holding.current} /></span>
+          </span>
+          <span className={styles.holdCell} data-mid="">
+            <span className={styles.holdLabel}>Invested</span>
+            <span className={styles.holdFig}><Usd text={holding.invested} /></span>
+          </span>
+          <span className={styles.holdCell} data-end="">
+            <span className={styles.holdLabel}>Returns</span>
+            <span className={styles.holdFig} data-tone={holding.up ? 'up' : 'down'}><Usd text={holding.returns} align="end" /></span>
+          </span>
         </span>
-      </span>
-      <hr className={styles.holdRule} />
-      <span className={styles.holdBottom}>
-        <span className={styles.holdCell}>
-          <span className={styles.holdLabel}>Current</span>
-          <span className={styles.holdFig}><Usd text={holding.current} /></span>
-        </span>
-        <span className={styles.holdCell} data-mid="">
-          <span className={styles.holdLabel}>Invested</span>
-          <span className={styles.holdFig}><Usd text={holding.invested} /></span>
-        </span>
-        <span className={styles.holdCell} data-end="">
-          <span className={styles.holdLabel}>Returns</span>
-          <span className={styles.holdFig} data-tone={holding.up ? 'up' : 'down'}><Usd text={holding.returns} align="end" /></span>
-        </span>
-      </span>
+      </Box>
     </li>
   )
 }
@@ -27086,14 +27343,17 @@ function usEmpty(journey: UsJourney): { title: string; text: string; button: str
   }
 }
 
-/** `live` is accepted for the two Figma variants but, as in the original, not used. */
-export function PortfolioScreen(_props: { live?: boolean }) {
+/** `live` is accepted for the two Figma variants but, as in the original, not used. `tab` / `market`: where it opens
+ * (Home's US holdings card opens Holdings with the US Stocks card upfront). */
+export function PortfolioScreen({ tab: initialTab = 'holdings', market: initialMarket = 'in' }: { live?: boolean; tab?: PortfolioTab; market?: HoldingsMarket }) {
   const { go } = useUsNav()
   const journey = useUsJourney()
+  useUsMarketSnapshot() // re-render when US prices refresh
+  const us = usHoldingNow()
   const usActive = journey === 'activated' || journey === 'onTheWay' || journey === 'ready' || journey === 'holding'
   const usEmptyState = usEmpty(journey)
-  const [tab, setTab] = useState<PortfolioTab>('positions')
-  const [market, setMarket] = useState<HoldingsMarket>('in')
+  const [tab, setTab] = useState<PortfolioTab>(initialTab)
+  const [market, setMarket] = useState<HoldingsMarket>(initialMarket)
   const [sort, setSort] = useState<SortValue>({ key: 'current', dir: 'desc' })
   const [sortOpen, setSortOpen] = useState(false)
 
@@ -27110,6 +27370,7 @@ export function PortfolioScreen(_props: { live?: boolean }) {
 
   return (
     <Phone
+      className={styles.screen}
       bodyRef={swipe.bind}
       label="Portfolio"
       header={
@@ -27163,12 +27424,13 @@ export function PortfolioScreen(_props: { live?: boolean }) {
                 </div>
               </section>
             )}
-            {tab === 'holdings' && <HoldingsCards market={market} onMarket={setMarket} data={journey === 'holding' ? { ...holdingsSummary, us: usHoldingSummary } : holdingsSummary} />}
+            {tab === 'holdings' && <HoldingsCards market={market} onMarket={setMarket} data={journey === 'holding' ? { ...holdingsSummary, us: us.summary } : holdingsSummary} />}
           </div>
         )}
         <section key={tab} className={styles.sheet} data-section={tab} ref={swipe.contentRef}>
           {tab === 'positions' && (
             <>
+              {/* Positions are F&O only, and F&O is Indian: no Indian / US tabs here (3 Nov). */}
               <div className={styles.sheetHead}>
                 <h2 className={styles.sectionTitle}>Your positions</h2>
                 <button type="button" className={styles.sort}>
@@ -27176,7 +27438,7 @@ export function PortfolioScreen(_props: { live?: boolean }) {
                   <MaskImg src={entryPath('portfolio/refresh.svg')} w={12} />
                 </button>
               </div>
-              <EmptyWallet title="Build Wealth Daily" text="Seems like you don’t have any positions right now" button="Explore F&O" />
+              <EmptyWallet title="Build Wealth Daily" text="Seems like you don’t have any positions right now" button="Explore F&O" onClick={() => go(FNO_HOME)} />
             </>
           )}
           {tab === 'holdings' && (
@@ -27202,7 +27464,7 @@ export function PortfolioScreen(_props: { live?: boolean }) {
               </div>
               {market === 'us' && journey === 'holding' ? (
                 <ul className={styles.holdList}>
-                  <HoldingRow holding={usHolding} />
+                  <HoldingRow holding={us.holding} onOpen={() => openStock(go, stockFor(us.holding.name))} />
                 </ul>
               ) : market === 'us' ? (
                 <EmptyWallet
@@ -27220,7 +27482,7 @@ export function PortfolioScreen(_props: { live?: boolean }) {
               )}
             </>
           )}
-          {tab === 'orders' && <OrdersTab />}
+          {tab === 'orders' && <OrdersTab initialMarket={market === 'us' ? 'us' : undefined} />}
           <SortSheet
             key={String(sortOpen)}
             open={sortOpen}
@@ -27239,6 +27501,11 @@ export function PortfolioScreen(_props: { live?: boolean }) {
 
 export const PortfolioBannerScreen = () => <PortfolioScreen live={false} />
 export const PortfolioBannerLiveScreen = () => <PortfolioScreen live />
+export const PortfolioUsHoldingsScreen = () => <PortfolioScreen tab="holdings" market="us" />
+/** Portfolio on Orders, US side — where Order Details goes back to. */
+export const PortfolioUsOrdersScreen = () => <PortfolioScreen tab="orders" market="us" />
+/** Portfolio on Positions, US Stocks — where Position Details goes back to. */
+export const PortfolioUsPositionsScreen = () => <PortfolioScreen tab="positions" market="us" />
 ```
 
 ### `src/flows/us-stocks/screens/entry/SpxIndex.module.css`
@@ -27418,7 +27685,7 @@ export const PortfolioBannerLiveScreen = () => <PortfolioScreen live />
 
 .axis {
   font: var(--l3-text-heading-10);
-  color: var(--l3-content-tertiary);
+  color: var(--l3-content-secondary);
   flex-direction: column;
   gap: 22px;  /* FLAG: raw px */
   margin: 0;
@@ -27453,7 +27720,7 @@ export const PortfolioBannerLiveScreen = () => <PortfolioScreen live />
   border-radius: var(--l3-radius-08);
   background: var(--l3-surface-default);
   font: var(--l3-text-label-12);
-  color: var(--l3-content-tertiary);
+  color: var(--l3-content-secondary);
   display: flex;
   position: absolute;
   top: 158px;  /* FLAG: raw px */
@@ -27643,62 +27910,11 @@ export const PortfolioBannerLiveScreen = () => <PortfolioScreen live />
 }
 
 .stocks {
-  gap: var(--l3-spacing-08);
+  gap: var(--l3-spacing-12);
   flex-direction: column;
   margin: 0;
   padding: 0;
   list-style: none;
-  display: flex;
-}
-
-/* FLAG: hand-made clickable card row — use L3 Card / ListCell */
-.stock {
-  align-items: center;
-  gap: var(--l3-spacing-12);
-  width: 100%;
-  padding: calc(var(--l3-spacing-12) - 1px);
-  border: 1px solid var(--l3-border-light);
-  border-radius: var(--l3-radius-12);
-  background: var(--l3-surface-primary);
-  box-shadow: var(--l3-shadow-elevation-low);
-  text-align: left;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  transition: transform var(--l3-motion-duration-short) var(--l3-motion-easing-standard);
-  display: flex;
-}
-
-.stock:active {
-  transform: scale(var(--l3-motion-scale-press-default));
-}
-
-.stockLogo {
-  border-radius: var(--l3-radius-full);
-  flex: none;
-}
-
-.stockText {
-  gap: var(--l3-spacing-04);
-  flex-direction: column;
-  flex: 1;
-  min-width: 0;
-  display: flex;
-}
-
-.stockName {
-  font: var(--l3-text-description-12);
-  color: var(--l3-content-secondary);
-}
-
-.symbol {
-  font: var(--l3-text-heading-14);
-  color: var(--l3-content-primary);
-}
-
-.stockPrice {
-  align-items: flex-end;
-  gap: var(--l3-spacing-04);
-  flex-direction: column;
   display: flex;
 }
 
@@ -27715,7 +27931,7 @@ export const PortfolioBannerLiveScreen = () => <PortfolioScreen live />
 ```tsx
 // E1a · S&P 500 index page (market open): name + value, the intraday chart, chart tools, the day's range, and the
 // index's stocks — tapping one opens its stock page. Back and the footer CTA both lead to US Stocks home.
-// FLAG: hand-made chart tools, "See all" and stock rows (see SpxIndex.module.css) — L3 Button / SectionHeader / Card / ListCell exist.
+// FLAG: hand-made chart tools, and "See all" (see SpxIndex.module.css); the stock rows are the shared StockListCard — L3 Button / SectionHeader / Card / ListCell exist.
 import { ActionbarAction, Actionbar } from '@l3/components/Actionbar'
 import { Button } from '@l3/components/Button'
 import { ButtonGroup } from '@l3/components/ButtonGroup'
@@ -27724,7 +27940,8 @@ import { Usd } from '../../../../shared/money'
 import { Phone } from '../../components/Phone'
 import { openStock, stockFromRow } from '../../data'
 import { useUsNav } from '../../nav'
-import { Move, RoundLogo } from './components/Primitives'
+import { Move } from './components/Primitives'
+import { StockListCard } from '../../../../shared/ui/StockListCard'
 import { SpxChart } from './components/SpxChart'
 import { entryUrl } from './entryAssets'
 import { chevronRight, functionIcon, settings, star, stylus, swapHoriz } from './icons'
@@ -27824,26 +28041,19 @@ export function SpxIndexScreen() {
         <ul className={styles.stocks}>
           {indexStocks.map((stock) => (
             <li key={stock.symbol}>
-              <button
-                type="button"
-                className={styles.stock}
-                onClick={() =>
+              <StockListCard
+                symbol={stock.symbol}
+                name={stock.name}
+                logoUrl={entryUrl(stock.logo)}
+                price={<Usd text={stock.price} layout="inline" />}
+                changePct={(stock.up ? 1 : -1) * Number.parseFloat(stock.change)}
+                onOpen={() =>
                   openStock(
                     go,
                     stockFromRow({ sym: stock.symbol, logo: entryUrl(stock.logo), price: stock.price, change: stock.change, up: stock.up }),
                   )
                 }
-              >
-                <RoundLogo src={entryUrl(stock.logo)} size={40} />
-                <span className={styles.stockText}>
-                  <span className={styles.symbol}>{stock.symbol}</span>
-                  <span className={styles.stockName}>{stock.name}</span>
-                </span>
-                <span className={styles.stockPrice}>
-                  <span className={styles.symbol}><Usd text={stock.price} align="end" /></span>
-                  <Move value={stock.change} up={stock.up} />
-                </span>
-              </button>
+              />
             </li>
           ))}
         </ul>
@@ -27881,14 +28091,15 @@ export function SpxIndexScreen() {
   display: none;
 }
 
-/* FLAG: hand-made carousel card, fixed 296px wide — use L3 Card */
+/* FLAG: hand-made carousel card — use L3 Card. As wide as leaves 32 of the next card in view (rail width − 16 start
+   padding − 12 gap − 32), with 12 padding on every side. The market's glow sits in the bottom-right corner. */
 .card {
   gap: var(--l3-spacing-28);
-  width: 296px;  /* FLAG: raw px */
-  padding: 18px var(--l3-spacing-14);  /* FLAG: raw px */
+  width: calc(100% + var(--l3-spacing-16) - var(--l3-spacing-12) - var(--l3-spacing-32));
+  padding: var(--l3-spacing-12);
   border: 1px solid var(--l3-border-light);
   border-radius: var(--l3-radius-16);
-  background: radial-gradient(80% 70% at 0% 0%, color-mix(in srgb, var(--glow) 16%, transparent) 0%, transparent 72%), var(--l3-surface-primary);
+  background: radial-gradient(80% 70% at 100% 100%, color-mix(in srgb, var(--glow) 16%, transparent) 0%, transparent 72%), var(--l3-surface-primary);
   --glow: var(--l3-surface-accent-brand-default);
   scroll-snap-align: start;
   cursor: pointer;
@@ -27901,32 +28112,6 @@ export function SpxIndexScreen() {
 
 .card[data-market=us] {
   --glow: var(--l3-surface-accent-us-stock-default);
-}
-
-.leaves {
-  opacity: .08;
-  pointer-events: none;
-  width: 84px;  /* FLAG: raw px */
-  height: 84px;  /* FLAG: raw px */
-  position: absolute;
-  bottom: 0;
-  right: 0;
-}
-
-.leafB {
-  width: 83px;  /* FLAG: raw px */
-  height: 96px;  /* FLAG: raw px */
-  position: absolute;
-  top: 0;
-  left: 0;
-}
-
-.leafA {
-  width: 47px;  /* FLAG: raw px */
-  height: 60px;  /* FLAG: raw px */
-  position: absolute;
-  top: 41px;  /* FLAG: raw px */
-  left: 0;
 }
 
 .facts {
@@ -28064,9 +28249,8 @@ export function SpxIndexScreen() {
 // FLAG: hand-made carousel cards (fixed 296px wide), pager dots and returns pill — L3 has Card and PriceChange.
 import { useEffect, useRef, useState } from 'react'
 import { Icon } from '@l3/components/Icon'
+import { lmSwitchArrowVertical } from '@l3/icons/lemonnade'
 import { Usd } from '../../../../../shared/money'
-import { InlineSvg } from '../../../components/InlineSvg'
-import { unfoldMore } from '../icons'
 import styles from './HoldingsCards.module.css'
 
 export type HoldingsMarket = 'in' | 'us'
@@ -28133,10 +28317,6 @@ export function HoldingsCards({
             : { pct: summary.pct, pnl: summary.pnl }
           return (
             <section key={id} className={styles.card} data-market={id} aria-label={labels[id].title} onClick={() => onMarket(id)}>
-              <span className={styles.leaves} aria-hidden="true">
-                <InlineSvg src="assets/entry/portfolio/leaf-b.svg" className={styles.leafB} />
-                <InlineSvg src="assets/entry/portfolio/leaf-a.svg" className={styles.leafA} />
-              </span>
               <span className={styles.facts}>
                 <span className={styles.fact}>
                   <span className={styles.factLabel}>{labels[id].code} Current Value</span>
@@ -28157,12 +28337,11 @@ export function HoldingsCards({
                   }}
                 >
                   <span className={styles.swap} key={String(oneDay)}>{oneDay ? '1D Returns' : 'Total Returns'}</span>
-                  <Icon icon={unfoldMore} size={12} />
+                  <Icon icon={lmSwitchArrowVertical} size={16} />
                 </button>
                 <span className={`${styles.returns} ${styles.swap}`} key={String(oneDay)}>
                   <span className={styles.pill} data-up={summary.up || undefined}>
-                    <span className={styles.tri} aria-hidden="true" />
-                    {returns.pct}
+                    {/^[+\-−]/.test(returns.pct) ? returns.pct : `${summary.up ? '+' : '−'}${returns.pct}`}
                   </span>
                   <span className={styles.amount}><Usd text={returns.pnl} /></span>
                 </span>
@@ -28263,6 +28442,9 @@ export function MaskImg({ src, w, h = w, className }: { src: string; w: number; 
   color: var(--l3-content-primary);
   background: 0 0;
   flex: none;
+  /* One width for IND and USD, so switching doesn't move the Open / History pills (3 Nov). */
+  width: var(--l3-size-80);
+  justify-content: center;
 }
 
 .switcher[data-size]:hover span {
@@ -28355,37 +28537,89 @@ export function MaskImg({ src, w, h = w, className }: { src: string; w: number; 
   }
 
 }
+
+/* US: "All orders ⇕" + Filters row, 16 above the cards (Figma). */
+.pickerRow {
+  margin-bottom: var(--l3-spacing-16);
+}
+
+/* The US order cards: a plain list, 16 from the last card to the navbar. */
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 var(--l3-spacing-16);
+}
 ```
 
 ### `src/flows/us-stocks/screens/entry/components/OrdersTab.tsx`
 
 ```tsx
-// Portfolio → Orders: an IND / US switcher, Open · SIP · History tabs, and the empty state for the picked pair.
-// FLAG: the Select is restyled into an outlined pill and the Tabs row is custom-sized (see OrdersTab.module.css).
+// Portfolio → Orders: an IND / US switcher and pill tabs. Indian: Open · SIP · History, each an empty state.
+// US: Open (n) · History (n) (US Stocks have no SIPs), then "All orders ⇕" (Stocks / ETFs) and Filters, then the order
+// cards — layout from "Positions & orders" (nLs24dTJdPz9A5pu3AWMbe, 6754:65685 / 6754:66744, empty 6754:66494…66560).
+// The US lists show the sample orders only for a user who holds US stocks (User status → journey 'holding'); every
+// other user (not activated, under review, $0, money on the way, funded but nothing bought yet) sees the empty states.
+// The picker and the filters are shared by Open and History (switching tabs keeps them). The US side remembers Open /
+// History, the picker and the applied filters across remounts (module-level, like `currentOrder` in orders/data.ts), so
+// coming back from Order Details shows the same list. The Indian side starts on Open each time, as before.
+// "All orders ⇕" is an L3 action pill with the switch icon (AGENTS: a switcher beside order tabs), as Filters next to it.
+// FLAG: the IND / USD Select is restyled into an outlined pill and the Tabs row is custom-sized (see OrdersTab.module.css).
 import { useState, type ReactNode } from 'react'
+import { Badge } from '@l3/components/Badge'
+import { Button } from '@l3/components/Button'
 import { EmptyState } from '@l3/components/EmptyState'
+import { Icon } from '@l3/components/Icon'
+import { lmSwitchArrowVertical } from '@l3/components/icons/glyphs'
 import { Select } from '@l3/components/Select'
-import { Tabs } from '@l3/components/Tabs'
+import { Stack } from '@l3/components/Stack'
+import { Tab, Tabs } from '@l3/components/Tabs'
+import { msFilterList } from '@l3/icons/material'
+import { useUsMarketSnapshot } from '../../../../../shared/data/usStocks'
+import { useUsJourney } from '../../../../../shared/userStatus'
+import { useUsNav } from '../../../nav'
+import { historyOrders, openOrder, openOrders, type UsOrder } from '../../orders/data'
+import { OrderCard } from '../../orders/OrderCard'
+import { NO_FILTERS, OrderFilterSheet, applyFilters, filterCount, type OrderFilters } from '../../orders/OrderFilterSheet'
+import { ORDER_KIND_LABEL, type OrderKind } from '../../orders/OrderKindSheet'
 import styles from './OrdersTab.module.css'
 
 type OrderTab = 'open' | 'sip' | 'history'
-type OrderMarket = 'in' | 'us'
+type UsList = 'open' | 'history'
+export type OrderMarket = 'in' | 'us'
 
 const markets: Record<OrderMarket, { code: string; name: string }> = {
   in: { code: 'IND', name: 'Indian' },
   us: { code: 'USD', name: 'US' },
 }
 
-/** `banner` is a slot between the tabs and the empty state (the US-market banner, which the current build no longer passes). */
-export function OrdersTab({ banner }: { banner?: ReactNode }) {
-  const [tab, setTab] = useState<OrderTab>('open')
-  const [market, setMarket] = useState<OrderMarket>('in')
+/** What the US side was showing last (kept across remounts: Portfolio → Order Details → back). */
+let lastUsList: UsList = 'open'
+let lastKind: OrderKind = 'all'
+let lastFilters: OrderFilters = NO_FILTERS
+
+const EMPTY_KIND: Record<OrderKind, string> = { all: '', stock: ' of stocks', etf: ' of ETFs' }
+
+/**
+ * `banner` is a slot between the tabs and the empty state (the US-market banner, which the current build no longer passes).
+ * `initialMarket` opens the tab on the US side (e.g. from a US screen); the switcher still flips it.
+ */
+export function OrdersTab({ banner, initialMarket = 'in' }: { banner?: ReactNode; initialMarket?: OrderMarket }) {
+  const [tab, setTab] = useState<OrderTab>(initialMarket === 'us' ? lastUsList : 'open')
+  const [market, setMarket] = useState<OrderMarket>(initialMarket)
+  const [kind, setKindState] = useState<OrderKind>(lastKind)
+  const [filters, setFiltersState] = useState<OrderFilters>(lastFilters)
+  const setKind = (next: OrderKind) => {
+    lastKind = next
+    setKindState(next)
+  }
+  const setFilters = (next: OrderFilters) => {
+    lastFilters = next
+    setFiltersState(next)
+  }
+  const lists = useUsOrderLists()
   const current = markets[market]
-  const message = {
-    open: `You do not have any pending ${current.name} orders`,
-    sip: `You do not have any ${current.name} SIPs`,
-    history: `No ${current.name} orders in your history yet`,
-  }[tab]
+  // US has no SIP tab: coming over from SIP lands on Open.
+  const usList: UsList = tab === 'history' ? 'history' : 'open'
 
   return (
     <div className={styles.orders}>
@@ -28400,25 +28634,164 @@ export function OrdersTab({ banner }: { banner?: ReactNode }) {
           <span className={styles.switchLabel} key={market}>{current.code}</span>
         </Select>
         <span className={styles.rule} aria-hidden="true" />
-        <Tabs
-          appearance="pill"
-          behavior="tabs"
-          width="fill"
-          aria-label="Orders"
-          className={`${styles.pills} ${styles.tabs}`}
-          value={tab}
-          onChange={(value) => setTab(value as OrderTab)}
-          items={[
-            { value: 'open', label: 'Open' },
-            { value: 'sip', label: 'SIP' },
-            { value: 'history', label: 'History' },
-          ]}
-        />
+        {market === 'us' ? (
+          <Tabs
+            appearance="pill"
+            behavior="tabs"
+            width="fill"
+            aria-label="US orders"
+            className={`${styles.pills} ${styles.tabs}`}
+            value={usList}
+            onChange={(value) => {
+              lastUsList = value
+              setTab(value)
+            }}
+            items={[
+              { value: 'open', label: `Open (${countOf(lists.open, kind)})` },
+              { value: 'history', label: `History (${countOf(lists.history, kind)})` },
+            ]}
+          />
+        ) : (
+          <Tabs
+            appearance="pill"
+            behavior="tabs"
+            width="fill"
+            aria-label="Orders"
+            className={`${styles.pills} ${styles.tabs}`}
+            value={tab}
+            onChange={(value) => setTab(value as OrderTab)}
+            items={[
+              { value: 'open', label: 'Open' },
+              { value: 'sip', label: 'SIP' },
+              { value: 'history', label: 'History' },
+            ]}
+          />
+        )}
       </div>
       {banner}
-      {/* L3 Empty state with its default illustration, centred in the space under the tabs. */}
-      <EmptyState key={`${tab}${market}`} className={styles.empty} title={message} />
+      {market === 'us' ? (
+        <UsOrders list={usList} orders={lists[usList]} kind={kind} onKind={setKind} filters={filters} onFilters={setFilters} />
+      ) : (
+        /* L3 Empty state with its default illustration, centred in the space under the tabs. */
+        <EmptyState
+          key={`${tab}${market}`}
+          className={styles.empty}
+          title={{ open: 'You do not have any pending Indian orders', sip: 'You do not have any Indian SIPs', history: 'No Indian orders in your history yet' }[tab]}
+        />
+      )}
     </div>
+  )
+}
+
+/** The US sample orders the user has (none until they hold US stocks). */
+function useUsOrderLists(): Record<UsList, UsOrder[]> {
+  const journey = useUsJourney()
+  useUsMarketSnapshot() // re-render when prices tick (the cards' LTP)
+  return journey === 'holding' ? { open: openOrders, history: historyOrders } : { open: [], history: [] }
+}
+
+/** The picker is a switcher, as the USD / INR one: each tap steps All orders → Stocks → ETFs (no sheet, 3 Nov). */
+const nextKind = (kind: OrderKind): OrderKind => (kind === 'all' ? 'stock' : kind === 'stock' ? 'etf' : 'all')
+const ofKind = (orders: UsOrder[], kind: OrderKind) => (kind === 'all' ? orders : orders.filter((o) => o.kind === kind))
+/** The count on a tab: its orders of the picked kind (before filters, as the picker narrows the whole tab). */
+const countOf = (orders: UsOrder[], kind: OrderKind) => ofKind(orders, kind).length
+
+/** A US list: the picker + Filters row, then the cards (or the empty state that fits). */
+function UsOrders({
+  list,
+  orders,
+  kind,
+  onKind,
+  filters,
+  onFilters,
+}: {
+  list: UsList
+  orders: UsOrder[]
+  kind: OrderKind
+  onKind: (kind: OrderKind) => void
+  filters: OrderFilters
+  onFilters: (filters: OrderFilters) => void
+}) {
+  const { go } = useUsNav()
+  const [sheet, setSheet] = useState<'filters' | null>(null)
+  // A fresh filter sheet each time it opens (its picks start from the applied filters), kept while it closes.
+  const [filterRun, setFilterRun] = useState(0)
+  const narrowed = ofKind(orders, kind)
+  const shown = applyFilters(narrowed, filters, list)
+  const activeFilters = filterCount(filters, list)
+
+  let content: ReactNode
+  if (shown.length) {
+    content = (
+      <Stack as="ul" gap="16" className={styles.list} aria-label={list === 'open' ? 'Open US orders' : 'US order history'}>
+        {shown.map((order) => (
+          <li key={order.id}>
+            <OrderCard order={order} onOpen={() => openOrder(go, order)} />
+          </li>
+        ))}
+      </Stack>
+    )
+  } else if (narrowed.length && activeFilters) {
+    content = (
+      <EmptyState
+        className={styles.empty}
+        title="No orders match these filters"
+        action={<Button size="sm" onClick={() => onFilters(NO_FILTERS)}>Clear filters</Button>}
+      />
+    )
+  } else {
+    content = (
+      <EmptyState
+        key={`${list}${kind}`}
+        className={styles.empty}
+        title={list === 'open' ? `No pending US orders${EMPTY_KIND[kind]}` : `No US orders${EMPTY_KIND[kind]} in your history yet`}
+      />
+    )
+  }
+
+  return (
+    <>
+      <Stack direction="horizontal" align="center" justify="between" gap="12" className={styles.pickerRow}>
+        <Tab
+          action
+          appearance="pill"
+          size="sm"
+          iconRight={<Icon icon={lmSwitchArrowVertical} />}
+          aria-label={`Showing ${ORDER_KIND_LABEL[kind]}, tap for ${ORDER_KIND_LABEL[nextKind(kind)]}`}
+          onClick={() => onKind(nextKind(kind))}
+        >
+          {ORDER_KIND_LABEL[kind]}
+        </Tab>
+        {/* FLAG: Figma's "Filters" is a blue text link with a count; L3 has no text link with a badge, so it's the
+            L3 action pill (Tab action — "open a filter sheet") with an L3 Badge. */}
+        <Tab
+          action
+          appearance="pill"
+          size="sm"
+          iconLeft={<Icon icon={msFilterList} />}
+          badge={activeFilters ? <Badge count={activeFilters} color="discover" label="filters on" /> : undefined}
+          aria-label={activeFilters ? `Filters, ${activeFilters} on. Change` : 'Filters'}
+          onClick={() => {
+            setFilterRun((n) => n + 1)
+            setSheet('filters')
+          }}
+        >
+          Filters
+        </Tab>
+      </Stack>
+      {content}
+      <OrderFilterSheet
+        key={filterRun}
+        open={sheet === 'filters'}
+        list={list}
+        value={filters}
+        onApply={(next) => {
+          onFilters(next)
+          setSheet(null)
+        }}
+        onClose={() => setSheet(null)}
+      />
+    </>
   )
 }
 ```
@@ -28504,12 +28877,11 @@ export function OrdersTab({ banner }: { banner?: ReactNode }) {
 import type { CSSProperties, ReactNode } from 'react'
 import styles from './Primitives.module.css'
 
-/** ▲/▼ + a percentage — his `hi`. */
+/** A signed percentage in green / red — his `hi`, without his ▲/▼ (sign, never an arrow: the user's rule, 3 Nov). */
 export function Move({ value, up, className, style }: { value: string; up?: boolean; className?: string; style?: CSSProperties }) {
   return (
     <span className={[styles.move, className].filter(Boolean).join(' ')} data-up={up || undefined} style={style}>
-      <span className={styles.tri} aria-hidden="true" />
-      {value}
+      {/^[+\-−]/.test(value) ? value : `${up ? '+' : '−'}${value}`}
     </span>
   )
 }
@@ -28954,6 +29326,8 @@ export const northIcon = symbolPath('M440-160v-487L216-423l-56-57 320-320 320 32
 export const STOCKS_HOME = '5796:91576'
 /** The Stocks flow's Home (the Stocks tab, IND). Its US tab follows the user status. */
 export const STOCKS_HOME_ENTRY = 'stocks-01'
+/** The F&O tab (F&O flow, Equity home) — where Positions' Explore F&O goes. */
+export const FNO_HOME = 'fno-01'
 /** Wallet, US tab (follows the user status). */
 export const WALLET_US = '5852:99057'
 /** Activation / KYC screens in other flows (prototype ids). */
@@ -28976,7 +29350,7 @@ export const WALLET = '5852:99084'
 // don't exist yet as flows; they are kept here only because the US flow enters through them.
 import type { UsScreenMap } from '../types'
 import { MutualFundHomeScreen } from './MutualFundHomeScreen'
-import { PortfolioBannerLiveScreen, PortfolioBannerScreen } from './PortfolioScreen'
+import { PortfolioBannerLiveScreen, PortfolioBannerScreen, PortfolioUsHoldingsScreen, PortfolioUsOrdersScreen, PortfolioUsPositionsScreen } from './PortfolioScreen'
 import { SpxIndexScreen } from './SpxIndexScreen'
 
 /** Screens of this part, by Figma node id. */
@@ -28984,6 +29358,9 @@ export const screens: UsScreenMap = {
   '5796:89422': SpxIndexScreen, // E1a · S&P 500 index · market open
   '5796:88668': PortfolioBannerScreen, // E4 · Portfolio · US market banner
   '5796:92301': PortfolioBannerLiveScreen, // E4 · Portfolio · US market banner · live
+  '9001:30': PortfolioUsHoldingsScreen, // Portfolio · Holdings · US card upfront (not in Figma)
+  '9001:31': PortfolioUsOrdersScreen, // Portfolio · Orders · US (Order Details goes back here)
+  '9001:32': PortfolioUsPositionsScreen, // Portfolio · Positions · US (Position Details goes back here)
   '5796:88163': MutualFundHomeScreen, // E5 · Mutual Fund home · US banner
 }
 ```
@@ -28993,6 +29370,8 @@ export const screens: UsScreenMap = {
 ```ts
 // Portfolio tab sample data. FLAG: hard-coded numbers.
 import { asset } from '../../asset'
+import { NVDA, NVDA_HOLDING } from '../../data'
+import { formatUsd } from '../../../../shared/money'
 import type { HoldingsMarket, HoldingsSummary } from './components/HoldingsCards'
 import type { SortValue } from './sheets/SortSheet'
 
@@ -29055,21 +29434,30 @@ export const holdingsSummary: Record<HoldingsMarket, HoldingsSummary> = {
   us: { pnl: '$0.00', pct: '0.00%', up: true, invested: '$0.00', current: '$0.00' },
 }
 
-/** US P&L card once the user holds NVDA (user status "holding"). */
-export const usHoldingSummary: HoldingsSummary = { pnl: '+$14.60', pct: '9.73%', up: true, invested: '$150.00', current: '$164.60' }
-
-/** The one US holding in the "holding" status (1 NVDA bought at $150.00). */
-export const usHolding: Holding = {
-  key: 'nvda',
-  name: 'NVDA',
-  qty: 1,
-  current: '$164.60',
-  invested: '$150.00',
-  returns: '+$14.60',
-  pct: '+9.73%',
-  day: 1.2,
-  up: true,
-  logo: asset('assets/activation/nvda-logo.svg'),
+/** The one US holding in the "holding" status: NVDA_HOLDING (data.ts) at today's price — the same numbers as the stock
+ * page's Your Holdings. Call it on render so it follows the price refresh. */
+export function usHoldingNow(): { holding: Holding; summary: HoldingsSummary } {
+  const { qty, avg } = NVDA_HOLDING
+  const current = qty * NVDA.price
+  const invested = qty * avg
+  const returns = current - invested
+  const pct = (returns / invested) * 100
+  const up = returns >= 0
+  return {
+    holding: {
+      key: 'nvda',
+      name: 'NVDA',
+      qty,
+      current: formatUsd(current),
+      invested: formatUsd(invested),
+      returns: formatUsd(returns, { sign: true }),
+      pct: `${up ? '+' : '-'}${Math.abs(pct).toFixed(2)}%`,
+      day: NVDA.change,
+      up,
+      logo: asset('assets/activation/nvda-logo.svg'),
+    },
+    summary: { pnl: formatUsd(returns, { sign: true }), pct: `${Math.abs(pct).toFixed(2)}%`, up, invested: formatUsd(invested), current: formatUsd(current) },
+  }
 }
 ```
 
@@ -29429,9 +29817,9 @@ export const timeLabels = ['9:15', '10:15', '11:15', '1:15', '2:15', '3:15']
 // 2.5 s (5 s a cycle). Used on the ETF list's Boosted tab and on a Boosted ETF's page. Screen readers hear `label`; with
 // reduced motion the first line stays. FLAG: hand-made (Etf.module.css).
 import { Icon } from '@l3/components/Icon'
-import { Tag } from '@l3/components/Tag'
 import { msArrowForward, msTrendingDown, msTrendingUp } from '@l3/icons/material'
 import { boltIcon, infoIcon } from './icons'
+import { LevTag } from './parts'
 import styles from './Etf.module.css'
 
 /** One line: what moves (and by how much, `up` sets the colour), then the Boosted side — a side tag and / or a name — and its gain. */
@@ -29445,7 +29833,7 @@ export function BoostStrip({ lines, tone, label, onOpen, gradient, look = 'edges
     <Icon icon={up ? msTrendingUp : msTrendingDown} size={14} className={[up ? styles.boostTrendUp : styles.boostTrendDown, end ? styles.boostTrendEnd : ''].join(' ')} />
   )
   const arrow = <Icon icon={msArrowForward} size={14} className={styles.boostArrowIcon} />
-  const tag = (t: BoostLine) => t.tag && <Tag variant="secondary" color={t.tag.long ? 'profit' : 'loss'} size="sm">{t.tag.text}</Tag>
+  const tag = (t: BoostLine) => t.tag && <LevTag long={t.tag.long}>{t.tag.text}</LevTag>
   const market = (t: BoostLine) => <b className={styles.boostMarket} data-down={t.up ? undefined : ''}>{t.move}</b>
   const gain = (t: BoostLine) => <b className={styles.boostGain}>{t.gain}</b>
   const line = (t: BoostLine, i: number) => {
@@ -29614,7 +30002,7 @@ export function BoostStrip({ lines, tone, label, onOpen, gradient, look = 'edges
   grid-column: 1 / -1;
   margin-top: var(--l3-spacing-12);
   font: var(--l3-text-label-12);
-  color: var(--l3-content-tertiary);
+  color: var(--l3-content-secondary);
 }
 
 /* Grow (0–30%), hold, then fade out just before the loop starts again. */
@@ -29663,13 +30051,13 @@ import { ButtonGroup } from '@l3/components/ButtonGroup'
 import { useSheetLayer } from '../../components/Phone'
 import styles from './BoostedSheet.module.css'
 
-// Off for now (3 Nov): the Boosted strips don't open this sheet and show no (i). Set true to bring it back.
+// Off for now (jojo, 3 Nov): the ETF page's Boosted strip doesn't open this sheet and shows no (i). Set true to bring it back.
 export const BOOST_SHEET = false
 
 const BARS = [
-  { key: 'market', name: 'Market', move: '▲ 1%', share: 1, up: true },
-  { key: 'long', name: '3x Long', move: '▲ 3%', share: 3, up: true },
-  { key: 'short', name: '3x Short', move: '▼ 3%', share: 3, up: false },
+  { key: 'market', name: 'Market', move: '+1%', share: 1, up: true },
+  { key: 'long', name: '3x Long', move: '+3%', share: 3, up: true },
+  { key: 'short', name: '3x Short', move: '−3%', share: 3, up: false },
 ]
 
 export function BoostedSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -29720,9 +30108,9 @@ export function BoostedSheet({ open, onClose }: { open: boolean; onClose: () => 
 
 .page[data-gap="24"]{gap:var(--l3-spacing-24)}
 
-.chips{width:calc(100% + 2 * var(--l3-spacing-16));margin:0 calc(-1 * var(--l3-spacing-16));padding:0 var(--l3-spacing-16)}
+.chips{width:100%;padding:0 var(--l3-spacing-16)}
 
-.list,.holdings{gap:var(--l3-spacing-08);flex-direction:column;margin:0;padding:0;list-style:none;display:flex}
+.holdings{gap:var(--l3-spacing-08);flex-direction:column;margin:0;padding:0;list-style:none;display:flex}
 
 /* 16 between ETF cards, as between the Market page's stock cards (3 Nov). */
 .list{gap:var(--l3-spacing-16)}
@@ -29744,7 +30132,7 @@ export function BoostedSheet({ open, onClose }: { open: boolean; onClose: () => 
 /* "+500" in a circle after the logos (FLAG: hand-made; L3 Avatar has no count variant). Widens to a pill for "+3.6k". */
 .logoStack>.moreCount{margin-left:calc(-1 * var(--l3-spacing-04))}
 
-.moreCount{z-index:1;position:relative;min-width:var(--l3-size-24);height:var(--l3-size-24);padding:0 var(--l3-spacing-06);border-radius:var(--l3-radius-full);background:var(--l3-surface-secondary);font:var(--l3-text-label-10);color:var(--l3-content-secondary);font-variant-numeric:tabular-nums;place-items:center;display:grid}
+.moreCount{z-index:1;position:relative;min-width:var(--l3-size-24);height:var(--l3-size-24);padding:0 var(--l3-spacing-06);border-radius:var(--l3-radius-full);background:var(--l3-surface-secondary);font:var(--l3-text-label-12);color:var(--l3-content-secondary);font-variant-numeric:tabular-nums;place-items:center;display:grid}
 
 .etfSym{color:var(--l3-content-secondary)}
 
@@ -29754,15 +30142,11 @@ export function BoostedSheet({ open, onClose }: { open: boolean; onClose: () => 
 
 .rowSub{font:var(--l3-text-label-12);color:var(--l3-content-secondary);text-overflow:ellipsis;white-space:nowrap;overflow:hidden}
 
-.rowPrice{align-items:flex-end;gap:var(--l3-spacing-04);flex-direction:column;flex:none;display:flex}
-
-.rowValue{font:var(--l3-text-heading-14);color:var(--l3-content-primary);font-variant-numeric:tabular-nums}
-
-.disc{width:var(--l3-size-32);height:var(--l3-size-32);border-radius:var(--l3-radius-full);background:var(--l3-surface-secondary);box-shadow:inset 0 0 0 1px var(--l3-border-light);font:var(--l3-text-heading-10);color:var(--l3-content-primary);letter-spacing:0;flex:none;place-items:center;display:grid}
+.disc{width:var(--l3-size-32);height:var(--l3-size-32);border-radius:var(--l3-radius-full);background:var(--l3-surface-secondary);box-shadow:inset 0 0 0 1px var(--l3-border-light);font:var(--l3-text-heading-12);color:var(--l3-content-primary);letter-spacing:0;flex:none;place-items:center;display:grid}
 
 .disc[data-size="40"]{width:var(--l3-size-40);height:var(--l3-size-40);font:var(--l3-text-heading-12)}
 
-.disc[data-size="24"]{width:var(--l3-size-24);height:var(--l3-size-24);font:var(--l3-text-label-10)}
+.disc[data-size="24"]{width:var(--l3-size-24);height:var(--l3-size-24);font:var(--l3-text-label-12)}
 
 .disc>img{object-fit:contain;width:72%;height:72%}
 
@@ -29830,7 +30214,7 @@ export function BoostedSheet({ open, onClose }: { open: boolean; onClose: () => 
 
 .sectionHead{justify-content:space-between;align-items:center;display:flex}
 
-.sectionMeta{font:var(--l3-text-label-12);color:var(--l3-content-tertiary)}
+.sectionMeta{font:var(--l3-text-label-12);color:var(--l3-content-secondary)}
 
 .facts{gap:var(--l3-spacing-12);padding:var(--l3-spacing-12);border-radius:var(--l3-radius-12);background:var(--l3-surface-primary);box-shadow:inset 0 0 0 1px var(--l3-border-light);flex-direction:column;margin:0;display:flex}
 
@@ -29853,6 +30237,26 @@ export function BoostedSheet({ open, onClose }: { open: boolean; onClose: () => 
 .weightBar>span{border-radius:inherit;background:var(--l3-content-accent-discover-default);height:100%;display:block}
 
 .weight{font:var(--l3-text-heading-12);color:var(--l3-content-primary);font-variant-numeric:tabular-nums;flex:none}
+
+/* ---- The Regular tab's filter row, fixed under the tabs (Actionbar bottom): switcher chip · divider · filter chips.
+   12 above and below, the chip 16 from the edge; the chips scroll to the screen's right edge (as the Stocks home's
+   Top Movers row). ---- */
+.filterRow{min-width:0;padding:var(--l3-spacing-12) 0 var(--l3-spacing-12) var(--l3-spacing-16)}
+
+/* FLAG: hand-made switcher chip (outlined pill that cycles Country / Sector), as the home's cap chip, at the chips' height */
+.switchChip{display:flex;flex:none;align-items:center;gap:var(--l3-spacing-02);box-sizing:border-box;height:var(--l3-size-32);padding:0 calc(var(--l3-spacing-12) - 1px);border:1px solid var(--l3-content-primary);border-radius:var(--l3-radius-full);background:var(--l3-surface-default);color:var(--l3-content-primary);font:var(--l3-text-label-12);cursor:pointer;-webkit-tap-highlight-color:transparent}
+
+.switchName{animation:.22s cubic-bezier(.2,0,0,1) switch-in}
+
+@keyframes switch-in{0%{opacity:0;translate:0 var(--l3-spacing-04)}}
+
+@media (prefers-reduced-motion:reduce){.switchName{animation:none}}
+
+/* FLAG: hand-made divider between the switcher chip and the chips */
+.filterDivider{flex:none;width:1px;height:var(--l3-size-28);background:var(--l3-border-intense)}
+
+/* The chips scroll on their own; 16 after the last one. Room for the raised shadow above and below. */
+.filterRow>.filterTabs{flex:1;min-width:0;margin-block:calc(-1 * var(--l3-spacing-04));padding:var(--l3-spacing-04) var(--l3-spacing-16) var(--l3-spacing-04) 0}
 
 /* The ETF card (3 Nov), inside the L3 ListCell card like the Market page's stock rows. Left column: two holding logos
    (28) overlapping on the diagonal in a 40 × 40 box — the front one with a 2 gap cut out of the one behind, so it is
@@ -29883,7 +30287,7 @@ span:has(>.diagCol){width:auto;height:auto}
 
 .cellNameText{text-overflow:ellipsis;white-space:nowrap;min-width:0;overflow:hidden}
 
-.cellSym{color:var(--l3-content-tertiary);text-overflow:ellipsis;white-space:nowrap;flex:none;max-width:var(--l3-size-56);overflow:hidden}
+.cellSym{color:var(--l3-content-secondary);text-overflow:ellipsis;white-space:nowrap;flex:none;max-width:var(--l3-size-56);overflow:hidden}
 
 .cellPrice{align-items:flex-end;gap:var(--l3-spacing-02);white-space:nowrap;flex-direction:column;max-width:var(--l3-size-96);display:flex}
 
@@ -29901,7 +30305,7 @@ span:has(>.diagCol){width:auto;height:auto}
 .twoLogos .logoStack>[data-avatar][data-size]{--av-size:var(--l3-size-16);--av-font:var(--l3-text-label-08)}
 
 .twoLogos .logoStack>:not(:last-child){-webkit-mask:radial-gradient(circle var(--l3-spacing-10) at calc(var(--l3-size-16) + var(--l3-spacing-02)) 50%,transparent 98%,#000 100%);mask:radial-gradient(circle var(--l3-spacing-10) at calc(var(--l3-size-16) + var(--l3-spacing-02)) 50%,transparent 98%,#000 100%)}
-/* "Fund logo" card (3 Nov): under the plain-name heading, the ticker (secondary) then the fund name (tertiary), one
+/* "Fund logo" card (3 Nov): under the plain-name heading, the ticker (secondary) then the fund name (secondary), one
    line; the name ends in "…". */
 .fundTitle{align-items:baseline;gap:var(--l3-spacing-04);min-width:0;display:flex}
 
@@ -29909,23 +30313,7 @@ span:has(>.diagCol){width:auto;height:auto}
 
 .fundSym:after{content:"·";padding-left:var(--l3-spacing-04)}
 
-.fundName{color:var(--l3-content-tertiary);text-overflow:ellipsis;white-space:nowrap;min-width:0;overflow:hidden}
-
-/* Market / Sector switch (3 Nov), as the Stocks home's Mega Cap chip: [Market ⇅] | All US China …, the row full
-   bleed so the chips scroll to the edge. FLAG: hand-made switch chip and divider. */
-.filterRow{align-items:center;gap:var(--l3-spacing-12);width:calc(100% + 2 * var(--l3-spacing-16));min-width:0;margin:0 calc(-1 * var(--l3-spacing-16));padding-left:var(--l3-spacing-16);display:flex}
-
-.byChip{box-sizing:border-box;height:var(--byh, var(--l3-size-32));padding:0 calc(var(--l3-spacing-12) - 1px);border:1px solid var(--l3-content-primary);border-radius:var(--l3-radius-full);background:var(--l3-surface-default);color:var(--l3-content-primary);font:var(--l3-text-label-12);cursor:pointer;-webkit-tap-highlight-color:transparent;flex:none;align-items:center;gap:var(--l3-spacing-02);display:flex}
-
-.byName{animation:.22s cubic-bezier(.2,0,0,1) by-in}
-
-@keyframes by-in{0%{opacity:0;translate:0 var(--l3-spacing-04)}}
-
-@media (prefers-reduced-motion:reduce){.byName{animation:none}}
-
-.byDivider{width:1px;height:var(--byh, var(--l3-size-32));background:var(--l3-border-intense);flex:none}
-
-.filterTabs{flex:1;min-width:0;padding-right:var(--l3-spacing-16)}
+.fundName{color:var(--l3-content-secondary);text-overflow:ellipsis;white-space:nowrap;min-width:0;overflow:hidden}
 
 
 
@@ -29938,7 +30326,7 @@ span:has(>.diagCol){width:auto;height:auto}
 
 /* The other leverage tag versions (3 Nov, flow option "Leverage tag"), to compare with V5 above. FLAG: hand-made pills,
    band and mask; overridden Tag radii. */
-.levPill{align-items:center;gap:var(--l3-spacing-02);height:var(--l3-size-16);padding:0 var(--l3-spacing-04);border-radius:var(--l3-radius-full);background:var(--l3-surface-accent-indicator-down-light);color:var(--l3-content-accent-indicator-down-default);box-shadow:inset 0 0 0 1px var(--l3-border-accent-indicator-down-light),0 0 0 var(--l3-spacing-02) var(--l3-surface-primary);font:var(--l3-text-heading-10);white-space:nowrap;display:inline-flex}
+.levPill{align-items:center;gap:var(--l3-spacing-02);height:var(--l3-size-16);padding:0 var(--l3-spacing-04);border-radius:var(--l3-radius-full);background:var(--l3-surface-accent-indicator-down-light);color:var(--l3-content-accent-indicator-down-default);box-shadow:inset 0 0 0 1px var(--l3-border-accent-indicator-down-light),0 0 0 var(--l3-spacing-02) var(--l3-surface-primary);font:var(--l3-text-heading-12);white-space:nowrap;display:inline-flex}
 
 .levPill[data-up]{background:var(--l3-surface-accent-indicator-up-light);color:var(--l3-content-accent-indicator-up-default);box-shadow:inset 0 0 0 1px var(--l3-border-accent-indicator-up-light),0 0 0 var(--l3-spacing-02) var(--l3-surface-primary)}
 
@@ -29993,7 +30381,7 @@ span:has(>.diagCol){width:auto;height:auto}
 
 .boostLine[data-tone="purple"]{--boost-bg:var(--l3-surface-accent-purple-light);--boost-accent:var(--l3-content-accent-purple-default)}
 
-.boostLine[data-tone="grey"]{--boost-bg:var(--l3-surface-secondary);--boost-accent:var(--l3-content-tertiary)}
+.boostLine[data-tone="grey"]{--boost-bg:var(--l3-surface-secondary);--boost-accent:var(--l3-content-secondary)}
 
 /* On grey the +3% and the up icon keep the up colour (the bar alone goes neutral). */
 .boostLine[data-tone="grey"] .boostGain,.boostLine[data-tone="grey"] .boostIcon{color:var(--l3-content-accent-indicator-up-default)}
@@ -30020,9 +30408,9 @@ span:has(>.diagCol){width:auto;height:auto}
 /* "You make +3%" in the accent; the arrow and the end (i) quiet. */
 .boostGain{font:var(--l3-text-heading-12);color:var(--boost-accent)}
 
-.boostArrowIcon{color:var(--l3-content-tertiary)}
+.boostArrowIcon{color:var(--l3-content-secondary)}
 
-.boostInfoEnd{color:var(--l3-content-tertiary);flex:none;margin-left:auto}
+.boostInfoEnd{color:var(--l3-content-secondary);flex:none;margin-left:auto}
 
 .boostIcon{flex:none;color:var(--boost-accent)}
 
@@ -30046,7 +30434,7 @@ span:has(>.diagCol){width:auto;height:auto}
 
 .boostHot{color:var(--boost-accent)}
 
-.boostArrow{color:var(--l3-content-tertiary)}
+.boostArrow{color:var(--l3-content-secondary)}
 
 /* Card: like the fund cards (12 radius, hairline, the page's surface), 12 padding; a 32 tile in the soft accent with
    the bolt, the sum over a one-line sub, the (i) at the right. */
@@ -30056,9 +30444,9 @@ span:has(>.diagCol){width:auto;height:auto}
 
 .boostCardText{gap:var(--l3-spacing-02);flex-direction:column;flex:1;min-width:0;display:flex}
 
-.boostCardSub{font:var(--l3-text-label-10);color:var(--l3-content-tertiary)}
+.boostCardSub{font:var(--l3-text-label-12);color:var(--l3-content-secondary)}
 
-.boostCardInfo{color:var(--l3-content-tertiary);flex:none}
+.boostCardInfo{color:var(--l3-content-secondary);flex:none}
 
 /* Chip: one line, hugging its content, 28 tall, the soft accent behind. */
 .boostChip{gap:var(--l3-spacing-06);align-self:flex-start;height:var(--l3-size-28);padding:0 var(--l3-spacing-10);border-radius:var(--l3-radius-full);background:var(--boost-soft)}
@@ -30117,7 +30505,7 @@ span:has(>.diagCol){width:auto;height:auto}
 .boostGainBig.boostGainBig{font:var(--l3-text-heading-14);margin-left:auto}
 
 /* V5 Bolt lead: a gold badge with the bolt and the leverage; the side's name in its colour. */
-.boostBoltBadge{align-items:center;gap:var(--l3-spacing-02);height:var(--l3-size-16);padding:0 var(--l3-spacing-04);border-radius:var(--l3-radius-04);background:var(--l3-surface-accent-zing-default);color:var(--l3-static-black);font:var(--l3-text-heading-10);flex:none;display:inline-flex}
+.boostBoltBadge{align-items:center;gap:var(--l3-spacing-02);height:var(--l3-size-16);padding:0 var(--l3-spacing-04);border-radius:var(--l3-radius-04);background:var(--l3-surface-accent-zing-default);color:var(--l3-static-black);font:var(--l3-text-heading-12);flex:none;display:inline-flex}
 
 .boostSide{font:var(--l3-text-heading-12);color:var(--l3-content-accent-indicator-up-default)}
 
@@ -30143,6 +30531,11 @@ span:has(>.diagCol){width:auto;height:auto}
 .boostTextSentence{font:var(--l3-text-description-12);color:var(--l3-content-secondary);flex:1;min-width:0}
 
 .boostTextUp{font-weight:750;color:var(--l3-content-primary)}
+
+/* The long / short tag, border only (3 Nov): L3 Tag secondary without its soft fill. L3 gap: no outline Tag variant. */
+.outlineTag[data-variant][data-color] { /* beats L3's .tag[data-variant='secondary'] */
+  --tag-surface: transparent;
+}
 ```
 
 ### `src/flows/us-stocks/screens/etf/EtfHoldings.module.css`
@@ -30175,7 +30568,7 @@ span:has(>.diagCol){width:auto;height:auto}
   padding-bottom: var(--l3-spacing-08);
   box-shadow: inset 0 -1px 0 var(--l3-border-light); /* 1px hairline */
   font: var(--l3-text-label-12);
-  color: var(--l3-content-tertiary);
+  color: var(--l3-content-secondary);
   display: flex;
 }
 
@@ -30300,7 +30693,7 @@ span:has(>.diagCol){width:auto;height:auto}
 .sym {
   margin-left: var(--l3-spacing-06);
   font: var(--l3-text-label-12);
-  color: var(--l3-content-tertiary);
+  color: var(--l3-content-secondary);
 }
 
 /* Share of the fund, against the biggest holding. */
@@ -30326,6 +30719,38 @@ span:has(>.diagCol){width:auto;height:auto}
   flex: none;
 }
 
+/* "Holding weight" versions (3 Nov, to test). Mini: a short bar just before the number. */
+.miniBar {
+  width: var(--l3-size-40);
+  flex: none;
+}
+
+/* Fill / Pill: the number on a Discover-light pill — Fill shades it as far as the share against the biggest. */
+.weightPill {
+  min-width: var(--l3-size-64);
+  padding: var(--l3-spacing-04) var(--l3-spacing-08);
+  border-radius: var(--l3-radius-full);
+  background: var(--l3-surface-secondary);
+  text-align: right;
+  flex: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.weightPill[data-look='pill'] {
+  background: var(--l3-surface-accent-discover-light);
+}
+
+.weightFill {
+  background: var(--l3-surface-accent-discover-light);
+  position: absolute;
+  inset: 0 auto 0 0;
+}
+
+.weightPill .weight {
+  position: relative;
+}
+
 /* The "Others" row: a few logos + "+497", the word Others, their share together. */
 .others {
   align-items: center;
@@ -30346,43 +30771,111 @@ span:has(>.diagCol){width:auto;height:auto}
 .othersChevron {
   flex: none;
   margin-left: calc(-1 * var(--l3-spacing-04));
-  color: var(--l3-content-tertiary);
+  color: var(--l3-content-secondary);
 }
 
 /* The full Top holdings page (3 Nov): "Top 50 of 503 · Weight", then the Market page's cards, 16 apart. */
-.fullPage {
-  padding: var(--l3-spacing-16);
-}
-
 .fullHead {
   justify-content: space-between;
-  margin: 0 0 var(--l3-spacing-12);
+  margin: 0;
   padding: 0 var(--l3-spacing-04);
   font: var(--l3-text-label-12);
-  color: var(--l3-content-tertiary);
+  color: var(--l3-content-secondary);
   display: flex;
 }
 
-.cards {
-  gap: var(--l3-spacing-16);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  flex-direction: column;
-  display: flex;
-}
-
-.cardWeight {
-  font: var(--l3-text-label-16);
-  color: var(--l3-content-primary);
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
+.fullEnd {
+  margin: var(--l3-spacing-12) 0 0;
+  padding: 0 var(--l3-spacing-16);
+  font: var(--l3-text-description-12);
+  color: var(--l3-content-secondary);
+  text-align: center;
 }
 
 .othersName {
   font: var(--l3-text-heading-14);
   color: var(--l3-content-secondary);
   flex: 1;
+}
+
+/* Allocation as a donut (3 Nov): the stock page's Analyst Ratings card — donut on the left, legend beside it. */
+.allocCard {
+  align-items: center;
+  gap: var(--l3-spacing-20);
+  padding: var(--l3-spacing-16);
+  border-radius: var(--l3-radius-12);
+  background: var(--l3-surface-default);
+  box-shadow: inset 0 0 0 1px var(--l3-border-light); /* 1px hairline */
+  display: flex;
+}
+
+.donut {
+  flex: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: var(--l3-size-96);
+  height: var(--l3-size-96);
+  display: flex;
+  position: relative;
+}
+
+.donut svg {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  inset: 0;
+  rotate: -90deg;
+}
+
+.donut circle {
+  fill: none;
+  background: none;
+}
+
+.donut circle[data-colour='discover'] { stroke: var(--l3-surface-accent-discover-default); }
+.donut circle[data-colour='purple'] { stroke: var(--l3-surface-accent-purple-default); }
+.donut circle[data-colour='teal'] { stroke: var(--l3-surface-accent-teal-default); }
+.donut circle[data-colour='zing'] { stroke: var(--l3-surface-accent-zing-default); }
+.donut circle[data-colour='other'] { stroke: var(--l3-content-tertiary); }
+
+.donut strong {
+  font: var(--l3-text-heading-16);
+  color: var(--l3-content-primary);
+}
+
+.donut span {
+  max-width: 70%;
+  font: var(--l3-text-description-10);
+  color: var(--l3-content-secondary);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.donutLegend {
+  gap: var(--l3-spacing-10);
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+}
+
+.donutLegend li {
+  align-items: center;
+  gap: var(--l3-spacing-08);
+  display: flex;
+}
+
+.donutLegend .sectorName {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 ```
 
@@ -30399,26 +30892,46 @@ span:has(>.diagCol){width:auto;height:auto}
 // splits barely move, and a date mostly reads as "this is old" to a new user.)
 // FLAG: copy not in copy.json yet (hard-coded). Holding rows and sector bars are hand-made (module CSS) — L3 ListCell
 // has no weight bar; the "+497" circle is hand-made (L3 Avatar has no count variant), as on the ETF list.
-import { SECTOR_NAMES, holdingsBeyond, otherHoldings, sectorsFor, shortCount, stockName, topHoldings, type Etf } from './data'
+import { holdingsBeyond, otherHoldings, sectorsFor, shortCount, stockName, topHoldings, type Etf } from './data'
 import { Icon } from '@l3/components/Icon'
 import { msChevronRight } from '@l3/icons/material'
+import { useFlowOption } from '../../../../shared/prototype'
 import { HoldingLogo } from './parts'
 import listStyles from './Etf.module.css'
 import styles from './EtfHoldings.module.css'
 
 const TOP = 6
 
-/** One holding row: logo, name and ticker over a weight bar (against `biggest`), then its share. Opens the stock. */
-export function HoldingRow({ sym, weight, biggest, onOpen }: { sym: string; weight: number; biggest: number; onOpen: (sym: string) => void }) {
+/**
+ * How a row shows its share of the fund (3 Nov, prototype option "Holding weight", to test):
+ * - `bar` — a bar under the name, against the biggest holding (before 3 Nov);
+ * - `none` — no bar, only the number;
+ * - `mini` — a short bar just before the number (the default, 3 Nov);
+ * - `fill` — the number on a Discover-light pill, filled as far as its share against the biggest;
+ * - `pill` — the number on a plain Discover-light pill.
+ */
+export type WeightLook = 'bar' | 'none' | 'mini' | 'fill' | 'pill'
+
+/** One holding row: logo, name and ticker, then its share — shown as `look` says (against `biggest`). Opens the stock. */
+export function HoldingRow({ sym, weight, biggest, onOpen, look = 'bar' }: { sym: string; weight: number; biggest: number; onOpen: (sym: string) => void; look?: WeightLook }) {
   const name = stockName(sym)
+  const share = `${(weight / biggest) * 100}%`
   return (
-    <button type="button" className={styles.row} onClick={() => onOpen(sym)} aria-label={`${name}, ${weight}% of the ETF. Open stock`}>
+    <button type="button" className={styles.row} data-look={look} onClick={() => onOpen(sym)} aria-label={`${name}, ${weight}% of the ETF. Open stock`}>
       <HoldingLogo sym={sym} size={32} />
       <span className={styles.text}>
         <span className={styles.name}>{name}<span className={styles.sym}>{sym}</span></span>
-        <span className={styles.bar} aria-hidden="true"><span style={{ width: `${(weight / biggest) * 100}%` }} /></span>
+        {look === 'bar' && <span className={styles.bar} aria-hidden="true"><span style={{ width: share }} /></span>}
       </span>
-      <span className={styles.weight}>{weight.toFixed(1)}%</span>
+      {look === 'mini' && <span className={`${styles.bar} ${styles.miniBar}`} aria-hidden="true"><span style={{ width: share }} /></span>}
+      {look === 'fill' || look === 'pill' ? (
+        <span className={styles.weightPill} data-look={look}>
+          {look === 'fill' && <span className={styles.weightFill} style={{ width: share }} aria-hidden="true" />}
+          <span className={styles.weight}>{weight.toFixed(1)}%</span>
+        </span>
+      ) : (
+        <span className={styles.weight}>{weight.toFixed(1)}%</span>
+      )}
     </button>
   )
 }
@@ -30429,13 +30942,14 @@ export function TopHoldings({ etf, onOpen, onOthers }: { etf: Etf; onOpen: (sym:
   const biggest = top[0]?.weight ?? 100
   const others = otherHoldings(etf, TOP)
   const total = holdingsBeyond(etf, 0)
+  const look = useFlowOption('us-stocks', 'holdingWeight', 'mini') as WeightLook
   return (
     <div className={styles.panel}>
       <p className={styles.head} aria-hidden="true"><span>{total.toLocaleString('en-US')} positions</span><span>Weight</span></p>
       <ul className={styles.list}>
       {top.map((h) => (
         <li key={h.sym}>
-          <HoldingRow sym={h.sym} weight={h.weight} biggest={biggest} onOpen={onOpen} />
+          <HoldingRow sym={h.sym} weight={h.weight} biggest={biggest} onOpen={onOpen} look={look} />
         </li>
       ))}
       {others.count > 0 && others.weight > 0 && (
@@ -30459,43 +30973,76 @@ export function TopHoldings({ etf, onOpen, onOthers }: { etf: Etf; onOpen: (sym:
 /** Sector colours, in order (L3 accent surfaces; no green / red / orange — those mean up, down and warning here). */
 const SECTOR_COLOURS = ['discover', 'purple', 'teal', 'zing']
 
+/** The donut's size (viewBox units): radius and ring width; a small gap between the parts. */
+const RING = { r: 42, width: 10, gap: 2 }
+
+/** One part of a donut: its name and share (%). "Other" is drawn grey, last. */
+export type DonutPart = { name: string; weight: number }
+
 /**
- * The "Allocation" block: one thin bar split by sector (each part its share of 100%), then a two-column legend — colour
- * dot, name and share — "Other" in grey. (V2, the share written inside a taller bar, was tried on 3 Nov and dropped.)
+ * A share donut card: the biggest part's share and name in the middle, the legend beside it (dot, name, share).
+ * Used by the ETF page's Allocation and the stock page's Key Holders, so both read the same.
+ * FLAG: hand-drawn donut (raw SVG circles) — L3 has no pie / donut chart.
  */
-export function Allocation({ etf }: { etf: Etf }) {
-  const sectors = sectorsFor(etf)
-  if (sectors.length === 0) return null
+export function ShareDonut({ parts: items, of, legendLabel, format = (n) => `${n}%` }: {
+  parts: DonutPart[]
+  /** What the shares are of, for screen readers ("the fund", "the shares"). */
+  of: string
+  legendLabel: string
+  format?: (weight: number) => string
+}) {
   const colour = (name: string, i: number) => (name === 'Other' ? 'other' : SECTOR_COLOURS[i % SECTOR_COLOURS.length])
+  const total = items.reduce((sum, s) => sum + s.weight, 0)
+  const length = 2 * Math.PI * RING.r
+  const biggest = items.filter((s) => s.name !== 'Other').sort((a, b) => b.weight - a.weight)[0] ?? items[0]
+  let start = 0
+  const parts = items.map((s, i) => {
+    const size = (s.weight / total) * length
+    const part = { ...s, colour: colour(s.name, i), dash: Math.max(size - RING.gap, 0.5), offset: -start }
+    start += size
+    return part
+  })
   return (
-    <div className={styles.panel}>
-      <span className={styles.stack} aria-hidden="true">
-        {sectors.map((s, i) => (
-          <span key={s.name} data-colour={colour(s.name, i)} style={{ flexGrow: s.weight }} />
-        ))}
-      </span>
-      <ul className={styles.legend} aria-label="Share of the fund by sector">
-        {/* A zero-height row with every sector name any fund has: it sets the name columns to the widest one, so both
-            columns line up the same on every ETF. */}
-        <li className={styles.sizer} aria-hidden="true">
-          {[0, 1].map((col) => (
-            <span key={col} className={styles.sector}>
-              <span className={styles.dot} />
-              <span className={styles.sectorName}>{SECTOR_NAMES.map((n) => <span key={n}>{n}</span>)}</span>
-              <span className={styles.sectorWeight}>99%</span>
-            </span>
+    <div className={styles.allocCard}>
+      <div className={styles.donut} role="img" aria-label={`Biggest: ${biggest.name}, ${format(biggest.weight)} of ${of}`}>
+        <svg viewBox="0 0 100 100" aria-hidden="true">
+          {parts.map((p) => (
+            <circle
+              key={p.name}
+              cx="50"
+              cy="50"
+              r={RING.r}
+              data-colour={p.colour}
+              strokeWidth={RING.width}
+              strokeDasharray={`${p.dash} ${length - p.dash}`}
+              strokeDashoffset={p.offset}
+            />
           ))}
-        </li>
-        {sectors.map((s, i) => (
-          <li key={s.name} className={styles.sector} aria-label={`${s.name}, ${s.weight}% of the ETF`}>
-            <span className={styles.dot} data-colour={colour(s.name, i)} aria-hidden="true" />
-            <span className={styles.sectorName}>{s.name}</span>
-            <span className={styles.sectorWeight}>{s.weight}%</span>
+        </svg>
+        <strong>{format(biggest.weight)}</strong>
+        <span>{biggest.name}</span>
+      </div>
+      <ul className={styles.donutLegend} aria-label={legendLabel}>
+        {parts.map((p) => (
+          <li key={p.name} aria-label={`${p.name}, ${format(p.weight)} of ${of}`}>
+            <span className={styles.dot} data-colour={p.colour} aria-hidden="true" />
+            <span className={styles.sectorName}>{p.name}</span>
+            <span className={styles.sectorWeight}>{format(p.weight)}</span>
           </li>
         ))}
       </ul>
     </div>
   )
+}
+
+/**
+ * The "Allocation" block (3 Nov, after the stock page's Analyst Ratings card): the fund split by sector as a
+ * `ShareDonut`, "Other" last in grey. (Before: one thin stacked bar over a two-column legend — harder to read.)
+ */
+export function Allocation({ etf }: { etf: Etf }) {
+  const sectors = sectorsFor(etf)
+  if (sectors.length === 0) return null
+  return <ShareDonut parts={sectors} of="the fund" legendLabel="Share of the fund by sector" />
 }
 ```
 
@@ -30503,12 +31050,14 @@ export function Allocation({ etf }: { etf: Etf }) {
 
 ```tsx
 // 9001:12 · Top holdings (3 Nov): the full list behind the ETF page's "Others" row — the fund's top 50 holdings (or as
-// many as the sample has), biggest first, as the Market page's cards: the company's logo (40), the name over the ticker
-// and the share on the right (no weight bar here, 3 Nov). A card opens its stock page. The header says how many of the
+// many as the sample has), biggest first, as the shared StockListCard (the Market page's flat card, no shadow, 3 Nov):
+// the company's logo (40), the ticker over the name and the share on the right (no weight bar here). A card opens its stock page. The header says how many of the
 // fund's stocks the list shows (a Boosted fund: of the index it follows).
-// FLAG: copy not in copy.json yet (hard-coded); the header line is hand-made.
+// FLAG: copy not in copy.json yet (hard-coded); the header line and the end note are hand-made text (L3 has no list
+// header / end-of-list note).
 import { Actionbar } from '@l3/components/Actionbar'
-import { ListCell } from '@l3/components/ListCell'
+import { Section } from '@l3/components/Section'
+import { StockListCard } from '../../../../shared/ui/StockListCard'
 import { Phone } from '../../components/Phone'
 import { useUsNav } from '../../nav'
 import { getCurrentEtf } from './currentEtf'
@@ -30523,33 +31072,46 @@ export function EtfHoldingsScreen({ backdrop }: { backdrop?: boolean }) {
   const etf = getCurrentEtf()
   const top = topHoldings(etf, FULL)
   const total = stocksBehind(etf)?.count ?? holdingsBeyond(etf, 0)
+  const rest = total - top.length
+  const restWeight = Math.max(0, 100 - top.reduce((sum, h) => sum + h.weight, 0))
   return (
-    <Phone label={`${etf.sym} top holdings`} header={<Actionbar onBack={() => back(ETF_PAGE)} title="Top holdings" description={etf.name} />} gesture="none">
-      <div className={styles.fullPage}>
+    <Phone
+      label={`${etf.sym} top holdings`}
+      header={<Actionbar onBack={() => back(ETF_PAGE)} title="Top holdings" description={etf.name} />}
+      gesture="none"
+      topLine
+    >
+      {/* 24 under the bar, 16 at the sides; the cards 12 apart, as the Market list (3 Nov). */}
+      <Section paddingInline="16" paddingBlock="24" gap="12">
         <p className={styles.fullHead} aria-hidden="true">
           <span>Top {top.length} of {total.toLocaleString('en-US')}</span>
           <span>Weight</span>
         </p>
-        <ul className={styles.cards} aria-label={`${etf.sym}: top ${top.length} of ${total} holdings`}>
+        <Section as="ul" gap="12" aria-label={`${etf.sym}: top ${top.length} of ${total} holdings`}>
           {top.map((h) => {
             const name = stockName(h.sym)
             return (
               <li key={h.sym}>
-                <ListCell
-                  variant="card"
-                  as="button"
-                  iconLeft={<HoldingLogo sym={h.sym} size={40} />}
-                  label={name}
-                  description={h.sym}
-                  trailing={<span className={styles.cardWeight}>{h.weight.toFixed(1)}%</span>}
+                <StockListCard
+                  symbol={h.sym}
+                  name={name}
+                  logo={<HoldingLogo sym={h.sym} size={40} />}
+                  price={`${h.weight.toFixed(1)}%`}
+                  onOpen={() => { if (!backdrop) openHolding(go, h.sym) }}
                   aria-label={`${name}, ${h.weight}% of the ETF. Open stock`}
-                  onClick={() => { if (!backdrop) openHolding(go, h.sym) }}
                 />
               </li>
             )
           })}
-        </ul>
-      </div>
+        </Section>
+        {/* The end of the list (3 Nov): big funds hold hundreds or thousands of stocks, so the page lists only the
+            biggest — this says so, and how much of the fund the rest are together. */}
+        {rest > 0 && (
+          <p className={styles.fullEnd}>
+            {`That's the top ${top.length} of ${total.toLocaleString('en-US')}. The other ${rest.toLocaleString('en-US')} ${rest === 1 ? 'stock is' : 'stocks are'} ${restWeight.toFixed(1)}% of the fund together.`}
+          </p>
+        )}
+      </Section>
     </Phone>
   )
 }
@@ -30558,88 +31120,79 @@ export function EtfHoldingsScreen({ backdrop }: { backdrop?: boolean }) {
 ### `src/flows/us-stocks/screens/etf/EtfListScreen.tsx`
 
 ```tsx
-// 9001:1 · ETFs · Regular & Leveraged — the list from the ETFs quick action. A search in the top bar (plain name,
-// ticker, theme or company). Regular tab: region chips and two-line cards (name · ticker | price, holding logos + plain
-// name | change);
-// Leveraged tab: long / short pairs per index. A row opens the ETF page (9001:2).
+// 9001:1 · ETFs · Regular & Leveraged — the list from the ETFs quick action. Regular tab: a filter row fixed under the
+// tabs (in the Actionbar's bottom, with them) — a switcher chip (Country ⇄ Sector, as Top Movers' cap chip on Home), a
+// divider, then that filter's chips (countries with round flags, or sectors) — and the shared StockListCard rows, named
+// in plain words ("Top 500 US stocks", SPY · fund name under it). Boosted tab (leveraged, jojo's design of 3 Nov): the
+// Boosted note (strip / card / chip, flow options) opening "How Boosted ETFs work", then one list of the same shared
+// StockListCard rows, with the leverage shown one of eight ways (flow option "Leverage tag").
+// A row opens the ETF page (9001:2).
 // FLAG: copy not in copy.json yet (hard-coded).
-// FLAG: rows and pair cards are L3 Cards with hand-made content (module CSS); the logo disc is hand-made.
+// FLAG: hand-made switcher chip and divider (as the Stocks home's Top Movers row) — L3 has no cycling chip.
+// FLAG: issuer logos are our own square images (assets/etf/logos: logo on its plate) in the L3 Avatar — L3 has no ETF / issuer logo. "All" has L3's globe icon; the
+// country flags are our own round SVGs (shared/ui/Flag).
+// FLAG: the Boosted note, leverage pills / slices and the fund-logo disc are hand-made (Etf.module.css).
 import { useState } from 'react'
-import { Actionbar, ActionbarAction } from '@l3/components/Actionbar'
+import { Actionbar } from '@l3/components/Actionbar'
 import { Icon } from '@l3/components/Icon'
-import { ListCell } from '@l3/components/ListCell'
-import { Tabs } from '@l3/components/Tabs'
-import { Tag } from '@l3/components/Tag'
+import { Stack } from '@l3/components/Stack'
 import { lmSwitchArrowVertical } from '@l3/icons/lemonnade'
-import { msSearch } from '@l3/icons/material'
+import { msGlobe } from '@l3/icons/material'
+import { Avatar } from '@l3/components/Avatar'
+import { Section } from '@l3/components/Section'
+import { Tabs } from '@l3/components/Tabs'
 import { Phone } from '../../components/Phone'
 import { useUsNav } from '../../nav'
 import { Usd } from '../../../../shared/money'
-import { BOOST_SHEET, BoostedSheet } from './BoostedSheet'
+import { Flag, type FlagCode } from '../../../../shared/ui/Flag'
+import { StockListCard } from '../../../../shared/ui/StockListCard'
+import { useFlowOption } from '../../../../shared/prototype'
+import { BoostedSheet } from './BoostedSheet'
 import { BoostStrip, type BoostLine, type BoostLook } from './BoostStrip'
 import { setCurrentEtf } from './currentEtf'
 import { boltIcon, infoIcon } from './icons'
-import { EmptyState } from '@l3/components/EmptyState'
-import { COUNTRIES, ETFS, ETF_SECTORS, etfSector, ETF_PAGE, HOME_IND, holdingsBeyond, leveragedGroups, matchesEtf, plainFor, shortCount, type Etf } from './data'
-import { EtfDisc, EtfMove, HoldingLogo, SideTag } from './parts'
-import { useFlowOption } from '../../../../shared/prototype'
+import { COUNTRIES, ETFS, SECTORS, ETF_PAGE, HOME_IND, insideFor, leveragedGroups, plainFor, type Etf } from './data'
+import { SideTag, etfLogoUrl } from './parts'
 import styles from './Etf.module.css'
-
-// Regular / Leveraged tabs (back on 3 Nov): set false to hide the Leveraged tab and its long / short pairs.
-const LEVERAGED = true
 
 const TABS = [
   { value: 'normal', label: 'Regular' },
-  // "Boosted" (3 Nov): the app's word for leveraged ETFs, with a gold bolt.
+  // "Boosted" (jojo, 3 Nov): the app's word for leveraged ETFs, with a gold bolt.
   { value: 'leveraged', label: 'Boosted', iconLeft: <Icon icon={boltIcon} size={16} className={styles.boostTabBolt} /> },
 ]
 
+/** What the filter chips pick: the switcher chip cycles between them. */
+type FilterBy = 'country' | 'sector'
+const FILTER_BY: Record<FilterBy, string> = { country: 'Country', sector: 'Sector' }
+
+const FLAGS: Record<string, FlagCode> = { US: 'us', India: 'in', China: 'cn', Japan: 'jp', Europe: 'eu', Korea: 'kr' }
+
 /**
- * An ETF card (3 Nov): the L3 ListCell card, the same as the Market page's stock rows (size and type). Left: two of
- * the fund's holdings' logos overlapping on the diagonal, the "+501" count under them. Label: the fund's full name and
- * its ticker (max widths in Etf.module.css); description: the plain name ("Top 500 US stocks"). Trailing: $ price
- * (Label 16) over the change (▼, no sign). Name block at the left, numbers at the right edge. No "≈ ₹" line.
+ * One regular ETF as the shared stock card: issuer logo · the plain name ("Top 500 US stocks") over "SPY · what's
+ * inside" ("Big US firms in every sector", 3 Nov; was the fund's name) · price over day change.
  */
-export function EtfRow({ etf, onClick }: { etf: Etf; onClick: () => void }) {
-  const version = useFlowOption('us-stocks', 'etfCard', 'fund')
-  if (version === 'fund' || etf.kind === 'leveraged') return <FundRow etf={etf} onClick={onClick} />
+function EtfCard({ etf, onOpen }: { etf: Etf; onOpen: () => void }) {
   const { plain } = plainFor(etf)
-  const total = holdingsBeyond(etf, 0)
-  const more = total > 4 ? total - 2 : 0
   return (
-    <ListCell
-      variant="card"
-      as="button"
-      iconLeft={
-        <span className={styles.diagCol} aria-hidden="true">
-          <span className={styles.diagPair}>
-            {etf.holdings.slice(0, 2).map((h) => <HoldingLogo key={h.sym} sym={h.sym} size={24} />)}
-          </span>
-          {more > 0 && <Tag variant="secondary" color="neutral" size="sm">+{shortCount(more)}</Tag>}
-        </span>
-      }
-      label={
-        <span className={styles.cellName}>
-          <span className={styles.cellNameText}>{etf.name}</span>
-          <span className={styles.cellSym}>{etf.sym}</span>
-        </span>
-      }
-      description={plain}
-      trailing={
-        <span className={styles.cellPrice}>
-          <span className={styles.cellValue}><Usd value={etf.price} layout="inline" /></span>
-          <EtfMove change={etf.change} />
-        </span>
-      }
-      onClick={onClick}
-    />
+    <li>
+      <StockListCard
+        symbol={plain}
+        name={`${etf.sym} · ${insideFor(etf)}`}
+        logoUrl={etfLogoUrl(etf.sym)}
+        initials={etf.sym.slice(0, 2)}
+        price={<Usd value={etf.price} align="end" />}
+        changePct={etf.change}
+        onOpen={onOpen}
+        aria-label={`${plain}, ${etf.sym}, ${etf.name}`}
+      />
+    </li>
   )
 }
 
 /**
  * "Fund logo" ETF card (3 Nov, flow option "ETF card", the default): the fund's own logo (40) on the left; the plain
- * name is the heading ("Top 500 US stocks"), then the ticker and the fund name under it ("SPY · SPDR S&P 500 ETF" —
- * the ticker always shows, the name ends in "…"); $ price over the change on the right.
+ * name is the heading ("Top 500 US stocks"), then the ticker and what's inside under it ("SPY · Big US firms in every
+ * sector", 3 Nov; was the fund name); $ price over the change on the right.
  */
 function FundRow({ etf, onClick }: { etf: Etf; onClick: () => void }) {
   const { plain } = plainFor(etf)
@@ -30647,15 +31200,20 @@ function FundRow({ etf, onClick }: { etf: Etf; onClick: () => void }) {
   // versions to compare; V5 After heading is the default.
   const levTag = useFlowOption('us-stocks', 'levTag', 'heading')
   const lev = etf.kind === 'leveraged' ? levTag : undefined
+  const marked = lev === 'foot' || lev === 'badge' || lev === 'ring' || lev === 'pill' || lev === 'slice' || lev === 'notch'
   const cell = (
-    <ListCell
-      variant="card"
-      as="button"
-      iconLeft={
+    // The shared stock card (as the Regular tab and the Market list): logo · plain name over "SPY · what's inside" · price
+    // over the signed change. Each leverage version only adds its mark to the logo or a Tag after the name.
+    <StockListCard
+      symbol={plain}
+      name={`${etf.sym} · ${insideFor(etf)}`}
+      logoUrl={etfLogoUrl(etf.sym)}
+      initials={etf.sym.slice(0, 2)}
+      logo={marked ? (
         <span className={styles.diagCol} data-ring={lev === 'ring' ? etf.side : undefined} data-slice={lev === 'slice' ? '' : undefined} data-notch={lev === 'notch' ? '' : undefined}>
-          <EtfDisc sym={etf.sym} size={40} />
+          <Avatar src={etfLogoUrl(etf.sym)} initials={etf.sym.slice(0, 2)} size={40} label={etf.name} />
           {/* V1 Logo foot: "3x Long" (L3 Tag) across the logo's foot, both ends round. */}
-          {lev === 'foot' && <SideTag etf={etf} className={styles.levBadge} />}
+          {lev === 'foot' && <SideTag etf={etf} filled className={styles.levBadge} />}
           {/* V2 Logo badge: a "3x ▲" pill on the logo's top-right, like a notification badge. */}
           {lev === 'badge' && <LevPill etf={etf} className={styles.levPillBadge} />}
           {/* V3 Logo ring: the logo ringed green (long) / red (short), the pill on its foot. V6: the pill, no ring. */}
@@ -30665,32 +31223,13 @@ function FundRow({ etf, onClick }: { etf: Etf; onClick: () => void }) {
           {/* V8 Notch: the pill, and the logo's circle curves around it. */}
           {lev === 'notch' && <LevPill etf={etf} className={styles.levPillNotch} />}
         </span>
-      }
-      label={
-        lev === 'heading' ? (
-          // V5 After heading: what it follows, then "3x Long" (L3 Tag) right after — "Nasdaq 100 [3x Long]". The name
-          // ends in "…" first; the tag always shows.
-          <span className={styles.levHead}>
-            <span className={styles.levHeadText}>{plain}</span>
-            <SideTag etf={etf} />
-          </span>
-        ) : (
-          plain
-        )
-      }
-      description={
-        <span className={styles.fundTitle}>
-          <span className={styles.fundSym}>{etf.sym}</span>
-          <span className={styles.fundName}>{etf.name}</span>
-        </span>
-      }
-      trailing={
-        <span className={styles.cellPrice}>
-          <span className={styles.cellValue}><Usd value={etf.price} layout="inline" /></span>
-          <EtfMove change={etf.change} />
-        </span>
-      }
-      onClick={onClick}
+      ) : undefined}
+      // V5 After heading (the default): what it follows, then "3x Long" (L3 Tag) right after — "Nasdaq 100 [3x Long]".
+      tag={lev === 'heading' ? <SideTag etf={etf} /> : undefined}
+      price={<Usd value={etf.price} align="end" />}
+      changePct={etf.change}
+      onOpen={onClick}
+      aria-label={`${plain}, ${etf.sym}, ${etf.name}${etf.kind === 'leveraged' ? `, ${etf.lev} ${etf.side === 'long' ? 'Long' : 'Short'}` : ''}`}
     />
   )
   if (lev !== 'corner') return cell
@@ -30726,7 +31265,7 @@ function LevPill({ etf, className }: { etf: Etf; className?: string }) {
 }
 
 /**
- * The Boosted tab's note (3 Nov): what a 3x fund does, in one glance — "Market ▲ 1% → 3x Boosted ▲ 3%" — and a button to
+ * The Boosted tab's note (3 Nov): what a 3x fund does, in one glance — "Market +1% → 3x Boosted +3%" — and a button to
  * "How Boosted ETFs work". Three looks, all small: a card, a chip, or the strip with the sentence. FLAG: hand-made.
  */
 // The Boosted ticker's lines: whichever way the market moves, one side is up 3%.
@@ -30752,9 +31291,9 @@ function BoostNote({ kind, tone, onOpen }: { kind: string; tone: string; onOpen?
 
   const sum = (
     <span className={styles.boostSum} aria-hidden="true">
-      <span>Market <b className={styles.boostUp}>▲ 1%</b></span>
+      <span>Market <b className={styles.boostUp}>+1%</b></span>
       <span className={styles.boostArrow}>→</span>
-      <span>3x Boosted <b className={styles.boostHot}>▲ 3%</b></span>
+      <span>3x Boosted <b className={styles.boostHot}>+3%</b></span>
     </span>
   )
   const label = 'If the market goes up 1% in a day, a 3x Boosted ETF aims to go up 3%. How Boosted ETFs work'
@@ -30794,107 +31333,105 @@ export function EtfListScreen({ backdrop }: { backdrop?: boolean }) {
     try {
       const t = sessionStorage.getItem('etf:tab')
       sessionStorage.removeItem('etf:tab')
-      return LEVERAGED && t === 'leveraged' ? 'leveraged' : 'normal'
+      return t === 'leveraged' ? 'leveraged' : 'normal'
     } catch {
       return 'normal'
     }
   })
-  // The chips filter by market (country) or by sector (3 Nov): the switch chip before them picks which; switching shows All.
-  const [by, setBy] = useState<'country' | 'sector'>('country')
+  const [filterBy, setFilterBy] = useState<FilterBy>('country')
   const [country, setCountry] = useState('all')
-  const switchBy = () => {
-    setBy(by === 'country' ? 'sector' : 'country')
-    setCountry('all')
-  }
+  const [sector, setSector] = useState('all')
   const open = (sym: string) => {
     if (backdrop) return
     setCurrentEtf(sym)
     go(ETF_PAGE)
   }
-  const [query, setQuery] = useState('')
-  const [searchOpen, setSearchOpen] = useState(false)
-  const closeSearch = () => {
-    setSearchOpen(false)
-    setQuery('')
-  }
   const [boostOpen, setBoostOpen] = useState(false)
-  // The Boosted line's colour (3 Nov, flow option "Boosted line"): dark gold, blue, purple or grey.
-  const boostTone = useFlowOption('us-stocks', 'boostTone', 'gold')
+  // The Boosted note's look and colour (jojo, 3 Nov, flow options "Boosted note" / "Boosted line").
   const boostNote = useFlowOption('us-stocks', 'boostNote', 'strip')
-  // A search looks across every region (the chips hide while searching), so "china" or "QQQ" always finds it.
-  const searching = query.trim() !== ''
-  // Both tabs filter the same way, with every market and sector chip (3 Nov). A chip with no fund in this tab shows a
-  // short note (the leveraged funds here are all US-listed, and only Technology and Chips have them).
-  const pool = tab === 'normal' ? ETFS.filter((e) => e.kind === 'normal') : leveragedGroups().flatMap((g) => g.etfs)
-  const keyOf = (e: Etf) => (by === 'country' ? e.country : etfSector(e))
-  const chipValues = by === 'country' ? COUNTRIES : ETF_SECTORS
-  const shown = pool.filter((e) => (searching ? matchesEtf(e, query) : country === 'all' || keyOf(e) === country))
-  const changeTab = (t: string) => {
-    setTab(t)
+  const boostTone = useFlowOption('us-stocks', 'boostTone', 'grey')
+  const regular = ETFS.filter((e) => e.kind === 'normal' && (filterBy === 'country' ? country === 'all' || e.country === country : sector === 'all' || e.sector === sector))
+  // Switching Country ⇄ Sector starts the new filter at All.
+  const switchFilter = () => {
+    setFilterBy(filterBy === 'country' ? 'sector' : 'country')
     setCountry('all')
+    setSector('all')
   }
+
+  const filters = (
+    <Stack direction="horizontal" align="center" gap="12" className={styles.filterRow}>
+      <button type="button" className={styles.switchChip} aria-label={`Filter by ${FILTER_BY[filterBy]}, tap to switch`} onClick={switchFilter}>
+        <span className={styles.switchName} key={filterBy}>{FILTER_BY[filterBy]}</span>
+        <Icon icon={lmSwitchArrowVertical} size={16} />
+      </button>
+      <span className={styles.filterDivider} aria-hidden="true" />
+      {filterBy === 'country' ? (
+        <Tabs
+          appearance="pill"
+          behavior="filter"
+          aria-label="Country"
+          className={styles.filterTabs}
+          items={[
+            { value: 'all', label: 'All', iconLeft: <Icon icon={msGlobe} size={16} /> },
+            ...COUNTRIES.map((c) => ({ value: c, label: c, iconLeft: FLAGS[c] ? <Flag code={FLAGS[c]} /> : undefined })),
+          ]}
+          value={country}
+          onChange={setCountry}
+        />
+      ) : (
+        <Tabs
+          appearance="pill"
+          behavior="filter"
+          aria-label="Sector"
+          className={styles.filterTabs}
+          items={[{ value: 'all', label: 'All' }, ...SECTORS.map((v) => ({ value: v, label: v }))]}
+          value={sector}
+          onChange={setSector}
+        />
+      )}
+    </Stack>
+  )
 
   return (
     <Phone
       label="ETFs"
       header={
-        // "ETFs" with a search button (3 Nov); search opens the field in the bar, and back closes it (and clears it).
         <Actionbar
-          onBack={() => (searchOpen ? closeSearch() : back(HOME_IND))}
-          title={searchOpen ? undefined : 'ETFs'}
-          actions={searchOpen ? undefined : <ActionbarAction icon={msSearch} label="Search ETFs" onClick={() => setSearchOpen(true)} />}
-          search={searchOpen ? { value: query, onChange: setQuery, placeholder: 'Search ETFs, e.g. chips or QQQ', label: 'Search ETFs by name, ticker or company', autoFocus: true } : undefined}
-          bottom={LEVERAGED ? <Tabs appearance="underline" width="fill" aria-label="ETF type" items={TABS} value={tab} onChange={changeTab} /> : undefined}
+          title="ETFs"
+          onBack={() => back(HOME_IND)}
+          bottom={
+            <>
+              <Tabs appearance="underline" width="fill" aria-label="ETF type" items={TABS} value={tab} onChange={setTab} />
+              {tab === 'normal' && filters}
+            </>
+          }
         />
       }
       gesture="none"
     >
-      <div className={styles.page}>
-        {!searching && (
-          <div className={styles.filterRow}>
-            {/* FLAG: hand-made switch chip (outlined pill that flips Market / Sector), as the Stocks home's Mega Cap one. */}
-            <button type="button" className={styles.byChip} aria-label={`Filter by ${by === 'country' ? 'market' : 'sector'}. Switch to ${by === 'country' ? 'sector' : 'market'}`} onClick={switchBy}>
-              <span className={styles.byName} key={by}>{by === 'country' ? 'Market' : 'Sector'}</span>
-              <Icon icon={lmSwitchArrowVertical} size={16} />
-            </button>
-            <span className={styles.byDivider} aria-hidden="true" />
-            <Tabs
-              appearance="pill"
-              behavior="filter"
-              aria-label={by === 'country' ? 'Market' : 'Sector'}
-              className={styles.filterTabs}
-              items={[{ value: 'all', label: 'All' }, ...chipValues.map((c) => ({ value: c, label: c }))]}
-              value={country}
-              onChange={setCountry}
-            />
-          </div>
-        )}
-        {tab === 'leveraged' && (
-          // What Boosted means, always on the tab but quiet (3 Nov, flow option "Boosted note"); a tap opens "How
-          // Boosted ETFs work". Strip (default): one line on a solid strip with a bar on the left — "↗ Market moves +1% →
-          // 3x Long moves +3%". Card: a small card like the fund cards, the
-          // colour only in its icon tile and the boosted "3%". Chip: the sum in a tinted pill.
-          <BoostNote kind={boostNote} tone={boostTone} onOpen={BOOST_SHEET ? () => setBoostOpen(true) : undefined} />
-        )}
-        {shown.length === 0 && (searching ? (
-          <EmptyState title={`No ETFs for “${query.trim()}”`} description="Try a company (Apple), a theme (chips, oil) or a ticker (SPY)." />
-        ) : (
-          <EmptyState
-            title={`No ${tab === 'leveraged' ? 'Boosted ' : ''}ETFs for ${country} yet`}
-            description={tab === 'leveraged' ? 'Boosted ETFs here follow US indices and stocks: try US, Technology or Chips.' : 'Try another chip, or All.'}
-          />
-        ))}
-        {/* Regular: the funds. Leveraged (3 Nov): one list, long then short for each index; the leverage sits on each
-            card's logo. */}
-        <ul className={styles.list}>
-          {shown.map((e) => (
-            <li key={e.sym}>
-              <EtfRow etf={e} onClick={() => open(e.sym)} />
-            </li>
-          ))}
-        </ul>
-      </div>
-      {BOOST_SHEET && !backdrop && <BoostedSheet key={String(boostOpen)} open={boostOpen} onClose={() => setBoostOpen(false)} />}
+      {tab === 'normal' ? (
+        <Section paddingBlock="16" gap="16">
+          <Section as="ul" paddingInline="16" gap="12" aria-label="Regular ETFs">
+            {regular.map((e) => (
+              <EtfCard key={e.sym} etf={e} onOpen={() => open(e.sym)} />
+            ))}
+          </Section>
+        </Section>
+      ) : (
+        // Boosted (jojo, 3 Nov): what Boosted means, quiet but always there (a tap opens "How Boosted ETFs work"), then
+        // one list, long then short for each index; the leverage sits on each card.
+        <Section paddingBlock="16" paddingInline="16" gap="16">
+          <BoostNote kind={boostNote} tone={boostTone} onOpen={() => setBoostOpen(true)} />
+          <Section as="ul" gap="12" aria-label="Boosted ETFs">
+            {leveragedGroups().flatMap((g) => g.etfs).map((e) => (
+              <li key={e.sym}>
+                <FundRow etf={e} onClick={() => open(e.sym)} />
+              </li>
+            ))}
+          </Section>
+        </Section>
+      )}
+      {!backdrop && <BoostedSheet key={String(boostOpen)} open={boostOpen} onClose={() => setBoostOpen(false)} />}
     </Phone>
   )
 }
@@ -30926,8 +31463,10 @@ export function EtfListScreen({ backdrop }: { backdrop?: boolean }) {
   display: flex;
 }
 
-.currencySwitch {
-  align-self: flex-start;
+/* ≈ ₹ under the $ price (playground): secondary. */
+.priceInr {
+  font: var(--l3-text-description-12);
+  color: var(--l3-content-secondary);
 }
 
 .titleRow {
@@ -30944,15 +31483,15 @@ export function EtfListScreen({ backdrop }: { backdrop?: boolean }) {
 }
 
 .name {
-  font: var(--l3-text-heading-18);
+  font: var(--l3-text-heading-14); /* 14 (3 Nov), under the ticker line */
   color: var(--l3-content-primary);
   margin: 0;
 }
 
-/* The ticker and the fund's own name, under the plain name (2 Nov). */
+/* Ticker · exchange, above the fund's name (3 Nov). */
 .alias {
   font: var(--l3-text-label-12);
-  color: var(--l3-content-tertiary);
+  color: var(--l3-content-secondary);
   margin: 0;
 }
 
@@ -30997,6 +31536,10 @@ export function EtfListScreen({ backdrop }: { backdrop?: boolean }) {
 .inside {
   flex: none;
   align-items: center;
+  padding: 0;
+  cursor: pointer;
+  background: none;
+  border: 0;
   display: flex;
 }
 
@@ -31125,16 +31668,9 @@ export function EtfListScreen({ backdrop }: { backdrop?: boolean }) {
   border-radius: var(--l3-radius-full);
   background: linear-gradient(
     90deg,
-    color-mix(
-      in srgb,
-      var(--l3-content-accent-indicator-down-default) 55%,
-      var(--l3-surface-primary)
-    ),
-    color-mix(
-      in srgb,
-      var(--l3-content-accent-indicator-up-default) 55%,
-      var(--l3-surface-primary)
-    )
+    var(--l3-surface-accent-indicator-down-default),
+    var(--l3-surface-primary),
+    var(--l3-surface-accent-indicator-up-default)
   );
   position: relative;
 }
@@ -31373,7 +31909,7 @@ export function EtfListScreen({ backdrop }: { backdrop?: boolean }) {
 }
 
 .newsMeta span {
-  color: var(--l3-content-tertiary);
+  color: var(--l3-content-secondary);
 }
 
 /* FLAG: hand-made logo disc (L3 Avatar / BrandLogo) */
@@ -31403,41 +31939,52 @@ export function EtfListScreen({ backdrop }: { backdrop?: boolean }) {
 .events {
   padding: var(--l3-spacing-24) var(--l3-spacing-16);
 }
+
+/* News & Events: the Events / News pills over the list, as on the stock page. */
+.feed {
+  gap: var(--l3-spacing-24);
+  flex-direction: column;
+  display: flex;
+}
 ```
 
 ### `src/flows/us-stocks/screens/etf/EtfPage.tsx`
 
 ```tsx
 // 9001:2 · ETF page — an ETF in the stock page layout: fund name over its ticker, price, ETF tag, line chart with a period picker,
-// Overview (a plain line on what it is — "SPY tracks …" —, Allocation by sector and Top holdings (EtfHoldings), Daily Performance, Fundamentals — the yearly fee lives there, not up top) and Events tabs, Buy / Sell dock (Go Long / Go Short on leveraged ETFs).
+// Overview (About Fund — "SPY tracks …" —, Allocation by sector as a donut and Top holdings (EtfHoldings), Daily Performance,
+// Fundamentals — the yearly fee lives there, not up top) and News & Events tabs, Buy / Sell dock (Go Long / Go Short on
+// leveraged ETFs). About, Daily Performance (3 × 2 grid) and News & Events are the stock page's own sections (3 Nov).
 // Reads the current ETF (setCurrentEtf; SPY by default).
 // FLAG: copy not in copy.json yet (hard-coded).
 // FLAG: price block, chart, range meter and info buttons are hand-made
 // (EtfPage.module.css, copied from the stock page) instead of L3 Chart; same as the stock page.
-import { useEffect, useLayoutEffect, useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { Actionbar, ActionbarAction } from '@l3/components/Actionbar'
 import { Button } from '@l3/components/Button'
 import { ButtonGroup } from '@l3/components/ButtonGroup'
 import { Icon } from '@l3/components/Icon'
 import { MaskIcon } from '@l3/components/MaskIcon'
+import { msTrendingDown, msTrendingUp } from '@l3/icons/material'
 import { Tabs } from '@l3/components/Tabs'
 import { Tag } from '@l3/components/Tag'
 import { Phone } from '../../components/Phone'
 import { asset } from '../../asset'
 import { useUsNav } from '../../nav'
 import { useUsJourney } from '../../../../shared/userStatus'
-import { CurrencySwitch, Usd, useUsd } from '../../../../shared/money'
+import { Usd, formatInr, useUsd, useUsdInrRate } from '../../../../shared/money'
 import { activationFooter, type StockState } from '../activation/StockPage'
+import { AboutCard, DailyPerformance, Events, News } from '../activation/sections'
 import { catalogue } from '../../data'
 import { getCurrentEtf } from './currentEtf'
-import { BUY_PAD, ETF_HOLDINGS, ETF_LIST, PERIODS, aboutFor, detailsFor, issuerLogo, stocksBehind, issuerName, openHolding, percent, tagsFor } from './data'
+import { BUY_PAD, ETF_HOLDINGS, ETF_LIST, PERIODS, aboutFor, detailsFor, issuerLogo, newsFor, stocksBehind, issuerName, openHolding, percent, tagsFor } from './data'
+import { useFlowOption } from '../../../../shared/prototype'
 import { BOOST_SHEET, BoostedSheet } from './BoostedSheet'
+import { BoostStrip, type BoostLine, type BoostLook } from './BoostStrip'
 import listStyles from './Etf.module.css'
-import stockStyles from '../activation/StockPage.module.css'
-import { SectionTitle as StockSectionTitle } from '../activation/components/SectionTitle'
 import { Allocation, TopHoldings } from './EtfHoldings'
 import { boltIcon, infoIcon } from './icons'
-import { EtfMove, HoldingLogo } from './parts'
+import { EtfMove, HoldingLogo, SideTag } from './parts'
 import styles from './EtfPage.module.css'
 
 /** T03 · Buy · Empty US wallet. */
@@ -31445,7 +31992,7 @@ const BUY_PAD_EMPTY_WALLET = '5837:96155'
 
 const SECTIONS = [
   { value: 'overview', label: 'Overview' },
-  { value: 'events', label: 'Events' },
+  { value: 'news', label: 'News & Events' },
 ]
 const Y_STEPS = [1.006, 1.004, 1.002, 1, 0.998, 0.996, 0.994, 0.993]
 
@@ -31459,18 +32006,10 @@ function SectionTitle({ title }: { title: string }) {
   )
 }
 
-function Stat({ label, value, end }: { label: string; value: ReactNode; end?: boolean }) {
-  return (
-    <div className={styles.stat} data-end={end || undefined}>
-      <span className={styles.statLabel}>{label}</span>
-      <span className={styles.statValue}>{value}</span>
-    </div>
-  )
-}
-
 export function EtfPage({ backdrop }: { backdrop?: boolean }) {
   const { go, back } = useUsNav()
   const usd = useUsd()
+  const usdInr = useUsdInrRate()
   const etf = getCurrentEtf()
   const d = detailsFor(etf)
   const leveraged = etf.kind === 'leveraged'
@@ -31481,25 +32020,8 @@ export function EtfPage({ backdrop }: { backdrop?: boolean }) {
   const dayChangeAbs = (etf.price * etf.change) / (100 + etf.change)
   const [period, setPeriod] = useState('1D')
   const [section, setSection] = useState('overview')
-  const [aboutOpen, setAboutOpen] = useState(false)
+  const [feed, setFeed] = useState('events')
   const [boostOpen, setBoostOpen] = useState(false)
-  // "… more" only when the About text is longer than its 3 lines (a one-line text has nothing more to show).
-  const [aboutEl, setAboutEl] = useState<HTMLParagraphElement | null>(null)
-  const [aboutClamped, setAboutClamped] = useState(false)
-  useLayoutEffect(() => {
-    const p = aboutEl
-    if (!p || aboutOpen) return
-    const check = () => setAboutClamped(p.scrollHeight > p.clientHeight + 1)
-    check()
-    // Again once styles and fonts have settled, and whenever the text's box changes.
-    const frame = requestAnimationFrame(check)
-    const ro = new ResizeObserver(check)
-    ro.observe(p)
-    return () => {
-      cancelAnimationFrame(frame)
-      ro.disconnect()
-    }
-  }, [aboutEl, aboutOpen, etf.sym])
   const [body, setBody] = useState<HTMLDivElement | null>(null)
   // The Actionbar shows symbol + price once the big price has scrolled away.
   const [scrolled, setScrolled] = useState(false)
@@ -31515,7 +32037,7 @@ export function EtfPage({ backdrop }: { backdrop?: boolean }) {
   const header = (
     <Actionbar
       onBack={() => back(ETF_LIST)}
-      title={scrolled ? etf.sym : undefined}
+      title={scrolled ? etf.name : undefined}
       description={scrolled ? <><Usd value={etf.price} layout="inline" /> <EtfMove change={etf.change} /></> : undefined}
       actions={<ActionbarAction icon={asset('assets/etf/watchlist.svg')} label={`Add ${etf.sym} to watchlist`} onClick={() => {}} />}
     />
@@ -31527,20 +32049,21 @@ export function EtfPage({ backdrop }: { backdrop?: boolean }) {
   const buyTo = journey === 'activated' || journey === 'onTheWay' ? BUY_PAD_EMPTY_WALLET : BUY_PAD
   const footer = (gate && activationFooter(gate, (id) => act(() => go(id))())) || (
     <ButtonGroup aria-label={`Trade ${etf.sym}`} direction="horizontal" scrollIndicator>
-      <Button variant="brand" size="lg" onClick={act(() => go(buyTo))}>{leveraged ? 'Go Long' : 'Buy'}</Button>
-      <Button variant="secondary" size="lg" onClick={act(() => go(BUY_PAD))}>{leveraged ? 'Go Short' : 'Sell'}</Button>
+      <Button variant="buy" size="lg" onClick={act(() => go(buyTo))}>{leveraged ? 'Go Long' : 'Buy'}</Button>
+      <Button variant="sell" size="lg" onClick={act(() => go(BUY_PAD))}>{leveraged ? 'Go Short' : 'Sell'}</Button>
     </ButtonGroup>
   )
 
   // No "≈ ₹" lines on the ETF page (3 Nov): every amount is inline <Usd>.
   // Values are $ numbers or $ text ('$672B'); <Usd> shows them in the currency picked. Volume is shares / a $ figure as written.
+  // A 3 × 2 grid under the day's range, as on the stock page.
   const dayStats: [string, ReactNode][] = [
-    ['Open', <Usd value={etf.price - dayChangeAbs * 0.6} layout="inline" />],
-    ['Prev. Close', <Usd value={etf.price - dayChangeAbs} layout="inline" />],
-    ['AUM', <Usd text={etf.aum} layout="inline" />],
-    ['Volume', <Usd text={d.volume} layout="inline" />],
-    ['52-week high', <Usd value={d.high52} layout="inline" />],
-    ['52-week low', <Usd value={d.low52} layout="inline" />],
+    ['Open', <Usd value={etf.price - dayChangeAbs * 0.6} />],
+    ['Prev. Close', <Usd value={etf.price - dayChangeAbs} />],
+    ['AUM', <Usd text={etf.aum} />],
+    ['Volume', <Usd text={d.volume} />],
+    ['52-week high', <Usd value={d.high52} />],
+    ['52-week low', <Usd value={d.low52} />],
   ]
   const fundamentals: [string, ReactNode][] = [
     // The expense ratio, said plainly (most users don't know their own mutual fund's): what it costs per $100 a year.
@@ -31552,17 +32075,16 @@ export function EtfPage({ backdrop }: { backdrop?: boolean }) {
     ['Holdings', d.holdings],
     ...(leveraged ? ([['Leverage', `${etf.lev} daily, ${long ? 'long' : 'short'}`]] as [string, ReactNode][]) : []),
   ]
-  const at = Math.min(100, Math.max(0, ((etf.price - d.low) / (d.high - d.low)) * 100))
 
   return (
     <Phone label={etf.name} header={header} footer={footer} gesture="none" bodyRef={setBody} className={backdrop ? styles.still : undefined}>
       <div className={styles.assetHeader}>
         <div className={styles.titleRow}>
           <div className={styles.namePrice}>
-            {/* The fund's name, its ticker under it (2 Nov) — no plain name here; Overview's first line explains it. */}
-            <h1 className={styles.name}>{etf.name}</h1>
-            {/* Ticker · exchange (3 Nov, after Perplexity's "TTWO · NASDAQ"), the exchange from the US snapshot. */}
+            {/* Ticker · exchange (after Perplexity's "TTWO · NASDAQ"), the exchange from the US snapshot; the fund's name
+                under it in 14 (3 Nov). */}
             <p className={styles.alias}>{catalogue[etf.sym]?.exchange ? `${etf.sym} · ${catalogue[etf.sym].exchange}` : etf.sym}</p>
+            <h1 className={styles.name}>{etf.name}</h1>
             <div className={styles.priceRow}>
               <span className={styles.price}><Usd value={etf.price} layout="inline" /></span>
               <span className={styles.change}>
@@ -31574,32 +32096,39 @@ export function EtfPage({ backdrop }: { backdrop?: boolean }) {
                 </span>
               </span>
             </div>
+            {/* The price in rupees at the live rate, always, small under the $ (playground: no $ / ₹ switch on this page). */}
+            <span className={styles.priceInr}>≈ {formatInr(etf.price * usdInr)}</span>
           </div>
           <span className={styles.logoDisc} style={logo ? ({ '--plate': logo.plate } as React.CSSProperties) : undefined} aria-hidden="true">
             {logo ? <img src={logo.src} alt="" /> : etf.sym[0]}
           </span>
         </div>
-        <CurrencySwitch className={styles.currencySwitch} />
         <div className={styles.tagsRow}>
           <div className={styles.tags}>
             <Tag variant="tertiary" color="neutral" size="md">ETF</Tag>
             {/* What's in it, in a word or two (3 Nov): "Top 500", "US"; "Chips", "Global". */}
             {tagsFor(etf).map((tag) => <Tag key={tag} variant="tertiary" color="neutral" size="md">{tag}</Tag>)}
             {leveraged && (
-              <Tag variant="secondary" color={long ? 'profit' : 'loss'} size="md">{etf.lev} {long ? 'Long' : 'Short'}</Tag>
+              <SideTag etf={etf} size="md" />
             )}
           </div>
           {/* What's inside (3 Nov): up to three of the biggest holdings' logos, then a "+35" capsule tucked under the last
-              one — the rest of the fund's stocks. A leveraged fund shows the stocks of the index it follows. */}
+              one — the rest of the fund's stocks. A leveraged fund shows the stocks of the index it follows. A tap opens
+              the Top holdings page (3 Nov). */}
           {behind && (
-            <span className={styles.inside} aria-label={`${behind.follows ? 'Follows' : 'Holds'} ${behind.count.toLocaleString('en-US')} ${behind.count === 1 ? 'stock' : 'stocks'}`}>
+            <button
+              type="button"
+              className={styles.inside}
+              onClick={act(() => go(ETF_HOLDINGS))}
+              aria-label={`${behind.follows ? 'Follows' : 'Holds'} ${behind.count.toLocaleString('en-US')} ${behind.count === 1 ? 'stock' : 'stocks'}. See top holdings`}
+            >
               <span className={styles.insideLogos} aria-hidden="true">
                 {etf.holdings.slice(0, Math.min(3, behind.count)).map((h) => <HoldingLogo key={h.sym} sym={h.sym} size={24} />)}
                 {behind.count > 3 && (
                   <span className={styles.insideCount}>+{(behind.count - Math.min(3, etf.holdings.length)).toLocaleString('en-US')}</span>
                 )}
               </span>
-            </span>
+            </button>
           )}
         </div>
       </div>
@@ -31627,49 +32156,28 @@ export function EtfPage({ backdrop }: { backdrop?: boolean }) {
         />
         <div className={styles.tabsBlock}>
           <Tabs appearance="underline" width="fill" aria-label="ETF sections" className={styles.flatTabs} value={section} onChange={setSection} items={SECTIONS} />
-          {section === 'events' ? (
-            <div className={styles.overview}>
-              {/* Events (3 Nov): the US stock page's layout and styles — a date box, title, detail and tag. */}
-              <section className={styles.section}>
-                <StockSectionTitle title="Events" />
-                <ul className={stockStyles.events}>
-                  {d.events.map((e) => (
-                    <li key={e.title}>
-                      <span className={stockStyles.eventDate} aria-hidden="true"><b>{e.day}</b>{e.month}</span>
-                      <div>
-                        <p className={stockStyles.newsTitle}>{e.title}</p>
-                        <p className={stockStyles.newsMeta}>{e.detail}</p>
-                        <Tag variant="secondary" color="neutral" size="sm" className={stockStyles.impact}>{e.type}</Tag>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              </section>
+          {section === 'news' ? (
+            // News & Events, as on the stock page: Events / News pills, then the list.
+            <div className={styles.feed}>
+              <Tabs
+                appearance="pill"
+                size="sm"
+                aria-label="Show"
+                value={feed}
+                onChange={setFeed}
+                items={[
+                  { value: 'events', label: 'Events' },
+                  { value: 'news', label: 'News' },
+                ]}
+              />
+              {feed === 'events' ? <Events items={d.events} /> : <News items={newsFor(etf)} stock={etf.sym} />}
             </div>
           ) : (
             <div className={styles.overview}>
               {/* A Boosted fund (3 Nov): what its leverage does, in one sentence on the gold strip, above About. */}
               {leveraged && <LeverageStrip etf={etf} onOpen={BOOST_SHEET ? act(() => setBoostOpen(true)) : undefined} />}
-              {/* What the ETF is (3 Nov, after N26's fund page): a light "About" heading, the text with no box — "SPY
-                  tracks …" — cut to 3 lines with Read more / Read less. */}
-              <section className={`${styles.section} ${styles.aboutSection}`} aria-label="About">
-                <h2 className={styles.aboutTitle}>About</h2>
-                {/* Read more is inline (3 Nov, after Finimize): "… more" over the end of the 3rd line while closed,
-                    "Less" right after the last word once open. */}
-                <div className={styles.aboutText}>
-                  <p className={styles.about} data-open={aboutOpen || undefined} ref={setAboutEl}>
-                    {aboutFor(etf)}
-                    {aboutOpen && (
-                      <> <button type="button" className={styles.readMore} onClick={() => setAboutOpen(false)} aria-expanded>Less</button></>
-                    )}
-                  </p>
-                  {!aboutOpen && aboutClamped && (
-                    <button type="button" className={styles.moreInline} onClick={() => setAboutOpen(true)} aria-expanded={false}>
-                      <span aria-hidden="true">… </span><span className={styles.readMore}>more</span>
-                    </button>
-                  )}
-                </div>
-              </section>
+              {/* What the ETF is: the stock page's About card ("SPY tracks …"), three lines until Read more. */}
+              <AboutCard title="About Fund" text={aboutFor(etf)} />
               {!leveraged && (
                 <section className={styles.section}>
                   <SectionTitle title="Allocation" />
@@ -31680,33 +32188,7 @@ export function EtfPage({ backdrop }: { backdrop?: boolean }) {
                 <SectionTitle title={leveraged ? 'Tracks' : 'Top holdings'} />
                 <TopHoldings etf={etf} onOpen={(sym) => act(() => openHolding(go, sym))()} onOthers={act(() => go(ETF_HOLDINGS))} />
               </section>
-              <section className={styles.section}>
-                <SectionTitle title="Daily Performance" />
-                <div className={styles.panel} data-gap="04">
-                  <div className={styles.lowHigh}>
-                    <Stat label="1D Low" value={<Usd value={d.low} layout="inline" />} />
-                    <Stat label="1D High" value={<Usd value={d.high} layout="inline" />} end />
-                  </div>
-                  <div
-                    className={styles.dayRange}
-                    role="meter"
-                    aria-label="Last traded price within today's range"
-                    aria-valuemin={d.low}
-                    aria-valuemax={d.high}
-                    aria-valuenow={etf.price}
-                    style={{ '--at': `${at}%` } as React.CSSProperties}
-                  >
-                    <span className={styles.dayTick} />
-                    <span className={styles.dayBolt}><Icon icon={boltIcon} size={16} /></span>
-                  </div>
-                  <p className={styles.ltp}><Icon icon={boltIcon} size={12} />Last Traded Price : <Usd value={etf.price} layout="inline" /></p>
-                </div>
-                <dl className={styles.panel} data-gap="12" data-rows="">
-                  {dayStats.map(([k, v], i) => (
-                    <div className={styles.kv} data-sep={i > 0 || undefined} key={k}><dt>{k}</dt><dd>{v}</dd></div>
-                  ))}
-                </dl>
-              </section>
+              <DailyPerformance price={etf.price} low={d.low} high={d.high} stats={dayStats} />
               <section className={styles.section}>
                 <SectionTitle title="Fundamentals" />
                 <dl className={styles.panel} data-gap="12" data-rows="">
@@ -31725,30 +32207,44 @@ export function EtfPage({ backdrop }: { backdrop?: boolean }) {
 }
 
 // The index a leveraged fund follows, as a reader says it ("the Nasdaq-100"), for its Boosted strip.
-const INDEX_SAID: Record<string, string> = { 'Nasdaq 100': 'the Nasdaq-100', Semiconductors: 'the chip index', NVIDIA: 'NVIDIA', 'S&P 500': 'the S&P 500' }
+// The playground's catalogue names them by their full index ('Nasdaq-100', 'ICE Semiconductor').
+const INDEX_SAID: Record<string, string> = {
+  'Nasdaq 100': 'the Nasdaq-100', 'Nasdaq-100': 'the Nasdaq-100', Semiconductors: 'the chip index', 'ICE Semiconductor': 'the chip index',
+  NVIDIA: 'NVIDIA', 'S&P 500': 'the S&P 500',
+}
 
 /**
- * A Boosted ETF's strip, above About (3 Nov): two lines on a gold gradient (full on the left, fading right) with the gold
- * bar — "If the Nasdaq-100 moves up 1% in a day, TQQQ aims to move up 3%." (a short fund: "moves down 1% … aims to move
- * up 3%"), the move up in green. The (i) leads; a tap opens How Boosted ETFs work. FLAG: hand-made (Etf.module.css).
+ * A Boosted ETF's strip, above About (3 Nov), in one of seven versions (flow option "ETF page strip"):
+ * - Sentence (default): two lines on a gold gradient with the gold bar — "If the Nasdaq-100 moves up 1% in a day, TQQQ
+ *   aims to move up 3%." (a short fund: "moves down 1% … aims to move up 3%"), the move up in green, led by the trend icon.
+ * - Bolt sentence (jojo): the same sentence led by the Boosted tab's gold bolt, sliding in from the left.
+ * - V1–V5: the ETF list's Boosted ticker layouts with this fund's one line — "Nasdaq-100 moves +1% → [3x Long] moves +3%".
+ * With the sheet on, a tap opens How Boosted ETFs work. FLAG: hand-made (Etf.module.css).
  */
 function LeverageStrip({ etf, onOpen }: { etf: ReturnType<typeof getCurrentEtf>; onOpen?: () => void }) {
+  const version = useFlowOption('us-stocks', 'etfBoostStrip', 'sentence')
   const long = etf.side === 'long'
   const times = Number.parseFloat(etf.lev ?? '1')
   const index = INDEX_SAID[etf.tracks] ?? etf.tracks
   const sentence = `If ${index} moves ${long ? 'up' : 'down'} 1% in a day, ${etf.sym} aims to move up ${times}%.`
+  if (version !== 'sentence' && version !== 'bolt') {
+    const line: BoostLine = { up: long, subject: etf.tracks, move: long ? '+1%' : '−1%', tag: { text: `${etf.lev} ${long ? 'Long' : 'Short'}`, long }, gain: `+${times}%` }
+    return <BoostStrip lines={[line]} tone="gold" gradient look={(version === 'bolt-lead' ? 'bolt' : version) as BoostLook} label={sentence} onOpen={onOpen} />
+  }
   const text = (
     <span className={listStyles.boostSentence} aria-hidden="true">
       If {index} moves <b className={listStyles.boostMarket} data-down={long ? undefined : ''}>{long ? 'up' : 'down'} 1%</b> in a day,{' '}
       {etf.sym} aims to move <b className={listStyles.boostGain}>up&nbsp;{times}%</b>.
     </span>
   )
-  // With no sheet to open (BOOST_SHEET off) it is a plain note led by the gold bolt (the ETF list's, sliding in); with the
-  // sheet, a button led by the (i).
+  const lead = version === 'bolt'
+    ? <span className={listStyles.boostTextIconWrap} aria-hidden="true"><Icon icon={boltIcon} size={20} className={listStyles.boostTextIcon} /></span>
+    : <Icon icon={long ? msTrendingUp : msTrendingDown} size={16} className={long ? listStyles.boostIcon : listStyles.boostIconDown} />
+  // With no sheet to open (BOOST_SHEET off) it is a plain note led by its icon; with the sheet, a button led by the (i).
   if (!onOpen) {
     return (
       <p className={listStyles.boostLine} data-tone="gold" data-gradient="" data-static="" aria-label={sentence}>
-        <span className={listStyles.boostTextIconWrap} aria-hidden="true"><Icon icon={boltIcon} size={20} className={listStyles.boostTextIcon} /></span>
+        {lead}
         {text}
       </p>
     )
@@ -31835,8 +32331,8 @@ export function EtfPreviousScreen({ backdrop }: { backdrop?: boolean }) {
       footer={
         (gate && activationFooter(gate, (id) => act(() => go(id))())) || (
           <ButtonGroup aria-label={`Trade ${etf.sym}`} direction="horizontal">
-            <Button variant="brand" size="lg" onClick={act(() => go(buyTo))}>{primary}</Button>
-            <Button variant="secondary" size="lg" onClick={act(() => go(buyTo))}>{secondary}</Button>
+            <Button variant="buy" size="lg" onClick={act(() => go(buyTo))}>{primary}</Button>
+            <Button variant="sell" size="lg" onClick={act(() => go(buyTo))}>{secondary}</Button>
           </ButtonGroup>
         )
       }
@@ -31923,12 +32419,21 @@ export function EtfPreviousScreen({ backdrop }: { backdrop?: boolean }) {
 ```ts
 // The ETF being looked at: whoever opens the ETF page (the ETFs list, the stock page's Related ETFs) sets it first
 // with setCurrentEtf(sym), the page reads it. Defaults to SPY (the page opened straight from the screen list).
-// An unknown symbol falls back to SPY.
+// An unknown symbol falls back to SPY. Other flows (Stocks home's Discover ETFs) can't import this: they remember the
+// symbol with the shared `viewUsStock`, which this reads too — so both always point at the last ETF opened.
+import { viewedUsStock, viewUsStock } from '../../../../shared/data/usStocks'
 import { etfFor, type Etf } from './data'
 
 let current: Etf = etfFor('SPY')
-export const setCurrentEtf = (sym: string) => { current = etfFor(sym) }
-export const getCurrentEtf = (): Etf => current
+export const setCurrentEtf = (sym: string) => {
+  current = etfFor(sym)
+  viewUsStock(sym)
+}
+export const getCurrentEtf = (): Etf => {
+  const viewed = viewedUsStock()
+  if (viewed && viewed !== current.sym && etfFor(viewed).sym === viewed) current = etfFor(viewed)
+  return current
+}
 ```
 
 ### `src/flows/us-stocks/screens/etf/data.ts`
@@ -31938,11 +32443,14 @@ export const getCurrentEtf = (): Etf => current
 // ETF page shows. Sample numbers — the API would return the same shapes.
 // FLAG: copy not in copy.json yet — all UI text in this part is hard-coded.
 import { catalogue, stockFor, openStock } from '../../data'
+import type { NewsItem } from '../activation/data'
 
 export type EtfHolding = { sym: string; weight: number }
 export type Etf = {
   sym: string
   name: string
+  /** One plain-words line: what the fund is. */
+  description: string
   /** The index or theme the ETF follows. */
   tracks: string
   kind: 'normal' | 'leveraged'
@@ -31950,6 +32458,8 @@ export type Etf = {
   side?: 'long' | 'short'
   lev?: '2x' | '3x'
   country: string
+  /** Regular ETFs: the sector filter's pick (SECTORS). A country or whole-market fund is 'Broad market'. */
+  sector?: EtfSector
   price: number
   /** Day change in %. */
   change: number
@@ -31961,7 +32471,7 @@ export type Etf = {
 
 const weights = (...rows: [string, number][]): EtfHolding[] => rows.map(([sym, weight]) => ({ sym, weight }))
 
-// Sample holdings — every fund lists at least six (3 Nov), except NVDL / NVD, which follow NVIDIA alone (the ETF page sorts them by weight; the first three written are the card's logos, so a well-known
+// Sample holdings (the ETF page sorts them by weight; the first three written are the card's logos, so a well-known
 // name with a logo goes first — e.g. NVIDIA before TSMC, which has no logo file yet). The big index funds
 // carry their top 50 (3 Nov) for the full "Top holdings" page; the API would send the fund's full daily holdings file.
 // Weights are rounded sample figures, biggest first.
@@ -31989,29 +32499,41 @@ const SEMIS = weights(
 )
 
 export const ETFS: Etf[] = [
-  { sym: 'SPY', name: 'SPDR S&P 500 ETF', tracks: 'S&P 500', kind: 'normal', country: 'US', price: 682.4, change: 0.34, expense: 0.09, aum: '$672B', holdings: SP500 },
-  { sym: 'QQQ', name: 'Invesco QQQ Trust', tracks: 'Nasdaq 100', kind: 'normal', country: 'US', price: 618.9, change: 0.52, expense: 0.2, aum: '$381B', holdings: NASDAQ },
-  { sym: 'VTI', name: 'Vanguard Total Stock Market', tracks: 'US total market', kind: 'normal', country: 'US', price: 334.2, change: 0.29, expense: 0.03, aum: '$521B', holdings: SP500 },
-  { sym: 'SMH', name: 'VanEck Semiconductor ETF', tracks: 'Semiconductors', kind: 'normal', country: 'US', price: 312.6, change: 1.84, expense: 0.35, aum: '$27B', holdings: SEMIS },
-  { sym: 'ITA', name: 'iShares Aerospace & Defense', tracks: 'Defense', kind: 'normal', country: 'US', price: 198.3, change: 0.61, expense: 0.4, aum: '$7.9B', holdings: weights(['GE', 18.2], ['RTX', 15.1], ['LMT', 6.4], ['NOC', 4.8], ['BA', 7.2], ['TDG', 4.6], ['GD', 4.3], ['HWM', 4.1]) },
-  { sym: 'XLE', name: 'Energy Select Sector SPDR', tracks: 'Oil & energy', kind: 'normal', country: 'US', price: 89.7, change: -0.48, expense: 0.09, aum: '$27B', holdings: weights(['XOM', 22.9], ['CVX', 16.4], ['COP', 7.1], ['EOG', 4.6], ['WMB', 4.3], ['SLB', 4.0], ['KMI', 3.6], ['PSX', 3.5]) },
-  { sym: 'BOTZ', name: 'Global X Robotics & AI', tracks: 'AI & robotics', kind: 'normal', country: 'US', price: 34.8, change: 1.22, expense: 0.68, aum: '$2.9B', holdings: weights(['NVDA', 12.4], ['ISRG', 9.2], ['ABB', 7.3], ['KYCCF', 6.9], ['FANUY', 4.2], ['SMCAY', 4.0], ['DT', 3.4]) },
-  { sym: 'UFO', name: 'Procure Space ETF', tracks: 'Space', kind: 'normal', country: 'US', price: 31.6, change: 2.04, expense: 0.75, aum: '$0.1B', holdings: weights(['RKLB', 6.1], ['ASTS', 5.4], ['GRMN', 4.9], ['IRDM', 4.7], ['SATS', 4.5], ['VSAT', 4.2], ['TRMB', 4.0]) },
-  { sym: 'INDA', name: 'iShares MSCI India ETF', tracks: 'India large & mid cap', kind: 'normal', country: 'India', price: 54.2, change: 0.18, expense: 0.64, aum: '$9.6B', holdings: weights(['HDB', 7.8], ['IBN', 5.9], ['INFY', 4.6], ['RELIANCE', 6.4], ['BHARTIARTL', 3.9], ['TCS', 3.0]) },
-  { sym: 'EPI', name: 'WisdomTree India Earnings', tracks: 'India earnings', kind: 'normal', country: 'India', price: 47.9, change: 0.26, expense: 0.85, aum: '$3.2B', holdings: weights(['HDB', 6.5], ['INFY', 5.1], ['IBN', 4.4], ['RELIANCE', 6.9], ['TCS', 3.4], ['SBIN', 2.9]) },
-  { sym: 'MCHI', name: 'iShares MSCI China ETF', tracks: 'China', kind: 'normal', country: 'China', price: 61.3, change: -0.92, expense: 0.59, aum: '$6.8B', holdings: weights(['BABA', 9.8], ['PDD', 4.2], ['BIDU', 2.9], ['TCEHY', 16.4], ['MPNGY', 3.9], ['XIACY', 3.8], ['JD', 2.5]) },
-  { sym: 'KWEB', name: 'KraneShares China Internet', tracks: 'China internet', kind: 'normal', country: 'China', price: 38.4, change: -1.31, expense: 0.7, aum: '$7.1B', holdings: weights(['BABA', 11.2], ['PDD', 8.7], ['BIDU', 6.1], ['TCEHY', 11.0], ['MPNGY', 7.5], ['JD', 5.2], ['NTES', 4.8]) },
-  { sym: 'EWJ', name: 'iShares MSCI Japan ETF', tracks: 'Japan', kind: 'normal', country: 'Japan', price: 74.6, change: 0.44, expense: 0.5, aum: '$15B', holdings: weights(['TM', 5.1], ['SONY', 3.6], ['MUFG', 3.2], ['HTHIY', 3.0], ['SMFG', 2.4], ['TOELY', 2.1], ['KYCCF', 2.0]) },
-  { sym: 'VGK', name: 'Vanguard FTSE Europe ETF', tracks: 'Europe', kind: 'normal', country: 'Europe', price: 78.1, change: 0.12, expense: 0.06, aum: '$25B', holdings: weights(['ASML', 2.9], ['NVO', 2.4], ['SAP', 2.2], ['NSRGY', 2.0], ['AZN', 1.9], ['NVS', 1.8], ['RHHBY', 1.8], ['SHEL', 1.7]) },
-  { sym: 'EWY', name: 'iShares MSCI South Korea', tracks: 'South Korea', kind: 'normal', country: 'Korea', price: 72.3, change: 0.87, expense: 0.59, aum: '$5.4B', holdings: weights(['SSNLF', 22.4], ['HXSCL', 9.1], ['KB', 3.2], ['HYMTF', 2.6], ['SHG', 2.4], ['PKX', 2.0]) },
-  { sym: 'TQQQ', name: 'ProShares UltraPro QQQ', tracks: 'Nasdaq 100', kind: 'leveraged', side: 'long', lev: '3x', country: 'US', price: 104.2, change: 1.58, expense: 0.84, aum: '$26B', holdings: NASDAQ },
-  { sym: 'SQQQ', name: 'ProShares UltraPro Short QQQ', tracks: 'Nasdaq 100', kind: 'leveraged', side: 'short', lev: '3x', country: 'US', price: 15.6, change: -1.6, expense: 0.95, aum: '$3.1B', holdings: NASDAQ },
-  { sym: 'SOXL', name: 'Direxion Semiconductor Bull 3X', tracks: 'Semiconductors', kind: 'leveraged', side: 'long', lev: '3x', country: 'US', price: 38.9, change: 5.42, expense: 0.75, aum: '$12B', holdings: SEMIS },
-  { sym: 'SOXS', name: 'Direxion Semiconductor Bear 3X', tracks: 'Semiconductors', kind: 'leveraged', side: 'short', lev: '3x', country: 'US', price: 4.12, change: -5.38, expense: 0.97, aum: '$1.2B', holdings: SEMIS },
-  { sym: 'NVDL', name: 'GraniteShares 2x Long NVDA', tracks: 'NVIDIA', kind: 'leveraged', side: 'long', lev: '2x', country: 'US', price: 92.7, change: 2.46, expense: 1.15, aum: '$4.6B', holdings: weights(['NVDA', 100]) },
-  { sym: 'NVD', name: 'GraniteShares 2x Short NVDA', tracks: 'NVIDIA', kind: 'leveraged', side: 'short', lev: '2x', country: 'US', price: 6.84, change: -2.5, expense: 1.5, aum: '$0.3B', holdings: weights(['NVDA', 100]) },
-  { sym: 'SPXL', name: 'Direxion S&P 500 Bull 3X', tracks: 'S&P 500', kind: 'leveraged', side: 'long', lev: '3x', country: 'US', price: 201.5, change: 1.02, expense: 0.87, aum: '$5.8B', holdings: SP500 },
-  { sym: 'SPXS', name: 'Direxion S&P 500 Bear 3X', tracks: 'S&P 500', kind: 'leveraged', side: 'short', lev: '3x', country: 'US', price: 4.37, change: -1.04, expense: 1.02, aum: '$0.5B', holdings: SP500 },
+  { sym: 'SPY', name: 'SPDR S&P 500 ETF Trust', description: 'The 500 biggest US companies in one fund', tracks: 'S&P 500', kind: 'normal', country: 'US', sector: 'Broad market', price: 682.4, change: 0.34, expense: 0.09, aum: '$809B', holdings: SP500 },
+  { sym: 'QQQ', name: 'Invesco QQQ Trust', description: 'The 100 biggest non-financial Nasdaq companies', tracks: 'Nasdaq-100', kind: 'normal', country: 'US', sector: 'Technology', price: 618.9, change: 0.52, expense: 0.18, aum: '$499B', holdings: NASDAQ },
+  { sym: 'VTI', name: 'Vanguard Total Stock Market ETF', description: 'The whole US stock market, big to small', tracks: 'CRSP US Total Market', kind: 'normal', country: 'US', sector: 'Broad market', price: 334.2, change: 0.29, expense: 0.03, aum: '$2.3T', holdings: weights(['NVDA', 7.1], ['AAPL', 6.6], ['MSFT', 5.2], ['AMZN', 3.3], ['GOOGL', 2.8], ['AVGO', 2.3]) },
+  { sym: 'SMH', name: 'VanEck Semiconductor ETF', description: 'The 25 biggest US-listed chip companies', tracks: 'MVIS US Listed Semiconductor 25', kind: 'normal', country: 'US', sector: 'Technology', price: 312.6, change: 1.84, expense: 0.35, aum: '$75B', holdings: weights(['NVDA', 19.3], ['TSM', 9.3], ['AMD', 5.5], ['AVGO', 5.3], ['MU', 4.9], ['AMAT', 4.7]) },
+  { sym: 'ITA', name: 'iShares U.S. Aerospace & Defense ETF', description: 'US aircraft makers and defence contractors', tracks: 'Dow Jones US Select Aerospace & Defense', kind: 'normal', country: 'US', sector: 'Industrials', price: 198.3, change: 0.61, expense: 0.37, aum: '$12B', holdings: weights(['GE', 21.0], ['RTX', 16.2], ['BA', 7.5], ['HWM', 4.6], ['LMT', 4.6], ['TDG', 4.6]) },
+  { sym: 'XLE', name: 'Energy Select Sector SPDR Fund', description: 'The energy companies of the S&P 500', tracks: 'Energy Select Sector', kind: 'normal', country: 'US', sector: 'Energy', price: 89.7, change: -0.48, expense: 0.08, aum: '$39B', holdings: weights(['XOM', 24.0], ['CVX', 18.1], ['COP', 6.7], ['VLO', 4.7], ['MPC', 4.7], ['PSX', 4.6]) },
+  { sym: 'XLF', name: 'Financial Select Sector SPDR Fund', description: 'The banks, insurers and payment companies of the S&P 500', tracks: 'Financial Select Sector', kind: 'normal', country: 'US', sector: 'Financials', price: 52.4, change: 0.38, expense: 0.08, aum: '$53B', holdings: weights(['BRK-B', 12.1], ['JPM', 10.6], ['V', 7.6], ['MA', 6.2], ['BAC', 4.6], ['WFC', 3.6]) },
+  { sym: 'XLV', name: 'Health Care Select Sector SPDR Fund', description: 'The drug makers, insurers and hospitals of the S&P 500', tracks: 'Health Care Select Sector', kind: 'normal', country: 'US', sector: 'Healthcare', price: 141.8, change: -0.21, expense: 0.08, aum: '$36B', holdings: weights(['LLY', 13.2], ['UNH', 6.9], ['JNJ', 6.8], ['ABBV', 6.1], ['MRK', 4.0], ['ISRG', 3.8]) },
+  { sym: 'BOTZ', name: 'Global X Robotics & Artificial Intelligence ETF', description: 'Companies building robots, automation and AI', tracks: 'Indxx Robotics & AI', kind: 'normal', country: 'US', sector: 'Technology', price: 34.8, change: 1.22, expense: 0.68, aum: '$3.3B', holdings: weights(['ISRG', 8.6], ['FANUY', 8.2], ['KYCCF', 8.2], ['NVDA', 8.0], ['ABBNY', 7.8], ['SMCAY', 4.9]) },
+  { sym: 'UFO', name: 'Procure Space ETF', description: 'Companies that earn from space and satellites', tracks: 'S-Network Space', kind: 'normal', country: 'US', sector: 'Industrials', price: 31.6, change: 2.04, expense: 0.75, aum: '$0.5B', holdings: weights(['RKLB', 5.4], ['GRMN', 5.1], ['TRMB', 4.9], ['ASTS', 4.8], ['SATS', 4.7], ['VSAT', 4.6]) },
+  { sym: 'INDA', name: 'iShares MSCI India ETF', description: 'Large and mid-size Indian companies, in dollars', tracks: 'MSCI India', kind: 'normal', country: 'India', sector: 'Broad market', price: 54.2, change: 0.18, expense: 0.61, aum: '$5.8B', holdings: weights(['HDB', 6.4], ['IBN', 5.6], ['RELIANCE', 5.4], ['BHARTIARTL', 3.9], ['INFY', 2.4]) },
+  { sym: 'EPI', name: 'WisdomTree India Earnings Fund', description: 'Indian companies weighted by how much they earn', tracks: 'WisdomTree India Earnings', kind: 'normal', country: 'India', sector: 'Broad market', price: 47.9, change: 0.26, expense: 0.84, aum: '$1.8B', holdings: weights(['RELIANCE', 0.6], ['HINDPETRO', 0.6], ['ONGC', 0.5], ['IBN', 0.5], ['HDB', 0.5]) },
+  { sym: 'MCHI', name: 'iShares MSCI China ETF', description: 'Large and mid-size Chinese companies', tracks: 'MSCI China', kind: 'normal', country: 'China', sector: 'Broad market', price: 61.3, change: -0.92, expense: 0.59, aum: '$6.0B', holdings: weights(['TCEHY', 13.8], ['BABA', 9.3], ['CICHY', 4.3], ['IDCBY', 2.6], ['XIACY', 2.2], ['PDD', 1.6]) },
+  { sym: 'KWEB', name: 'KraneShares CSI China Internet ETF', description: 'China\'s biggest internet and tech companies', tracks: 'CSI Overseas China Internet', kind: 'normal', country: 'China', sector: 'Technology', price: 38.4, change: -1.31, expense: 0.69, aum: '$4.5B', holdings: weights(['TCEHY', 10.3], ['BABA', 8.6], ['PDD', 8.1], ['MPNGY', 7.0], ['NTES', 6.6], ['LNVGY', 6.2]) },
+  { sym: 'EWJ', name: 'iShares MSCI Japan ETF', description: 'Large and mid-size Japanese companies', tracks: 'MSCI Japan', kind: 'normal', country: 'Japan', sector: 'Broad market', price: 74.6, change: 0.44, expense: 0.49, aum: '$24B', holdings: weights(['MUFG', 4.7], ['TM', 3.3], ['TOELY', 3.1], ['SMFG', 3.0], ['ATEYY', 3.0], ['HTHIY', 2.9]) },
+  { sym: 'VGK', name: 'Vanguard FTSE Europe ETF', description: 'Large and mid-size companies across Europe', tracks: 'FTSE Developed Europe All Cap', kind: 'normal', country: 'Europe', sector: 'Broad market', price: 78.1, change: 0.12, expense: 0.06, aum: '$37B', holdings: weights(['ASML', 4.5], ['HSBC', 2.2], ['RHHBY', 1.9], ['SHEL', 1.8], ['NVS', 1.7], ['AZN', 1.6]) },
+  { sym: 'EWY', name: 'iShares MSCI South Korea ETF', description: 'Large and mid-size South Korean companies', tracks: 'MSCI Korea 25/50', kind: 'normal', country: 'Korea', sector: 'Broad market', price: 72.3, change: 0.87, expense: 0.59, aum: '$26B', holdings: weights(['HXSCF', 23.7], ['SSNLF', 22.8], ['SKSQF', 3.1], ['SMSEF', 2.7], ['KB', 1.9]) },
+  // Added for Stocks home's Discover ETFs (four per region). Sample expense, size and holdings; price and change are real (snapshot).
+  { sym: 'FXI', name: 'iShares China Large-Cap ETF', description: 'The 50 biggest Chinese companies listed in Hong Kong', tracks: 'FTSE China 50', kind: 'normal', country: 'China', sector: 'Broad market', price: 33.3, change: -0.6, expense: 0.74, aum: '$6.8B', holdings: weights(['TCEHY', 9.6], ['BABA', 8.9], ['MPNGY', 7.2], ['CICHY', 5.4], ['XIACY', 4.8], ['IDCBY', 3.9]) },
+  { sym: 'CQQQ', name: 'Invesco China Technology ETF', description: 'Chinese tech companies, from chips to apps', tracks: 'FTSE China Incl A 25% Technology', kind: 'normal', country: 'China', sector: 'Technology', price: 38.4, change: -0.8, expense: 0.65, aum: '$1.1B', holdings: weights(['TCEHY', 9.1], ['BABA', 8.4], ['PDD', 7.6], ['XIACY', 6.2], ['NTES', 4.4], ['BIDU', 3.6]) },
+  { sym: 'DXJ', name: 'WisdomTree Japan Hedged Equity Fund', description: 'Japanese exporters, protected from swings in the yen', tracks: 'WisdomTree Japan Hedged Equity', kind: 'normal', country: 'Japan', sector: 'Broad market', price: 59.2, change: 0.6, expense: 0.48, aum: '$3.9B', holdings: weights(['TM', 4.6], ['MUFG', 4.2], ['SMFG', 3.1], ['HTHIY', 2.6], ['SNE', 2.4], ['TOELY', 2.2]) },
+  { sym: 'HEWJ', name: 'iShares Currency Hedged MSCI Japan ETF', description: 'Large and mid-size Japanese companies, protected from swings in the yen', tracks: 'MSCI Japan 100% Hedged to USD', kind: 'normal', country: 'Japan', sector: 'Broad market', price: 62.5, change: 0.5, expense: 0.5, aum: '$0.4B', holdings: weights(['MUFG', 4.7], ['TM', 3.3], ['TOELY', 3.1], ['SMFG', 3.0], ['ATEYY', 3.0], ['HTHIY', 2.9]) },
+  { sym: 'SCJ', name: 'iShares MSCI Japan Small-Cap ETF', description: 'Smaller Japanese companies', tracks: 'MSCI Japan Small Cap', kind: 'normal', country: 'Japan', sector: 'Broad market', price: 106.2, change: 0.4, expense: 0.5, aum: '$0.2B', holdings: weights(['SMTOY', 0.6], ['IIJIY', 0.5], ['NPSCY', 0.5], ['KAJMY', 0.4], ['TKOMY', 0.4]) },
+  { sym: 'FEZ', name: 'SPDR EURO STOXX 50 ETF', description: 'The 50 biggest companies in the Eurozone', tracks: 'EURO STOXX 50', kind: 'normal', country: 'Europe', sector: 'Broad market', price: 65.4, change: 0.2, expense: 0.29, aum: '$4.6B', holdings: weights(['ASML', 8.6], ['SAP', 6.1], ['SIEGY', 4.3], ['LVMUY', 3.7], ['ALIZY', 3.3], ['TTE', 3.1]) },
+  { sym: 'EZU', name: 'iShares MSCI Eurozone ETF', description: 'Large and mid-size companies of the countries that use the euro', tracks: 'MSCI EMU', kind: 'normal', country: 'Europe', sector: 'Broad market', price: 65.5, change: 0.2, expense: 0.51, aum: '$7.9B', holdings: weights(['ASML', 6.2], ['SAP', 4.4], ['SIEGY', 3.0], ['LVMUY', 2.6], ['ALIZY', 2.4], ['SNY', 2.0]) },
+  { sym: 'IEUR', name: 'iShares Core MSCI Europe ETF', description: 'Companies of every size across Europe', tracks: 'MSCI Europe IMI', kind: 'normal', country: 'Europe', sector: 'Broad market', price: 75.1, change: 0.1, expense: 0.09, aum: '$6.5B', holdings: weights(['ASML', 3.9], ['NVO', 2.4], ['SAP', 2.3], ['NSRGY', 2.1], ['AZN', 1.9], ['HSBC', 1.8]) },
+  { sym: 'FLKR', name: 'Franklin FTSE South Korea ETF', description: 'Large and mid-size South Korean companies, at a low cost', tracks: 'FTSE South Korea Capped', kind: 'normal', country: 'Korea', sector: 'Broad market', price: 30.1, change: 0.8, expense: 0.09, aum: '$0.2B', holdings: weights(['SSNLF', 24.1], ['HXSCF', 11.4], ['SKSQF', 3.0], ['KB', 2.6], ['SMSEF', 2.4]) },
+  { sym: 'TQQQ', name: 'ProShares UltraPro QQQ', description: 'Aims for 3x the Nasdaq-100\'s daily move', tracks: 'Nasdaq-100', kind: 'leveraged', side: 'long', lev: '3x', country: 'US', price: 104.2, change: 1.58, expense: 0.78, aum: '$38B', holdings: NASDAQ },
+  { sym: 'SQQQ', name: 'ProShares UltraPro Short QQQ', description: 'Aims for 3x the opposite of the Nasdaq-100\'s daily move', tracks: 'Nasdaq-100', kind: 'leveraged', side: 'short', lev: '3x', country: 'US', price: 15.6, change: -1.6, expense: 0.94, aum: '$2.1B', holdings: NASDAQ },
+  { sym: 'SOXL', name: 'Direxion Daily Semiconductor Bull 3X Shares', description: 'Aims for 3x the daily move of 30 big chip stocks', tracks: 'ICE Semiconductor', kind: 'leveraged', side: 'long', lev: '3x', country: 'US', price: 38.9, change: 5.42, expense: 0.75, aum: '$24B', holdings: SEMIS },
+  { sym: 'SOXS', name: 'Direxion Daily Semiconductor Bear 3X Shares', description: 'Aims for 3x the opposite daily move of 30 big chip stocks', tracks: 'ICE Semiconductor', kind: 'leveraged', side: 'short', lev: '3x', country: 'US', price: 4.12, change: -5.38, expense: 1.0, aum: '$1.8B', holdings: SEMIS },
+  { sym: 'NVDL', name: 'GraniteShares 2x Long NVDA Daily ETF', description: 'Aims for 2x the daily move of NVIDIA stock', tracks: 'NVIDIA', kind: 'leveraged', side: 'long', lev: '2x', country: 'US', price: 92.7, change: 2.46, expense: 1.05, aum: '$3.8B', holdings: weights(['NVDA', 100]) },
+  { sym: 'NVD', name: 'GraniteShares 2x Short NVDA Daily ETF', description: 'Aims for 2x the opposite daily move of NVIDIA stock', tracks: 'NVIDIA', kind: 'leveraged', side: 'short', lev: '2x', country: 'US', price: 6.84, change: -2.5, expense: 1.35, aum: '$55M', holdings: weights(['NVDA', 100]) },
+  { sym: 'SPXL', name: 'Direxion Daily S&P 500 Bull 3X Shares', description: 'Aims for 3x the S&P 500\'s daily move', tracks: 'S&P 500', kind: 'leveraged', side: 'long', lev: '3x', country: 'US', price: 201.5, change: 1.02, expense: 0.84, aum: '$6.9B', holdings: SP500 },
+  { sym: 'SPXS', name: 'Direxion Daily S&P 500 Bear 3X Shares', description: 'Aims for 3x the opposite of the S&P 500\'s daily move', tracks: 'S&P 500', kind: 'leveraged', side: 'short', lev: '3x', country: 'US', price: 4.37, change: -1.04, expense: 1.04, aum: '$339M', holdings: SP500 },
 ]
 
 /** Region chips on the Regular tab (after "All"). */
@@ -32022,6 +32544,10 @@ for (const etf of ETFS) {
 }
 
 export const COUNTRIES = ['US', 'China', 'Japan', 'Europe', 'Korea']
+
+/** Sector chips on the Regular tab (after "All"), the other filter the switcher chip picks. */
+export type EtfSector = 'Broad market' | 'Technology' | 'Financials' | 'Healthcare' | 'Energy' | 'Industrials'
+export const SECTORS: EtfSector[] = ['Broad market', 'Technology', 'Financials', 'Healthcare', 'Energy', 'Industrials']
 
 // The ETF list's Sector chips (3 Nov), in everyday words. Funds that hold a whole market or a country's big companies
 // (SPY, VTI, the country funds) have no sector: they show under All.
@@ -32056,6 +32582,18 @@ const PLAIN: Record<string, EtfPlain> = {
   EWJ: { plain: 'Big Japanese stocks', known: ['Toyota', 'Sony', 'Nintendo'], does: "Owns Japan's biggest companies." },
   VGK: { plain: 'Big European stocks', known: ['Nestlé', 'Louis Vuitton', 'ASML'], does: 'Owns 1,200+ companies across Europe.' },
   EWY: { plain: 'Big Korean stocks', known: ['Samsung', 'SK Hynix', 'Hyundai'], does: "Owns South Korea's biggest companies." },
+  // The playground's extra funds (Stocks home's Discover ETFs, sector chips), written the same way (3 Nov).
+  XLF: { plain: 'US bank & finance stocks', known: ['Berkshire Hathaway', 'JPMorgan', 'Visa'], does: 'Owns the banks, insurers and payment companies of the S&P 500.' },
+  XLV: { plain: 'US healthcare stocks', known: ['Eli Lilly', 'UnitedHealth', 'Johnson & Johnson'], does: 'Owns the drug makers, insurers and hospitals of the S&P 500.' },
+  FXI: { plain: 'Top 50 Chinese stocks', known: ['Tencent', 'Alibaba', 'Meituan'], does: 'Owns the 50 biggest Chinese companies listed in Hong Kong.' },
+  CQQQ: { plain: 'Chinese tech stocks', known: ['Tencent', 'Baidu', 'Kuaishou'], does: 'Owns Chinese tech companies, from chips to apps.' },
+  DXJ: { plain: 'Japanese exporters, yen-proof', known: ['Toyota', 'Mitsubishi UFJ', 'Honda'], does: 'Owns Japanese exporters, protected from swings in the yen.' },
+  HEWJ: { plain: 'Big Japanese stocks, yen-proof', known: ['Toyota', 'Sony', 'Hitachi'], does: "Owns Japan's biggest companies, protected from swings in the yen." },
+  SCJ: { plain: 'Small Japanese stocks', known: ['Sanrio', 'Square Enix', 'Ryohin Keikaku'], does: 'Owns smaller Japanese companies.' },
+  FEZ: { plain: 'Top 50 Eurozone stocks', known: ['ASML', 'SAP', 'Louis Vuitton'], does: 'Owns the 50 biggest companies of the countries that use the euro.' },
+  EZU: { plain: 'Big Eurozone stocks', known: ['ASML', 'SAP', 'Siemens'], does: 'Owns large and mid-size companies of the countries that use the euro.' },
+  IEUR: { plain: 'The whole European market', known: ['ASML', 'Nestlé', 'Novo Nordisk'], does: 'Owns 1,000+ companies of every size across Europe.' },
+  FLKR: { plain: 'Big Korean stocks, low cost', known: ['Samsung', 'SK Hynix', 'Hyundai'], does: "Owns South Korea's biggest companies, at a low cost." },
   // Leveraged (3 Nov): the index or stock they follow, short — the card's heading carries a "3x Long" tag after it.
   TQQQ: { plain: 'Nasdaq 100', known: ['Apple', 'Microsoft', 'NVIDIA'], does: 'Aims to move 3x the Nasdaq-100 each day.' },
   SQQQ: { plain: 'Nasdaq 100', known: ['Apple', 'Microsoft', 'NVIDIA'], does: 'Aims to move 3x opposite to the Nasdaq-100 each day.' },
@@ -32073,12 +32611,35 @@ const TAGS: Record<string, string[]> = {
   ITA: ['Defence', 'US'], XLE: ['Oil & gas', 'US'], BOTZ: ['Robots & AI', 'Global'], UFO: ['Space', 'Global'],
   INDA: ['India', 'Large & mid'], EPI: ['India', 'Profitable'], MCHI: ['China', 'Large & mid'], KWEB: ['China', 'Internet'],
   EWJ: ['Japan', 'Large & mid'], VGK: ['Europe', 'Large & mid'], EWY: ['South Korea', 'Large & mid'],
+  XLF: ['Finance', 'US'], XLV: ['Healthcare', 'US'], FXI: ['China', 'Top 50'], CQQQ: ['China', 'Tech'],
+  DXJ: ['Japan', 'Yen-hedged'], HEWJ: ['Japan', 'Yen-hedged'], SCJ: ['Japan', 'Small cap'], FEZ: ['Eurozone', 'Top 50'],
+  EZU: ['Eurozone', 'Large & mid'], IEUR: ['Europe', 'All sizes'], FLKR: ['South Korea', 'Large & mid'],
 }
 /** The ETF page's tags after "ETF" (none for leveraged ones, which show their long / short tag). */
 export const tagsFor = (etf: Etf) => TAGS[etf.sym] ?? []
 
 /** The plain-English side of an ETF; leveraged ones (off for now) fall back to the fund's name. */
 export const plainFor = (etf: Etf): EtfPlain => PLAIN[etf.sym] ?? { plain: etf.name, known: [], does: etf.tracks }
+
+// The ETF cards' second line (3 Nov): after the ticker, what kind of companies are inside, with a name people know —
+// "QQQ · Mostly big tech, like Apple" (was the fund's legal name, which says little; it stays on the ETF page).
+// Kept to about 28 characters so it fits one line at 360. Sample copy; the API would send it with the fund.
+const INSIDE: Record<string, string> = {
+  SPY: 'Big US firms in every sector', QQQ: 'Mostly big tech, like Apple', VTI: 'Every US firm, big to small',
+  SMH: 'Chip makers, like NVIDIA', ITA: 'Plane, jet & weapon makers', XLE: 'Oil & gas, like ExxonMobil',
+  XLF: 'Banks, insurers & card firms', XLV: 'Drug makers & health insurers', BOTZ: 'Robot makers & AI chip firms',
+  UFO: 'Rocket, satellite & GPS firms', INDA: 'Big Indian banks, IT & energy', EPI: 'Indian firms with big profits',
+  MCHI: 'Chinese giants, like Tencent', KWEB: 'Chinese shopping & chat apps', EWJ: "Japan's giants, like Toyota",
+  VGK: "Europe's giants, like ASML", EWY: "Korea's giants, like Samsung", FXI: "China's top 50, like Alibaba",
+  CQQQ: 'Chinese tech, chips to apps', DXJ: 'Exporters, like Toyota & Honda', HEWJ: "Japan's giants, yen-protected",
+  SCJ: 'Smaller firms, like Sanrio', FEZ: "Eurozone's top 50, like SAP", EZU: 'Euro-area firms, like Siemens',
+  IEUR: '1,000+ European firms', FLKR: "Korea's giants, like SK Hynix",
+  TQQQ: 'Mostly big tech, like Apple', SQQQ: 'Mostly big tech, like Apple', SOXL: 'Chip makers, like NVIDIA',
+  SOXS: 'Chip makers, like NVIDIA', NVDL: 'One stock: NVIDIA', NVD: 'One stock: NVIDIA',
+  SPXL: 'Big US firms, like Apple', SPXS: 'Big US firms, like Apple',
+}
+/** What kind of companies the fund holds, in a few words (the ETF cards' second line, after the ticker). */
+export const insideFor = (etf: Etf) => INSIDE[etf.sym] ?? plainFor(etf).does
 
 // The ETF page's description (2–3 Nov): a short paragraph on what's inside — which kinds of companies, the biggest
 // names, and how many it holds. Written to follow the ticker ("SPY tracks …"). Sample copy; the API would send it with the fund.
@@ -32098,6 +32659,18 @@ const ABOUT: Record<string, string> = {
   EWJ: "Holds about 185 of Japan's biggest companies: Toyota, Sony, Mitsubishi UFJ (a bank), Hitachi, Nintendo, Keyence and more — carmakers, electronics, banks and industry.",
   VGK: 'Holds about 1,200 European companies across the UK, France, Switzerland, Germany and more: ASML, Novo Nordisk, Nestlé, LVMH (Louis Vuitton), SAP, Shell and AstraZeneca.',
   EWY: "Holds about 90 South Korean companies. Samsung Electronics is the biggest by far, then SK Hynix (memory chips), Hyundai, Kia, KB Financial and Naver.",
+  // The playground's extra funds (3 Nov): written the same way, so their About card says what's inside too.
+  XLF: 'Holds the 72 banks, insurers and payment companies in the S&P 500: Berkshire Hathaway, JPMorgan, Visa, Mastercard, Bank of America and Wells Fargo. It tends to do well when lending and spending pick up.',
+  XLV: 'Holds the 60 healthcare companies in the S&P 500: drug makers like Eli Lilly, Johnson & Johnson, AbbVie and Merck, health insurer UnitedHealth, and makers of medical equipment such as Intuitive Surgical.',
+  FXI: "Holds the 50 biggest Chinese companies listed in Hong Kong: internet giants Tencent, Alibaba and Meituan, phone maker Xiaomi, and China's big state banks and insurers.",
+  CQQQ: 'Holds about 150 Chinese tech companies, from chip makers to apps: Tencent (WeChat), Alibaba, PDD (Temu), Xiaomi, NetEase (games) and Baidu (search).',
+  DXJ: 'Holds about 430 Japanese companies that earn a lot abroad — carmakers Toyota and Honda, banks like Mitsubishi UFJ, and Sony and Hitachi. It is protected from swings in the yen, so you get the shares’ move without the currency’s.',
+  HEWJ: 'Holds about 190 of Japan’s biggest companies — Mitsubishi UFJ, Toyota, Tokyo Electron, Sony and Hitachi — and is protected from swings in the yen, so you get the shares’ move without the currency’s.',
+  SCJ: 'Holds about 770 smaller Japanese companies, each a tiny part of the fund — names like Sanrio (Hello Kitty), Square Enix (games), Ryohin Keikaku (Muji) and builders like Kajima. They tend to sell more in Japan than abroad.',
+  FEZ: 'Holds the 50 biggest companies of the countries that use the euro: ASML (chip machines), SAP (software), Siemens, Louis Vuitton, Allianz and TotalEnergies.',
+  EZU: 'Holds about 220 large and mid-size companies of the countries that use the euro — ASML, SAP, Siemens, Louis Vuitton, Allianz and Sanofi — across Germany, France, the Netherlands, Italy and Spain.',
+  IEUR: 'Holds 1,000+ European companies of every size, including the UK and Switzerland: ASML, Novo Nordisk, SAP, Nestlé, AstraZeneca and HSBC lead it.',
+  FLKR: 'Holds about 150 large and mid-size South Korean companies at a low cost. Samsung Electronics is about a quarter of it; SK Hynix (memory chips), Hyundai and KB Financial follow.',
   // Boosted (leveraged) funds (3 Nov): what each is built on — the index or stock, what's in it — and how the 2x / 3x works.
   TQQQ: "Aims to move 3x the Nasdaq-100's move each day — the index QQQ tracks: the 100 biggest non-financial companies on the Nasdaq, mostly tech like Apple, Microsoft, NVIDIA and Amazon. It gets the 3x mostly through swaps with banks, and resets every day, so over weeks the result can differ from 3x the index.",
   SQQQ: "Aims to move 3x opposite to the Nasdaq-100 each day — the index QQQ tracks: the 100 biggest non-financial companies on the Nasdaq, mostly tech like Apple, Microsoft, NVIDIA and Amazon. When the index falls 1% in a day it aims to rise 3%, and the other way round. It holds swaps, not the stocks, and resets every day.",
@@ -32120,7 +32693,7 @@ export const aboutFor = (etf: Etf) => {
 // "Allocation" on the ETF page (3 Nov, after Revolut's portfolio allocation): the fund split by sector, biggest first,
 // four sectors and "Other" for the rest. Names stay short (no wider than "Oil producers") so the legend fits two columns at
 // 360. Sample, rounded weights; the API would send the fund's sector breakdown.
-const SECTORS: Record<string, [string, number][]> = {
+const SECTOR_SPLIT: Record<string, [string, number][]> = {
   SPY: [['Technology', 34], ['Financials', 13], ['Healthcare', 10], ['Consumer', 10]],
   QQQ: [['Technology', 51], ['Media', 16], ['Consumer', 14], ['Healthcare', 6]],
   VTI: [['Technology', 32], ['Financials', 13], ['Healthcare', 11], ['Consumer', 10]],
@@ -32136,12 +32709,33 @@ const SECTORS: Record<string, [string, number][]> = {
   EWJ: [['Industrials', 23], ['Consumer', 19], ['Financials', 16], ['Technology', 14]],
   VGK: [['Financials', 21], ['Industrials', 17], ['Healthcare', 14], ['Consumer', 11]],
   EWY: [['Technology', 40], ['Financials', 13], ['Industrials', 12], ['Consumer', 9]],
+  // The playground's extra funds (3 Nov): every ETF shows its Allocation.
+  XLF: [['Banks', 32], ['Payments', 24], ['Insurance', 18], ['Investing', 16]],
+  XLV: [['Drug makers', 44], ['Health plans', 17], ['Med devices', 16], ['Biotech', 14]],
+  FXI: [['Consumer', 30], ['Financials', 28], ['Media', 20], ['Technology', 8]],
+  CQQQ: [['Media', 34], ['Shopping', 22], ['Technology', 20], ['Chip makers', 12]],
+  DXJ: [['Industrials', 26], ['Consumer', 22], ['Financials', 18], ['Technology', 15]],
+  HEWJ: [['Industrials', 23], ['Consumer', 19], ['Financials', 16], ['Technology', 14]],
+  SCJ: [['Industrials', 25], ['Consumer', 21], ['Materials', 11], ['Technology', 10]],
+  FEZ: [['Technology', 19], ['Financials', 18], ['Consumer', 17], ['Industrials', 16]],
+  EZU: [['Financials', 21], ['Industrials', 18], ['Technology', 13], ['Consumer', 13]],
+  IEUR: [['Financials', 20], ['Industrials', 17], ['Healthcare', 14], ['Consumer', 11]],
+  FLKR: [['Technology', 38], ['Financials', 14], ['Industrials', 12], ['Consumer', 9]],
+  // Boosted funds: the split of the index or stock they're built on.
+  TQQQ: [['Technology', 51], ['Media', 16], ['Consumer', 14], ['Healthcare', 6]],
+  SQQQ: [['Technology', 51], ['Media', 16], ['Consumer', 14], ['Healthcare', 6]],
+  SOXL: [['Chip makers', 80], ['Chip tools', 18]],
+  SOXS: [['Chip makers', 80], ['Chip tools', 18]],
+  NVDL: [['Chip makers', 100]],
+  NVD: [['Chip makers', 100]],
+  SPXL: [['Technology', 34], ['Financials', 13], ['Healthcare', 10], ['Consumer', 10]],
+  SPXS: [['Technology', 34], ['Financials', 13], ['Healthcare', 10], ['Consumer', 10]],
 }
 /** Every sector name any fund has (and "Other"): the legend's name column is as wide as the widest of them on every ETF. */
-export const SECTOR_NAMES = [...new Set([...Object.values(SECTORS).flat().map(([name]) => name), 'Other'])]
+export const SECTOR_NAMES = [...new Set([...Object.values(SECTOR_SPLIT).flat().map(([name]) => name), 'Other'])]
 /** The fund's sectors, biggest first, with "Other" for the rest (none for a fund without a sample breakdown). */
 export const sectorsFor = (etf: Etf): { name: string; weight: number }[] => {
-  const rows = SECTORS[etf.sym]
+  const rows = SECTOR_SPLIT[etf.sym]
   if (!rows) return []
   const other = 100 - rows.reduce((sum, [, w]) => sum + w, 0)
   return [...rows.map(([name, weight]) => ({ name, weight })), ...(other > 0 ? [{ name: 'Other', weight: other }] : [])]
@@ -32201,6 +32795,7 @@ export { etfIssuerLogo as issuerLogo, etfIssuerName as issuerName } from '../../
 const HOLDING_COUNT: Record<string, string> = {
   SPY: '503', QQQ: '101', VTI: '3,612', SMH: '26', VGK: '1,284', ITA: '38', XLE: '22', EWJ: '186', MCHI: '558',
   BOTZ: '81', UFO: '68', INDA: '169', EPI: '558', KWEB: '45', EWY: '82',
+  XLF: '72', XLV: '60', FXI: '50', CQQQ: '148', DXJ: '434', HEWJ: '186', SCJ: '772', FEZ: '50', EZU: '221', IEUR: '1,009', FLKR: '153',
 }
 // Leveraged funds hold mostly swaps, not the stocks: the ETF page shows the stocks of the index each one follows —
 // Nasdaq-100, S&P 500, the ICE Semiconductor Index (30), or NVIDIA alone.
@@ -32225,6 +32820,17 @@ export function detailsFor(etf: Etf) {
       { day: '15', month: 'Aug', title: 'Annual report', detail: 'Holdings, costs and returns for the year', type: 'Report' },
     ],
   }
+}
+
+/** The ETF page's News (3 Nov, as the stock page's News & Events): stories about the fund and the market it follows. */
+export function newsFor(etf: Etf): NewsItem[] {
+  const index = etf.kind === 'leveraged' ? etf.tracks : `the ${etf.tracks}`
+  return [
+    { title: `${etf.sym} draws fresh money as US stocks open higher`, source: 'The Economic Times', time: '25m ago', img: 'news-1.png', impact: 'positive', why: 'More buyers in the fund' },
+    { title: `Rate worries weigh on ${index}`, source: 'Reuters', time: '2h ago', img: 'news-2.png', impact: 'negative', why: 'Could slow the index this week' },
+    { title: 'Big tech earnings lift US markets', source: 'Team Lemonn', time: '5h ago', img: 'news-1.png', impact: 'positive', why: 'Its biggest holdings are up' },
+    { title: `What ${etf.sym} holds and why it matters`, source: 'Team Lemonn', time: '2 days ago', img: 'news-2.png', impact: 'neutral' },
+  ]
 }
 
 export const PERIODS = ['1D', '1W', '1M', '1Y', '3Y', '5Y']
@@ -32257,14 +32863,6 @@ const HOLDING_NAMES: Record<string, string> = {
   PANW: 'Palo Alto Networks', CMCSA: 'Comcast', ADP: 'ADP', APP: 'AppLovin', VRTX: 'Vertex Pharmaceuticals',
   MELI: 'MercadoLibre', CEG: 'Constellation Energy', ORLY: "O'Reilly Automotive", CDNS: 'Cadence Design', SNPS: 'Synopsys',
   DASH: 'DoorDash', CTAS: 'Cintas', MAR: 'Marriott',
-  // The rest of each smaller fund's top holdings (3 Nov), so every ETF page lists at least six.
-  TDG: 'TransDigm', GD: 'General Dynamics', HWM: 'Howmet Aerospace', EOG: 'EOG Resources', WMB: 'Williams Companies',
-  KMI: 'Kinder Morgan', PSX: 'Phillips 66', KYCCF: 'Keyence', FANUY: 'Fanuc', SMCAY: 'SMC Corporation', DT: 'Dynatrace',
-  IRDM: 'Iridium', SATS: 'EchoStar', VSAT: 'Viasat', TRMB: 'Trimble', RELIANCE: 'Reliance Industries',
-  BHARTIARTL: 'Bharti Airtel', TCS: 'Tata Consultancy Services', SBIN: 'State Bank of India', TCEHY: 'Tencent',
-  MPNGY: 'Meituan', XIACY: 'Xiaomi', JD: 'JD.com', NTES: 'NetEase', HTHIY: 'Hitachi', SMFG: 'Sumitomo Mitsui Financial',
-  TOELY: 'Tokyo Electron', NSRGY: 'Nestlé', AZN: 'AstraZeneca', NVS: 'Novartis', RHHBY: 'Roche', SHEL: 'Shell',
-  KB: 'KB Financial', HYMTF: 'Hyundai Motor', SHG: 'Shinhan Financial', PKX: 'POSCO',
 }
 /** A holding's display name (the catalogue's, a known name, or the symbol). */
 export const stockName = (sym: string) => {
@@ -32325,9 +32923,12 @@ export const screens: UsScreenMap = {
 
 ```tsx
 // Small pieces the ETF screens share: the issuer logo disc, a holding's logo, the day-change figure and the leveraged tag.
-// FLAG: hand-made logo disc and change figure (module CSS) — L3 has no ETF / issuer logo; PriceChange is not used in rows here.
+// FLAG: hand-made logo disc (module CSS) — L3 has no ETF / issuer logo. Changes are L3 PriceChange (EtfMove), as StockListCard.
+import type { ReactNode } from 'react'
 import { Avatar } from '@l3/components/Avatar'
+import { PriceChange } from '@l3/components/PriceChange'
 import { Tag } from '@l3/components/Tag'
+import { asset } from '../../asset'
 import { logoFor, logoPlate } from '../../data'
 import { issuerLogo, type Etf } from './data'
 import styles from './Etf.module.css'
@@ -32354,28 +32955,41 @@ export function EtfDisc({ sym, size = 32 }: { sym: string; size?: 24 | 32 | 40 }
   )
 }
 
+/** The issuer logo on its plate as one square image (assets/etf/logos), for the L3 Avatar in StockListCard. */
+export const etfLogoUrl = (sym: string) => {
+  const logo = issuerLogo(sym)
+  return logo ? asset(`assets/etf/logos/${logo.file}.svg`) : undefined
+}
+
 /**
- * A day change: ▲ / ▼ in the up / down colour, then the size of the move. No "+" / "−" (3 Nov): the arrow already says
- * which way. Screen readers get the word. `lg` is the ETF page's big change next to the price.
+ * A day change: L3 PriceChange, "+" / "−" in the up / down colour, no arrow — as every stock card in the app (3 Nov).
+ * `lg` is the ETF page's big change next to the price.
  */
 export function EtfMove({ change, size = 'sm' }: { change: number; size?: 'sm' | 'lg' }) {
-  const up = change >= 0
+  return <PriceChange value={change} size={size} />
+}
+
+/**
+ * The app's long / short tag ("3x Long", "3x Short"): L3 Tag in the up / down colour, border only, no fill (3 Nov: the
+ * filled tag pulled the eye away from the name). `filled` keeps L3's soft fill where the tag sits on a logo.
+ * FLAG / L3 gap: L3 Tag has no outline-only variant — the fill is cleared here (Etf.module.css .outlineTag).
+ */
+export function LevTag({ long, size = 'sm', filled, className, children }: { long: boolean; size?: 'sm' | 'md'; filled?: boolean; className?: string; children: ReactNode }) {
   return (
-    <span className={styles.move} data-up={up || undefined} data-size={size === 'lg' ? 'lg' : undefined} aria-label={`${up ? 'up' : 'down'} ${Math.abs(change).toFixed(2)}%`}>
-      <span className={styles.tri} aria-hidden="true" />
-      <span aria-hidden="true">{Math.abs(change).toFixed(2)}%</span>
-    </span>
+    <Tag variant="secondary" color={long ? 'profit' : 'loss'} size={size} className={[filled ? undefined : styles.outlineTag, className].filter(Boolean).join(' ') || undefined}>
+      {children}
+    </Tag>
   )
 }
 
 /** "3x Long" / "3x Short" on leveraged ETFs, nothing on regular ones. */
-export function SideTag({ etf, size = 'sm', className }: { etf: Etf; size?: 'sm' | 'md'; className?: string }) {
+export function SideTag({ etf, size = 'sm', filled, className }: { etf: Etf; size?: 'sm' | 'md'; filled?: boolean; className?: string }) {
   if (etf.kind !== 'leveraged') return null
   const long = etf.side === 'long'
   return (
-    <Tag variant="secondary" color={long ? 'profit' : 'loss'} size={size} className={className}>
+    <LevTag long={long} size={size} filled={filled} className={className}>
       {etf.lev} {long ? 'Long' : 'Short'}
-    </Tag>
+    </LevTag>
   )
 }
 ```
@@ -32389,151 +33003,159 @@ import { screens as activation } from './activation'
 import { screens as entry } from './entry'
 import { screens as etf } from './etf'
 import { screens as money } from './money'
+import { screens as orders } from './orders'
 import { screens as trade } from './trade'
 import { screens as wallet } from './wallet'
 
-export const allScreens: UsScreenMap = { ...activation, ...entry, ...etf, ...money, ...trade, ...wallet }
+export const allScreens: UsScreenMap = { ...activation, ...entry, ...etf, ...money, ...orders, ...trade, ...wallet }
 ```
 
 ### `src/flows/us-stocks/screens/money/AddMoneyScreen.tsx`
 
 ```tsx
-// Add money (M01–M08): enter an ₹ amount, see the $ estimate, charges and limits.
-// FLAG: duplicates the app's Indian deposit flow (src/flows/deposit) — this is a separate add-money screen for the US wallet.
-// FLAG: amount entry is a plain TextField on the device's own keyboard, not the app's shared Keyboard (src/shared/ui/Keyboard).
-// FLAG: layout is raw display:flex + gap/padding (Money.module.css), not L3 Stack / Section / Inset.
+// Add money (M01–M08): enter the US dollars you want in your wallet; the ₹ it costs is the line under the amount.
+// Groww-style $ entry replaces the ₹ TextField in Figma M01 (user's 3 Nov ask); the ₹ cost is the line under the amount.
+// FLAG: the big amount and the number keypad are the shared AmountEntry / AmountKeypad (src/shared/ui/AmountEntry) — L3 has neither.
+// FLAG: own screen frame (Phone) with the keypad dock as its footer, as the rest of US Stocks money.
+// This screen types and shows plain $ (formatUsd), not the "₹ equivalent" setting: the amount is in $ by construction
+// and the ₹ line is always shown, because paying is in ₹.
 import { useState, type ReactNode } from 'react'
 import { Actionbar } from '@l3/components/Actionbar'
 import { Aerobar } from '@l3/components/Aerobar'
+import { Button } from '@l3/components/Button'
+import { ButtonGroup } from '@l3/components/ButtonGroup'
 import { Icon } from '@l3/components/Icon'
-import { KeyValueList, KeyValueRow } from '@l3/components/KeyValueList'
+import { Stack } from '@l3/components/Stack'
 import { Tab } from '@l3/components/Tabs'
-import { TextField } from '@l3/components/TextField'
 import { Phone } from '../../components/Phone'
 import { useUsNav } from '../../nav'
-import { Usd, formatInr, useUsd, useUsdInrRate } from '../../../../shared/money'
-import { DEPOSIT_QUICK_ADD_INR, LRS_LIMIT_USD, MIN_DEPOSIT_USD, depositBreakdown, depositRate, minDepositInr } from './amounts'
+import { BankRow, type BankPickerCopy } from '../../../../shared/ui/BankPicker'
+import { useLinkedBanks } from '../../../../shared/userStatus'
+import { AmountDock, AmountEntry, amountValue, typeAmount } from '../../../../shared/ui/AmountEntry'
+import { formatInr, formatUsd, useUsdInrRate } from '../../../../shared/money'
+import { DEPOSIT_QUICK_ADD_USD, LRS_LIMIT_USD, MIN_DEPOSIT_USD, depositBreakdown, depositRate, inrForUsd } from './amounts'
+import { BankPickSheet } from './BankPickSheet'
 import { ChargesBreakdownSheet } from './ChargesBreakdownSheet'
-import { parseAmount } from './format'
+import { t } from './copy'
 import { setHandoff, takeHandoff } from './handoff'
 import { infoIcon } from './icons'
 import { FIGMA } from '../wallet/data'
 import { moneyIds } from './ids'
-import { MoneyDock } from './MoneyDock'
 import styles from './Money.module.css'
 
 export type AddMoneyScreenProps = {
   /** Figma node id of this screen (the amount is handed on to the pay sheet under it). */
   id: string
-  /** Amount typed in when the screen opens, ₹. */
+  /** Amount typed in when the screen opens, US dollars. */
   initial: number
   /** Open with the charges breakdown sheet (M02). */
   breakdown?: boolean
   /** Show the bank-name-mismatch alert (M05). */
   mismatch?: boolean
-  /** A sheet is open over the screen (M08): hide the ≈ $ line. */
-  sheetBackdrop?: boolean
-  /** Fixed ≈ $ and charges text shown until the amount is edited (M07 — the real maths would show other numbers). */
-  frameText?: { lands: number; charges: number }
-  /** The sheet drawn over the screen. */
+  /** The sheet drawn over the screen (M08). */
   sheet?: ReactNode
   /** Drawn behind another screen's sheet: static, not tappable. */
   backdrop?: boolean
+  /** Open with the "Pay from" bank sheet. */
+  banksOpen?: boolean
+  /** No bank linked, whatever the User status says (its own screen in the list). */
+  noBank?: boolean
 }
 
-export function AddMoneyScreen({ id, initial, breakdown = false, mismatch = false, sheetBackdrop = false, frameText, sheet, backdrop }: AddMoneyScreenProps) {
+/** Add bank account (the deposit flow's screen; it goes back here when done). */
+const ADD_BANK = 'deposit-12'
+
+const WALLET_BALANCE_USD = 0
+/** Whole dollars as typed ("20") or with cents ("20.5"): the string the keypad edits. */
+const toTyped = (usd: number) => (usd > 0 ? String(usd) : '')
+
+export function AddMoneyScreen({ id, initial, breakdown = false, mismatch = false, sheet, backdrop, banksOpen = false, noBank = false }: AddMoneyScreenProps) {
   const { go, back } = useUsNav()
-  const [amount, setAmount] = useState(() => takeHandoff(id, initial))
+  const [typed, setTyped] = useState(() => toTyped(takeHandoff(id, initial)))
   const [showBreakdown, setShowBreakdown] = useState(breakdown)
-  const [edited, setEdited] = useState(false)
-  const usd = useUsd()
+  const linked = useLinkedBanks()
+  const banks = noBank ? [] : linked
+  const [bankId, setBankId] = useState(banks[0]?.id)
+  const [showBanks, setShowBanks] = useState(banksOpen)
+  const bank = banks.find((b) => b.id === bankId) ?? banks[0]
+  const bankCopy: BankPickerCopy = { method: t('addMoney.methodLabel'), addTitle: t('addMoney.addTitle'), addDescription: t('addMoney.addDescription'), sheetTitle: t('addMoney.sheetTitle'), addAnother: t('addMoney.addAnother') }
   // What you pay is in ₹ (your bank); the rate it converts at follows the live rate, plus the partner's markup.
   const rate = depositRate(useUsdInrRate())
-  const b = depositBreakdown(amount, rate)
-  const lands = !edited && frameText ? frameText.lands : b.lands
-  const charges = !edited && frameText ? frameText.charges : b.charges
-  const minInr = minDepositInr(rate)
-  const maxInr = Math.round(LRS_LIMIT_USD * rate)
-  const belowMin = amount > 0 && amount < minInr
-  const aboveLrs = amount > maxInr
-  const blocked = amount === 0 || belowMin || aboveLrs || mismatch
+  const usd = amountValue(typed)
+  const inr = inrForUsd(usd, rate)
+  const { charges } = depositBreakdown(inr, rate)
+  const belowMin = usd > 0 && usd < MIN_DEPOSIT_USD
+  const aboveLrs = usd > LRS_LIMIT_USD
+  const invalid = usd === 0 || belowMin || aboveLrs
+  const blocked = invalid || mismatch
+  const limits = { min: formatUsd(MIN_DEPOSIT_USD, { decimals: 0 }), max: formatUsd(LRS_LIMIT_USD, { decimals: 0 }) }
+  const inrText = formatInr(Math.ceil(inr), { decimals: 0 })
 
-  const change = (next: number) => {
-    setAmount(next)
-    setEdited(true)
-  }
+  const type = (key: string) => setTyped((v) => typeAmount(v, key, { decimals: 2, maxDigits: 7 }))
+  const quickAdd = (add: number) => setTyped(String(Math.min(usd + add, 9999999)))
   const addToWallet = () => {
-    setHandoff(moneyIds.m08, amount)
-    go(moneyIds.m08)
+    // Straight to the bank's page (no "pay on your bank's page" sheet first); coming back keeps the typed $.
+    setHandoff(moneyIds.m01, usd)
+    go(moneyIds.bank)
   }
 
-  const helper = belowMin ? (
-    <span className={styles.error}>Enter amount within limit · Minimum {formatInr(minInr, { decimals: 0 })} ({usd(MIN_DEPOSIT_USD, { decimals: 0 })}) for your first deposit</span>
+  const below = belowMin ? (
+    t('addMoney.errorMin', limits)
   ) : aboveLrs ? (
-    <span className={styles.error}>Enter amount within limit · Max {usd(LRS_LIMIT_USD, { decimals: 0 })} per financial year under LRS</span>
+    t('addMoney.errorMax', limits)
+  ) : usd > 0 ? (
+    <Button variant="tertiary" size="sm" iconRight={<Icon icon={infoIcon} size={16} />} aria-label={t('addMoney.payLabel', { inr: inrText })} onClick={() => setShowBreakdown(true)} tabIndex={backdrop ? -1 : undefined}>
+      {t('addMoney.pay', { inr: inrText })}
+    </Button>
   ) : (
-    <>
-      Min: {formatInr(minInr, { decimals: 0 })}
-      <span className={styles.sep}>|</span>
-      Max: {formatInr(maxInr, { decimals: 0 })}
-    </>
+    t('addMoney.minHint', limits)
   )
 
   return (
     <Phone
-      label="Deposit USD"
+      label={t('addMoney.title')}
       overlay={backdrop ? undefined : sheet}
-      header={<Actionbar title="Deposit USD" onBack={() => back(FIGMA.walletUsActivate)} />}
-      footer={<MoneyDock amount={amount} blocked={blocked} onAdd={addToWallet} />}
-    >
-      {mismatch && (
-        <Aerobar
-          type="danger"
-          placement="inline"
-          heading="Update your bank account"
-          paragraph="The name on HDFC Bank XXXX4321 does not match your PAN. Banks reject transfers abroad when names differ."
+      header={<Actionbar title={t('addMoney.title')} description={t('addMoney.available', { amount: formatUsd(WALLET_BALANCE_USD) })} onBack={() => back(FIGMA.walletUsActivate)} />}
+      footer={
+        <AmountDock
+          decimal
+          onKey={type}
+          method={<BankRow bank={bank} copy={bankCopy} note={t('addMoney.landsBy')} onChange={() => setShowBanks(true)} onAdd={() => go(ADD_BANK)} />}
+          action={
+            <ButtonGroup aria-label={t('addMoney.title')}>
+              {bank ? (
+                <Button variant="brand" size="lg" fullWidth disabled={blocked} onClick={addToWallet}>
+                  {usd > 0 ? t('addMoney.cta', { amount: formatUsd(usd, { decimals: usd % 1 ? 2 : 0 }) }) : t('addMoney.ctaEmpty')}
+                  {/* The ₹ it costs, small, after the $ (the user's 3 Nov ask). */}
+                  {usd > 0 && !invalid && <span className={styles.ctaInr}>{t('addMoney.ctaInr', { inr: inrText })}</span>}
+                </Button>
+              ) : (
+                <Button variant="primary" size="lg" fullWidth onClick={() => go(ADD_BANK)}>{t('addMoney.addBankCta')}</Button>
+              )}
+            </ButtonGroup>
+          }
         />
-      )}
-      <div className={styles.content}>
-        <KeyValueList variant="card" className={styles.balanceCard} aria-label="US wallet">
-          <KeyValueRow
-            label="US Wallet Balance"
-            value={<Usd value={0} layout="inline" />}
-            valueEnd={<span className={styles.valueIcon} aria-hidden="true"><Icon icon={infoIcon} size={16} /></span>}
-          />
-        </KeyValueList>
-        <div className={styles.amount}>
-          <div className={styles.fieldWrap}>
-            <TextField
-              label="Enter Amount"
-              inputMode="numeric"
-              autoComplete="off"
-              placeholder="₹0"
-              value={amount > 0 ? formatInr(amount, { decimals: 0 }) : ''}
-              onChange={(e) => change(parseAmount(e.target.value))}
-              helperText={helper}
-              helperIcon={false}
-              aria-invalid={belowMin || aboveLrs || undefined}
-              tabIndex={backdrop ? -1 : undefined}
-            />
-            {!sheetBackdrop && amount > 0 && (
-              <button type="button" className={styles.conversion} onClick={() => setShowBreakdown(true)} aria-label={`About ${usd(lands)}: see charges breakdown`}>
-                ≈ <Usd value={lands} layout="inline" />
-                <Icon icon={infoIcon} size={16} />
-              </button>
-            )}
-          </div>
-          <div className={styles.chips}>
-            {/* FLAG: quick-add chips are L3 Tab (appearance="pill", action) used as buttons — no L3 chip for this. */}
-            {DEPOSIT_QUICK_ADD_INR.map((add) => (
-              <Tab key={add} action appearance="pill" emphasis="tertiary" className={styles.chip} onClick={() => change(amount + add)} aria-label={`Add ${formatInr(add, { decimals: 0 })}`}>
-                {`+${formatInr(add, { decimals: 0 })}`}
+      }
+    >
+      {mismatch && <Aerobar type="danger" placement="inline" heading={t('addMoney.mismatchHeading')} paragraph={t('addMoney.mismatchText')} />}
+      <AmountEntry
+        amount={typed}
+        currency="$"
+        error={belowMin || aboveLrs}
+        below={below}
+        chips={
+          // FLAG: quick-add chips are L3 Tab (appearance="pill", action) used as buttons — no L3 chip for this.
+          <Stack direction="horizontal" gap="08" justify="center">
+            {DEPOSIT_QUICK_ADD_USD.map((add) => (
+              <Tab key={add} action appearance="pill" emphasis="tertiary" onClick={() => quickAdd(add)} aria-label={t('addMoney.chipLabel', { amount: formatUsd(add, { decimals: 0 }) })} tabIndex={backdrop ? -1 : undefined}>
+                {`+${formatUsd(add, { decimals: 0 })}`}
               </Tab>
             ))}
-          </div>
-        </div>
-      </div>
-      <ChargesBreakdownSheet open={showBreakdown} onClose={() => setShowBreakdown(false)} amount={amount} rate={rate} charges={charges} />
+          </Stack>
+        }
+      />
+      {bank && <BankPickSheet open={showBanks} banks={banks} selected={bank.id} copy={bankCopy} onSelect={setBankId} onAdd={() => { setShowBanks(false); go(ADD_BANK) }} onClose={() => setShowBanks(false)} />}
+      <ChargesBreakdownSheet open={showBreakdown} onClose={() => setShowBreakdown(false)} amount={inr} rate={rate} charges={charges} />
     </Phone>
   )
 }
@@ -32554,6 +33176,53 @@ export function BankAppScreen({ backdrop }: { backdrop?: boolean }) {
     <button type="button" className={styles.bankApp} onClick={() => !backdrop && go(moneyIds.wallet)} aria-label="Bank app (placeholder). Tap to go back to Lemonn">
       <span className={styles.bankAppTitle}>BANK APP</span>
     </button>
+  )
+}
+```
+
+### `src/flows/us-stocks/screens/money/BankPickSheet.tsx`
+
+```tsx
+// "Pay from" sheet opened from the bank row on add money: the linked banks (shared BankOptions) in this flow's own
+// L3 BottomSheet (it lives in the Phone's sheet layer, like the charges breakdown).
+import { useId } from 'react'
+import { BottomSheet, BottomSheetHeader } from '@l3/components/BottomSheet'
+import { Button } from '@l3/components/Button'
+import { ButtonGroup } from '@l3/components/ButtonGroup'
+import { Icon } from '@l3/components/Icon'
+import { msAdd } from '@l3/icons/material'
+import type { LinkedBank } from '../../../../shared/data/user'
+import { BankOptions, type BankPickerCopy } from '../../../../shared/ui/BankPicker'
+import { useSheetLayer } from '../../components/Phone'
+import styles from './Money.module.css'
+
+export function BankPickSheet({ open, banks, selected, copy, onSelect, onAdd, onClose }: {
+  open: boolean
+  banks: LinkedBank[]
+  selected: string
+  copy: BankPickerCopy
+  onSelect: (id: string) => void
+  onAdd: () => void
+  onClose: () => void
+}) {
+  const layer = useSheetLayer()
+  const id = useId()
+  return (
+    <BottomSheet
+      open={open}
+      onClose={onClose}
+      container={layer}
+      aria-labelledby={id}
+      utility={<div className={styles.gesture} aria-hidden="true"><span /></div>}
+      header={<BottomSheetHeader heading={copy.sheetTitle} headingId={id} />}
+      footer={
+        <ButtonGroup aria-label={copy.sheetTitle}>
+          <Button variant="tertiary" size="lg" fullWidth iconLeft={<Icon icon={msAdd} />} onClick={onAdd}>{copy.addAnother}</Button>
+        </ButtonGroup>
+      }
+    >
+      <BankOptions variant="card" banks={banks} selected={selected} name={id} onPick={(bankId) => { onSelect(bankId); onClose() }} />
+    </BottomSheet>
   )
 }
 ```
@@ -32605,7 +33274,7 @@ export function ChargesBreakdownSheet({ open, onClose, amount, rate, charges }: 
 
 ```css
 /* FLAG: layout is raw display:flex + gap/padding on every block, not L3 Stack / Section / Inset (applies to the whole file). */
-/* FLAG: sheet grabber (.sheetGesture / .gesture) is hand-drawn; L3 BottomSheet draws its own handle. */
+/* FLAG: sheet grabber (.gesture) is hand-drawn; L3 BottomSheet draws its own handle. */
 
 .content {
   gap: var(--l3-spacing-24);
@@ -32764,64 +33433,6 @@ export function ChargesBreakdownSheet({ open, onClose, amount, rate, charges }: 
   margin-block: 0;
 }
 
-.ready {
-  gap: var(--l3-spacing-24);
-  flex-direction: column;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: flex;
-}
-
-.readyItem {
-  align-items: center;
-  gap: var(--l3-spacing-12);
-  display: flex;
-}
-
-.readyTile {
-  width: var(--l3-spacing-36);
-  height: var(--l3-spacing-36);
-  border-radius: var(--l3-radius-08);
-  background: var(--l3-surface-secondary);
-  color: var(--l3-content-primary);
-  flex: none;
-  justify-content: center;
-  align-items: center;
-  display: flex;
-}
-
-.readyText {
-  gap: var(--l3-spacing-02);
-  flex-direction: column;
-  display: flex;
-}
-
-.readyTitle {
-  font: var(--l3-text-label-14);
-  color: var(--l3-content-primary);
-}
-
-.readySub {
-  font: var(--l3-text-description-12);
-  color: var(--l3-content-secondary);
-}
-
-.sheetGesture {
-  padding: var(--l3-spacing-10) var(--l3-spacing-16);
-  background: var(--l3-surface-primary);
-  justify-content: center;
-  display: flex;
-}
-
-.sheetGesture span {
-  width: calc(var(--l3-spacing-96) + var(--l3-spacing-24));
-  height: var(--l3-size-04);
-  border-radius: var(--l3-radius-full);
-  background: var(--l3-surface-inverted);
-  opacity: .5; /* FLAG: raw opacity */
-}
-
 .bankApp {
   background: var(--l3-surface-default);
   cursor: pointer;
@@ -32906,7 +33517,13 @@ export function ChargesBreakdownSheet({ open, onClose, amount, rate, charges }: 
 
 .sep {
   margin: 0 var(--l3-spacing-06);
-  color: var(--l3-content-tertiary);
+  color: var(--l3-content-secondary);
+}
+
+/* Add money's button: the ₹ it costs after "Add $X", in a smaller label (the user's 3 Nov ask). */
+.ctaInr {
+  margin-left: var(--l3-spacing-04);
+  font: var(--l3-text-label-12);
 }
 ```
 
@@ -32966,7 +33583,7 @@ export function ChargesBreakdownSheet({ open, onClose, amount, rate, charges }: 
   gap: var(--l3-spacing-04);
   padding: 0 var(--l3-spacing-16) var(--l3-spacing-12);
   font: var(--l3-text-description-12);
-  color: var(--l3-content-tertiary);
+  color: var(--l3-content-secondary);
   margin: 0;
   display: flex;
 }
@@ -33014,78 +33631,11 @@ export function MoneyDock({
         <span className={styles.change}>Change</span>
       </button>
       <div className={styles.main}>
-        <Button variant="primary" size="lg" fullWidth disabled={blocked} onClick={onAdd}>
+        <Button variant="brand" size="lg" fullWidth disabled={blocked} onClick={onAdd}>
           {cta ?? (amount > 0 ? `Add ${formatInr(amount, { decimals: 0 })} to US wallet` : 'Add to US wallet')}
         </Button>
       </div>
     </div>
-  )
-}
-```
-
-### `src/flows/us-stocks/screens/money/PayOnBankSheet.tsx`
-
-```tsx
-// M08 · the sheet that says the user pays on their bank's page, with what to keep ready.
-// FLAG: the "keep ready" list is hand-made (tile + two lines per row), not L3 ListCell.
-import { BottomSheet, BottomSheetHeader } from '@l3/components/BottomSheet'
-import { Button } from '@l3/components/Button'
-import { ButtonGroup } from '@l3/components/ButtonGroup'
-import { Icon } from '@l3/components/Icon'
-import { useSheetLayer } from '../../components/Phone'
-import { useUsNav } from '../../nav'
-import { arrowForwardIcon, cardIcon, closeIcon, keyIcon, personIcon } from './icons'
-import { moneyIds } from './ids'
-import { useSheetClose } from './useSheetClose'
-import styles from './Money.module.css'
-
-const KEEP_READY = [
-  { icon: personIcon, title: 'Customer ID / User ID', text: 'Your netbanking login ID' },
-  { icon: keyIcon, title: 'Netbanking password', text: 'The one you use on your bank’s website' },
-  { icon: cardIcon, title: 'Debit card', text: 'Last 4 digits, expiry and ATM PIN' },
-]
-
-export function PayOnBankSheet() {
-  const { go, back } = useUsNav()
-  const layer = useSheetLayer()
-  const { open, close } = useSheetClose(() => back(moneyIds.m01))
-  return (
-    <BottomSheet
-      open={open}
-      container={layer}
-      onClose={close}
-      aria-labelledby="pay-sheet-title"
-      header={
-        <BottomSheetHeader
-          headingId="pay-sheet-title"
-          heading="Pay on HDFC Bank’s page"
-          description="Keep these ready to finish in one go"
-          trailing={<Button variant="ghost" size="lg" iconLeft={<Icon icon={closeIcon} size={24} />} aria-label="Close" onClick={close} />}
-        />
-      }
-      footer={
-        <ButtonGroup aria-label="Pay on bank page">
-          <Button variant="brand" size="lg" fullWidth iconRight={<Icon icon={arrowForwardIcon} size={24} />} onClick={() => go(moneyIds.bank)}>
-            Continue to HDFC Bank
-          </Button>
-        </ButtonGroup>
-      }
-      utility={<div className={styles.sheetGesture} aria-hidden="true"><span /></div>}
-    >
-      <ul className={styles.ready}>
-        {KEEP_READY.map((item) => (
-          <li key={item.title} className={styles.readyItem}>
-            <span className={styles.readyTile}>
-              <Icon icon={item.icon} size={20} />
-            </span>
-            <span className={styles.readyText}>
-              <span className={styles.readyTitle}>{item.title}</span>
-              <span className={styles.readySub}>{item.text}</span>
-            </span>
-          </li>
-        ))}
-      </ul>
-    </BottomSheet>
   )
 }
 ```
@@ -33324,8 +33874,8 @@ export const MIN_DEPOSIT_USD = 50
 export const minDepositInr = (rate: number) => Math.ceil(MIN_DEPOSIT_USD * rate)
 /** LRS limit per financial year, $. */
 export const LRS_LIMIT_USD = 250000
-/** The "+₹…" quick-add chips. */
-export const DEPOSIT_QUICK_ADD_INR = [5000, 10000, 25000, 50000]
+/** The "+$…" quick-add chips on the add-money amount screen. */
+export const DEPOSIT_QUICK_ADD_USD = [50, 100, 500]
 
 /** GST on the currency-conversion charge, ₹. */
 function conversionGst(inr: number): number {
@@ -33346,6 +33896,35 @@ export function depositBreakdown(inr: number, rate: number) {
     lands: Math.max(converted - (inr > 0 ? PARTNER_FEE_USD : 0), 0),
     charges: inr > 0 ? gst + PARTNER_FEE_USD * rate : 0,
   }
+}
+
+/**
+ * The inverse of depositBreakdown: the ₹ to pay so that `lands` = `usd` (rounded up to the paisa, so it never lands short).
+ *   lands = (inr − gst(inr)) / rate − PARTNER_FEE_USD   ⇒   inr − gst(inr) = (usd + PARTNER_FEE_USD) × rate =: net
+ * and gst(inr) = 18% × the conversion charge, a straight line in each band of the charge, so per band:
+ *   charge 250 flat (inr ≤ 25,000)        inr = net + 45
+ *   1% of inr (to 1,00,000)               inr = net / 0.9982
+ *   1,000 + 0.5% over 1,00,000 (to 10 L)  inr = (net + 90) / 0.9991
+ *   5,500 + 0.1% over 10 L (to cap)       inr = (net + 810) / 0.99982
+ *   capped at 60,000 (GST 10,800)         inr = net + 10,800
+ * The first band whose answer falls inside it wins. 0 for no amount.
+ */
+export function inrForUsd(usd: number, rate: number): number {
+  if (!(usd > 0)) return 0
+  const net = (usd + PARTNER_FEE_USD) * rate
+  const bands: [number, number, number, number][] = [
+    // [slope, offset, band start (₹), band end (₹)]: inr = (net + offset) / slope
+    [1, 45, 0, 25000],
+    [0.9982, 0, 25000, 1e5],
+    [0.9991, 90, 1e5, 1e6],
+    [0.99982, 810, 1e6, 5.5e7], // the charge reaches its 60,000 cap at ₹5.5 Cr
+    [1, 10800, 0, Infinity],
+  ]
+  for (const [slope, offset, from, to] of bands) {
+    const inr = (net + offset) / slope
+    if (inr > from && inr <= to) return Math.ceil(inr * 100) / 100
+  }
+  return Math.ceil((net + 10800) * 100) / 100
 }
 
 /** What the withdraw rate adds to the live ₹ per $ rate (the bank's spread): 94.87 live → ₹95.80 (indicative). */
@@ -33399,6 +33978,16 @@ export function TwoLineLabel({ top, sub }: { top: string; sub: string }) {
 }
 ```
 
+### `src/flows/us-stocks/screens/money/copy.ts`
+
+```ts
+import { makeCopy } from '../../../../shared/copy'
+import copy from '../../copy.json'
+
+/** Every user-facing string of US Stocks that has moved to copy.json (add money so far): t('addMoney.title'). */
+export const t = makeCopy('us-stocks', copy)
+```
+
 ### `src/flows/us-stocks/screens/money/format.ts`
 
 ```ts
@@ -33444,18 +34033,6 @@ export const infoIcon = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000
 /** close */
 export const closeIcon = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' height='24' viewBox='0 -960 960 960' width='24'%3E%3Cpath d='M480-424 284-228q-11 11-28 11t-28-11q-11-11-11-28t11-28l196-196-196-196q-11-11-11-28t11-28q11-11 28-11t28 11l196 196 196-196q11-11 28-11t28 11q11 11 11 28t-11 28L536-480l196 196q11 11 11 28t-11 28q-11 11-28 11t-28-11L480-424Z'/%3E%3C/svg%3E`
 
-/** person (customer / user ID) */
-export const personIcon = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' height='24' viewBox='0 -960 960 960' width='24'%3E%3Cpath d='M367-527q-47-47-47-113t47-113q47-47 113-47t113 47q47 47 47 113t-47 113q-47 47-113 47t-113-47ZM160-240v-32q0-34 17.5-62.5T224-378q62-31 126-46.5T480-440q66 0 130 15.5T736-378q29 15 46.5 43.5T800-272v32q0 33-23.5 56.5T720-160H240q-33 0-56.5-23.5T160-240Z'/%3E%3C/svg%3E`
-
-/** key (netbanking password) */
-export const keyIcon = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' height='24' viewBox='0 -960 960 960' width='24'%3E%3Cpath d='M280-240q-100 0-170-70T40-480q0-100 70-170t170-70q81 0 141.5 45.5T506-560h334q33 0 56.5 23.5T920-480q0 36-25 58t-55 22v80q0 33-23.5 56.5T760-240q-33 0-56.5-23.5T680-320v-80H506q-24 69-84.5 114.5T280-240Zm0-160q33 0 56.5-23.5T360-480q0-33-23.5-56.5T280-560q-33 0-56.5 23.5T200-480q0 33 23.5 56.5T280-400Z'/%3E%3C/svg%3E`
-
-/** credit_card (debit card) */
-export const cardIcon = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' height='24' viewBox='0 -960 960 960' width='24'%3E%3Cpath d='M880-720v480q0 33-23.5 56.5T800-160H160q-33 0-56.5-23.5T80-240v-480q0-33 23.5-56.5T160-800h640q33 0 56.5 23.5T880-720Zm-720 80h640v-80H160v80Zm0 160v240h640v-240H160Zm0 240v-480 480Z'/%3E%3C/svg%3E`
-
-/** arrow_forward */
-export const arrowForwardIcon = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' height='24' viewBox='0 -960 960 960' width='24'%3E%3Cpath d='M647-440H200q-17 0-28.5-11.5T160-480q0-17 11.5-28.5T200-520h447L451-716q-12-12-11.5-28t12.5-28q12-11 28-11.5t28 11.5l264 264q6 6 8.5 13t2.5 15q0 8-2.5 15t-8.5 13L508-188q-11 11-27.5 11T452-188q-12-12-12-28.5t12-28.5l195-195Z'/%3E%3C/svg%3E`
-
 /** schedule (timing note) */
 export const clockIcon = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 -960 960 960'%3E%3Cpath d='m612-292 56-56-148-148v-184h-80v216l172 172ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-400Zm0 320q133 0 226.5-93.5T800-480q0-133-93.5-226.5T480-800q-133 0-226.5 93.5T160-480q0 133 93.5 226.5T480-160Z'/%3E%3C/svg%3E`
 
@@ -33471,7 +34048,7 @@ export const arrowDropUpIcon = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
 ```ts
 /** Figma node ids of the money screens, plus the screens they hand over to / come back from. */
 export const moneyIds = {
-  /** M01 · Add money · enter ₹ */
+  /** M01 · Add money · enter $ */
   m01: '5776:84630',
   /** M02 · Add money · charges breakdown */
   m02: '5776:85779',
@@ -33481,8 +34058,10 @@ export const moneyIds = {
   m07: '5796:86175',
   /** M05 · Add money · bank name mismatch */
   m05: '5796:86009',
-  /** M08 · Add money · pay on bank page sheet */
-  m08: '5776:84258',
+  /** Add money · no bank account linked (not in Figma) */
+  noBank: '9001:20',
+  /** Add money · "Pay from" bank sheet (not in Figma) */
+  banks: '9001:21',
   /** Bank app placeholder */
   bank: '5796:86336',
   /** Wallet · US tab · Add money transfer in progress (screen of the wallet part) */
@@ -33505,33 +34084,29 @@ export const moneyIds = {
 ### `src/flows/us-stocks/screens/money/index.tsx`
 
 ```tsx
-// Money: add money (deposit) and withdraw for the US wallet — M01–M08, the bank page placeholder and H08–H10.
-// FLAG: copy not in copy.json yet (all UI text in this part is hard-coded).
+// Money: add money (deposit) and withdraw for the US wallet — M01–M07, the bank page placeholder and H08–H10.
+// FLAG: add money's copy is in copy.json; the rest of this part's text is still hard-coded.
 // FLAG: the app already has an Indian deposit flow (src/flows/deposit); add money here duplicates it for the US wallet.
 import type { UsScreenMap } from '../types'
 import { AddMoneyScreen } from './AddMoneyScreen'
 import { BankAppScreen } from './BankAppScreen'
 import { moneyIds } from './ids'
-import { PayOnBankSheet } from './PayOnBankSheet'
 import { WithdrawPlacedScreen } from './WithdrawPlacedScreen'
 import { WithdrawScreen } from './WithdrawScreen'
 
-// M01 · enter ₹ (₹1,00,000)
-const AddMoneyEnter = ({ backdrop }: { backdrop?: boolean }) => <AddMoneyScreen id={moneyIds.m01} initial={100000} backdrop={backdrop} />
+// M01 · enter $ ($1,000) — Groww-style $ entry; the ₹ cost is the line under the amount
+const AddMoneyEnter = ({ backdrop }: { backdrop?: boolean }) => <AddMoneyScreen id={moneyIds.m01} initial={1000} backdrop={backdrop} />
 // M02 · charges breakdown sheet open
-const AddMoneyCharges = ({ backdrop }: { backdrop?: boolean }) => <AddMoneyScreen id={moneyIds.m02} initial={100000} breakdown backdrop={backdrop} />
-// M03 · below the first-deposit minimum (₹2,000)
-const AddMoneyBelowMinimum = ({ backdrop }: { backdrop?: boolean }) => <AddMoneyScreen id={moneyIds.m03} initial={2000} backdrop={backdrop} />
-// M07 · above the LRS limit (₹2,50,00,000), with the frame's own ≈ $ and charges text
-const AddMoneyAboveLrs = ({ backdrop }: { backdrop?: boolean }) => (
-  <AddMoneyScreen id={moneyIds.m07} initial={25000000} frameText={{ lands: 259600, charges: 294 }} backdrop={backdrop} />
-)
+const AddMoneyCharges = ({ backdrop }: { backdrop?: boolean }) => <AddMoneyScreen id={moneyIds.m02} initial={1000} breakdown backdrop={backdrop} />
+// M03 · below the first-deposit minimum ($20)
+const AddMoneyBelowMinimum = ({ backdrop }: { backdrop?: boolean }) => <AddMoneyScreen id={moneyIds.m03} initial={20} backdrop={backdrop} />
+// M07 · above the LRS limit ($3,00,000 typed → over $2,50,000)
+const AddMoneyAboveLrs = ({ backdrop }: { backdrop?: boolean }) => <AddMoneyScreen id={moneyIds.m07} initial={300000} backdrop={backdrop} />
 // M05 · bank name does not match PAN
-const AddMoneyBankMismatch = ({ backdrop }: { backdrop?: boolean }) => <AddMoneyScreen id={moneyIds.m05} initial={100000} mismatch backdrop={backdrop} />
-// M08 · "pay on your bank's page" sheet over the add-money screen
-const AddMoneyPayOnBank = ({ backdrop }: { backdrop?: boolean }) => (
-  <AddMoneyScreen id={moneyIds.m08} initial={100000} sheetBackdrop sheet={<PayOnBankSheet />} backdrop={backdrop} />
-)
+const AddMoneyBankMismatch = ({ backdrop }: { backdrop?: boolean }) => <AddMoneyScreen id={moneyIds.m05} initial={1000} mismatch backdrop={backdrop} />
+// No bank linked: the bank row and the button ask to add one · the "Pay from" sheet open (both not in Figma)
+const AddMoneyNoBank = ({ backdrop }: { backdrop?: boolean }) => <AddMoneyScreen id={moneyIds.noBank} initial={0} noBank backdrop={backdrop} />
+const AddMoneyBanks = ({ backdrop }: { backdrop?: boolean }) => <AddMoneyScreen id={moneyIds.banks} initial={1000} banksOpen backdrop={backdrop} />
 // H08 · withdraw $100 · H09 · withdraw $500 (more than the withdrawable balance: error state)
 const WithdrawEnter = ({ backdrop }: { backdrop?: boolean }) => <WithdrawScreen id={moneyIds.h08} initial={100} backdrop={backdrop} />
 const WithdrawTooMuch = ({ backdrop }: { backdrop?: boolean }) => <WithdrawScreen id={moneyIds.h09} initial={500} backdrop={backdrop} />
@@ -33544,7 +34119,8 @@ export const screens: UsScreenMap = {
   [moneyIds.m03]: AddMoneyBelowMinimum,
   [moneyIds.m07]: AddMoneyAboveLrs,
   [moneyIds.m05]: AddMoneyBankMismatch,
-  [moneyIds.m08]: AddMoneyPayOnBank,
+  [moneyIds.noBank]: AddMoneyNoBank,
+  [moneyIds.banks]: AddMoneyBanks,
   [moneyIds.bank]: BankAppScreen,
   [moneyIds.h08]: WithdrawEnter,
   [moneyIds.h09]: WithdrawTooMuch,
@@ -33571,6 +34147,1531 @@ export function useSheetClose(onClosed: () => void) {
       setTimeout(onClosed, SHEET_CLOSE_MS)
     },
   }
+}
+```
+
+### `src/flows/us-stocks/screens/orders/CancelOrderSheet.tsx`
+
+```tsx
+// "Cancel this order?" — the confirmation Order Details opens from Cancel order (open, queued, partly filled orders).
+// L3 confirmation sheet (BottomSheet USAGE §7): small header asking the question, the order in one line under it, the
+// facts as ListCell rows, a horizontal dock — secondary "Keep order" left, the confirm right.
+// FLAG / L3 gap: L3 has no destructive / danger button (PENDING in BottomSheet USAGE: "is Cancel order a trade action or
+// a destructive action?") — the confirm is primary.
+// FLAG: copy not in copy.json yet (hard-coded, as the rest of the US Stocks flow).
+import { BottomSheet, BottomSheetHeader } from '@l3/components/BottomSheet'
+import { Button } from '@l3/components/Button'
+import { ButtonGroup } from '@l3/components/ButtonGroup'
+import { KeyValueList, KeyValueRow } from '@l3/components/KeyValueList'
+import { formatUsd } from '../../../../shared/money'
+import { useSheetLayer } from '../../components/Phone'
+import { STATUS_TAG, type UsOrder } from './data'
+
+const shares = (n: number) => n.toLocaleString('en-US', { maximumFractionDigits: 4 })
+
+/** "Buy 4 AAPL at $332.00 limit" · "Buy 2.5 QQQ at market price" · "Sell 3 MSFT, stop loss at $495.00". */
+export function orderSummary(order: UsOrder): string {
+  const what = `${order.side === 'buy' ? 'Buy' : 'Sell'} ${shares(order.qty)} ${order.sym}`
+  if (order.type === 'market') return `${what} at market price`
+  if (order.type === 'limit') return `${what} at ${formatUsd(order.limitPrice ?? 0)} limit`
+  return `${what}, stop loss at ${formatUsd(order.triggerPrice ?? 0)}`
+}
+
+export function CancelOrderSheet({ open, order, onKeep, onCancel }: { open: boolean; order: UsOrder; onKeep: () => void; onCancel: () => void }) {
+  const layer = useSheetLayer()
+  const left = order.qty - order.filled
+  return (
+    <BottomSheet
+      open={open}
+      onClose={onKeep}
+      container={layer}
+      aria-labelledby="cancel-order-title"
+      header={<BottomSheetHeader size="sm" heading="Cancel this order?" headingId="cancel-order-title" description={orderSummary(order)} />}
+      footer={
+        <ButtonGroup aria-label="Cancel order" direction="horizontal">
+          <Button variant="secondary" size="lg" onClick={onKeep}>Keep order</Button>
+          <Button variant="primary" size="lg" onClick={onCancel}>Cancel order</Button>
+        </ButtonGroup>
+      }
+    >
+      <KeyValueList variant="card" aria-label="Order">
+        <KeyValueRow label="Status" value={STATUS_TAG[order.status].label} />
+        {order.filled > 0 && <KeyValueRow label={order.side === 'buy' ? 'Already bought' : 'Already sold'} value={`${shares(order.filled)} shares`} caption="These stay — only the rest is cancelled" />}
+        <KeyValueRow label="Shares to cancel" value={shares(left)} />
+      </KeyValueList>
+    </BottomSheet>
+  )
+}
+```
+
+### `src/flows/us-stocks/screens/orders/OrderCard.module.css`
+
+```css
+/* US order card (Portfolio → Orders). Layout is L3 Stack; only type and colour here. */
+
+/* "Limit · Day" — Figma Label/12, secondary. */
+.meta {
+  font: var(--l3-text-label-12);
+  color: var(--l3-content-secondary);
+}
+
+.name {
+  min-width: 0;
+}
+
+.sym {
+  font: var(--l3-text-heading-14);
+  color: var(--l3-content-primary);
+}
+
+/* A figure: secondary label ("Qty", "LTP", "At limit") then the primary value, Heading/12. */
+.figure {
+  font: var(--l3-text-heading-12);
+  color: var(--l3-content-primary);
+  white-space: nowrap;
+}
+
+.label {
+  font: var(--l3-text-label-12);
+  color: var(--l3-content-secondary);
+}
+
+/* No shadow (3 Nov): border only, still pressing like a clickable Card. L3 gap: a clickable Card has no shadow-free
+   bordered option, so the elevation is dropped here (keeps the Card's own border). */
+.card.card { box-shadow: var(--card-border); }
+```
+
+### `src/flows/us-stocks/screens/orders/OrderCard.tsx`
+
+```tsx
+// One US order in Portfolio → Orders (Open / History): an L3 clickable Card that opens Order Details.
+// Layout from "Positions & orders" (nLs24dTJdPz9A5pu3AWMbe, 6754:65685): type · validity + status and side tags; the
+// symbol and quantity; the live price (LTP — the same live quote as the positions, PositionParts' useLiveLtp) and the
+// order's own price. OrdersTab wraps each card in an <li> (a clickable Card renders a <button>).
+import { Avatar } from '@l3/components/Avatar'
+import { Card } from '@l3/components/Card'
+import { Stack } from '@l3/components/Stack'
+import { Tag, type TagColor } from '@l3/components/Tag'
+import { Usd } from '../../../../shared/money'
+import { HoldingLogo, etfLogoUrl } from '../etf/parts'
+import { STATUS_TAG, TYPE_LABEL, isOpen, type UsOrder } from './data'
+import { useLiveLtp } from './PositionParts'
+import styles from './OrderCard.module.css'
+
+/** STATUS_TAG's tone → the L3 Tag colour: in-progress is `processing` (AGENTS: open / pending), outcomes success / error. */
+const TONE_COLOR: Record<(typeof STATUS_TAG)[keyof typeof STATUS_TAG]['tone'], TagColor> = {
+  warning: 'processing',
+  positive: 'success',
+  negative: 'error',
+  neutral: 'neutral',
+}
+
+/** Shares as written on a card: whole numbers plain ("10"), fractional up to 4 decimals ("2.5", "1.2"). */
+export const formatShares = (n: number) => n.toLocaleString('en-US', { maximumFractionDigits: 4 })
+
+/** Quantity: "6/10" while some (not all) shares went through, otherwise the shares asked for ("4"). As in Figma. */
+function quantity(order: UsOrder) {
+  return order.filled > 0 && order.filled < order.qty ? `${formatShares(order.filled)}/${formatShares(order.qty)}` : formatShares(order.qty)
+}
+
+/** The order's own price, bottom right: Avg once shares went through (History), else its limit / trigger / Mkt. */
+function orderPrice(order: UsOrder): { label: string; value?: number } {
+  if (!isOpen(order) && order.filled > 0 && order.avgPrice !== undefined) return { label: 'Avg', value: order.avgPrice }
+  if (order.type === 'sl' && order.triggerPrice !== undefined) return { label: 'Trigger', value: order.triggerPrice }
+  if (order.type === 'limit' && order.limitPrice !== undefined) return { label: 'At limit', value: order.limitPrice }
+  return { label: 'Mkt' }
+}
+
+function OrderLogo({ order }: { order: UsOrder }) {
+  if (order.kind === 'etf') return <Avatar src={etfLogoUrl(order.sym)} initials={order.sym} size={24} />
+  return <HoldingLogo sym={order.sym} size={24} />
+}
+
+export function OrderCard({ order, onOpen }: { order: UsOrder; onOpen: () => void }) {
+  const ltp = useLiveLtp(order)
+  const status = STATUS_TAG[order.status]
+  const price = orderPrice(order)
+  const side = order.side === 'buy' ? 'Buy' : 'Sell'
+  return (
+    <Card
+      className={styles.card}
+      onClick={onOpen}
+      aria-label={`${side} ${order.sym}, ${TYPE_LABEL[order.type]} order, ${status.label}. Open order details`}
+    >
+      <Stack gap="08">
+        <Stack direction="horizontal" align="center" justify="between" gap="08">
+          <span className={styles.meta}>{TYPE_LABEL[order.type]} · {order.validity}</span>
+          <Stack direction="horizontal" align="center" gap="04">
+            <Tag variant="secondary" size="sm" color={TONE_COLOR[status.tone]}>{status.label}</Tag>
+            <Tag variant="secondary" size="sm" color={order.side === 'buy' ? 'profit' : 'loss'}>{side}</Tag>
+          </Stack>
+        </Stack>
+        <Stack direction="horizontal" align="center" justify="between" gap="08">
+          <Stack direction="horizontal" align="center" gap="08" className={styles.name}>
+            <OrderLogo order={order} />
+            <span className={styles.sym}>{order.sym}</span>
+          </Stack>
+          <span className={styles.figure}>
+            <span className={styles.label}>Qty </span>
+            {quantity(order)}
+          </span>
+        </Stack>
+        <Stack direction="horizontal" align="center" justify="between" gap="08">
+          <span className={styles.figure}>
+            <span className={styles.label}>LTP </span>
+            <Usd value={ltp} />
+          </span>
+          <span className={styles.figure}>
+            {price.value === undefined ? (
+              <span className={styles.label}>{price.label}</span>
+            ) : (
+              <>
+                <span className={styles.label}>{price.label} </span>
+                <Usd value={price.value} />
+              </>
+            )}
+          </span>
+        </Stack>
+      </Stack>
+    </Card>
+  )
+}
+```
+
+### `src/flows/us-stocks/screens/orders/OrderDetails.module.css`
+
+```css
+/* Order Details (9001:40). Every value is an --l3-* token (1px hairlines are the accepted literal). */
+
+/* Status line: a dot + the status in its colour (Label/14), "0/4 shares" on the right. */
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--l3-spacing-08);
+  font: var(--l3-text-label-14);
+  color: var(--l3-content-secondary);
+}
+
+.status[data-tone='warning'] { color: var(--l3-content-accent-warning-default); }
+.status[data-tone='positive'] { color: var(--l3-content-accent-success-default); }
+.status[data-tone='negative'] { color: var(--l3-content-accent-error-default); }
+
+/* FLAG / L3 gap: hand-made status dot (L3 has no status dot); it takes the status text colour. */
+.statusDot {
+  width: var(--l3-size-08);
+  height: var(--l3-size-08);
+  border-radius: var(--l3-radius-full);
+  background: currentColor;
+}
+
+.filled {
+  font: var(--l3-text-label-14);
+  color: var(--l3-content-primary);
+  white-space: nowrap;
+}
+
+/* Full-width hairline between the blocks, as in Figma. */
+.rule {
+  margin: 0;
+  border: 0;
+  border-top: 1px solid var(--l3-border-light);
+}
+
+/*
+ * FLAG / L3 gap: L3 Steps' current step is always success green. Its dot (li > marker > dot) takes the order's status
+ * colour here: warning while it's working, error when it failed, neutral when it ended without (all) filling.
+ */
+.timeline {
+  --order-now: var(--l3-border-accent-success-default);
+  --order-now-halo: var(--l3-surface-accent-success-light);
+}
+
+.timeline[data-tone='warning'] {
+  --order-now: var(--l3-border-accent-warning-default);
+  --order-now-halo: var(--l3-surface-accent-warning-light);
+}
+
+.timeline[data-tone='error'] {
+  --order-now: var(--l3-border-accent-error-default);
+  --order-now-halo: var(--l3-surface-accent-error-light);
+}
+
+.timeline[data-tone='neutral'] {
+  --order-now: var(--l3-content-secondary);
+  --order-now-halo: var(--l3-surface-secondary);
+}
+
+.timeline :global(li[data-state='current']) > span:first-child > span {
+  background: var(--order-now);
+  box-shadow: 0 0 0 var(--l3-spacing-04) var(--order-now-halo);
+}
+
+/* Help sheet ("About US orders"): Description/14, secondary. */
+.sheetText p {
+  margin: 0;
+  font: var(--l3-text-description-14);
+  color: var(--l3-content-secondary);
+}
+```
+
+### `src/flows/us-stocks/screens/orders/OrderDetailsScreen.tsx`
+
+```tsx
+// 9001:40 · Order Details — one screen for every order status (open, queued, partly filled, executed, partly executed,
+// failed, cancelled, expired). Layout from the F&O dev-handoff file's "Order Details" (nLs24dTJdPz9A5pu3AWMbe:
+// 6754:65599 open, 6754:66823 executed), drawn there for commodities; the content here is a US stock / ETF order.
+//
+// Top to bottom: L3 Actionbar (back · "Order details" · Help) → the asset row (logo, name, "AAPL · NASDAQ", Buy / Sell
+// tag, ›) → status line (dot + status in its colour, "filled/qty shares") → why (L3 Aerobar, when the order has a
+// reason) → the facts (L3 KeyValueList) → "Order status" (L3 Steps) → the dock (L3 ButtonGroup), by status:
+//   open / queued / partly filled → Cancel order + Modify · executed / partly executed → Repeat order ·
+//   failed → Retry · cancelled / expired → Place again.
+// Cancel order opens CancelOrderSheet; confirming goes back to Portfolio → Orders (USD side, 9001:31), as Back does.
+//
+// Differences from Figma:
+// - No Target Profit / Trailing Stop Loss rows: US orders don't have them. Rows the US order has instead: Trigger price
+//   (stop loss), Limit price and Placed on. Exchange ID is left out until the exchange has given one (queued, failed).
+// - The asset row is an L3 ListCell (plain, tappable): its chevron sits at the row's end after the tag, not next to the
+//   name (L3 wins). The subline is "AAPL · NASDAQ" (Figma: the product, "Intraday" — US Stocks are delivery only).
+// - Side tag: L3 Tag profit / loss (L3: buy / sell side is profit / loss), not Figma's blue Buy tag.
+// - Status icon (clock / tick in Figma) is a dot in the status colour — L3 has no clock icon.
+// - Timeline: L3 Steps. Done steps are L3's green ticks (Figma: grey dots); the last step's dot takes the status colour.
+// - Help (Actionbar) opens a small sheet about US orders (no help centre in the prototype).
+//
+// FLAG: copy not in copy.json yet (hard-coded, as the rest of the US Stocks flow).
+// FLAG / L3 gap: L3 Steps has no tone — its current step is always success green. The last step's dot is recoloured
+// here (warning / error / neutral, OrderDetails.module.css .timeline) to show the order's status.
+// FLAG / L3 gap: no status-dot component (the dot before "Open" / "Executed" is hand-made, .statusDot).
+// FLAG: Modify / Retry / Repeat / Place again on a sell order open SELL_PAD_HOLDING, the one sell pad the prototype has.
+// It shows its own fixed held-shares number, not this asset's (no per-asset sell pad yet), and has no Limit / SL.
+// The pad's current stock / ETF is set first (viewUsStock / setCurrentEtf) so at least the name and price are right.
+import { useState } from 'react'
+import { Actionbar } from '@l3/components/Actionbar'
+import { BottomSheet, BottomSheetHeader } from '@l3/components/BottomSheet'
+import { Aerobar, type AerobarType } from '@l3/components/Aerobar'
+import { Avatar } from '@l3/components/Avatar'
+import { Button } from '@l3/components/Button'
+import { ButtonGroup } from '@l3/components/ButtonGroup'
+import { Icon } from '@l3/components/Icon'
+import { msChevronRight } from '@l3/components/icons/glyphs'
+import { KeyValueList, KeyValueRow } from '@l3/components/KeyValueList'
+import { ListCell } from '@l3/components/ListCell'
+import { Section } from '@l3/components/Section'
+import { SectionHeader } from '@l3/components/SectionHeader'
+import { Stack } from '@l3/components/Stack'
+import { Steps, type StepItem, type StepState } from '@l3/components/Steps'
+import { Tag } from '@l3/components/Tag'
+import { Usd } from '../../../../shared/money'
+import { viewUsStock } from '../../../../shared/data/usStocks'
+import { Phone, useSheetLayer } from '../../components/Phone'
+import { openStock, stockFor } from '../../data'
+import { useUsNav } from '../../nav'
+import { BUY_PAD, SELL_PAD_HOLDING } from '../activation/ids'
+import { setCurrentEtf } from '../etf/currentEtf'
+import { ETF_PAGE } from '../etf/data'
+import { etfLogoUrl, HoldingLogo } from '../etf/parts'
+import { CancelOrderSheet } from './CancelOrderSheet'
+import { assetFor, getCurrentOrder, historyOrders, isOpen, openOrders, STATUS_TAG, TYPE_LABEL, type OrderStatus, type UsOrder } from './data'
+import styles from './OrderDetails.module.css'
+
+/** Portfolio on its Orders tab, USD side (9001:31) — where back and a confirmed cancel land. */
+const PORTFOLIO_US_ORDERS = '9001:31'
+/** Buy pads by order type (registry: T01 Buy · Amount, T07 Buy · Limit, T08 Buy · SL). */
+const BUY_PAD_FOR = { market: BUY_PAD, limit: '5837:95972', sl: '5837:95888' } as const
+
+/** Shares, fractional when they are (2.5, 1.2). */
+export const shares = (n: number) => n.toLocaleString('en-US', { maximumFractionDigits: 4 })
+
+/**
+ * The Aerobar under the status line: why it failed (danger), was cancelled / expired (plain), is part-filled and still
+ * working (info), or ended partly executed (success — shares did trade; the same tone as its Tag and timeline dot).
+ */
+const REASON_BAR: Partial<Record<OrderStatus, AerobarType>> = {
+  failed: 'danger',
+  cancelled: 'primary',
+  expired: 'primary',
+  partial: 'discover',
+  'partial-executed': 'success',
+}
+
+/** The timeline's last ("now") step: L3 Steps state + the colour its dot takes (see the FLAG above). */
+function nowStep(order: UsOrder): { state: StepState; tone: 'success' | 'warning' | 'error' | 'neutral' } {
+  if (order.status === 'executed') return { state: 'done', tone: 'success' }
+  if (order.status === 'partial-executed') return { state: 'current', tone: 'success' } // shares did trade
+  if (order.status === 'failed') return { state: 'current', tone: 'error' }
+  if (isOpen(order)) return { state: 'current', tone: 'warning' }
+  return { state: 'current', tone: 'neutral' } // cancelled, expired
+}
+
+function timelineFor(order: UsOrder): { steps: StepItem[]; tone: string } {
+  const now = nowStep(order)
+  const steps = order.timeline.map((step): StepItem => ({
+    label: step.label,
+    description: step.time,
+    state: step.state === 'done' ? 'done' : now.state,
+  }))
+  return { steps, tone: now.tone }
+}
+
+export function OrderDetailsScreen({ backdrop, order: given }: { backdrop?: boolean; order?: UsOrder }) {
+  const { go, back } = useUsNav()
+  const order = given ?? getCurrentOrder()
+  const [cancelOpen, setCancelOpen] = useState(false)
+  const [helpOpen, setHelpOpen] = useState(false)
+  const asset = assetFor(order)
+  const status = STATUS_TAG[order.status]
+  const sideLabel = order.side === 'buy' ? 'Buy' : 'Sell'
+  const timeline = timelineFor(order)
+  const filledAny = order.filled > 0 && order.avgPrice !== undefined
+  const open = isOpen(order)
+
+  const act = (fn: () => void) => () => { if (!backdrop) fn() }
+
+  const openAsset = act(() => {
+    if (order.kind === 'etf') {
+      setCurrentEtf(order.sym)
+      go(ETF_PAGE)
+    } else openStock(go, stockFor(order.sym))
+  })
+
+  /** The order pad for this order again: Modify, Retry, Repeat order, Place again. The pads trade the stock / ETF
+   *  looked at last, so point them at this order's first. FLAG: a sell opens SELL_PAD_HOLDING, which shows a fixed
+   *  held-shares number, not this asset's (no per-asset sell pad yet). */
+  const openPad = act(() => {
+    if (order.kind === 'etf') setCurrentEtf(order.sym)
+    else viewUsStock(order.sym)
+    go(order.side === 'buy' ? BUY_PAD_FOR[order.type] : SELL_PAD_HOLDING)
+  })
+
+  const logo = order.kind === 'etf'
+    ? <Avatar src={etfLogoUrl(order.sym)} initials={order.sym} size={40} />
+    : <HoldingLogo sym={order.sym} size={40} />
+
+  const againLabel = order.status === 'failed' ? 'Retry' : order.status === 'cancelled' || order.status === 'expired' ? 'Place again' : 'Repeat order'
+  const dock = open ? (
+    <ButtonGroup aria-label="Order actions" direction="horizontal">
+      <Button variant="secondary" size="lg" onClick={act(() => setCancelOpen(true))}>Cancel order</Button>
+      <Button variant="primary" size="lg" onClick={openPad}>Modify</Button>
+    </ButtonGroup>
+  ) : (
+    <ButtonGroup aria-label="Order actions">
+      <Button variant="primary" size="lg" fullWidth onClick={openPad}>{againLabel}</Button>
+    </ButtonGroup>
+  )
+
+  return (
+    <Phone
+      label={`Order details: ${sideLabel} ${order.sym}, ${status.label}`}
+      header={
+        <Actionbar
+          onBack={act(() => back(PORTFOLIO_US_ORDERS))}
+          title="Order details"
+          actions={<Button variant="tertiary" size="sm" onClick={act(() => setHelpOpen(true))}>Help</Button>}
+        />
+      }
+      footer={dock}
+      gesture="none"
+      topLine
+    >
+      <div inert={backdrop || undefined}>
+        {/* The asset and where the order is. */}
+        <Section paddingBlock="08" gap="04">
+          <ListCell
+            density="breathable"
+            onClick={openAsset}
+            iconLeft={logo}
+            label={asset.name}
+            description={`${order.sym} · ${asset.exchange}`}
+            trailing={<Tag variant="secondary" color={order.side === 'buy' ? 'profit' : 'loss'} size="sm">{sideLabel}</Tag>}
+            iconRight={<Icon icon={msChevronRight} />}
+          />
+          <Section paddingInline="16" paddingBlock="08" gap="12">
+            <Stack direction="horizontal" justify="between" align="center" gap="12">
+              <span className={styles.status} data-tone={status.tone}>
+                <span className={styles.statusDot} aria-hidden="true" />
+                {status.label}
+              </span>
+              <span className={styles.filled}>{shares(order.filled)}/{shares(order.qty)} shares</span>
+            </Stack>
+            {order.reason && <Aerobar type={REASON_BAR[order.status] ?? 'primary'} placement="inline" heading={order.reason} />}
+          </Section>
+        </Section>
+
+        <hr className={styles.rule} />
+
+        {/* The facts. */}
+        <Section paddingInline="16" paddingBlock="24">
+          <KeyValueList aria-label="Order details">
+            <KeyValueRow label="Order type" value={TYPE_LABEL[order.type]} />
+            {order.type === 'sl' && order.triggerPrice !== undefined && <KeyValueRow label="Trigger price" value={<Usd value={order.triggerPrice} />} />}
+            {order.limitPrice !== undefined && <KeyValueRow label="Limit price" value={<Usd value={order.limitPrice} />} />}
+            <KeyValueRow label="Avg. price" value={filledAny ? <Usd value={order.avgPrice!} /> : '–'} />
+            <KeyValueRow label="Validity" value={order.validity} />
+            <KeyValueRow label="Placed on" value={order.placedAt} />
+            <KeyValueRow label="Exchange" value={asset.exchange} />
+            <KeyValueRow label="Order ID" value={order.orderId} copy />
+            {order.exchangeId && <KeyValueRow label="Exchange ID" value={order.exchangeId} copy />}
+          </KeyValueList>
+        </Section>
+
+        <hr className={styles.rule} />
+
+        {/* Where the order has been. */}
+        <Section paddingInline="16" paddingBlock="24" gap="16">
+          <SectionHeader title="Order status" />
+          <div className={styles.timeline} data-tone={timeline.tone}>
+            <Steps label="Order status" steps={timeline.steps} />
+          </div>
+        </Section>
+      </div>
+
+      {open && (
+        <CancelOrderSheet
+          open={cancelOpen}
+          order={order}
+          onKeep={() => setCancelOpen(false)}
+          onCancel={() => {
+            setCancelOpen(false)
+            back(PORTFOLIO_US_ORDERS) // prototype: the order isn't really removed from the Open list
+          }}
+        />
+      )}
+      <OrdersHelpSheet open={helpOpen} onClose={() => setHelpOpen(false)} />
+    </Phone>
+  )
+}
+
+/** Help: about US orders (Day validity, queued orders, fractional shares, when you can cancel / modify). */
+function OrdersHelpSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const layer = useSheetLayer()
+  return (
+    <BottomSheet
+      open={open}
+      onClose={onClose}
+      container={layer}
+      aria-labelledby="orders-help-title"
+      header={<BottomSheetHeader headingId="orders-help-title" heading="About US orders" />}
+      footer={
+        <ButtonGroup aria-label="Close">
+          <Button variant="primary" size="lg" fullWidth onClick={onClose}>Got it</Button>
+        </ButtonGroup>
+      }
+    >
+      <Stack gap="16" className={styles.sheetText}>
+        <p>Day orders end when the US market closes: 2:30 AM IST (1:30 AM during US daylight time). Whatever hasn’t gone through by then is cancelled.</p>
+        <p>Orders placed while the market is closed are queued and sent to the exchange when it opens.</p>
+        <p>You can buy and sell fractional shares, such as 2.5 shares.</p>
+        <p>You can cancel or modify an order only while it’s still open.</p>
+      </Stack>
+    </BottomSheet>
+  )
+}
+
+/** Every sample order, by id (o1–o4 open, h1–h6 history). */
+const ALL_ORDERS = [...openOrders, ...historyOrders]
+
+/** The screen for one sample order — the preview registers one entry per status with this. */
+export function OrderDetailsFor({ id, backdrop }: { id: string; backdrop?: boolean }) {
+  const order = ALL_ORDERS.find((o) => o.id === id) ?? openOrders[0]
+  return <OrderDetailsScreen backdrop={backdrop} order={order} />
+}
+```
+
+### `src/flows/us-stocks/screens/orders/OrderFilterSheet.module.css`
+
+```css
+/* Order filter / picker sheets. Plain ListCell rows bring their own 16 side padding, so their list runs to the sheet's
+   edges (the sheet content already has 16): label text lines up with the group titles. */
+.rows {
+  margin-inline: calc(-1 * var(--l3-spacing-16));
+}
+```
+
+### `src/flows/us-stocks/screens/orders/OrderFilterSheet.tsx`
+
+```tsx
+// Portfolio → Orders (US) → Filters: an L3 Bottom sheet of checkbox rows in groups — Side, Order type, and on History
+// Status — with Clear / Apply. Several can be picked in a group (multi-select → checkbox rows, DESIGN_SYSTEM 7.1b);
+// nothing picked in a group means "any". Changes apply on Apply; tapping away keeps the filters as they were.
+import { useState } from 'react'
+import { BottomSheet, BottomSheetHeader } from '@l3/components/BottomSheet'
+import { Button } from '@l3/components/Button'
+import { ButtonGroup } from '@l3/components/ButtonGroup'
+import { Checkbox } from '@l3/components/Checkbox'
+import { ListCell } from '@l3/components/ListCell'
+import { SectionHeader } from '@l3/components/SectionHeader'
+import { Stack } from '@l3/components/Stack'
+import { useSheetLayer } from '../../components/Phone'
+import styles from './OrderFilterSheet.module.css'
+import { STATUS_TAG, TYPE_LABEL, type OrderSide, type OrderStatus, type OrderType, type UsOrder } from './data'
+
+export type OrderFilters = { side: OrderSide[]; type: OrderType[]; status: OrderStatus[] }
+export const NO_FILTERS: OrderFilters = { side: [], type: [], status: [] }
+
+/** History's statuses (Open orders are all "working", so the Open list has no Status group). */
+const HISTORY_STATUSES: OrderStatus[] = ['executed', 'partial-executed', 'failed', 'cancelled', 'expired']
+
+/** How many filters are on for a list (Status counts on History only) — the badge on Filters. */
+export function filterCount(filters: OrderFilters, list: 'open' | 'history') {
+  return filters.side.length + filters.type.length + (list === 'history' ? filters.status.length : 0)
+}
+
+/** The orders that pass the filters (an empty group lets everything through). */
+export function applyFilters(orders: UsOrder[], filters: OrderFilters, list: 'open' | 'history') {
+  return orders.filter(
+    (o) =>
+      (!filters.side.length || filters.side.includes(o.side)) &&
+      (!filters.type.length || filters.type.includes(o.type)) &&
+      (list === 'open' || !filters.status.length || filters.status.includes(o.status)),
+  )
+}
+
+type Group<K extends keyof OrderFilters> = { key: K; title: string; options: { value: OrderFilters[K][number]; label: string }[] }
+
+export function OrderFilterSheet({
+  open,
+  list,
+  value,
+  onApply,
+  onClose,
+}: {
+  open: boolean
+  list: 'open' | 'history'
+  value: OrderFilters
+  onApply: (filters: OrderFilters) => void
+  onClose: () => void
+}) {
+  const layer = useSheetLayer()
+  const [draft, setDraft] = useState<OrderFilters>(value)
+
+  const groups: Group<keyof OrderFilters>[] = [
+    { key: 'side', title: 'Side', options: [{ value: 'buy', label: 'Buy' }, { value: 'sell', label: 'Sell' }] },
+    { key: 'type', title: 'Order type', options: (['market', 'limit', 'sl'] as OrderType[]).map((t) => ({ value: t, label: TYPE_LABEL[t] })) },
+    ...(list === 'history'
+      ? [{ key: 'status' as const, title: 'Status', options: HISTORY_STATUSES.map((s) => ({ value: s, label: STATUS_TAG[s].label })) }]
+      : []),
+  ]
+
+  const toggle = (key: keyof OrderFilters, item: string, on: boolean) =>
+    setDraft((prev) => ({ ...prev, [key]: on ? [...prev[key], item] : (prev[key] as string[]).filter((v) => v !== item) }))
+
+  return (
+    <BottomSheet
+      open={open}
+      onClose={onClose}
+      container={layer}
+      aria-labelledby="order-filters-title"
+      header={<BottomSheetHeader heading="Filters" headingId="order-filters-title" />}
+      footer={
+        <ButtonGroup direction="horizontal" aria-label="Filters">
+          <Button variant="secondary" size="lg" onClick={() => setDraft(NO_FILTERS)}>Clear</Button>
+          <Button variant="primary" size="lg" onClick={() => onApply(draft)}>Apply</Button>
+        </ButtonGroup>
+      }
+    >
+      <Stack gap="24">
+        {groups.map((group) => (
+          <Stack key={group.key} gap="08" role="group" aria-labelledby={`order-filter-${group.key}`}>
+            <SectionHeader title={<span id={`order-filter-${group.key}`}>{group.title}</span>} headingLevel={3} />
+            <Stack className={styles.rows}>
+              {group.options.map((option) => {
+                const checked = (draft[group.key] as string[]).includes(option.value)
+                return (
+                  <ListCell
+                    key={option.value}
+                    as="label"
+                    size="sm"
+                    label={option.label}
+                    trailing={<Checkbox checked={checked} onChange={(e) => toggle(group.key, option.value, e.target.checked)} />}
+                  />
+                )
+              })}
+            </Stack>
+          </Stack>
+        ))}
+      </Stack>
+    </BottomSheet>
+  )
+}
+```
+
+### `src/flows/us-stocks/screens/orders/OrderKindSheet.tsx`
+
+```tsx
+// Portfolio → Orders (US) → "All orders ⇕" (an L3 action pill): a selector sheet (L3 Bottom sheet, radio rows, no dock) — All orders,
+// Stocks or ETFs. Picking one narrows the list and closes the sheet.
+import { BottomSheet, BottomSheetHeader } from '@l3/components/BottomSheet'
+import { Radio } from '@l3/components/Checkbox'
+import { ListCell } from '@l3/components/ListCell'
+import { Stack } from '@l3/components/Stack'
+import { useSheetLayer } from '../../components/Phone'
+import type { AssetKind } from './data'
+import styles from './OrderFilterSheet.module.css'
+
+export type OrderKind = 'all' | AssetKind
+
+export const ORDER_KIND_LABEL: Record<OrderKind, string> = { all: 'All orders', stock: 'Stocks', etf: 'ETFs' }
+
+export function OrderKindSheet({ open, value, onPick, onClose }: { open: boolean; value: OrderKind; onPick: (kind: OrderKind) => void; onClose: () => void }) {
+  const layer = useSheetLayer()
+  return (
+    <BottomSheet
+      open={open}
+      onClose={onClose}
+      container={layer}
+      aria-labelledby="order-kind-title"
+      header={<BottomSheetHeader heading="Show orders of" headingId="order-kind-title" />}
+    >
+      <Stack role="radiogroup" className={styles.rows} aria-labelledby="order-kind-title">
+        {(Object.keys(ORDER_KIND_LABEL) as OrderKind[]).map((kind) => (
+          <ListCell
+            key={kind}
+            as="label"
+            selected={value === kind}
+            // The row's own click too: tapping the row that's already picked doesn't fire the Radio's onChange, and
+            // it should still close the sheet.
+            onClick={() => onPick(kind)}
+            label={ORDER_KIND_LABEL[kind]}
+            trailing={<Radio name="order-kind" checked={value === kind} onChange={() => onPick(kind)} />}
+          />
+        ))}
+      </Stack>
+    </BottomSheet>
+  )
+}
+```
+
+### `src/flows/us-stocks/screens/orders/PositionCard.module.css`
+
+```css
+/* A US position card (PositionCard.tsx). L3 tokens only; the rows are spans inside the clickable L3 Card's button.
+   FLAG: span layout here, not L3 Stack / Grid (they render block elements, not allowed inside a <button>). */
+.top {
+  display: flex;
+  align-items: center;
+  gap: var(--l3-spacing-12);
+}
+
+.name,
+.product {
+  display: flex;
+  flex-direction: column;
+  gap: var(--l3-spacing-04);
+}
+
+.name {
+  flex: 1;
+  min-width: 0;
+}
+
+.product {
+  flex: none;
+  align-items: flex-end;
+  text-align: right;
+}
+
+.title {
+  overflow: hidden;
+  font: var(--l3-text-heading-14);
+  color: var(--l3-content-primary);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.sub {
+  overflow: hidden;
+  font: var(--l3-text-description-12);
+  color: var(--l3-content-secondary);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.delivery {
+  font: var(--l3-text-label-12);
+  color: var(--l3-content-primary);
+}
+
+/* Avg. price | LTP | Returns, 16 under the name row (Figma). */
+.figures {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: start;
+  gap: var(--l3-spacing-08);
+  margin-top: var(--l3-spacing-16);
+}
+
+.cell {
+  display: flex;
+  flex-direction: column;
+  gap: var(--l3-spacing-04);
+  min-width: 0;
+}
+
+.cell[data-align='center'] {
+  align-items: center;
+  text-align: center;
+}
+
+.cell[data-align='end'] {
+  align-items: flex-end;
+  text-align: right;
+}
+
+.label {
+  font: var(--l3-text-description-12);
+  color: var(--l3-content-secondary);
+}
+
+.value {
+  font: var(--l3-text-heading-14);
+  color: var(--l3-content-primary);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+```
+
+### `src/flows/us-stocks/screens/orders/PositionCard.tsx`
+
+```tsx
+// One US position on Portfolio → Positions → US Stocks: the F&O dev-handoff file's position card (nLs24dTJdPz9A5pu3AWMbe
+// 6754:66441 / 66442 / 66443 / 8671:13893), drawn there for commodities. Logo · name over "SYM · Bought today · Qty 5" ·
+// exchange over "Delivery"; then Avg. price | LTP | Returns (coloured, with %).
+// Differences from Figma: no "Manage TP/SL" / "Exit Now" buttons and no tender-margin / auto-close strips — US Stocks
+// are delivery only (no TP / SL, no intraday square-off), and a clickable L3 Card holds no buttons: the whole card opens
+// Position Details, where Buy more / Exit position are.
+// FLAG: the card's inner rows are spans laid out in PositionCard.module.css — a clickable L3 Card renders a <button>,
+// and the L3 layout blocks (Stack / Grid) render block elements only.
+import { Card } from '@l3/components/Card'
+import { PriceChange } from '@l3/components/PriceChange'
+import { Usd } from '../../../../shared/money'
+import { openPosition, type UsPosition } from './data'
+import { PositionLogo, qtyText, SignedUsd, sideLabel, usePositionNumbers } from './PositionParts'
+import styles from './PositionCard.module.css'
+
+export function PositionCard({ position, go }: { position: UsPosition; go: (figma: string) => void }) {
+  const n = usePositionNumbers(position)
+  return (
+    <Card
+      onClick={() => openPosition(go, position)}
+      aria-label={`${n.name}, ${sideLabel(position).toLowerCase()}, ${qtyText(position.qty)} shares. Open position details`}
+    >
+      <span className={styles.top}>
+        <PositionLogo position={position} />
+        <span className={styles.name}>
+          <span className={styles.title}>{n.name}</span>
+          <span className={styles.sub}>{`${position.sym} · ${sideLabel(position)} · Qty ${qtyText(position.qty)}`}</span>
+        </span>
+        <span className={styles.product}>
+          <span className={styles.sub}>{n.exchange}</span>
+          <span className={styles.delivery}>Delivery</span>
+        </span>
+      </span>
+      <span className={styles.figures}>
+        <span className={styles.cell}>
+          <span className={styles.label}>{position.side === 'sell' ? 'Avg. sell price' : 'Avg. price'}</span>
+          <span className={styles.value}><Usd value={position.avgPrice} /></span>
+        </span>
+        <span className={styles.cell} data-align="center">
+          <span className={styles.label}>LTP</span>
+          <span className={styles.value}><Usd value={n.ltp} /></span>
+        </span>
+        <span className={styles.cell} data-align="end">
+          <span className={styles.label}>Returns</span>
+          <SignedUsd className={styles.value} value={n.totalReturns} />
+          <PriceChange value={Math.round(n.returnsPct * 100) / 100} size="sm" />
+        </span>
+      </span>
+    </Card>
+  )
+}
+```
+
+### `src/flows/us-stocks/screens/orders/PositionDetails.module.css`
+
+```css
+/* Position Details (PositionDetailsScreen.tsx). L3 tokens only. */
+.sheetText p {
+  margin: 0;
+  font: var(--l3-text-description-14);
+  color: var(--l3-content-secondary);
+}
+
+.sheetTitle {
+  margin: 0;
+  font: var(--l3-text-heading-14);
+  color: var(--l3-content-primary);
+}
+```
+
+### `src/flows/us-stocks/screens/orders/PositionDetailsScreen.tsx`
+
+```tsx
+// 9001:41 · Position Details — a US position's page: the F&O dev-handoff file's "Position Details (Delivery)"
+// (nLs24dTJdPz9A5pu3AWMbe 6754:65857), drawn there for commodities. Opened from a card on Portfolio → Positions → US.
+// - Header: a tappable L3 ListCell card (opens the stock / ETF page, chevron ›): logo, name, "AAPL · NASDAQ · Delivery",
+//   "N Shares" and the live LTP on the right.
+// - "Bought today" / "Sold today": Quantity, Avg. price, Total.
+// - "Returns ⓘ": Realised, Unrealised, Total (coloured). ⓘ → a sheet on realised vs unrealised.
+// - Dock: a buy → Buy more (secondary, buy pad) | Exit position (primary, sell pad); a sell → Buy again (primary, buy
+//   pad) only — the shares are already sold, there's nothing left in the position to exit.
+// Differences from Figma: no "Convert to intraday" row (US Stocks are delivery only — its Convert sheets 6754:66105 /
+// 66272 don't apply); the Buy / Returns blocks' grey title strips are L3 Section headers over an L3 Key-value list card
+// (L3 has no card with a title strip); "Help" opens a sheet about US positions (no help centre in the prototype); the
+// header is an L3 ListCell card, so symbol · exchange · Delivery are its description line, not Figma's three tags, and
+// the chevron sits at the row's end, not next to the name.
+// FLAG: copy not in copy.json yet (hard-coded, as the rest of the US Stocks screens).
+// FLAG: Exit position opens SELL_PAD_HOLDING, the one sell pad the prototype has. It shows its own fixed held-shares
+// number, not this position's (no per-asset sell pad yet). The pad's current stock / ETF is set first (openPad).
+import { useState } from 'react'
+import { Actionbar } from '@l3/components/Actionbar'
+import { BottomSheet, BottomSheetHeader } from '@l3/components/BottomSheet'
+import { Button } from '@l3/components/Button'
+import { ButtonGroup } from '@l3/components/ButtonGroup'
+import { Icon } from '@l3/components/Icon'
+import { KeyValueList, KeyValueRow } from '@l3/components/KeyValueList'
+import { ListCell } from '@l3/components/ListCell'
+import { Section } from '@l3/components/Section'
+import { SectionHeader } from '@l3/components/SectionHeader'
+import { Stack } from '@l3/components/Stack'
+import { msChevronRight } from '@l3/components/icons/glyphs'
+import { viewUsStock, useUsMarketSnapshot } from '../../../../shared/data/usStocks'
+import { Usd } from '../../../../shared/money'
+import { Phone, useSheetLayer } from '../../components/Phone'
+import { openStock, stockFor } from '../../data'
+import { useUsNav } from '../../nav'
+import { BUY_PAD, SELL_PAD_HOLDING } from '../activation/ids'
+import { setCurrentEtf } from '../etf/currentEtf'
+import { ETF_PAGE } from '../etf/data'
+import { getCurrentPosition, type UsPosition } from './data'
+import { PositionLogo, qtyText, returnsTone, sharesText, sideLabel, usePositionNumbers } from './PositionParts'
+import styles from './PositionDetails.module.css'
+
+/** Portfolio on Positions, US Stocks (9001:32) — where Back goes. */
+const PORTFOLIO_US_POSITIONS = '9001:32'
+
+type Explainer = 'returns' | 'help'
+
+/** ⓘ Returns and Help: what the numbers mean (one sheet, two topics). */
+function ExplainerSheet({ topic, onClose }: { topic: Explainer | null; onClose: () => void }) {
+  const layer = useSheetLayer()
+  // Keep the last topic while the sheet slides away.
+  const [shown, setShown] = useState<Explainer>('returns')
+  if (topic && topic !== shown) setShown(topic)
+  const returns = shown === 'returns'
+  return (
+    <BottomSheet
+      open={topic !== null}
+      onClose={onClose}
+      container={layer}
+      aria-labelledby="position-explainer-title"
+      header={<BottomSheetHeader headingId="position-explainer-title" heading={returns ? 'Realised and unrealised returns' : 'About US positions'} />}
+      footer={
+        <ButtonGroup aria-label="Close">
+          <Button variant="primary" size="lg" fullWidth onClick={onClose}>Got it</Button>
+        </ButtonGroup>
+      }
+    >
+      {returns ? (
+        <Stack gap="16" className={styles.sheetText}>
+          <Stack gap="04">
+            <h3 className={styles.sheetTitle}>Realised returns</h3>
+            <p>Profit or loss you’ve booked by selling shares. It’s final: the price moving later doesn’t change it.</p>
+          </Stack>
+          <Stack gap="04">
+            <h3 className={styles.sheetTitle}>Unrealised returns</h3>
+            <p>Profit or loss on shares you still own, at the live price. It moves with the price until you sell.</p>
+          </Stack>
+          <Stack gap="04">
+            <h3 className={styles.sheetTitle}>Total returns</h3>
+            <p>Realised and unrealised returns together, before charges.</p>
+          </Stack>
+        </Stack>
+      ) : (
+        <Stack gap="16" className={styles.sheetText}>
+          <p>A position is a trade you made today. US trades settle the next working day (T+1).</p>
+          <p>Once they settle, shares you bought move to your Holdings, and money from shares you sold is in your USD wallet to invest or withdraw.</p>
+          <p>US Stocks are delivery only: there’s no intraday, so positions are never squared off at the close.</p>
+        </Stack>
+      )}
+    </BottomSheet>
+  )
+}
+
+/** Opens the stock's or ETF's page. */
+function openAsset(go: (figma: string) => void, position: UsPosition) {
+  if (position.kind === 'etf') {
+    setCurrentEtf(position.sym)
+    go(ETF_PAGE)
+  } else {
+    openStock(go, stockFor(position.sym))
+  }
+}
+
+/**
+ * The order pads trade the stock / ETF looked at last: point them at this position's, then open the pad.
+ * FLAG: SELL_PAD_HOLDING (Exit position) shows a fixed held-shares number, not this position's — no per-asset sell pad yet.
+ */
+function openPad(go: (figma: string) => void, position: UsPosition, pad: string) {
+  if (position.kind === 'etf') setCurrentEtf(position.sym)
+  else viewUsStock(position.sym)
+  go(pad)
+}
+
+/** "+$3.00 (+0.28%)" — the colour comes from the row's tone. The % minus is a hyphen, as formatUsd's "-$3.00". */
+function returnsText(value: number, pct: number) {
+  const r = Math.round(pct * 100) / 100
+  return (
+    <>
+      <Usd value={Math.round(value * 100) / 100} sign />
+      {` (${r > 0 ? '+' : r < 0 ? '-' : ''}${Math.abs(r).toFixed(2)}%)`}
+    </>
+  )
+}
+
+export function PositionDetailsScreen() {
+  const { go, back } = useUsNav()
+  useUsMarketSnapshot() // re-render when US prices refresh
+  const position = getCurrentPosition()
+  const n = usePositionNumbers(position)
+  const [explainer, setExplainer] = useState<Explainer | null>(null)
+  const bought = position.side === 'buy'
+
+  const footer = (
+    <ButtonGroup direction="horizontal" aria-label="Position actions">
+      {bought ? (
+        <>
+          <Button variant="secondary" size="lg" onClick={() => openPad(go, position, BUY_PAD)}>Buy more</Button>
+          <Button variant="primary" size="lg" onClick={() => openPad(go, position, SELL_PAD_HOLDING)}>Exit position</Button>
+        </>
+      ) : (
+        <Button variant="primary" size="lg" fullWidth onClick={() => openPad(go, position, BUY_PAD)}>Buy again</Button>
+      )}
+    </ButtonGroup>
+  )
+
+  return (
+    <Phone
+      label={`${position.sym} position details`}
+      header={
+        <Actionbar
+          onBack={() => back(PORTFOLIO_US_POSITIONS)}
+          title="Position Details"
+          actions={<Button variant="tertiary" size="sm" onClick={() => setExplainer('help')}>Help</Button>}
+        />
+      }
+      footer={footer}
+      gesture="none"
+      topLine
+    >
+      <Section paddingInline="16" paddingBlock="24" gap="24">
+        {/* The position: logo, name, symbol · exchange · Delivery; shares and the live LTP; › its page. */}
+        <ListCell
+          variant="card"
+          onClick={() => openAsset(go, position)}
+          iconLeft={<PositionLogo position={position} />}
+          label={n.name}
+          description={`${position.sym} · ${n.exchange} · Delivery`}
+          trailing={sharesText(position.qty)}
+          caption={<>LTP <Usd value={n.ltp} /></>}
+          iconRight={<Icon icon={msChevronRight} />}
+        />
+
+        <Stack as="section" gap="16" aria-label={sideLabel(position)}>
+          <SectionHeader
+            title={sideLabel(position)}
+            description={bought ? 'Moves to your Holdings when it settles tomorrow (T+1)' : 'The money is in your USD wallet once it settles (T+1)'}
+          />
+          <KeyValueList variant="card" aria-label={sideLabel(position)} total={{ label: bought ? 'Total' : 'Total received', value: <Usd value={n.total} /> }}>
+            <KeyValueRow label="Quantity" value={qtyText(position.qty)} />
+            <KeyValueRow label={bought ? 'Avg. price' : 'Avg. sell price'} value={<Usd value={position.avgPrice} />} />
+          </KeyValueList>
+        </Stack>
+
+        <Stack as="section" gap="16" aria-label="Returns">
+          <SectionHeader title="Returns" onInfo={() => setExplainer('returns')} infoLabel="About realised and unrealised returns" />
+          <KeyValueList
+            variant="card"
+            aria-label="Returns"
+            total={{ label: 'Total returns', value: returnsText(n.totalReturns, n.returnsPct), tone: returnsTone(n.totalReturns) }}
+          >
+            <KeyValueRow label="Realised returns" value={<Usd value={Math.round(n.realised * 100) / 100} sign />} />
+            <KeyValueRow label="Unrealised returns" value={<Usd value={Math.round(n.unrealised * 100) / 100} sign />} />
+          </KeyValueList>
+        </Stack>
+      </Section>
+      <ExplainerSheet topic={explainer} onClose={() => setExplainer(null)} />
+    </Phone>
+  )
+}
+```
+
+### `src/flows/us-stocks/screens/orders/PositionParts.module.css`
+
+```css
+/* A signed $ return in the market indicator colours (as L3 PriceChange). L3 tokens only. */
+.signed {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.signed[data-tone='up'] {
+  color: var(--l3-content-accent-indicator-up-default);
+}
+
+.signed[data-tone='down'] {
+  color: var(--l3-content-accent-indicator-down-default);
+}
+```
+
+### `src/flows/us-stocks/screens/orders/PositionParts.tsx`
+
+```tsx
+// What a US position's card and its Position Details page share: the live numbers (LTP, returns), the logo, the
+// side line ("Bought today" / "Sold today") and a coloured $ return.
+// A US position = shares bought or sold TODAY, before they settle into Holdings (T+1). Delivery only: no intraday,
+// no convert, no TP / SL.
+import { Avatar } from '@l3/components/Avatar'
+import { Usd } from '../../../../shared/money'
+import { liveQuote, useLiveTick } from '../../../../shared/data/live'
+import { catalogue } from '../../data'
+import { etfFor } from '../etf/data'
+import { etfLogoUrl, HoldingLogo } from '../etf/parts'
+import { assetFor, type UsPosition } from './data'
+import styles from './PositionParts.module.css'
+
+export type PositionNumbers = {
+  name: string
+  exchange: string
+  /** Live price (ticks every 2 s around the snapshot). */
+  ltp: number
+  /** Buy: what the shares cost (qty × avg). Sell: what the sale brought in (qty × avg sell price). */
+  total: number
+  /** $ booked today — a sale's profit / loss. */
+  realised: number
+  /** $ on paper — shares bought today against the live price. */
+  unrealised: number
+  totalReturns: number
+  /** Total returns as a % of what was put in (a sale: of what the sold shares had cost). */
+  returnsPct: number
+}
+
+/** The day change % behind a symbol's live price (ETF list or stock catalogue). */
+const dayChange = (item: Pick<UsPosition, 'sym' | 'kind'>) =>
+  item.kind === 'etf' ? etfFor(item.sym).change : catalogue[item.sym]?.change ?? 0
+
+/** A stock's / ETF's live price (LTP) at a tick of the live clock — the one price positions and orders both show. */
+export function liveLtp(item: Pick<UsPosition, 'sym' | 'kind'>, tick: number): number {
+  return liveQuote(item.sym, assetFor(item).price, dayChange(item), tick).price
+}
+
+/** The live LTP of a stock / ETF, re-read on every price tick. */
+export function useLiveLtp(item: Pick<UsPosition, 'sym' | 'kind'>): number {
+  return liveLtp(item, useLiveTick())
+}
+
+/** A position's numbers at a tick of the live clock. */
+export function positionNumbers(position: UsPosition, tick: number): PositionNumbers {
+  const asset = assetFor(position)
+  const ltp = liveLtp(position, tick)
+  const total = position.qty * position.avgPrice
+  const realised = position.side === 'sell' ? position.realised ?? 0 : 0
+  const unrealised = position.side === 'buy' ? (ltp - position.avgPrice) * position.qty : 0
+  const totalReturns = realised + unrealised
+  // A sale: the shares had cost what they sold for minus the profit made on them.
+  const putIn = position.side === 'sell' ? total - realised : total
+  return { name: asset.name, exchange: asset.exchange, ltp, total, realised, unrealised, totalReturns, returnsPct: putIn ? (totalReturns / putIn) * 100 : 0 }
+}
+
+/** The numbers of one position, re-read on every price tick. */
+export function usePositionNumbers(position: UsPosition): PositionNumbers {
+  return positionNumbers(position, useLiveTick())
+}
+
+/** Today's returns over every position (the Positions tab's summary). */
+export function usePositionsSummary(list: UsPosition[]) {
+  const tick = useLiveTick()
+  return list.reduce(
+    (sum, p) => {
+      const n = positionNumbers(p, tick)
+      return { realised: sum.realised + n.realised, unrealised: sum.unrealised + n.unrealised, total: sum.total + n.totalReturns }
+    },
+    { realised: 0, unrealised: 0, total: 0 },
+  )
+}
+
+/** "Bought today" / "Sold today". */
+export const sideLabel = (position: UsPosition) => (position.side === 'buy' ? 'Bought today' : 'Sold today')
+
+/** Shares, fractional ones as they are: 5 · 1.2 · 0.35. */
+export const sharesText = (qty: number) => `${qty.toLocaleString('en-US', { maximumFractionDigits: 4 })} ${qty === 1 ? 'Share' : 'Shares'}`
+export const qtyText = (qty: number) => qty.toLocaleString('en-US', { maximumFractionDigits: 4 })
+
+/** The stock's logo (on its plate) or the ETF issuer's, in an L3 Avatar. */
+export function PositionLogo({ position, size = 40 }: { position: UsPosition; size?: 32 | 40 }) {
+  if (position.kind === 'etf') return <Avatar src={etfLogoUrl(position.sym)} initials={position.sym.slice(0, 2)} size={size} />
+  return <HoldingLogo sym={position.sym} size={size} />
+}
+
+const toneOf = (n: number) => (n > 0 ? 'up' : n < 0 ? 'down' : undefined)
+export const returnsTone = (n: number): 'up' | 'down' | undefined => toneOf(Math.round(n * 100) / 100)
+
+/**
+ * A signed $ return in the profit / loss colour, with its % when given: "+$3.00 (+0.28%)". The % minus is a hyphen,
+ * as formatUsd's "-$3.00".
+ * FLAG / L3 gap: L3 PriceChange formats ₹ only (unit="currency"), so a $ amount — which must go through <Usd> for the
+ * app's ₹ switch — is coloured here with the same indicator tokens PriceChange uses.
+ */
+export function SignedUsd({ value, pct, className }: { value: number; pct?: number; className?: string }) {
+  const rounded = Math.round(value * 100) / 100
+  const pctText = pct === undefined ? '' : ` (${pct > 0 ? '+' : pct < 0 ? '-' : ''}${Math.abs(pct).toFixed(2)}%)`
+  return (
+    <span className={[styles.signed, className].filter(Boolean).join(' ')} data-tone={toneOf(rounded)}>
+      <Usd value={rounded} sign />
+      {pctText}
+    </span>
+  )
+}
+```
+
+### `src/flows/us-stocks/screens/orders/UsPositions.module.css`
+
+```css
+/* Portfolio → Positions → US Stocks (UsPositions.tsx). L3 tokens only. */
+.label {
+  font: var(--l3-text-description-12);
+  color: var(--l3-content-secondary);
+}
+
+/* "Total Returns" figure (Figma: Heading 18, coloured). */
+.total {
+  font: var(--l3-text-heading-18);
+  color: var(--l3-content-primary);
+}
+
+.value {
+  font: var(--l3-text-heading-14);
+  color: var(--l3-content-primary);
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+```
+
+### `src/flows/us-stocks/screens/orders/UsPositions.tsx`
+
+```tsx
+// Portfolio → Positions → US Stocks: today's returns over every US position (the Positions tab's "Total Returns" card,
+// nLs24dTJdPz9A5pu3AWMbe 6754:66444, without its D / W / M / Y switch and week strip — US positions only ever cover
+// today), then one card per position. Nothing bought or sold today → the empty state.
+// FLAG: hard-coded sample positions (data.ts `positions`; the API would send them).
+import { Button } from '@l3/components/Button'
+import { Card } from '@l3/components/Card'
+import { EmptyState } from '@l3/components/EmptyState'
+import { Stack } from '@l3/components/Stack'
+import { useUsMarketSnapshot } from '../../../../shared/data/usStocks'
+import { Usd } from '../../../../shared/money'
+import { useUsNav } from '../../nav'
+import { STOCKS_HOME } from '../entry/ids'
+import { positions as samplePositions, type UsPosition } from './data'
+import { PositionCard } from './PositionCard'
+import { SignedUsd, usePositionsSummary } from './PositionParts'
+import styles from './UsPositions.module.css'
+
+/** No US trades today. The button goes to US Stocks home. */
+export function UsPositionsEmpty({ onExplore }: { onExplore?: () => void }) {
+  return (
+    <EmptyState
+      title="No US positions today"
+      description="Shares you buy or sell today show here until they settle into your Holdings the next day"
+      action={onExplore && <Button variant="primary" size="sm" onClick={onExplore}>Explore US Stocks</Button>}
+    />
+  )
+}
+
+/** Today's returns across the positions: the total (coloured), unrealised | realised (Figma: plain). */
+function TodaySummary({ list }: { list: UsPosition[] }) {
+  const sum = usePositionsSummary(list)
+  return (
+    <Card as="section" aria-label="Today’s returns on US positions">
+      <Stack gap="16">
+        <Stack gap="04">
+          <span className={styles.label}>Today’s returns</span>
+          <span className={styles.total}>
+            <SignedUsd value={sum.total} />
+          </span>
+        </Stack>
+        <Stack direction="horizontal" justify="between" gap="12">
+          <Stack gap="04">
+            <span className={styles.label}>Unrealised returns</span>
+            <span className={styles.value}><Usd value={Math.round(sum.unrealised * 100) / 100} sign /></span>
+          </Stack>
+          <Stack gap="04" align="end">
+            <span className={styles.label}>Realised returns</span>
+            <span className={styles.value}><Usd value={Math.round(sum.realised * 100) / 100} sign /></span>
+          </Stack>
+        </Stack>
+      </Stack>
+    </Card>
+  )
+}
+
+/** The US side of Portfolio → Positions: summary + cards, or the empty state. */
+export function UsPositions({ list = samplePositions }: { list?: UsPosition[] }) {
+  const { go } = useUsNav()
+  useUsMarketSnapshot() // re-render when US prices refresh
+  if (!list.length) return <UsPositionsEmpty onExplore={() => go(STOCKS_HOME)} />
+  return (
+    <Stack gap="16">
+      <TodaySummary list={list} />
+      <Stack as="ul" gap="16" className={styles.list} aria-label="US positions">
+        {list.map((position) => (
+          <li key={position.id}>
+            <PositionCard position={position} go={go} />
+          </li>
+        ))}
+      </Stack>
+    </Stack>
+  )
+}
+```
+
+### `src/flows/us-stocks/screens/orders/data.ts`
+
+```ts
+// Portfolio → Orders and Positions for US Stocks: the sample orders and positions, every state they can be in, and the
+// screen ids. Layout from the F&O dev-handoff file's "Positions & orders" (nLs24dTJdPz9A5pu3AWMbe, 6754:65598), drawn
+// there for commodities; the content here is US stocks and ETFs.
+// This file is the API contract: an order has one status; the list it sits in (Open / History), its tags, its timeline
+// and its dock actions all follow from that status.
+// FLAG: hard-coded sample orders (the API would send them).
+import { catalogue } from '../../data'
+import { ETFS } from '../etf/data'
+
+/** Order Details (one screen, every status). */
+export const ORDER_DETAILS = '9001:40'
+/** Position Details (a US position's page). */
+export const POSITION_DETAILS = '9001:41'
+
+export type OrderSide = 'buy' | 'sell'
+export type OrderType = 'market' | 'limit' | 'sl'
+/** Stocks or ETFs — the "All orders ⇕" picker splits the lists by it. */
+export type AssetKind = 'stock' | 'etf'
+
+/**
+ * Where an order is.
+ * Open list: `open` (at the exchange, waiting for its price), `queued` (placed while the US market was closed — sent
+ * when it opens), `partial` (some shares bought / sold, the rest still waiting).
+ * History list: `executed`, `partial-executed` (the day ended with only some shares filled — the rest cancelled),
+ * `failed` (rejected by Lemonn's broker or the exchange), `cancelled` (by the user), `expired` (a Day order that never
+ * reached its price before the close).
+ */
+export type OrderStatus = 'open' | 'queued' | 'partial' | 'executed' | 'partial-executed' | 'failed' | 'cancelled' | 'expired'
+
+export const OPEN_STATUSES: OrderStatus[] = ['open', 'queued', 'partial']
+export const isOpen = (order: UsOrder) => OPEN_STATUSES.includes(order.status)
+
+/** The status label and its tone (the card maps the tone to an L3 Tag colour: warning → processing, positive → success, negative → error). */
+export const STATUS_TAG: Record<OrderStatus, { label: string; tone: 'warning' | 'positive' | 'negative' | 'neutral' }> = {
+  open: { label: 'Open', tone: 'warning' },
+  queued: { label: 'Queued', tone: 'warning' },
+  partial: { label: 'Partly filled', tone: 'warning' },
+  executed: { label: 'Executed', tone: 'positive' },
+  'partial-executed': { label: 'Partly executed', tone: 'positive' },
+  failed: { label: 'Failed', tone: 'negative' },
+  cancelled: { label: 'Cancelled', tone: 'neutral' },
+  expired: { label: 'Expired', tone: 'neutral' },
+}
+
+export const TYPE_LABEL: Record<OrderType, string> = { market: 'Market', limit: 'Limit', sl: 'Stop loss' }
+
+/** One step of Order Details' "Order Status" timeline. `state` colours the dot: done (grey), now (the status colour). */
+export type TimelineStep = { label: string; time?: string; state: 'done' | 'now' | 'failed' }
+
+export type UsOrder = {
+  id: string
+  sym: string
+  kind: AssetKind
+  side: OrderSide
+  type: OrderType
+  /** Shares asked for (US shares can be fractional). */
+  qty: number
+  /** Shares bought / sold so far. */
+  filled: number
+  /** Limit orders and the limit part of a stop loss. */
+  limitPrice?: number
+  /** Stop loss: the price that triggers it. */
+  triggerPrice?: number
+  /** Average price the filled shares went at. */
+  avgPrice?: number
+  status: OrderStatus
+  /** US orders are Day orders. */
+  validity: 'Day'
+  /** "3 Nov, 9:42 PM" (IST). */
+  placedAt: string
+  /** Lemonn's order id and the exchange's — both copyable on Order Details. */
+  orderId: string
+  exchangeId?: string
+  /** Why it failed / was cancelled / expired — shown on Order Details. */
+  reason?: string
+  timeline: TimelineStep[]
+}
+
+const received = (time: string): TimelineStep => ({ label: 'Request received', time, state: 'done' })
+const placed = (time: string): TimelineStep => ({ label: 'Order placed with exchange', time, state: 'done' })
+
+// The sample story (today is Tue 3 Nov, IST; US daylight time ended 1 Nov, so the market now runs 8:00 PM – 2:30 AM
+// IST, and ran 7:00 PM – 1:30 AM before that). The user's one US holding is 12 NVDA (NVDA_HOLDING in data.ts): 13
+// bought 27 Oct + 5 of 8 on 28 Oct = 18, minus the 6 sold today (o3) — so every sell is of NVDA shares they hold.
+// Today's executed AMD and VTI buys and today's NVDA sale are the Positions tab (they settle into Holdings at T+1).
+
+/** Orders still working — the Open list. */
+export const openOrders: UsOrder[] = [
+  {
+    id: 'o1', sym: 'AAPL', kind: 'stock', side: 'buy', type: 'limit', qty: 4, filled: 0, limitPrice: 332,
+    status: 'open', validity: 'Day', placedAt: '3 Nov, 9:42 PM', orderId: '1180234561', exchangeId: 'NSDQ8823410977',
+    timeline: [received('9:42 PM'), placed('9:42 PM'), { label: 'Waiting for $332.00 or lower', state: 'now' }],
+  },
+  {
+    id: 'o2', sym: 'QQQ', kind: 'etf', side: 'buy', type: 'market', qty: 2.5, filled: 0,
+    status: 'queued', validity: 'Day', placedAt: '3 Nov, 6:15 PM', orderId: '1180229874',
+    timeline: [received('6:15 PM'), { label: 'Sent to the exchange when the US market opens at 8:00 PM', state: 'now' }],
+  },
+  {
+    id: 'o3', sym: 'NVDA', kind: 'stock', side: 'sell', type: 'limit', qty: 10, filled: 6, limitPrice: 206, avgPrice: 206.18,
+    status: 'partial', validity: 'Day', placedAt: '3 Nov, 8:31 PM', orderId: '1180231190', exchangeId: 'NSDQ8823398112',
+    timeline: [received('8:31 PM'), placed('8:31 PM'), { label: '6 of 10 shares sold', time: '8:47 PM', state: 'done' }, { label: 'Waiting for $206.00 or higher', state: 'now' }],
+  },
+  {
+    id: 'o4', sym: 'NVDA', kind: 'stock', side: 'sell', type: 'sl', qty: 2, filled: 0, triggerPrice: 195, limitPrice: 194,
+    status: 'open', validity: 'Day', placedAt: '3 Nov, 9:05 PM', orderId: '1180233002', exchangeId: 'NSDQ8823404561',
+    timeline: [received('9:05 PM'), placed('9:05 PM'), { label: 'Triggers if the price falls to $195.00', state: 'now' }],
+  },
+]
+
+/** Finished orders — the History list, newest first. */
+export const historyOrders: UsOrder[] = [
+  {
+    id: 'h1', sym: 'VTI', kind: 'etf', side: 'buy', type: 'limit', qty: 1.2, filled: 1.2, limitPrice: 371, avgPrice: 370.9,
+    status: 'executed', validity: 'Day', placedAt: '3 Nov, 8:20 PM', orderId: '1180230017', exchangeId: 'ARCA5520193847',
+    timeline: [received('8:20 PM'), placed('8:20 PM'), { label: 'Order executed', time: '9:26 PM', state: 'now' }],
+  },
+  {
+    id: 'h2', sym: 'AMD', kind: 'stock', side: 'buy', type: 'limit', qty: 5, filled: 5, limitPrice: 468, avgPrice: 467.35,
+    status: 'executed', validity: 'Day', placedAt: '3 Nov, 8:12 PM', orderId: '1180229956', exchangeId: 'NSDQ8823390214',
+    timeline: [received('8:12 PM'), placed('8:12 PM'), { label: 'Order executed', time: '9:18 PM', state: 'now' }],
+  },
+  {
+    id: 'h4', sym: 'META', kind: 'stock', side: 'buy', type: 'market', qty: 2, filled: 0,
+    status: 'failed', validity: 'Day', placedAt: '30 Oct, 7:45 PM', orderId: '1179870345',
+    reason: 'Not enough balance in your USD wallet when the order reached the exchange.',
+    timeline: [received('7:45 PM'), { label: 'Order rejected', time: '7:45 PM', state: 'failed' }],
+  },
+  {
+    id: 'h5', sym: 'NVDA', kind: 'stock', side: 'sell', type: 'limit', qty: 5, filled: 0, limitPrice: 215,
+    status: 'cancelled', validity: 'Day', placedAt: '29 Oct, 9:30 PM', orderId: '1179762210', exchangeId: 'NSDQ8817720035',
+    reason: 'You cancelled this order.',
+    timeline: [received('9:30 PM'), placed('9:30 PM'), { label: 'Cancelled by you', time: '9:52 PM', state: 'now' }],
+  },
+  {
+    id: 'h3', sym: 'NVDA', kind: 'stock', side: 'buy', type: 'limit', qty: 8, filled: 5, limitPrice: 174, avgPrice: 173.54,
+    status: 'partial-executed', validity: 'Day', placedAt: '28 Oct, 10:20 PM', orderId: '1179640012', exchangeId: 'NSDQ8814511734',
+    reason: '3 shares didn’t reach $174.00 before the market closed, so that part was cancelled.',
+    timeline: [received('10:20 PM'), placed('10:20 PM'), { label: '5 of 8 shares bought', time: '11:02 PM', state: 'done' }, { label: 'Rest cancelled at market close', time: '1:30 AM', state: 'now' }],
+  },
+  {
+    id: 'h6', sym: 'GOOGL', kind: 'stock', side: 'buy', type: 'limit', qty: 3, filled: 0, limitPrice: 268,
+    status: 'expired', validity: 'Day', placedAt: '27 Oct, 8:10 PM', orderId: '1179522876', exchangeId: 'NSDQ8814420098',
+    reason: 'The price didn’t reach $268.00 before the market closed. Day orders end at the close.',
+    timeline: [received('8:10 PM'), placed('8:10 PM'), { label: 'Expired at market close', time: '1:30 AM', state: 'now' }],
+  },
+  {
+    id: 'h7', sym: 'NVDA', kind: 'stock', side: 'buy', type: 'market', qty: 13, filled: 13, avgPrice: 172.1,
+    status: 'executed', validity: 'Day', placedAt: '27 Oct, 7:04 PM', orderId: '1179521203', exchangeId: 'NSDQ8814399410',
+    timeline: [received('7:04 PM'), placed('7:04 PM'), { label: 'Order executed', time: '7:04 PM', state: 'now' }],
+  },
+]
+
+/** The stock / ETF behind an order or position (name, exchange, live price). */
+export function assetFor(item: Pick<UsOrder, 'sym' | 'kind'>): { name: string; exchange: string; price: number } {
+  // The live catalogue has ETFs too (from the US snapshot); the ETF list is the fallback for a name.
+  const live = catalogue[item.sym]
+  const etf = item.kind === 'etf' ? ETFS.find((e) => e.sym === item.sym) : undefined
+  return {
+    name: etf?.name ?? live?.name ?? item.sym,
+    exchange: live?.exchange ?? (item.kind === 'etf' ? 'NYSE ARCA' : 'NASDAQ'),
+    price: live?.price ?? etf?.price ?? 0,
+  }
+}
+
+// The order Order Details shows (set by the card that opens it).
+let currentOrder: UsOrder = openOrders[0]
+export const getCurrentOrder = () => currentOrder
+export function openOrder(go: (figma: string) => void, order: UsOrder) {
+  currentOrder = order
+  go(ORDER_DETAILS)
+}
+
+/** A US position: shares bought or sold today, before they settle into Holdings (T+1). US Stocks are delivery only. */
+export type UsPosition = {
+  id: string
+  sym: string
+  kind: AssetKind
+  side: OrderSide
+  qty: number
+  avgPrice: number
+  /** Sell positions: what the shares were sold at; returns are realised. */
+  realised?: number
+}
+
+export const positions: UsPosition[] = [
+  // Today's executed orders: h2 (AMD), h1 (VTI) and the 6 NVDA shares o3 has sold so far — realised (206.18 − 172.50) × 6.
+  { id: 'p1', sym: 'AMD', kind: 'stock', side: 'buy', qty: 5, avgPrice: 467.35 },
+  { id: 'p2', sym: 'VTI', kind: 'etf', side: 'buy', qty: 1.2, avgPrice: 370.9 },
+  { id: 'p3', sym: 'NVDA', kind: 'stock', side: 'sell', qty: 6, avgPrice: 206.18, realised: 202.08 },
+]
+
+let currentPosition: UsPosition = positions[0]
+export const getCurrentPosition = () => currentPosition
+export function openPosition(go: (figma: string) => void, position: UsPosition) {
+  currentPosition = position
+  go(POSITION_DETAILS)
+}
+```
+
+### `src/flows/us-stocks/screens/orders/index.tsx`
+
+```tsx
+// Portfolio → Orders and Positions for US Stocks (layout from the F&O dev-handoff file's "Positions & orders",
+// nLs24dTJdPz9A5pu3AWMbe 6754:65598). The Open / History lists live in Portfolio's Orders tab and the position cards in
+// its Positions tab (screens/entry); these are the pages they open.
+import type { UsScreenMap } from '../types'
+import { ORDER_DETAILS, POSITION_DETAILS } from './data'
+import { OrderDetailsFor, OrderDetailsScreen } from './OrderDetailsScreen'
+import { PositionDetailsScreen } from './PositionDetailsScreen'
+
+/** Order Details in each status, for the preview (figma id → sample order id in data.ts). */
+export const ORDER_STATE_SCREENS: Record<string, string> = {
+  '9001:42': 'o1', // Open · Limit buy
+  '9001:43': 'o2', // Queued · ETF market buy
+  '9001:44': 'o3', // Partly filled · Limit sell
+  '9001:45': 'o4', // Open · Stop-loss sell
+  '9001:46': 'h7', // Executed · Market buy
+  '9001:47': 'h1', // Executed · ETF limit buy
+  '9001:48': 'h3', // Partly executed · Limit buy
+  '9001:49': 'h4', // Failed
+  '9001:50': 'h5', // Cancelled · Limit sell
+  '9001:51': 'h6', // Expired
+}
+
+export const screens: UsScreenMap = {
+  [ORDER_DETAILS]: OrderDetailsScreen, // Order Details (every status)
+  [POSITION_DETAILS]: PositionDetailsScreen, // Position Details
+  ...Object.fromEntries(
+    Object.entries(ORDER_STATE_SCREENS).map(([figma, id]) => [figma, ({ backdrop }: { backdrop?: boolean }) => <OrderDetailsFor id={id} backdrop={backdrop} />]),
+  ),
 }
 ```
 
@@ -33724,201 +35825,35 @@ function FeeBreakdownSheet({ onClose }: { onClose: () => void }) {
 ### `src/flows/us-stocks/screens/trade/OrderPad.module.css`
 
 ```css
-/* FLAG: hand-made order pad — bordered .field boxes, amount <input>, toggle button and info dock; layout is raw display:flex + gap/padding, not L3 Stack / Section / Inset. */
+/* US Stocks order pad, laid out like the commodity options order pad (fno/order-pad/screens/OrderPad.module.css). */
+.contract { display: flex; flex-direction: column; align-items: flex-start; gap: var(--l3-spacing-02); }
+.contractName { font: var(--l3-text-heading-14); color: var(--l3-content-primary); }
+.contractPrice { display: inline-flex; align-items: center; gap: var(--l3-spacing-08); font: var(--l3-text-label-12); color: var(--l3-content-primary); }
+.exchange { font: var(--l3-text-label-12); color: var(--l3-content-primary); }
 
-.barGap {
-  height: var(--l3-spacing-08);
-  display: block;
-}
+.body { padding: var(--l3-spacing-16); overflow-x: clip; }
 
-.quote {
-  align-items: center;
-  gap: var(--l3-spacing-08);
-  display: inline-flex;
-}
+/* A field row: label, value, compact stepper at the right — bordered, 08 radius. */
+.field { display: flex; align-items: center; gap: var(--l3-spacing-08); min-height: var(--l3-size-40); padding: var(--l3-spacing-04) var(--l3-spacing-04) var(--l3-spacing-04) var(--l3-spacing-12); border: 1px solid var(--l3-border-light); border-radius: var(--l3-radius-08); }
+.field[data-error] { border-color: var(--l3-border-accent-error-default); }
+.fieldLabel { flex: 1; display: inline-flex; align-items: center; font: var(--l3-text-label-12); color: var(--l3-content-secondary); }
+.fieldValue { font: var(--l3-text-heading-12); color: var(--l3-content-primary); }
+/* The amount / shares switch, as the commodity pad's Quantity ⇕ Lots. */
+.toggle { display: inline-flex; align-items: center; gap: var(--l3-spacing-02); padding: 0; border: 0; background: none; color: var(--l3-content-primary); font: var(--l3-text-label-12); cursor: pointer; }
+.amount { flex: 1; min-width: 0; height: var(--l3-size-32); margin: 0; padding: 0 var(--l3-spacing-08); border: 0; outline: none; background: none; font: var(--l3-text-heading-12); color: var(--l3-content-primary); text-align: right; caret-color: var(--l3-content-primary); }
+/* Steppers are the L3 Stepper Small as it is (dark + / −), as on the commodity pad. */
 
-.price {
-  font: var(--l3-text-label-12);
-  color: var(--l3-content-primary);
-}
+.helper { display: flex; justify-content: space-between; gap: var(--l3-spacing-08); font: var(--l3-text-label-12); color: var(--l3-content-secondary); }
+.error { margin: 0; font: var(--l3-text-label-12); color: var(--l3-content-accent-error-default); }
 
-.change {
-  font: var(--l3-text-label-12);
-  color: var(--l3-content-accent-indicator-up-default);
-  align-items: center;
-  display: inline-flex;
-}
-
-.arrow {
-  margin: 0 calc(-1 * var(--l3-spacing-02));
-}
-
-.change[data-down] {
-  color: var(--l3-content-accent-indicator-down-default);
-}
-
-.pad {
-  gap: var(--l3-spacing-16);
-  padding: var(--l3-spacing-24) 0;
-  flex-direction: column;
-  display: flex;
-}
-
-.typeRow {
-  justify-content: space-between;
-  align-items: center;
-  gap: var(--l3-spacing-08);
-  padding: 0 var(--l3-spacing-16);
-  display: flex;
-}
-
-.validity {
-  font: var(--l3-text-label-12);
-  color: var(--l3-content-secondary);
-}
-
-.controls {
-  gap: var(--l3-spacing-12);
-  padding: 0 var(--l3-spacing-16);
-  flex-direction: column;
-  display: flex;
-}
-
-.field {
-  align-items: center;
-  gap: var(--l3-spacing-08);
-  min-height: var(--l3-size-24);
-  padding: var(--l3-spacing-08) var(--l3-spacing-08) var(--l3-spacing-08) var(--l3-spacing-08);
-  border: 1px solid var(--l3-border-light);
-  border-radius: var(--l3-radius-12);
-  background: var(--l3-surface-primary);
-  display: flex;
-}
-
-.field[data-error] {
-  border-color: var(--l3-border-accent-error-default);
-}
-
-.fieldLabel {
-  padding-left: var(--l3-spacing-04);
-  font: var(--l3-text-label-12);
-  color: var(--l3-content-primary);
-  flex: 1;
-  align-items: center;
-  display: inline-flex;
-}
-
-.toggle {
-  align-items: center;
-  gap: var(--l3-spacing-04);
-  min-height: var(--l3-size-24);
-  font: inherit;
-  color: var(--l3-content-primary);
-  cursor: pointer;
-  background: 0 0;
-  border: 0;
-  margin: 0;
-  padding: 0;
-  display: inline-flex;
-}
-
-.fieldPrice {
-  font: var(--l3-text-heading-14);
-  color: var(--l3-content-primary);
-}
-
-.amount {
-  box-sizing: border-box;
-  min-width: 0;
-  height: var(--l3-size-28);
-  padding: 0 var(--l3-spacing-04);
-  font: var(--l3-text-heading-14);
-  color: var(--l3-content-primary);
-  text-align: right;
-  caret-color: var(--l3-content-accent-us-stock-default);
-  background: 0 0;
-  border: 0;
-  outline: none;
-  flex: 1;
-  margin: 0;
-}
-
-.blueStepper.blueStepper button:not(:disabled) { /* FLAG: overrides L3 Stepper button colours from outside */
-  background: var(--l3-surface-accent-us-stock-light);
-  color: var(--l3-content-accent-us-stock-default);
-}
-
-.helper {
-  justify-content: space-between;
-  gap: var(--l3-spacing-08);
-  font: var(--l3-text-label-12);
-  color: var(--l3-content-secondary);
-  display: flex;
-}
-
-.error {
-  font: var(--l3-text-description-12);
-  color: var(--l3-content-accent-error-default);
-  margin: 0;
-}
-
-.link {
-  font: var(--l3-text-label-12);
-  color: var(--l3-content-accent-discover-default);
-}
-
-.actions {
-  flex-direction: column;
-  display: flex;
-}
-
-.note {
-  padding: var(--l3-spacing-12);
-  font: var(--l3-text-label-12);
-  color: var(--l3-content-secondary);
-  text-align: center;
-  margin: 0;
-}
-
-.dock {
-  gap: var(--l3-spacing-12);
-  padding: var(--l3-spacing-12) var(--l3-spacing-16) var(--l3-spacing-16);
-  background: var(--l3-surface-default);
-  box-shadow: inset 0 1px 0 var(--l3-border-light);
-  flex-direction: column;
-  display: flex;
-}
-
-.info {
-  justify-content: space-between;
-  align-items: center;
-  display: flex;
-}
-
-.infoItem {
-  align-items: center;
-  gap: var(--l3-spacing-04);
-  cursor: default;
-  background: 0 0;
-  border: 0;
-  margin: 0;
-  padding: 0;
-  display: inline-flex;
-}
-
-button.infoItem {
-  cursor: pointer;
-}
-
-.muted {
-  font: var(--l3-text-label-12);
-  color: var(--l3-content-secondary);
-}
-
-.strong {
-  font: var(--l3-text-heading-12);
-  color: var(--l3-content-primary);
-}
+/* Dock: optional note, then Avail. · Req. and the action. */
+.dock { background: var(--l3-surface-primary); }
+.note { margin: 0; padding: var(--l3-spacing-12) var(--l3-spacing-16); font: var(--l3-text-label-12); color: var(--l3-content-secondary); text-align: center; }
+.dockBody { display: flex; flex-direction: column; gap: var(--l3-spacing-12); padding: var(--l3-spacing-12) var(--l3-spacing-16) var(--l3-spacing-16); border-top: 1px solid var(--l3-border-light); }
+.funds { display: flex; justify-content: space-between; font: var(--l3-text-label-12); }
+.funds strong { font: var(--l3-text-heading-12); color: var(--l3-content-primary); }
+.muted { color: var(--l3-content-secondary); }
+.req { padding: 0; border: 0; background: none; color: var(--l3-content-accent-discover-default); font: var(--l3-text-label-12); text-decoration: underline; cursor: pointer; }
 ```
 
 ### `src/flows/us-stocks/screens/trade/OrderPad.tsx`
@@ -33926,22 +35861,26 @@ button.infoItem {
 ```tsx
 // The Buy / Sell order pad (T01–T10, H03–H05, H11): order type tabs, amount or shares field, limit / trigger prices,
 // helper line, and the dock with Avail. / Req. and the main button.
-// FLAG: hand-made order pad — bordered field boxes, a raw <input> for the amount, a text toggle button for amount/shares
-// and a custom dock (OrderPad.module.css); no L3 TextField / ListCell / Section.
-// FLAG: layout is raw display:flex + gap/padding (OrderPad.module.css), not L3 Stack / Section / Inset.
+// Layout and look follow the commodity options order pad (F&O fno-25 … 31): header with the price and signed change,
+// small pill order types with the validity Select beside them, 40-high bordered rows with L3 Stepper Small, and the
+// dock with the note, Avail. · Req. and a Large button. The content (amount in $ or shares, limit / trigger prices as %
+// from the last price, chips, the helper line) is the US pad's own.
+// FLAG: the amount is a raw <input> in a bordered row, not an L3 field (the commodity pad has no amount field to copy).
 // FLAG: the amount field is a plain <input> on the device's own keyboard, not the app's shared Keyboard (src/shared/ui/Keyboard).
 // FLAG: duplicates the app's Indian order pad (src/flows/stocks) for US stocks.
-import { useState, type ReactNode } from 'react'
+import { useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import { Actionbar } from '@l3/components/Actionbar'
 import { Button } from '@l3/components/Button'
 import { Icon } from '@l3/components/Icon'
+import { PriceChange } from '@l3/components/PriceChange'
+import { Stack } from '@l3/components/Stack'
 import { Stepper } from '@l3/components/Stepper'
 import { Tabs } from '@l3/components/Tabs'
+import { Tag } from '@l3/components/Tag'
+import { lmSwitchArrowVertical } from '@l3/icons/lemonnade'
 import { Phone } from '../../components/Phone'
 import { useUsNav } from '../../nav'
 import { Usd, useInrEquivalent, useUsd } from '../../../../shared/money'
-import { arrowDropDownIcon, arrowDropUpIcon } from '../money/icons'
-import { MaskImage } from '../money/components/MaskImage'
 import { al, forCurrentStock, il } from './format'
 import type { Derived, OrderPadConfig, OrderType, PadMode } from './types'
 import styles from './OrderPad.module.css'
@@ -33952,6 +35891,17 @@ const ORDER_TYPES: { value: OrderType; label: string }[] = [
   { value: 'sl', label: 'SL' },
 ]
 
+/**
+ * The pad on screen (its order type, and when it closed — null while it's still shown). The pads are one page (screen
+ * group 'order-pad'), so a tap on Market / Limit / SL swaps this pad for another in place: a pad that renders while
+ * another is shown, or a moment after one closed, slides its fields in from that side. Opened later, it's a fresh visit.
+ */
+let shownPad: { type: OrderType; closedAt: number | null } | null = null
+
+/**
+ * The order pad. Switching order type keeps the header, tabs and dock in place; only the fields under the tabs slide in —
+ * from the right when the new type is further along (Market → Limit → SL), from the left when it's back.
+ */
 export function OrderPad({ config, backdrop, sheet }: { config: OrderPadConfig; backdrop?: boolean; sheet?: ReactNode }) {
   const { go, back } = useUsNav()
   const usd = useUsd()
@@ -33995,54 +35945,39 @@ export function OrderPad({ config, backdrop, sheet }: { config: OrderPadConfig; 
       <span className={styles.fieldLabel}>
         <button type="button" className={styles.toggle} onClick={switchMode} aria-label={`${label}. Switch to ${mode === 'amount' ? 'shares' : 'amount'}`}>
           {label}
-          <MaskImage src="assets/trade/switch-toggle.svg" w={12} />
+          <Icon icon={lmSwitchArrowVertical} size={12} />
         </button>
       </span>
     ) : (
       <span className={styles.fieldLabel}>{label}</span>
     )
 
-  const down = config.stock.change < 0
+  // Header as on the commodity order pad (fno-25): the symbol over its price and signed change, the exchange on the right.
   const header = (
     <Actionbar
       headingLevel={1}
       onBack={() => back(config.back)}
-      title={config.stock.symbol}
-      description={
-        <span className={styles.quote}>
-          <span className={styles.price}><Usd value={config.stock.price} layout="inline" /></span>
-          <span className={styles.change} data-down={down || undefined}>
-            <Icon icon={down ? arrowDropDownIcon : arrowDropUpIcon} size={16} className={styles.arrow} />
-            {Math.abs(config.stock.change).toFixed(2)}%
-          </span>
+      title={
+        <span className={styles.contract}>
+          <span className={styles.contractName}>{config.stock.symbol}</span>
+          <span className={styles.contractPrice}><Usd value={config.stock.price} layout="inline" /><PriceChange value={config.stock.change} unit="percent" size="sm" /></span>
         </span>
       }
-      actions={<Button variant="ghost" size="sm">{config.stock.exchange}</Button>}
-      bottom={<span className={styles.barGap} aria-hidden="true" />}
+      actions={<span className={styles.exchange}>{config.stock.exchange}</span>}
     />
   )
 
-  const reqClass = config.reqLabel === 'View Charges' ? styles.link : styles.muted
+  // Dock as on the commodity order pad: the note above, then Avail. · Req. (a link when it opens something) and the action.
+  const reqLabel = onReq
+    ? <button type="button" className={styles.req} onClick={onReq}>{config.reqLabel}</button>
+    : <span className={styles.muted}>{config.reqLabel}</span>
   const footer = (
-    <div className={styles.actions}>
+    <div className={styles.dock}>
       {derived.note && <p className={styles.note}>{forCurrentStock(derived.note)}</p>}
-      <div className={styles.dock}>
-        <div className={styles.info}>
-          <span className={styles.infoItem}>
-            <span className={styles.muted}>{config.availLabel}</span>
-            <strong className={styles.strong}><Usd text={config.avail} layout="inline" /></strong>
-          </span>
-          {onReq ? (
-            <button type="button" className={styles.infoItem} onClick={onReq}>
-              <span className={reqClass}>{config.reqLabel}</span>
-              {derived.req && <strong className={styles.strong}>{derived.req}</strong>}
-            </button>
-          ) : (
-            <span className={styles.infoItem}>
-              <span className={reqClass}>{config.reqLabel}</span>
-              {derived.req && <strong className={styles.strong}>{derived.req}</strong>}
-            </span>
-          )}
+      <div className={styles.dockBody}>
+        <div className={styles.funds}>
+          <span><span className={styles.muted}>{config.availLabel}</span> <strong><Usd text={config.avail} layout="inline" /></strong></span>
+          <span>{reqLabel}{derived.req && <> <strong>{derived.req}</strong></>}</span>
         </div>
         <Button variant={config.side === 'buy' ? 'brand' : 'sell'} size="lg" fullWidth disabled={ctaDisabled} onClick={goTo('cta')}>
           {config.cta.label}
@@ -34051,15 +35986,36 @@ export function OrderPad({ config, backdrop, sheet }: { config: OrderPadConfig; 
     </div>
   )
 
+  // Slides the fields in once, when they first attach (a callback ref: the phone mounts its body after this pad renders).
+  const [cameFrom] = useState(() => (shownPad && (shownPad.closedAt === null || performance.now() - shownPad.closedAt < 500) ? shownPad.type : undefined))
+  useLayoutEffect(() => {
+    const pad = { type: config.type, closedAt: null as number | null }
+    shownPad = pad
+    return () => { pad.closedAt = performance.now() }
+  }, [config.type])
+  const slid = useRef(false)
+  const fields = (el: HTMLElement | null) => {
+    if (!el || slid.current) return
+    slid.current = true
+    if (!cameFrom || cameFrom === config.type || matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const order = ORDER_TYPES.map((t) => t.value)
+    const from = order.indexOf(config.type) > order.indexOf(cameFrom) ? 1 : -1
+    el.animate(
+      [{ translate: `${from * 100}% 0`, opacity: 0 }, { translate: '0 0', opacity: 1 }],
+      { duration: 280, easing: 'cubic-bezier(0.2, 0, 0, 1)' },
+    )
+  }
+
   const fieldError = typeof config.fieldError === 'function' ? config.fieldError(derived) : config.fieldError
 
   return (
-    <Phone label={forCurrentStock(config.label)} header={header} footer={footer} gesture="none">
-      <div className={styles.pad} inert={backdrop || undefined}>
-        <div className={styles.typeRow}>
-          {/* FLAG: order type switch is L3 Tabs (pill, toggle) but its choice also navigates to another screen. */}
+    <Phone label={forCurrentStock(config.label)} header={header} footer={footer} gesture="none" topLine>
+      <Stack gap="16" className={styles.body} inert={backdrop || undefined}>
+        <Stack direction="horizontal" align="center" justify="between">
+          {/* FLAG: order type switch is L3 Tabs (pill, toggle) but its choice also goes to another screen of the same page group. */}
           <Tabs
             appearance="pill"
+            size="sm"
             behavior="toggle"
             aria-label="Order type"
             items={ORDER_TYPES}
@@ -34069,9 +36025,11 @@ export function OrderPad({ config, backdrop, sheet }: { config: OrderPadConfig; 
               if (type !== config.type && target) go(target)
             }}
           />
-          <span className={styles.validity}>Day</span>
-        </div>
-        <div className={styles.controls}>
+          {/* US orders are Day orders only: the validity is a label (a Tag), not the commodity pad's Select — nothing to pick. */}
+          <Tag variant="secondary" color="neutral" aria-label="Validity: Day">Day</Tag>
+        </Stack>
+        {/* The part that changes with the order type: it slides, the tabs above it stay put. */}
+        <Stack gap="16" ref={fields}>
           <div className={styles.field} data-error={fieldError || undefined}>
             {mode === 'amount' ? (
               <>
@@ -34082,7 +36040,8 @@ export function OrderPad({ config, backdrop, sheet }: { config: OrderPadConfig; 
               <>
                 {fieldLabel('Shares', config.toggle)}
                 <Stepper
-                  className={styles.blueStepper}
+                  size="sm"
+                  className={styles.stepper}
                   label="Shares"
                   value={current}
                   onChange={setShown}
@@ -34097,9 +36056,10 @@ export function OrderPad({ config, backdrop, sheet }: { config: OrderPadConfig; 
           {(config.prices ?? []).map((price, i) => (
             <div className={styles.field} key={price.label}>
               {fieldLabel(price.label)}
-              <span className={styles.fieldPrice}><Usd value={prices[i]} layout="inline" /></span>
+              <span className={styles.fieldValue}><Usd value={prices[i]} layout="inline" /></span>
               <Stepper
-                className={styles.blueStepper}
+                size="sm"
+                className={styles.stepper}
                 label={`${price.label} % from last price`}
                 value={pcts[i]}
                 onChange={(pct) => setPcts((all) => all.map((old, j) => (j === i ? pct : old)))}
@@ -34120,6 +36080,7 @@ export function OrderPad({ config, backdrop, sheet }: { config: OrderPadConfig; 
           {config.chips && mode === config.mode && (
             <Tabs
               appearance="pill"
+              size="sm"
               behavior="filter"
               aria-label={mode === 'amount' ? 'Add amount' : 'Shares to sell'}
               items={config.chips.map((chip, i) => ({ value: String(i), label: typeof chip.label === 'function' ? chip.label(usd) : chip.label }))}
@@ -34130,8 +36091,8 @@ export function OrderPad({ config, backdrop, sheet }: { config: OrderPadConfig; 
               }}
             />
           )}
-        </div>
-      </div>
+        </Stack>
+      </Stack>
       {sheet}
     </Phone>
   )
@@ -34375,6 +36336,7 @@ import { orderResults } from './orderResults'
 import { tradeIds as ids } from './ids'
 
 /** A screen showing the order pad in one of its states. */
+/** A screen showing one order pad. */
 const padScreen = (id: string) => ({ backdrop }: { backdrop?: boolean }) => <OrderPad config={orderPads[id]} backdrop={backdrop} />
 /** A screen showing one order result. */
 const resultScreen = (id: string) => () => <OrderResult config={orderResults[id]} />
@@ -34949,7 +36911,7 @@ export type UsScreenMap = Record<string, ComponentType<{ backdrop?: boolean }>>
 
 .facts dt {
   font:var(--l3-text-label-12);
-  color:var(--l3-content-tertiary);
+  color:var(--l3-content-secondary);
 }
 
 .facts dd {
@@ -34995,7 +36957,7 @@ export type UsScreenMap = Record<string, ComponentType<{ backdrop?: boolean }>>
   align-items:center;
   gap:var(--l3-spacing-08);
   font:var(--l3-text-label-12);
-  color:var(--l3-content-tertiary);
+  color:var(--l3-content-secondary);
   display:flex;
 }
 
@@ -35028,7 +36990,7 @@ export type UsScreenMap = Record<string, ComponentType<{ backdrop?: boolean }>>
 .hero:is([data-look=statement],[data-look=surface],[data-look=bar],[data-look=open]) .label {
   font:var(--l3-text-label-12);
   letter-spacing:var(--l3-letter-spacing-ai-caps);
-  color:var(--l3-content-tertiary);
+  color:var(--l3-content-secondary);
 }
 
 .hero:is([data-look=statement],[data-look=surface],[data-look=bar],[data-look=open]) .details {
@@ -35076,7 +37038,7 @@ export type UsScreenMap = Record<string, ComponentType<{ backdrop?: boolean }>>
 .exact {
   margin:var(--l3-spacing-02) 0 0;
   font:var(--l3-text-label-12);
-  color:var(--l3-content-tertiary);
+  color:var(--l3-content-secondary);
   font-variant-numeric:tabular-nums;
 }
 
@@ -35120,7 +37082,7 @@ export type UsScreenMap = Record<string, ComponentType<{ backdrop?: boolean }>>
 
 .hero[data-look=centred] .label {
   font:var(--l3-text-label-12);
-  color:var(--l3-content-tertiary);
+  color:var(--l3-content-secondary);
 }
 
 .hero[data-look=centred] .details {
@@ -35137,7 +37099,7 @@ export type UsScreenMap = Record<string, ComponentType<{ backdrop?: boolean }>>
 
 .hero:is([data-look=centred-facts],[data-look=centred-surface],[data-look=centred-line]) .label {
   font:var(--l3-text-label-12);
-  color:var(--l3-content-tertiary);
+  color:var(--l3-content-secondary);
 }
 
 .hero:is([data-look=centred-facts],[data-look=centred-line]) {
@@ -35172,7 +37134,7 @@ export type UsScreenMap = Record<string, ComponentType<{ backdrop?: boolean }>>
 
 .line {
   font:var(--l3-text-label-12);
-  color:var(--l3-content-tertiary);
+  color:var(--l3-content-secondary);
   margin-top:var(--l3-spacing-08)!important;
 }
 
@@ -35932,34 +37894,33 @@ export function GrowNudge() {
 ### `src/flows/us-stocks/screens/wallet/PendingBanner.tsx`
 
 ```tsx
-// The warning-coloured status strip above the wallet's Deposit / Withdraw buttons ("$100.00 withdrawal pending" …).
-// FLAG: hand-made banner with a hand-made pill button (not an L3 component).
+// The warning status bar above the wallet's Deposit / Withdraw buttons ("$100.00 withdrawal pending" …): an L3 Aerobar,
+// full width (edge to edge), warning tint.
 import type { ReactNode } from 'react'
+import { Aerobar } from '@l3/components/Aerobar'
 import { Icon } from '@l3/components/Icon'
 import { scheduleIcon } from './lib/icons'
-import styles from './WalletScreen.module.css'
 
 export type PendingBannerProps = {
   /** Text with its $ amounts in <Usd layout="inline" /> (a tight banner: no ≈ ₹ line). */
   title: ReactNode
   sub: string
+  /** A small Ghost button on the right (Cancel a withdrawal …). */
   action?: { label: string; onClick: () => void }
+  /** The whole bar opens more about it (a deposit: why it takes 1–2 days); Aerobar shows a chevron. No `action` with it. */
+  onOpen?: () => void
 }
 
-export function PendingBanner({ title, sub, action }: PendingBannerProps) {
+export function PendingBanner({ title, sub, action, onOpen }: PendingBannerProps) {
   return (
-    <div className={styles.pending} role="status">
-      <Icon icon={scheduleIcon} size={24} />
-      <span className={styles.pendingText}>
-        <b>{title}</b>
-        <span>{sub}</span>
-      </span>
-      {action && (
-        <button type="button" className={styles.pendingAction} onClick={action.onClick}>
-          {action.label}
-        </button>
-      )}
-    </div>
+    <Aerobar
+      type="warning"
+      icon={<Icon icon={scheduleIcon} />}
+      heading={title}
+      paragraph={sub}
+      action={onOpen ? undefined : action}
+      onClick={onOpen}
+    />
   )
 }
 ```
@@ -36014,7 +37975,7 @@ export function PendingBanner({ title, sub, action }: PendingBannerProps) {
 
 .custodian {
   font:var(--l3-text-description-12);
-  color:var(--l3-content-tertiary);
+  color:var(--l3-content-secondary);
   text-align:center;
   margin:auto 0 0;
 }
@@ -36049,7 +38010,7 @@ export function PendingBanner({ title, sub, action }: PendingBannerProps) {
 
 .nudgeDesc {
   font:var(--l3-text-label-12);
-  color:var(--l3-content-tertiary);
+  color:var(--l3-content-secondary);
   margin:0;
 }
 
@@ -36067,7 +38028,7 @@ export function PendingBanner({ title, sub, action }: PendingBannerProps) {
   align-items:center;
   gap:var(--l3-spacing-04);
   font:var(--l3-text-description-12);
-  color:var(--l3-content-tertiary);
+  color:var(--l3-content-secondary);
   margin:auto 0 0;
   display:flex;
 }
@@ -36085,45 +38046,11 @@ export function PendingBanner({ title, sub, action }: PendingBannerProps) {
   padding-bottom:var(--l3-spacing-08);
 }
 
-.pending {
-  /* FLAG: hand-made pending banner (not an L3 component); raw display:flex + gap/padding */
-  align-items:center;
-  gap:var(--l3-spacing-08);
-  padding:var(--l3-spacing-12);
-  background:var(--l3-surface-accent-warning-light);
-  color:var(--l3-content-secondary);
-  display:flex;
-}
 
-.pendingText {
-  gap:var(--l3-spacing-04);
-  flex-direction:column;
-  flex:1;
-  min-width:0;
-  display:flex;
-}
-
-.pendingText>b {
-  font:var(--l3-text-heading-12);
-  color:var(--l3-content-secondary);
-}
-
-.pendingText>span {
-  font:var(--l3-text-label-12);
-  color:var(--l3-content-tertiary);
-}
-
-.pendingAction {
-  /* FLAG: hand-made pill button (L3 Button should be used) */
-  height:var(--l3-size-32);
-  padding:0 var(--l3-spacing-12);
-  border-radius:var(--l3-radius-full);
-  background:var(--l3-surface-accent-warning-default);
-  font:var(--l3-text-heading-12);
-  color:var(--l3-static-black);
-  cursor:pointer;
-  border:0;
-  flex:none;
+/* ≈ ₹ under the USD balance (in the card's "exact" line): 10, secondary. */
+.balanceInr {
+  font: var(--l3-text-description-10);
+  color: var(--l3-content-secondary);
 }
 ```
 
@@ -36137,15 +38064,18 @@ export function PendingBanner({ title, sub, action }: PendingBannerProps) {
 // FLAG: layout with raw display:flex + gap/padding (WalletScreen.module.css) instead of L3 Stack/Section/Inset/Grid.
 import { useState, type ReactNode } from 'react'
 import { Actionbar } from '@l3/components/Actionbar'
+import { Aerobar } from '@l3/components/Aerobar'
 import { Button } from '@l3/components/Button'
 import { ButtonGroup } from '@l3/components/ButtonGroup'
 import { Icon } from '@l3/components/Icon'
 import { Tabs } from '@l3/components/Tabs'
-import { Stack } from '@l3/components/Stack'
 import { Tag } from '@l3/components/Tag'
 import { Phone } from '../../components/Phone'
 import { useUsNav } from '../../nav'
-import { CurrencySwitch, parseUsd, useUsd } from '../../../../shared/money'
+import { useLinkedBanks } from '../../../../shared/userStatus'
+import { msAccountBalance } from '@l3/icons/material'
+import { moneyIds } from '../money/ids'
+import { parseUsd, useInrEquivalent, useUsd } from '../../../../shared/money'
 import { BalanceCard, FLIP_KEY } from './BalanceCard'
 import { FIGMA } from './data'
 import { GrowNudge } from './GrowNudge'
@@ -36161,6 +38091,8 @@ const linkLook = new URLSearchParams(location.search).get('link') ?? undefined
 
 export type WalletTab = 'inr' | 'usd'
 const TABS: WalletTab[] = ['inr', 'usd']
+/** The deposit flow's "Add bank account" screen (another flow: an app screen id, not a Figma id). */
+const ADD_BANK = 'deposit-12'
 
 export type WalletDock = {
   primary: string
@@ -36208,7 +38140,7 @@ export const INR_VIEW = {
   inr: true,
   total: '₹1,100.00',
   withdrawable: '₹10.00',
-  dock: { primary: 'Deposit' } as WalletDock,
+  dock: { primary: 'Deposit', primaryTo: 'deposit-09' } as WalletDock,
   children: undefined,
 } as const
 
@@ -36231,6 +38163,9 @@ export function WalletScreen(props: WalletScreenProps) {
   const shownTotal = localise(rawTotal)
   const shownWithdrawable = localise(rawWithdrawable)
   const totalUsd = parseUsd(rawTotal)?.value
+  // The USD balance in rupees at the live rate, small under it — only with the "₹ below" setting (off by default);
+  // none on a $0 wallet.
+  const balanceInr = useInrEquivalent()(totalUsd ?? 0, { decimals: 2 })
   const { go, back } = useUsNav()
 
   const switchTab = (next: WalletTab, animate = false) => {
@@ -36313,16 +38248,31 @@ export function WalletScreen(props: WalletScreenProps) {
     />
   )
 
+  // No bank linked (User status → Bank accounts: None): money can't come in or go out yet. A bar above the dock asks to
+  // add one, Deposit opens add-money in its "no bank" state, Withdraw is off. Money in progress (a deposit or withdrawal
+  // banner) means a bank is linked — it came from or goes to one — so then the bar never shows.
+  const noBank = useLinkedBanks().length === 0 && dock?.primary === 'Deposit' && !pending
+  const depositTo = noBank ? (inr ? 'deposit-10' : moneyIds.noBank) : dock?.primaryTo
+
   const footer = dock && (
     <>
       {pending && <PendingBanner {...pending} />}
+      {noBank && (
+        <Aerobar
+          placement="inline"
+          type="discover"
+          icon={<Icon icon={msAccountBalance} />}
+          heading="Add a bank account to deposit or withdraw"
+          action={{ label: 'Add', onClick: goTo(ADD_BANK) }}
+        />
+      )}
       <ButtonGroup direction="horizontal" aria-label="Wallet actions" className={styles.dock}>
         {/* Deposit is the brand button; other first actions (Activate US Stocks) stay primary. */}
-        <Button variant={dock.primary === 'Deposit' ? 'brand' : 'primary'} size="lg" onClick={goTo(dock.primaryTo)}>
+        <Button variant={dock.primary === 'Deposit' ? 'brand' : 'primary'} size="lg" onClick={goTo(depositTo)}>
           {dock.primary}
         </Button>
         {dock.withdraw !== false && (
-          <Button variant="secondary" size="lg" disabled={dock.withdrawDisabled} onClick={goTo(dock.withdrawTo)}>
+          <Button variant="secondary" size="lg" disabled={dock.withdrawDisabled || noBank} onClick={goTo(dock.withdrawTo)}>
             Withdraw
           </Button>
         )}
@@ -36351,14 +38301,10 @@ export function WalletScreen(props: WalletScreenProps) {
           still={backdrop}
           withdrawable={shownWithdrawable}
           currency={inr ? 'INR' : 'USD'}
+          below={!inr && totalUsd && balanceInr ? <span className={styles.balanceInr}>{balanceInr}</span> : undefined}
           onDetails={backdrop ? undefined : () => setDetailsState('open')}
         />
         <div className={`${styles.page} ${styles.body}`} data-flow={noteFlow || undefined}>
-          {!inr && (
-            <Stack align="center">
-              <CurrencySwitch />
-            </Stack>
-          )}
           {children}
           {nudge && !inr && <GrowNudge />}
           {!inr && <p className={styles.custodian}>US Stocks wallet · held at ViewTrade IFSC</p>}
@@ -36384,6 +38330,7 @@ import { useUsNav } from '../../nav'
 import { Usd } from '../../../../shared/money'
 import { FIGMA, WITHDRAWAL_REQUESTS } from './data'
 import { INR_VIEW, WalletScreen, type WalletDock, type WalletScreenProps } from './WalletScreen'
+import { DepositProgressSheet } from './sheets/DepositProgressSheet'
 import { CancelWithdrawalSheet } from './sheets/CancelWithdrawalSheet'
 import { WithdrawalRequestsSheet } from './sheets/WithdrawalRequestsSheet'
 
@@ -36458,6 +38405,8 @@ export function WalletFundedScreen({ backdrop }: ScreenProps) {
 
 /** Wallet · US tab · Add money transfer in progress. */
 export function WalletTransferInProgressScreen({ backdrop }: ScreenProps) {
+  // Tapping the banner explains the wait: Paid → Sent to US → Ready, and why it takes 1–2 working days.
+  const [explaining, setExplaining] = useState(false)
   return (
     <WalletScreen
       label="Wallet, USD, transfer in progress"
@@ -36467,7 +38416,8 @@ export function WalletTransferInProgressScreen({ backdrop }: ScreenProps) {
       withdrawable="$0.00"
       backTo="stocks-01"
       dock={DEPOSIT_ONLY}
-      pending={{ title: <><Usd value={1035.37} layout="inline" /> deposit in progress</>, sub: 'Arrives in your wallet by Thu 8 PM (or Fri)' }}
+      pending={{ title: <><Usd value={1035.37} layout="inline" /> deposit in progress</>, sub: 'Arrives in your wallet by Thu 8 PM (or Fri)', onOpen: () => !backdrop && setExplaining(true) }}
+      sheet={explaining && <DepositProgressSheet amount={1035.37} eta="by Thu 8 PM" onClose={() => setExplaining(false)} />}
     />
   )
 }
@@ -37014,6 +38964,70 @@ export function CancelWithdrawalSheet({ amount, all, onNo, onYes }: { amount: nu
 }
 ```
 
+### `src/flows/us-stocks/screens/wallet/sheets/DepositProgressSheet.tsx`
+
+```tsx
+// "Why does it take 1–2 days?" — opened from the wallet's "deposit in progress" banner. The same three steps as the Home's
+// "Money on the way" card (Paid → Sent to US → Ready), here as L3 Steps (vertical) so each can say what's happening and
+// why: money leaving India goes through the bank's forex desk under RBI's LRS and an international wire, and US banks
+// only credit on US working days.
+import { BottomSheet, BottomSheetHeader } from '@l3/components/BottomSheet'
+import { Button } from '@l3/components/Button'
+import { ButtonGroup } from '@l3/components/ButtonGroup'
+import { Icon } from '@l3/components/Icon'
+import { Stack } from '@l3/components/Stack'
+import { Steps } from '@l3/components/Steps'
+import { msShieldLockFill } from '@l3/icons/material'
+import { useSheetLayer } from '../../../components/Phone'
+import { Usd } from '../../../../../shared/money'
+import styles from './Sheets.module.css'
+
+export function DepositProgressSheet({ amount, eta, onClose }: { amount: number; eta: string; onClose: () => void }) {
+  const layer = useSheetLayer()
+  return (
+    <BottomSheet
+      open
+      onClose={onClose}
+      container={layer}
+      aria-labelledby="deposit-progress-title"
+      header={
+        <BottomSheetHeader
+          heading="Why it takes 1–2 days"
+          headingId="deposit-progress-title"
+          description="Sending money abroad goes through a few regulated hands. Here's where yours is."
+        />
+      }
+      footer={
+        <ButtonGroup aria-label="Deposit progress">
+          <Button variant="primary" size="lg" fullWidth onClick={onClose}>
+            Got it
+          </Button>
+        </ButtonGroup>
+      }
+    >
+      <Stack gap="24">
+        <Steps
+          label="Your deposit"
+          steps={[
+            { label: 'Paid', state: 'done', description: <><Usd value={amount} layout="inline" /> left your bank account. Nothing more to do.</> },
+            {
+              label: 'Sent to US · 1–2 working days',
+              state: 'loading',
+              description: 'Your bank converts it to dollars under RBI’s Liberalised Remittance Scheme and wires it to our US broker partner. International wires are checked at each bank on the way.',
+            },
+            { label: 'Ready to trade', state: 'todo', description: `Expected ${eta}. US banks credit only on US working days, so a US holiday can add a day.` },
+          ]}
+        />
+        <p className={styles.safeNote}>
+          <Icon icon={msShieldLockFill} size={16} />
+          <span>Your money is safe with Lemonn. It's held in your name at our US broker partner, and you'll be notified the moment it lands.</span>
+        </p>
+      </Stack>
+    </BottomSheet>
+  )
+}
+```
+
 ### `src/flows/us-stocks/screens/wallet/sheets/Sheets.module.css`
 
 ```css
@@ -37154,6 +39168,22 @@ export function CancelWithdrawalSheet({ amount, all, onNo, onYes }: { amount: nu
 .cancelAmount>b {
   font:var(--l3-text-heading-14);
   color:var(--l3-content-primary);
+}
+
+
+/* Deposit progress sheet: "your money is safe" under the steps. */
+.safeNote {
+  display: flex;
+  gap: var(--l3-spacing-08);
+  align-items: flex-start;
+  margin: 0;
+  font: var(--l3-text-description-12);
+  color: var(--l3-content-secondary);
+}
+
+.safeNote > :first-child {
+  flex: none;
+  color: var(--l3-content-accent-success-default);
 }
 ```
 
@@ -37342,6 +39372,348 @@ export function WithdrawalRequestsSheet() {
 
 ## Source — shared app parts it uses
 
+### `src/shared/assets/flags/china.svg`
+
+```tsx
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+  <!-- China, round. Flag artwork keeps its own colours. -->
+  <defs><clipPath id="c"><circle cx="12" cy="12" r="12"/></clipPath></defs>
+  <g clip-path="url(#c)">
+    <rect width="24" height="24" fill="#DE2910"/>
+    <g fill="#FFDE00">
+      <polygon points="7.00,3.90 7.81,6.39 10.42,6.39 8.31,7.92 9.12,10.41 7.00,8.88 4.88,10.41 5.69,7.92 3.58,6.39 6.19,6.39"/>
+      <polygon points="12.88,2.17 12.85,2.97 13.60,3.24 12.83,3.46 12.80,4.26 12.36,3.59 11.59,3.82 12.08,3.19 11.63,2.52 12.38,2.80"/>
+      <polygon points="15.51,4.76 15.21,5.50 15.82,6.01 15.02,5.96 14.72,6.70 14.53,5.92 13.73,5.87 14.41,5.44 14.22,4.67 14.83,5.18"/>
+      <polygon points="14.99,7.72 15.10,8.51 15.89,8.65 15.17,9.00 15.28,9.79 14.73,9.21 14.01,9.56 14.38,8.86 13.83,8.28 14.62,8.42"/>
+      <polygon points="13.05,10.25 12.88,11.03 13.58,11.43 12.78,11.51 12.61,12.29 12.29,11.56 11.50,11.65 12.09,11.11 11.76,10.38 12.46,10.78"/>
+    </g>
+  </g>
+  <circle cx="12" cy="12" r="11.75" fill="none" stroke="#000000" stroke-opacity="0.12" stroke-width="0.5"/>
+</svg>
+```
+
+### `src/shared/assets/flags/europe.svg`
+
+```tsx
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+  <!-- European Union, round. Flag artwork keeps its own colours. -->
+  <defs><clipPath id="c"><circle cx="12" cy="12" r="12"/></clipPath></defs>
+  <g clip-path="url(#c)">
+    <rect width="24" height="24" fill="#003399"/>
+    <g fill="#FFCC00">
+      <polygon points="12.00,3.80 12.27,4.63 13.14,4.63 12.44,5.14 12.71,5.97 12.00,5.46 11.29,5.97 11.56,5.14 10.86,4.63 11.73,4.63"/>
+      <polygon points="15.50,4.74 15.77,5.57 16.64,5.57 15.94,6.08 16.21,6.91 15.50,6.40 14.79,6.91 15.06,6.08 14.36,5.57 15.23,5.57"/>
+      <polygon points="18.06,7.30 18.33,8.13 19.20,8.13 18.50,8.64 18.77,9.47 18.06,8.96 17.36,9.47 17.63,8.64 16.92,8.13 17.79,8.13"/>
+      <polygon points="19.00,10.80 19.27,11.63 20.14,11.63 19.44,12.14 19.71,12.97 19.00,12.46 18.29,12.97 18.56,12.14 17.86,11.63 18.73,11.63"/>
+      <polygon points="18.06,14.30 18.33,15.13 19.20,15.13 18.50,15.64 18.77,16.47 18.06,15.96 17.36,16.47 17.63,15.64 16.92,15.13 17.79,15.13"/>
+      <polygon points="15.50,16.86 15.77,17.69 16.64,17.69 15.94,18.20 16.21,19.03 15.50,18.52 14.79,19.03 15.06,18.20 14.36,17.69 15.23,17.69"/>
+      <polygon points="12.00,17.80 12.27,18.63 13.14,18.63 12.44,19.14 12.71,19.97 12.00,19.46 11.29,19.97 11.56,19.14 10.86,18.63 11.73,18.63"/>
+      <polygon points="8.50,16.86 8.77,17.69 9.64,17.69 8.94,18.20 9.21,19.03 8.50,18.52 7.79,19.03 8.06,18.20 7.36,17.69 8.23,17.69"/>
+      <polygon points="5.94,14.30 6.21,15.13 7.08,15.13 6.37,15.64 6.64,16.47 5.94,15.96 5.23,16.47 5.50,15.64 4.80,15.13 5.67,15.13"/>
+      <polygon points="5.00,10.80 5.27,11.63 6.14,11.63 5.44,12.14 5.71,12.97 5.00,12.46 4.29,12.97 4.56,12.14 3.86,11.63 4.73,11.63"/>
+      <polygon points="5.94,7.30 6.21,8.13 7.08,8.13 6.37,8.64 6.64,9.47 5.94,8.96 5.23,9.47 5.50,8.64 4.80,8.13 5.67,8.13"/>
+      <polygon points="8.50,4.74 8.77,5.57 9.64,5.57 8.94,6.08 9.21,6.91 8.50,6.40 7.79,6.91 8.06,6.08 7.36,5.57 8.23,5.57"/>
+    </g>
+  </g>
+  <circle cx="12" cy="12" r="11.75" fill="none" stroke="#000000" stroke-opacity="0.12" stroke-width="0.5"/>
+</svg>
+```
+
+### `src/shared/assets/flags/india.svg`
+
+```tsx
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+  <!-- India, round: saffron / white / green with the navy Ashoka Chakra. Flag artwork keeps its own colours. -->
+  <defs><clipPath id="c"><circle cx="12" cy="12" r="12"/></clipPath></defs>
+  <g clip-path="url(#c)">
+    <rect width="24" height="8" fill="#FF9933"/>
+    <rect y="8" width="24" height="8" fill="#FFFFFF"/>
+    <rect y="16" width="24" height="8" fill="#138808"/>
+    <circle cx="12" cy="12" r="3" fill="none" stroke="#000080" stroke-width="0.8"/>
+    <circle cx="12" cy="12" r="0.8" fill="#000080"/>
+    <g stroke="#000080" stroke-width="0.4">
+      <path d="M12 9v6M9 12h6M9.88 9.88l4.24 4.24M14.12 9.88l-4.24 4.24"/>
+    </g>
+  </g>
+  <circle cx="12" cy="12" r="11.75" fill="none" stroke="#000000" stroke-opacity="0.12" stroke-width="0.5"/>
+</svg>
+```
+
+### `src/shared/assets/flags/japan.svg`
+
+```tsx
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+  <!-- Japan, round. Flag artwork keeps its own colours. -->
+  <defs><clipPath id="c"><circle cx="12" cy="12" r="12"/></clipPath></defs>
+  <g clip-path="url(#c)">
+    <rect width="24" height="24" fill="#FFFFFF"/>
+    <circle cx="12" cy="12" r="5.6" fill="#BC002D"/>
+  </g>
+  <circle cx="12" cy="12" r="11.75" fill="none" stroke="#000000" stroke-opacity="0.12" stroke-width="0.5"/>
+</svg>
+```
+
+### `src/shared/assets/flags/korea.svg`
+
+```tsx
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+  <!-- South Korea, round. Flag artwork keeps its own colours. -->
+  <defs><clipPath id="c"><circle cx="12" cy="12" r="12"/></clipPath></defs>
+  <g clip-path="url(#c)">
+    <rect width="24" height="24" fill="#FFFFFF"/>
+    <circle cx="12" cy="12" r="5" fill="#0047A0"/>
+    <path d="M7 12a5 5 0 0 1 10 0a2.5 2.5 0 0 1-5 0a2.5 2.5 0 0 0-5 0z" fill="#CD2E3A"/>
+    <g stroke="#000000" stroke-width="0.9" stroke-linecap="butt">
+      <path d="M3.6 6.2l2.4-1.4M4.3 7.6l2.4-1.4M5 9l2.4-1.4" transform="translate(-0.4 0.2)"/>
+      <path d="M20.4 6.2l-2.4-1.4M19.7 7.6l-2.4-1.4M19 9l-2.4-1.4" transform="translate(0.4 0.2)"/>
+      <path d="M3.6 17.8l2.4 1.4M4.3 16.4l2.4 1.4M5 15l2.4 1.4" transform="translate(-0.4 -0.2)"/>
+      <path d="M20.4 17.8l-2.4 1.4M19.7 16.4l-2.4 1.4M19 15l-2.4 1.4" transform="translate(0.4 -0.2)"/>
+    </g>
+  </g>
+  <circle cx="12" cy="12" r="11.75" fill="none" stroke="#000000" stroke-opacity="0.12" stroke-width="0.5"/>
+</svg>
+```
+
+### `src/shared/assets/flags/us.svg`
+
+```tsx
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+  <!-- United States, round: red and white stripes with the blue canton. Flag artwork keeps its own colours. -->
+  <defs><clipPath id="c"><circle cx="12" cy="12" r="12"/></clipPath></defs>
+  <g clip-path="url(#c)">
+    <rect width="24" height="24" fill="#FFFFFF"/>
+    <g fill="#B22234">
+      <rect y="0" width="24" height="2.4"/>
+      <rect y="4.8" width="24" height="2.4"/>
+      <rect y="9.6" width="24" height="2.4"/>
+      <rect y="14.4" width="24" height="2.4"/>
+      <rect y="19.2" width="24" height="2.4"/>
+    </g>
+    <rect width="12" height="12" fill="#3C3B6E"/>
+    <g fill="#FFFFFF">
+      <circle cx="3.5" cy="3" r="0.8"/><circle cx="7" cy="3" r="0.8"/><circle cx="10.5" cy="3" r="0.8"/>
+      <circle cx="5.25" cy="6" r="0.8"/><circle cx="8.75" cy="6" r="0.8"/>
+      <circle cx="3.5" cy="9" r="0.8"/><circle cx="7" cy="9" r="0.8"/><circle cx="10.5" cy="9" r="0.8"/>
+    </g>
+  </g>
+  <circle cx="12" cy="12" r="11.75" fill="none" stroke="#000000" stroke-opacity="0.12" stroke-width="0.5"/>
+</svg>
+```
+
+### `src/shared/copy.ts`
+
+```ts
+/**
+ * UI copy. Every user-facing string of a flow lives in ONE file, `src/flows/<flow-id>/copy.json` — flat keys
+ * ("empty.title") → the text. Screens read it through the flow's `t`:
+ *
+ *   t('empty.title')                       → "No search results found"
+ *   t('group.results', { list, count })    → "Stocks (8)"   ({name} placeholders are filled in)
+ *
+ * Sample data (stock names, prices, watchlists) stays in the flow's data.ts — copy.json is only the words the app
+ * itself says: titles, labels, buttons, empty states, accessible names. Porting a flow: this file is the string
+ * table (Flutter ARB / iOS Localizable.strings).
+ */
+export type CopyVars = Record<string, string | number>
+
+export function makeCopy<Copy extends Record<string, string>>(flow: string, copy: Copy) {
+  return function t(key: keyof Copy & string, vars?: CopyVars): string {
+    const template = copy[key] ?? key
+    return vars ? template.replace(/\{(\w+)\}/g, (m, name: string) => (name in vars ? String(vars[name]) : m)) : template
+  }
+}
+```
+
+### `src/shared/data/companies.ts`
+
+```ts
+// The company catalogue — every Indian listed stock the prototype shows, with what a card, a list row or the stock
+// (asset) page needs: identity, logo, profile and a real market snapshot.
+//
+// - Logos come from the design system (@l3/assets/company-logos).
+// - Profiles (founded, headquarters, website, one line about the business) are written here — public facts.
+// - Market data (price, day / 52-week range, volume, 3 months of daily closes, sector, industry) comes from
+//   market-snapshot.json, refreshed from Yahoo Finance by `npm run market:snapshot` (see scripts/market-snapshot.mjs).
+//   Near-live, not live: the bundled copy is used at first, then the app re-reads ./market-snapshot.json (published
+//   next to the page; refreshed every 15 minutes in market hours by the site's GitHub Action) on load and every
+//   5 minutes. `companies` / `getCompany()` then return the newer numbers; call `useMarketSnapshot()` in a screen
+//   that shows prices so it re-renders when they change.
+import { useSyncExternalStore } from 'react'
+import { companyLogo } from '@l3/assets/company-logos'
+import bundled from './market-snapshot.json'
+
+export type Exchange = 'NSE' | 'BSE'
+
+export type CompanyProfile = {
+  /** NSE trading symbol — the key everywhere (RELIANCE). */
+  symbol: string
+  /** How the app writes it (Reliance Industries). */
+  name: string
+  /** Two letters for the Avatar when there's no logo. */
+  initials: string
+  exchanges: Exchange[]
+  founded: number
+  headquarters: string
+  website: string
+  /** One sentence on the business. */
+  about: string
+}
+
+export type DailyClose = { date: string; close: number }
+
+export type MarketData = {
+  /** Last traded price, ₹. */
+  price: number
+  prevClose: number
+  /** Day change, ₹ and %. */
+  change: number
+  changePct: number
+  dayHigh: number
+  dayLow: number
+  high52: number
+  low52: number
+  volume: number | null
+  sector: string | null
+  industry: string | null
+  /** Daily closes, oldest first (about 3 months) — for sparklines and the stock page chart. */
+  closes: DailyClose[]
+}
+
+export type Company = CompanyProfile & {
+  /** Logo image URL from the design system, or undefined (show `initials`). */
+  logoUrl?: string
+  /** The snapshot's market data, or undefined if the symbol wasn't fetched. */
+  market?: MarketData
+}
+
+const both: Exchange[] = ['NSE', 'BSE']
+const company = (symbol: string, name: string, initials: string, founded: number, headquarters: string, website: string, about: string): CompanyProfile => ({
+  symbol, name, initials, exchanges: both, founded, headquarters, website, about,
+})
+
+/** Profiles, by NSE symbol (one line each — scripts/market-snapshot.mjs reads the symbols from here). */
+export const profiles = {
+  ADANIENT: company('ADANIENT', 'Adani Enterprises', 'AE', 1988, 'Ahmedabad', 'adanienterprises.com', 'The Adani Group’s incubator — airports, roads, data centres, mining and new energy.'),
+  ADANIGREEN: company('ADANIGREEN', 'Adani Green Energy', 'AG', 2015, 'Ahmedabad', 'adanigreenenergy.com', 'One of India’s largest renewable power producers — solar, wind and hybrid plants.'),
+  ADANIPORTS: company('ADANIPORTS', 'Adani Ports and SEZ', 'AP', 1998, 'Ahmedabad', 'adaniports.com', 'India’s largest private port operator, with logistics and special economic zones.'),
+  ADANIPOWER: company('ADANIPOWER', 'Adani Power', 'AP', 1996, 'Ahmedabad', 'adanipower.com', 'India’s largest private thermal power producer.'),
+  ASIANPAINT: company('ASIANPAINT', 'Asian Paints', 'AP', 1942, 'Mumbai', 'asianpaints.com', 'India’s largest paint company — decorative and industrial coatings, home décor.'),
+  AXISBANK: company('AXISBANK', 'Axis Bank', 'AX', 1993, 'Mumbai', 'axisbank.com', 'A large private-sector bank — retail, corporate and SME banking.'),
+  'BAJAJ-AUTO': company('BAJAJ-AUTO', 'Bajaj Auto', 'BA', 1945, 'Pune', 'bajajauto.com', 'Makes motorcycles, scooters and three-wheelers, and exports them worldwide.'),
+  BAJAJFINSV: company('BAJAJFINSV', 'Bajaj Finserv', 'BF', 2007, 'Pune', 'bajajfinserv.in', 'Holding company for Bajaj’s lending, insurance and payments businesses.'),
+  BAJFINANCE: company('BAJFINANCE', 'Bajaj Finance', 'BF', 1987, 'Pune', 'bajajfinserv.in', 'A large non-bank lender — consumer, SME and mortgage loans.'),
+  BEL: company('BEL', 'Bharat Electronics', 'BE', 1954, 'Bengaluru', 'bel-india.in', 'State-owned maker of defence electronics — radars, communication and avionics.'),
+  BHARTIARTL: company('BHARTIARTL', 'Bharti Airtel', 'BA', 1995, 'New Delhi', 'airtel.in', 'Telecom operator — mobile, broadband and DTH in India and Africa.'),
+  COALINDIA: company('COALINDIA', 'Coal India', 'CI', 1975, 'Kolkata', 'coalindia.in', 'State-owned miner — the world’s largest coal producer.'),
+  DIVISLAB: company('DIVISLAB', 'Divi’s Laboratories', 'DL', 1990, 'Hyderabad', 'divislabs.com', 'Makes active pharmaceutical ingredients and intermediates for drug makers worldwide.'),
+  DMART: company('DMART', 'Avenue Supermarts (DMart)', 'DM', 2000, 'Mumbai', 'dmartindia.com', 'Runs the DMart chain of value supermarkets.'),
+  EICHERMOT: company('EICHERMOT', 'Eicher Motors', 'EM', 1948, 'New Delhi', 'eicher.in', 'Owner of Royal Enfield motorcycles and a partner in VE Commercial Vehicles.'),
+  ETERNAL: company('ETERNAL', 'Eternal (Zomato)', 'ET', 2008, 'Gurugram', 'eternal.com', 'Parent of Zomato, Blinkit, District and Hyperpure — food delivery and quick commerce.'),
+  GRASIM: company('GRASIM', 'Grasim Industries', 'GI', 1947, 'Mumbai', 'grasim.com', 'Aditya Birla Group company — cellulose fibre, chemicals, paints and cement (via UltraTech).'),
+  HAL: company('HAL', 'Hindustan Aeronautics', 'HA', 1940, 'Bengaluru', 'hal-india.co.in', 'State-owned maker of military aircraft, helicopters and aero engines.'),
+  HCLTECH: company('HCLTECH', 'HCL Technologies', 'HC', 1976, 'Noida', 'hcltech.com', 'IT services and software company — engineering, digital and cloud services.'),
+  HDFCBANK: company('HDFCBANK', 'HDFC Bank', 'HB', 1994, 'Mumbai', 'hdfcbank.com', 'India’s largest private-sector bank by assets.'),
+  HINDALCO: company('HINDALCO', 'Hindalco Industries', 'HI', 1958, 'Mumbai', 'hindalco.com', 'Aditya Birla Group’s aluminium and copper maker; owns Novelis.'),
+  HINDUNILVR: company('HINDUNILVR', 'Hindustan Unilever', 'HU', 1933, 'Mumbai', 'hul.co.in', 'India’s largest consumer goods company — Surf, Dove, Lux, Brooke Bond and more.'),
+  HINDZINC: company('HINDZINC', 'Hindustan Zinc', 'HZ', 1966, 'Udaipur', 'hzlindia.com', 'Vedanta Group’s integrated zinc, lead and silver producer.'),
+  ICICIBANK: company('ICICIBANK', 'ICICI Bank', 'IB', 1994, 'Mumbai', 'icicibank.com', 'A large private-sector bank — retail, corporate and digital banking.'),
+  IDEA: company('IDEA', 'Vodafone Idea', 'VI', 1995, 'Mumbai', 'myvi.in', 'Telecom operator Vi — mobile and broadband, formed by the merger of Vodafone India and Idea Cellular.'),
+  INDIGO: company('INDIGO', 'InterGlobe Aviation (IndiGo)', 'IG', 2006, 'Gurugram', 'goindigo.in', 'Runs IndiGo, India’s largest airline by passengers.'),
+  INFY: company('INFY', 'Infosys', 'IN', 1981, 'Bengaluru', 'infosys.com', 'IT services and consulting company — digital, cloud and AI services.'),
+  IOC: company('IOC', 'Indian Oil Corporation', 'IO', 1959, 'New Delhi', 'iocl.com', 'State-owned oil refiner and fuel retailer — India’s largest.'),
+  IRFC: company('IRFC', 'Indian Railway Finance Corporation', 'IR', 1986, 'New Delhi', 'irfc.co.in', 'State-owned lender that funds Indian Railways’ trains, wagons and track.'),
+  ITC: company('ITC', 'ITC', 'IT', 1910, 'Kolkata', 'itcportal.com', 'Cigarettes, packaged foods (Aashirvaad, Sunfeast), paperboards and agri-business.'),
+  JSWSTEEL: company('JSWSTEEL', 'JSW Steel', 'JS', 1982, 'Mumbai', 'jsw.in', 'One of India’s largest steel makers.'),
+  KOTAKBANK: company('KOTAKBANK', 'Kotak Mahindra Bank', 'KB', 1985, 'Mumbai', 'kotak.com', 'Private-sector bank with broking, insurance and asset management.'),
+  LICI: company('LICI', 'Life Insurance Corporation of India', 'LI', 1956, 'Mumbai', 'licindia.in', 'State-owned life insurer — India’s largest.'),
+  LT: company('LT', 'Larsen & Toubro', 'LT', 1938, 'Mumbai', 'larsentoubro.com', 'Engineering and construction conglomerate — infrastructure, defence, IT services.'),
+  'M&M': company('M&M', 'Mahindra & Mahindra', 'MM', 1945, 'Mumbai', 'mahindra.com', 'SUVs, tractors and commercial vehicles; India’s largest tractor maker.'),
+  MARUTI: company('MARUTI', 'Maruti Suzuki India', 'MS', 1981, 'New Delhi', 'marutisuzuki.com', 'India’s largest car maker, majority-owned by Suzuki.'),
+  NESTLEIND: company('NESTLEIND', 'Nestlé India', 'NI', 1959, 'Gurugram', 'nestle.in', 'Maggi, Nescafé, KitKat and baby food — the Indian arm of Nestlé.'),
+  NHPC: company('NHPC', 'NHPC', 'NH', 1975, 'Faridabad', 'nhpcindia.com', 'State-owned hydroelectric power producer — India’s largest.'),
+  NTPC: company('NTPC', 'NTPC', 'NT', 1975, 'New Delhi', 'ntpc.co.in', 'State-owned power producer — India’s largest, thermal and renewables.'),
+  ONGC: company('ONGC', 'Oil and Natural Gas Corporation', 'ON', 1956, 'New Delhi', 'ongcindia.com', 'State-owned explorer and producer of crude oil and natural gas — India’s largest.'),
+  POWERGRID: company('POWERGRID', 'Power Grid Corporation of India', 'PG', 1989, 'Gurugram', 'powergrid.in', 'State-owned operator of India’s inter-state power transmission network.'),
+  RELIANCE: company('RELIANCE', 'Reliance Industries', 'RI', 1966, 'Mumbai', 'ril.com', 'Oil-to-chemicals, Jio telecom and Reliance Retail — India’s largest company by revenue.'),
+  SBIN: company('SBIN', 'State Bank of India', 'SB', 1955, 'Mumbai', 'sbi.co.in', 'State-owned bank — India’s largest by assets and customers.'),
+  SHRIRAMFIN: company('SHRIRAMFIN', 'Shriram Finance', 'SF', 1979, 'Chennai', 'shriramfinance.in', 'Non-bank lender — commercial vehicle, MSME and gold loans.'),
+  SOLARINDS: company('SOLARINDS', 'Solar Industries India', 'SI', 1995, 'Nagpur', 'solargroup.com', 'Industrial explosives and defence ammunition maker.'),
+  SOUTHBANK: company('SOUTHBANK', 'South Indian Bank', 'SB', 1929, 'Thrissur', 'southindianbank.com', 'Private-sector bank rooted in Kerala — retail, SME and NRI banking.'),
+  SUNPHARMA: company('SUNPHARMA', 'Sun Pharmaceutical Industries', 'SP', 1983, 'Mumbai', 'sunpharma.com', 'India’s largest drug maker — specialty and generic medicines.'),
+  SUZLON: company('SUZLON', 'Suzlon Energy', 'SE', 1995, 'Pune', 'suzlon.com', 'India’s largest wind turbine maker — builds and services wind farms.'),
+  TATASTEEL: company('TATASTEEL', 'Tata Steel', 'TS', 1907, 'Mumbai', 'tatasteel.com', 'Tata Group’s steel maker, with plants in India, the Netherlands and the UK.'),
+  TCS: company('TCS', 'Tata Consultancy Services', 'TC', 1968, 'Mumbai', 'tcs.com', 'India’s largest IT services company, part of the Tata Group.'),
+  TITAN: company('TITAN', 'Titan Company', 'TI', 1984, 'Bengaluru', 'titancompany.in', 'Tanishq jewellery, Titan watches and eyewear — Tata Group.'),
+  TORNTPHARM: company('TORNTPHARM', 'Torrent Pharmaceuticals', 'TP', 1959, 'Ahmedabad', 'torrentpharma.com', 'Branded generic medicines in India and abroad.'),
+  TVSMOTOR: company('TVSMOTOR', 'TVS Motor Company', 'TV', 1978, 'Chennai', 'tvsmotor.com', 'Motorcycles, scooters (incl. electric) and three-wheelers.'),
+  ULTRACEMCO: company('ULTRACEMCO', 'UltraTech Cement', 'UC', 1983, 'Mumbai', 'ultratechcement.com', 'India’s largest cement maker — Aditya Birla Group.'),
+  WIPRO: company('WIPRO', 'Wipro', 'WI', 1945, 'Bengaluru', 'wipro.com', 'IT services and consulting company.'),
+  YESBANK: company('YESBANK', 'Yes Bank', 'YB', 2004, 'Mumbai', 'yesbank.in', 'Private-sector bank — retail, MSME and corporate banking; rebuilt by an SBI-led rescue in 2020.'),
+} satisfies Record<string, CompanyProfile>
+
+export type CompanySymbol = keyof typeof profiles
+
+type Snapshot = { source: string; fetchedAt: string; quotes: Record<string, Partial<MarketData> & { closes?: DailyClose[] }> }
+
+/** When the market data shown now was fetched (ISO date-time) and from where. Updated in place by the runtime refresh. */
+export const marketSnapshot = { fetchedAt: bundled.fetchedAt, source: bundled.source }
+
+function toCompany(p: CompanyProfile, snapshot: Snapshot, fallback?: MarketData): Company {
+  const q = snapshot.quotes[p.symbol]
+  return { ...p, logoUrl: companyLogo(p.symbol), market: q?.price != null ? (q as MarketData) : fallback }
+}
+
+/** Every company with logo and market data, by NSE symbol. */
+export const companies = Object.fromEntries(Object.values(profiles).map((p) => [p.symbol, toCompany(p, bundled as Snapshot)])) as Record<CompanySymbol, Company>
+
+// ── Runtime refresh ──────────────────────────────────────────────────────────────────────────────────────────────
+const listeners = new Set<() => void>()
+
+function apply(snapshot: Snapshot) {
+  if (!(snapshot.fetchedAt > marketSnapshot.fetchedAt)) return // ISO strings sort by time; never go back to older data
+  // A symbol the published file doesn't have yet (added to the catalogue after the site's copy) keeps the numbers we have.
+  for (const p of Object.values(profiles)) companies[p.symbol as CompanySymbol] = toCompany(p, snapshot, companies[p.symbol as CompanySymbol]?.market)
+  Object.assign(marketSnapshot, { fetchedAt: snapshot.fetchedAt, source: snapshot.source })
+  listeners.forEach((l) => l())
+}
+
+/** Re-read the published snapshot (same origin — no API call). Fails quietly: the numbers we have stay. */
+export async function refreshMarket() {
+  try {
+    const res = await fetch('market-snapshot.json', { cache: 'no-cache' })
+    if (res.ok) apply(await res.json())
+  } catch { /* offline, or the file isn't there — keep what we have */ }
+}
+
+const REFRESH_MS = 5 * 60 * 1000
+if (typeof window !== 'undefined') {
+  refreshMarket()
+  setInterval(() => { if (document.visibilityState === 'visible') refreshMarket() }, REFRESH_MS)
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') refreshMarket() })
+}
+
+function subscribe(listener: () => void) {
+  listeners.add(listener)
+  return () => { listeners.delete(listener) }
+}
+
+/** Re-renders the calling component when fresher market data arrives; returns its `fetchedAt`. */
+export function useMarketSnapshot(): string {
+  return useSyncExternalStore(subscribe, () => marketSnapshot.fetchedAt)
+}
+
+/** One company by NSE symbol (undefined if it isn't in the catalogue). */
+export function getCompany(symbol: string): Company | undefined {
+  return (companies as Record<string, Company | undefined>)[symbol]
+}
+
+/** All companies, sorted by today's change — for "top gainers / losers" style lists. */
+export function companiesByChange(direction: 'gainers' | 'losers'): Company[] {
+  const list = Object.values(companies).filter((c) => c.market)
+  return list.sort((a, b) => (direction === 'gainers' ? b.market!.changePct - a.market!.changePct : a.market!.changePct - b.market!.changePct))
+}
+```
+
 ### `src/shared/data/etfIssuers.ts`
 
 ```ts
@@ -37368,17 +39740,21 @@ const ISSUERS: Record<string, Issuer> = {
   graniteshares: { file: 'graniteshares', plate: 'var(--l3-static-white)', name: 'GraniteShares', fill: true },
 }
 const ISSUER_OF: Record<string, string> = {
-  SPY: 'spdr', XLE: 'spdr', QQQ: 'invesco', VTI: 'vanguard', VGK: 'vanguard', SMH: 'vaneck', ITA: 'ishares', INDA: 'ishares',
-  MCHI: 'ishares', EWJ: 'ishares', EWY: 'ishares', BOTZ: 'globalx', UFO: 'procure', EPI: 'wisdomtree', KWEB: 'kraneshares',
+  SPY: 'spdr', XLE: 'spdr', XLF: 'spdr', XLV: 'spdr', FEZ: 'spdr', QQQ: 'invesco', CQQQ: 'invesco', VTI: 'vanguard', VGK: 'vanguard', SMH: 'vaneck', ITA: 'ishares', INDA: 'ishares',
+  MCHI: 'ishares', EWJ: 'ishares', EWY: 'ishares', FXI: 'ishares', HEWJ: 'ishares', SCJ: 'ishares', EZU: 'ishares',
+  IEUR: 'ishares', DXJ: 'wisdomtree', BOTZ: 'globalx', UFO: 'procure', EPI: 'wisdomtree', KWEB: 'kraneshares',
   TQQQ: 'proshares', SQQQ: 'proshares', SOXL: 'direxion', SOXS: 'direxion', SPXL: 'direxion', SPXS: 'direxion',
   NVDL: 'graniteshares', NVD: 'graniteshares', SGOV: 'ishares', SHV: 'ishares', BIL: 'spdr',
 }
 
-/** The issuer's logo (PNG URL), the plate behind it and whether it fills the circle; undefined when there is none. */
-export const etfIssuerLogo = (sym: string): { src: string; plate: string; fill: boolean } | undefined => {
+/**
+ * The issuer's logo (PNG URL), its file name (for the square logo-on-plate images some screens use), the plate behind it
+ * and whether it fills the circle; undefined when there is none.
+ */
+export const etfIssuerLogo = (sym: string): { src: string; file: string; plate: string; fill: boolean } | undefined => {
   const issuer = ISSUERS[ISSUER_OF[sym]]
   const src = issuer && logoByFile.get(issuer.file)
-  return issuer && src ? { src, plate: issuer.plate, fill: !!issuer.fill } : undefined
+  return issuer && src ? { src, file: issuer.file, plate: issuer.plate, fill: !!issuer.fill } : undefined
 }
 
 /** The issuer's name ("Vanguard"), for the ETF page. */
@@ -37417,6 +39793,12 @@ function subscribe(onChange: () => void) {
       timer = undefined
     }
   }
+}
+
+/** Re-render every ticking price now (fresher snapshot data arrived), one tick early. */
+export function nudgeLive() {
+  tick += 1
+  listeners.forEach((l) => l())
 }
 
 /** The live clock: a number that goes up by one every 2 s while anything on screen listens. */
@@ -37468,128 +39850,15278 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
 }
 ```
 
+### `src/shared/data/market-snapshot.json`
+
+```json
+{
+ "source": "Yahoo Finance (public chart + search endpoints)",
+ "fetchedAt": "2026-10-22T20:21:36.864Z",
+ "symbols": [
+  "ADANIENT",
+  "ADANIGREEN",
+  "ADANIPORTS",
+  "ADANIPOWER",
+  "ASIANPAINT",
+  "AXISBANK",
+  "BAJAJ-AUTO",
+  "BAJAJFINSV",
+  "BAJFINANCE",
+  "BEL",
+  "BHARTIARTL",
+  "COALINDIA",
+  "DIVISLAB",
+  "DMART",
+  "EICHERMOT",
+  "ETERNAL",
+  "GRASIM",
+  "HAL",
+  "HCLTECH",
+  "HDFCBANK",
+  "HINDALCO",
+  "HINDUNILVR",
+  "HINDZINC",
+  "ICICIBANK",
+  "IDEA",
+  "INDIGO",
+  "INFY",
+  "IOC",
+  "IRFC",
+  "ITC",
+  "JSWSTEEL",
+  "KOTAKBANK",
+  "LICI",
+  "LT",
+  "M&M",
+  "MARUTI",
+  "NESTLEIND",
+  "NHPC",
+  "NTPC",
+  "ONGC",
+  "POWERGRID",
+  "RELIANCE",
+  "SBIN",
+  "SHRIRAMFIN",
+  "SOLARINDS",
+  "SOUTHBANK",
+  "SUNPHARMA",
+  "SUZLON",
+  "TATASTEEL",
+  "TCS",
+  "TITAN",
+  "TORNTPHARM",
+  "TVSMOTOR",
+  "ULTRACEMCO",
+  "WIPRO",
+  "YESBANK"
+ ],
+ "quotes": {
+  "ADANIENT": {
+   "price": 2550,
+   "prevClose": 2657.5,
+   "change": -107.5,
+   "changePct": -4.05,
+   "dayHigh": 2592.2,
+   "dayLow": 2531.5,
+   "high52": 3245,
+   "low52": 1753,
+   "volume": 1011595,
+   "longName": "Adani Enterprises Limited",
+   "closes": [
+    {
+     "date": "2026-07-22",
+     "close": 3147.7
+    },
+    {
+     "date": "2026-07-23",
+     "close": 3010
+    },
+    {
+     "date": "2026-07-24",
+     "close": 3026.4
+    },
+    {
+     "date": "2026-07-27",
+     "close": 3036.6
+    },
+    {
+     "date": "2026-07-28",
+     "close": 3002.3
+    },
+    {
+     "date": "2026-07-29",
+     "close": 3024.5
+    },
+    {
+     "date": "2026-07-30",
+     "close": 3049.1
+    },
+    {
+     "date": "2026-07-31",
+     "close": 3009.5
+    },
+    {
+     "date": "2026-08-03",
+     "close": 3068
+    },
+    {
+     "date": "2026-08-04",
+     "close": 3050
+    },
+    {
+     "date": "2026-08-05",
+     "close": 3050
+    },
+    {
+     "date": "2026-08-06",
+     "close": 3026
+    },
+    {
+     "date": "2026-08-07",
+     "close": 3020
+    },
+    {
+     "date": "2026-08-10",
+     "close": 3010
+    },
+    {
+     "date": "2026-08-11",
+     "close": 2995.5
+    },
+    {
+     "date": "2026-08-12",
+     "close": 2985.7
+    },
+    {
+     "date": "2026-08-13",
+     "close": 2964.9
+    },
+    {
+     "date": "2026-08-14",
+     "close": 3035.1
+    },
+    {
+     "date": "2026-08-17",
+     "close": 3007.3
+    },
+    {
+     "date": "2026-08-18",
+     "close": 3002.5
+    },
+    {
+     "date": "2026-08-19",
+     "close": 2990.3
+    },
+    {
+     "date": "2026-08-20",
+     "close": 2994.9
+    },
+    {
+     "date": "2026-08-21",
+     "close": 2997
+    },
+    {
+     "date": "2026-08-24",
+     "close": 2998.6
+    },
+    {
+     "date": "2026-08-25",
+     "close": 3110
+    },
+    {
+     "date": "2026-08-26",
+     "close": 3112
+    },
+    {
+     "date": "2026-08-27",
+     "close": 3169
+    },
+    {
+     "date": "2026-08-28",
+     "close": 3168.5
+    },
+    {
+     "date": "2026-08-31",
+     "close": 2859.1
+    },
+    {
+     "date": "2026-09-01",
+     "close": 2863.9
+    },
+    {
+     "date": "2026-09-02",
+     "close": 2891.8
+    },
+    {
+     "date": "2026-09-03",
+     "close": 2901
+    },
+    {
+     "date": "2026-09-04",
+     "close": 2938
+    },
+    {
+     "date": "2026-09-07",
+     "close": 2950
+    },
+    {
+     "date": "2026-09-08",
+     "close": 2953.1
+    },
+    {
+     "date": "2026-09-09",
+     "close": 3104.7
+    },
+    {
+     "date": "2026-09-10",
+     "close": 3077.2
+    },
+    {
+     "date": "2026-09-11",
+     "close": 3060
+    },
+    {
+     "date": "2026-09-15",
+     "close": 2928.6
+    },
+    {
+     "date": "2026-09-16",
+     "close": 2920
+    },
+    {
+     "date": "2026-09-17",
+     "close": 2923.2
+    },
+    {
+     "date": "2026-09-18",
+     "close": 3020
+    },
+    {
+     "date": "2026-09-21",
+     "close": 2975
+    },
+    {
+     "date": "2026-09-22",
+     "close": 2997
+    },
+    {
+     "date": "2026-09-23",
+     "close": 2993.2
+    },
+    {
+     "date": "2026-09-24",
+     "close": 2900
+    },
+    {
+     "date": "2026-09-25",
+     "close": 2916.5
+    },
+    {
+     "date": "2026-09-28",
+     "close": 2831.1
+    },
+    {
+     "date": "2026-09-29",
+     "close": 2972.9
+    },
+    {
+     "date": "2026-09-30",
+     "close": 2903.4
+    },
+    {
+     "date": "2026-10-01",
+     "close": 2816.8
+    },
+    {
+     "date": "2026-10-05",
+     "close": 2864
+    },
+    {
+     "date": "2026-10-06",
+     "close": 2849.9
+    },
+    {
+     "date": "2026-10-07",
+     "close": 2743
+    },
+    {
+     "date": "2026-10-08",
+     "close": 2596
+    },
+    {
+     "date": "2026-10-09",
+     "close": 2634.4
+    },
+    {
+     "date": "2026-10-12",
+     "close": 2630
+    },
+    {
+     "date": "2026-10-13",
+     "close": 2695
+    },
+    {
+     "date": "2026-10-14",
+     "close": 2722.6
+    },
+    {
+     "date": "2026-10-15",
+     "close": 2700
+    },
+    {
+     "date": "2026-10-16",
+     "close": 2692
+    },
+    {
+     "date": "2026-10-19",
+     "close": 2657.5
+    },
+    {
+     "date": "2026-10-21",
+     "close": 2594.5
+    }
+   ],
+   "sector": "Energy",
+   "industry": "Thermal Coal"
+  },
+  "ADANIGREEN": {
+   "price": 1250,
+   "prevClose": 1295.2,
+   "change": -45.2,
+   "changePct": -3.49,
+   "dayHigh": 1263.4,
+   "dayLow": 1210.7,
+   "high52": 1631.5,
+   "low52": 765,
+   "volume": 1689322,
+   "longName": "Adani Green Energy Limited",
+   "closes": [
+    {
+     "date": "2026-07-22",
+     "close": 1472.3
+    },
+    {
+     "date": "2026-07-23",
+     "close": 1379.9
+    },
+    {
+     "date": "2026-07-24",
+     "close": 1395.1
+    },
+    {
+     "date": "2026-07-27",
+     "close": 1399.7
+    },
+    {
+     "date": "2026-07-28",
+     "close": 1377.8
+    },
+    {
+     "date": "2026-07-29",
+     "close": 1373.1
+    },
+    {
+     "date": "2026-07-30",
+     "close": 1358.7
+    },
+    {
+     "date": "2026-07-31",
+     "close": 1383
+    },
+    {
+     "date": "2026-08-03",
+     "close": 1395
+    },
+    {
+     "date": "2026-08-04",
+     "close": 1384
+    },
+    {
+     "date": "2026-08-05",
+     "close": 1380
+    },
+    {
+     "date": "2026-08-06",
+     "close": 1371.5
+    },
+    {
+     "date": "2026-08-07",
+     "close": 1372.4
+    },
+    {
+     "date": "2026-08-10",
+     "close": 1369
+    },
+    {
+     "date": "2026-08-11",
+     "close": 1366
+    },
+    {
+     "date": "2026-08-12",
+     "close": 1332.3
+    },
+    {
+     "date": "2026-08-13",
+     "close": 1319
+    },
+    {
+     "date": "2026-08-14",
+     "close": 1348
+    },
+    {
+     "date": "2026-08-17",
+     "close": 1327.6
+    },
+    {
+     "date": "2026-08-18",
+     "close": 1308
+    },
+    {
+     "date": "2026-08-19",
+     "close": 1293
+    },
+    {
+     "date": "2026-08-20",
+     "close": 1301.8
+    },
+    {
+     "date": "2026-08-21",
+     "close": 1320
+    },
+    {
+     "date": "2026-08-24",
+     "close": 1308
+    },
+    {
+     "date": "2026-08-25",
+     "close": 1330
+    },
+    {
+     "date": "2026-08-26",
+     "close": 1303.2
+    },
+    {
+     "date": "2026-08-27",
+     "close": 1328.5
+    },
+    {
+     "date": "2026-08-28",
+     "close": 1311
+    },
+    {
+     "date": "2026-08-31",
+     "close": 1214.9
+    },
+    {
+     "date": "2026-09-01",
+     "close": 1265
+    },
+    {
+     "date": "2026-09-02",
+     "close": 1296
+    },
+    {
+     "date": "2026-09-03",
+     "close": 1283.4
+    },
+    {
+     "date": "2026-09-04",
+     "close": 1301.3
+    },
+    {
+     "date": "2026-09-07",
+     "close": 1288
+    },
+    {
+     "date": "2026-09-08",
+     "close": 1292
+    },
+    {
+     "date": "2026-09-09",
+     "close": 1315
+    },
+    {
+     "date": "2026-09-10",
+     "close": 1299.1
+    },
+    {
+     "date": "2026-09-11",
+     "close": 1281.3
+    },
+    {
+     "date": "2026-09-15",
+     "close": 1255
+    },
+    {
+     "date": "2026-09-16",
+     "close": 1270.2
+    },
+    {
+     "date": "2026-09-17",
+     "close": 1274.2
+    },
+    {
+     "date": "2026-09-18",
+     "close": 1334.5
+    },
+    {
+     "date": "2026-09-21",
+     "close": 1303.6
+    },
+    {
+     "date": "2026-09-22",
+     "close": 1304
+    },
+    {
+     "date": "2026-09-23",
+     "close": 1300.9
+    },
+    {
+     "date": "2026-09-24",
+     "close": 1280.1
+    },
+    {
+     "date": "2026-09-25",
+     "close": 1296.6
+    },
+    {
+     "date": "2026-09-28",
+     "close": 1235
+    },
+    {
+     "date": "2026-09-29",
+     "close": 1260
+    },
+    {
+     "date": "2026-09-30",
+     "close": 1278
+    },
+    {
+     "date": "2026-10-01",
+     "close": 1276.1
+    },
+    {
+     "date": "2026-10-05",
+     "close": 1284
+    },
+    {
+     "date": "2026-10-06",
+     "close": 1313
+    },
+    {
+     "date": "2026-10-07",
+     "close": 1341.4
+    },
+    {
+     "date": "2026-10-08",
+     "close": 1235.7
+    },
+    {
+     "date": "2026-10-09",
+     "close": 1255.8
+    },
+    {
+     "date": "2026-10-12",
+     "close": 1274
+    },
+    {
+     "date": "2026-10-13",
+     "close": 1287
+    },
+    {
+     "date": "2026-10-14",
+     "close": 1318.4
+    },
+    {
+     "date": "2026-10-15",
+     "close": 1307.1
+    },
+    {
+     "date": "2026-10-16",
+     "close": 1302
+    },
+    {
+     "date": "2026-10-19",
+     "close": 1295.2
+    },
+    {
+     "date": "2026-10-21",
+     "close": 1258.5
+    }
+   ],
+   "sector": "Utilities",
+   "industry": "Utilities—Renewable"
+  },
+  "ADANIPORTS": {
+   "price": 1750,
+   "prevClose": 1766,
+   "change": -16,
+   "changePct": -0.91,
+   "dayHigh": 1750,
+   "dayLow": 1715.3,
+   "high52": 1891.1,
+   "low52": 1292,
+   "volume": 1634176,
+   "longName": "Adani Ports and Special Economic Zone Limited",
+   "closes": [
+    {
+     "date": "2026-07-22",
+     "close": 1819.4
+    },
+    {
+     "date": "2026-07-23",
+     "close": 1778.5
+    },
+    {
+     "date": "2026-07-24",
+     "close": 1768.3
+    },
+    {
+     "date": "2026-07-27",
+     "close": 1770.4
+    },
+    {
+     "date": "2026-07-28",
+     "close": 1774.7
+    },
+    {
+     "date": "2026-07-29",
+     "close": 1719.7
+    },
+    {
+     "date": "2026-07-30",
+     "close": 1664.1
+    },
+    {
+     "date": "2026-07-31",
+     "close": 1696.5
+    },
+    {
+     "date": "2026-08-03",
+     "close": 1701
+    },
+    {
+     "date": "2026-08-04",
+     "close": 1706.7
+    },
+    {
+     "date": "2026-08-05",
+     "close": 1700
+    },
+    {
+     "date": "2026-08-06",
+     "close": 1695
+    },
+    {
+     "date": "2026-08-07",
+     "close": 1693.5
+    },
+    {
+     "date": "2026-08-10",
+     "close": 1681
+    },
+    {
+     "date": "2026-08-11",
+     "close": 1668.2
+    },
+    {
+     "date": "2026-08-12",
+     "close": 1665
+    },
+    {
+     "date": "2026-08-13",
+     "close": 1658
+    },
+    {
+     "date": "2026-08-14",
+     "close": 1700
+    },
+    {
+     "date": "2026-08-17",
+     "close": 1691
+    },
+    {
+     "date": "2026-08-18",
+     "close": 1682.4
+    },
+    {
+     "date": "2026-08-19",
+     "close": 1681.9
+    },
+    {
+     "date": "2026-08-20",
+     "close": 1696
+    },
+    {
+     "date": "2026-08-21",
+     "close": 1700
+    },
+    {
+     "date": "2026-08-24",
+     "close": 1672.1
+    },
+    {
+     "date": "2026-08-25",
+     "close": 1702.7
+    },
+    {
+     "date": "2026-08-26",
+     "close": 1691.5
+    },
+    {
+     "date": "2026-08-27",
+     "close": 1714
+    },
+    {
+     "date": "2026-08-28",
+     "close": 1707.5
+    },
+    {
+     "date": "2026-08-31",
+     "close": 1593.1
+    },
+    {
+     "date": "2026-09-01",
+     "close": 1647.5
+    },
+    {
+     "date": "2026-09-02",
+     "close": 1672.7
+    },
+    {
+     "date": "2026-09-03",
+     "close": 1706.5
+    },
+    {
+     "date": "2026-09-04",
+     "close": 1707.3
+    },
+    {
+     "date": "2026-09-07",
+     "close": 1694.3
+    },
+    {
+     "date": "2026-09-08",
+     "close": 1710
+    },
+    {
+     "date": "2026-09-09",
+     "close": 1775
+    },
+    {
+     "date": "2026-09-10",
+     "close": 1768
+    },
+    {
+     "date": "2026-09-11",
+     "close": 1764.6
+    },
+    {
+     "date": "2026-09-15",
+     "close": 1713.8
+    },
+    {
+     "date": "2026-09-16",
+     "close": 1723.8
+    },
+    {
+     "date": "2026-09-17",
+     "close": 1738.3
+    },
+    {
+     "date": "2026-09-18",
+     "close": 1824
+    },
+    {
+     "date": "2026-09-21",
+     "close": 1787.1
+    },
+    {
+     "date": "2026-09-22",
+     "close": 1795
+    },
+    {
+     "date": "2026-09-23",
+     "close": 1807.3
+    },
+    {
+     "date": "2026-09-24",
+     "close": 1785.3
+    },
+    {
+     "date": "2026-09-25",
+     "close": 1788
+    },
+    {
+     "date": "2026-09-28",
+     "close": 1743.7
+    },
+    {
+     "date": "2026-09-29",
+     "close": 1822
+    },
+    {
+     "date": "2026-09-30",
+     "close": 1798.3
+    },
+    {
+     "date": "2026-10-01",
+     "close": 1737.8
+    },
+    {
+     "date": "2026-10-05",
+     "close": 1774
+    },
+    {
+     "date": "2026-10-06",
+     "close": 1783.4
+    },
+    {
+     "date": "2026-10-07",
+     "close": 1750.1
+    },
+    {
+     "date": "2026-10-08",
+     "close": 1708
+    },
+    {
+     "date": "2026-10-09",
+     "close": 1761
+    },
+    {
+     "date": "2026-10-12",
+     "close": 1754
+    },
+    {
+     "date": "2026-10-13",
+     "close": 1763
+    },
+    {
+     "date": "2026-10-14",
+     "close": 1748.7
+    },
+    {
+     "date": "2026-10-15",
+     "close": 1743.2
+    },
+    {
+     "date": "2026-10-16",
+     "close": 1750.8
+    },
+    {
+     "date": "2026-10-19",
+     "close": 1766
+    },
+    {
+     "date": "2026-10-21",
+     "close": 1748.8
+    }
+   ],
+   "sector": "Industrials",
+   "industry": "Marine Shipping"
+  },
+  "ADANIPOWER": {
+   "price": 185.27,
+   "prevClose": 194.08,
+   "change": -8.81,
+   "changePct": -4.54,
+   "dayHigh": 188.06,
+   "dayLow": 183,
+   "high52": 254.2,
+   "low52": 128.1,
+   "volume": 13368643,
+   "longName": "Adani Power Limited",
+   "closes": [
+    {
+     "date": "2026-07-22",
+     "close": 216.95
+    },
+    {
+     "date": "2026-07-23",
+     "close": 212.23
+    },
+    {
+     "date": "2026-07-24",
+     "close": 213.66
+    },
+    {
+     "date": "2026-07-27",
+     "close": 213.96
+    },
+    {
+     "date": "2026-07-28",
+     "close": 208.25
+    },
+    {
+     "date": "2026-07-29",
+     "close": 209.52
+    },
+    {
+     "date": "2026-07-30",
+     "close": 208.97
+    },
+    {
+     "date": "2026-07-31",
+     "close": 211.31
+    },
+    {
+     "date": "2026-08-03",
+     "close": 213.65
+    },
+    {
+     "date": "2026-08-04",
+     "close": 209.95
+    },
+    {
+     "date": "2026-08-05",
+     "close": 208.99
+    },
+    {
+     "date": "2026-08-06",
+     "close": 208.12
+    },
+    {
+     "date": "2026-08-07",
+     "close": 209
+    },
+    {
+     "date": "2026-08-10",
+     "close": 210.65
+    },
+    {
+     "date": "2026-08-11",
+     "close": 209
+    },
+    {
+     "date": "2026-08-12",
+     "close": 206.99
+    },
+    {
+     "date": "2026-08-13",
+     "close": 206.1
+    },
+    {
+     "date": "2026-08-14",
+     "close": 205.25
+    },
+    {
+     "date": "2026-08-17",
+     "close": 203.56
+    },
+    {
+     "date": "2026-08-18",
+     "close": 205.58
+    },
+    {
+     "date": "2026-08-19",
+     "close": 204.02
+    },
+    {
+     "date": "2026-08-20",
+     "close": 204
+    },
+    {
+     "date": "2026-08-21",
+     "close": 205.5
+    },
+    {
+     "date": "2026-08-24",
+     "close": 203.7
+    },
+    {
+     "date": "2026-08-25",
+     "close": 206.33
+    },
+    {
+     "date": "2026-08-26",
+     "close": 207.2
+    },
+    {
+     "date": "2026-08-27",
+     "close": 215
+    },
+    {
+     "date": "2026-08-28",
+     "close": 212.63
+    },
+    {
+     "date": "2026-08-31",
+     "close": 198
+    },
+    {
+     "date": "2026-09-01",
+     "close": 204.36
+    },
+    {
+     "date": "2026-09-02",
+     "close": 207.7
+    },
+    {
+     "date": "2026-09-03",
+     "close": 208.29
+    },
+    {
+     "date": "2026-09-04",
+     "close": 207.2
+    },
+    {
+     "date": "2026-09-07",
+     "close": 204.49
+    },
+    {
+     "date": "2026-09-08",
+     "close": 208.4
+    },
+    {
+     "date": "2026-09-09",
+     "close": 214.9
+    },
+    {
+     "date": "2026-09-10",
+     "close": 213.5
+    },
+    {
+     "date": "2026-09-11",
+     "close": 209.97
+    },
+    {
+     "date": "2026-09-15",
+     "close": 202
+    },
+    {
+     "date": "2026-09-16",
+     "close": 202.34
+    },
+    {
+     "date": "2026-09-17",
+     "close": 205.92
+    },
+    {
+     "date": "2026-09-18",
+     "close": 206.6
+    },
+    {
+     "date": "2026-09-21",
+     "close": 206.55
+    },
+    {
+     "date": "2026-09-22",
+     "close": 206.96
+    },
+    {
+     "date": "2026-09-23",
+     "close": 204.8
+    },
+    {
+     "date": "2026-09-24",
+     "close": 199.48
+    },
+    {
+     "date": "2026-09-25",
+     "close": 202.75
+    },
+    {
+     "date": "2026-09-28",
+     "close": 196.14
+    },
+    {
+     "date": "2026-09-29",
+     "close": 196.3
+    },
+    {
+     "date": "2026-09-30",
+     "close": 204
+    },
+    {
+     "date": "2026-10-01",
+     "close": 196.21
+    },
+    {
+     "date": "2026-10-05",
+     "close": 201
+    },
+    {
+     "date": "2026-10-06",
+     "close": 202.4
+    },
+    {
+     "date": "2026-10-07",
+     "close": 196.94
+    },
+    {
+     "date": "2026-10-08",
+     "close": 188
+    },
+    {
+     "date": "2026-10-09",
+     "close": 189
+    },
+    {
+     "date": "2026-10-12",
+     "close": 185.9
+    },
+    {
+     "date": "2026-10-13",
+     "close": 185.96
+    },
+    {
+     "date": "2026-10-14",
+     "close": 195.15
+    },
+    {
+     "date": "2026-10-15",
+     "close": 196.5
+    },
+    {
+     "date": "2026-10-16",
+     "close": 195.85
+    },
+    {
+     "date": "2026-10-19",
+     "close": 194.08
+    },
+    {
+     "date": "2026-10-21",
+     "close": 187.09
+    }
+   ],
+   "sector": "Utilities",
+   "industry": "Utilities—Independent Power Producers"
+  },
+  "ASIANPAINT": {
+   "price": 2284.8,
+   "prevClose": 2330.7,
+   "change": -45.9,
+   "changePct": -1.97,
+   "dayHigh": 2309.9,
+   "dayLow": 2270,
+   "high52": 2985.7,
+   "low52": 2115,
+   "volume": 435972,
+   "longName": "Asian Paints Limited",
+   "closes": [
+    {
+     "date": "2026-07-22",
+     "close": 2692.8
+    },
+    {
+     "date": "2026-07-23",
+     "close": 2668.8
+    },
+    {
+     "date": "2026-07-24",
+     "close": 2637.9
+    },
+    {
+     "date": "2026-07-27",
+     "close": 2710.2
+    },
+    {
+     "date": "2026-07-28",
+     "close": 2736.2
+    },
+    {
+     "date": "2026-07-29",
+     "close": 2758.4
+    },
+    {
+     "date": "2026-07-30",
+     "close": 2746.2
+    },
+    {
+     "date": "2026-07-31",
+     "close": 2747.3
+    },
+    {
+     "date": "2026-08-03",
+     "close": 2810
+    },
+    {
+     "date": "2026-08-04",
+     "close": 2775
+    },
+    {
+     "date": "2026-08-05",
+     "close": 2760
+    },
+    {
+     "date": "2026-08-06",
+     "close": 2755
+    },
+    {
+     "date": "2026-08-07",
+     "close": 2735
+    },
+    {
+     "date": "2026-08-10",
+     "close": 2750
+    },
+    {
+     "date": "2026-08-11",
+     "close": 2735.5
+    },
+    {
+     "date": "2026-08-12",
+     "close": 2740
+    },
+    {
+     "date": "2026-08-13",
+     "close": 2755.5
+    },
+    {
+     "date": "2026-08-14",
+     "close": 2696.3
+    },
+    {
+     "date": "2026-08-17",
+     "close": 2687.5
+    },
+    {
+     "date": "2026-08-18",
+     "close": 2628.4
+    },
+    {
+     "date": "2026-08-19",
+     "close": 2630.8
+    },
+    {
+     "date": "2026-08-20",
+     "close": 2625.2
+    },
+    {
+     "date": "2026-08-21",
+     "close": 2640
+    },
+    {
+     "date": "2026-08-24",
+     "close": 2640.8
+    },
+    {
+     "date": "2026-08-25",
+     "close": 2639.8
+    },
+    {
+     "date": "2026-08-26",
+     "close": 2626.5
+    },
+    {
+     "date": "2026-08-27",
+     "close": 2631
+    },
+    {
+     "date": "2026-08-28",
+     "close": 2608.7
+    },
+    {
+     "date": "2026-08-31",
+     "close": 2653.6
+    },
+    {
+     "date": "2026-09-01",
+     "close": 2575.5
+    },
+    {
+     "date": "2026-09-02",
+     "close": 2527.5
+    },
+    {
+     "date": "2026-09-03",
+     "close": 2541.6
+    },
+    {
+     "date": "2026-09-04",
+     "close": 2527.3
+    },
+    {
+     "date": "2026-09-07",
+     "close": 2500.9
+    },
+    {
+     "date": "2026-09-08",
+     "close": 2481.6
+    },
+    {
+     "date": "2026-09-09",
+     "close": 2489
+    },
+    {
+     "date": "2026-09-10",
+     "close": 2498.1
+    },
+    {
+     "date": "2026-09-11",
+     "close": 2472.5
+    },
+    {
+     "date": "2026-09-15",
+     "close": 2402.8
+    },
+    {
+     "date": "2026-09-16",
+     "close": 2416.6
+    },
+    {
+     "date": "2026-09-17",
+     "close": 2454
+    },
+    {
+     "date": "2026-09-18",
+     "close": 2451.3
+    },
+    {
+     "date": "2026-09-21",
+     "close": 2440.3
+    },
+    {
+     "date": "2026-09-22",
+     "close": 2448.5
+    },
+    {
+     "date": "2026-09-23",
+     "close": 2455
+    },
+    {
+     "date": "2026-09-24",
+     "close": 2392.7
+    },
+    {
+     "date": "2026-09-25",
+     "close": 2444
+    },
+    {
+     "date": "2026-09-28",
+     "close": 2420
+    },
+    {
+     "date": "2026-09-29",
+     "close": 2415
+    },
+    {
+     "date": "2026-09-30",
+     "close": 2402.6
+    },
+    {
+     "date": "2026-10-01",
+     "close": 2407
+    },
+    {
+     "date": "2026-10-05",
+     "close": 2366
+    },
+    {
+     "date": "2026-10-06",
+     "close": 2424.2
+    },
+    {
+     "date": "2026-10-07",
+     "close": 2372.1
+    },
+    {
+     "date": "2026-10-08",
+     "close": 2311.6
+    },
+    {
+     "date": "2026-10-09",
+     "close": 2339.1
+    },
+    {
+     "date": "2026-10-12",
+     "close": 2331
+    },
+    {
+     "date": "2026-10-13",
+     "close": 2376
+    },
+    {
+     "date": "2026-10-14",
+     "close": 2344.7
+    },
+    {
+     "date": "2026-10-15",
+     "close": 2350
+    },
+    {
+     "date": "2026-10-16",
+     "close": 2331.9
+    },
+    {
+     "date": "2026-10-19",
+     "close": 2330.7
+    },
+    {
+     "date": "2026-10-21",
+     "close": 2319.4
+    }
+   ],
+   "sector": "Basic Materials",
+   "industry": "Specialty Chemicals"
+  },
+  "AXISBANK": {
+   "price": 1212,
+   "prevClose": 1236,
+   "change": -24,
+   "changePct": -1.94,
+   "dayHigh": 1216.1,
+   "dayLow": 1200.3,
+   "high52": 1418.3,
+   "low52": 1150.3,
+   "volume": 10014652,
+   "longName": "Axis Bank Limited",
+   "closes": [
+    {
+     "date": "2026-07-22",
+     "close": 1238.4
+    },
+    {
+     "date": "2026-07-23",
+     "close": 1223
+    },
+    {
+     "date": "2026-07-24",
+     "close": 1227.3
+    },
+    {
+     "date": "2026-07-27",
+     "close": 1227.5
+    },
+    {
+     "date": "2026-07-28",
+     "close": 1223.5
+    },
+    {
+     "date": "2026-07-29",
+     "close": 1235.4
+    },
+    {
+     "date": "2026-07-30",
+     "close": 1228.9
+    },
+    {
+     "date": "2026-07-31",
+     "close": 1229.5
+    },
+    {
+     "date": "2026-08-03",
+     "close": 1272
+    },
+    {
+     "date": "2026-08-04",
+     "close": 1261.8
+    },
+    {
+     "date": "2026-08-05",
+     "close": 1253.9
+    },
+    {
+     "date": "2026-08-06",
+     "close": 1256
+    },
+    {
+     "date": "2026-08-07",
+     "close": 1238
+    },
+    {
+     "date": "2026-08-10",
+     "close": 1247.3
+    },
+    {
+     "date": "2026-08-11",
+     "close": 1229.8
+    },
+    {
+     "date": "2026-08-12",
+     "close": 1230
+    },
+    {
+     "date": "2026-08-13",
+     "close": 1221.8
+    },
+    {
+     "date": "2026-08-14",
+     "close": 1217.4
+    },
+    {
+     "date": "2026-08-17",
+     "close": 1227.3
+    },
+    {
+     "date": "2026-08-18",
+     "close": 1243
+    },
+    {
+     "date": "2026-08-19",
+     "close": 1235
+    },
+    {
+     "date": "2026-08-20",
+     "close": 1251
+    },
+    {
+     "date": "2026-08-21",
+     "close": 1245.8
+    },
+    {
+     "date": "2026-08-24",
+     "close": 1236
+    },
+    {
+     "date": "2026-08-25",
+     "close": 1235
+    },
+    {
+     "date": "2026-08-26",
+     "close": 1255
+    },
+    {
+     "date": "2026-08-27",
+     "close": 1256
+    },
+    {
+     "date": "2026-08-28",
+     "close": 1265
+    },
+    {
+     "date": "2026-08-31",
+     "close": 1300
+    },
+    {
+     "date": "2026-09-01",
+     "close": 1258
+    },
+    {
+     "date": "2026-09-02",
+     "close": 1253.9
+    },
+    {
+     "date": "2026-09-03",
+     "close": 1267
+    },
+    {
+     "date": "2026-09-04",
+     "close": 1273
+    },
+    {
+     "date": "2026-09-07",
+     "close": 1266
+    },
+    {
+     "date": "2026-09-08",
+     "close": 1244.9
+    },
+    {
+     "date": "2026-09-09",
+     "close": 1238.5
+    },
+    {
+     "date": "2026-09-10",
+     "close": 1246
+    },
+    {
+     "date": "2026-09-11",
+     "close": 1246
+    },
+    {
+     "date": "2026-09-15",
+     "close": 1222.9
+    },
+    {
+     "date": "2026-09-16",
+     "close": 1241
+    },
+    {
+     "date": "2026-09-17",
+     "close": 1240
+    },
+    {
+     "date": "2026-09-18",
+     "close": 1257
+    },
+    {
+     "date": "2026-09-21",
+     "close": 1250
+    },
+    {
+     "date": "2026-09-22",
+     "close": 1242.7
+    },
+    {
+     "date": "2026-09-23",
+     "close": 1243.2
+    },
+    {
+     "date": "2026-09-24",
+     "close": 1186.5
+    },
+    {
+     "date": "2026-09-25",
+     "close": 1222.4
+    },
+    {
+     "date": "2026-09-28",
+     "close": 1209.9
+    },
+    {
+     "date": "2026-09-29",
+     "close": 1212.1
+    },
+    {
+     "date": "2026-09-30",
+     "close": 1226
+    },
+    {
+     "date": "2026-10-01",
+     "close": 1217.1
+    },
+    {
+     "date": "2026-10-05",
+     "close": 1222.2
+    },
+    {
+     "date": "2026-10-06",
+     "close": 1248
+    },
+    {
+     "date": "2026-10-07",
+     "close": 1242.5
+    },
+    {
+     "date": "2026-10-08",
+     "close": 1245
+    },
+    {
+     "date": "2026-10-09",
+     "close": 1259.1
+    },
+    {
+     "date": "2026-10-12",
+     "close": 1253
+    },
+    {
+     "date": "2026-10-13",
+     "close": 1268.4
+    },
+    {
+     "date": "2026-10-14",
+     "close": 1264.6
+    },
+    {
+     "date": "2026-10-15",
+     "close": 1288
+    },
+    {
+     "date": "2026-10-16",
+     "close": 1290
+    },
+    {
+     "date": "2026-10-19",
+     "close": 1236
+    },
+    {
+     "date": "2026-10-21",
+     "close": 1210
+    }
+   ],
+   "sector": "Financial Services",
+   "industry": "Banks—Regional"
+  },
+  "BAJAJ-AUTO": {
+   "price": 10155,
+   "prevClose": 10287,
+   "change": -132,
+   "changePct": -1.28,
+   "dayHigh": 10271,
+   "dayLow": 9906,
+   "high52": 12470,
+   "low52": 8605,
+   "volume": 229879,
+   "longName": "Bajaj Auto Limited",
+   "closes": [
+    {
+     "date": "2026-07-22",
+     "close": 10998.5
+    },
+    {
+     "date": "2026-07-23",
+     "close": 11283.5
+    },
+    {
+     "date": "2026-07-24",
+     "close": 11130
+    },
+    {
+     "date": "2026-07-27",
+     "close": 11183.5
+    },
+    {
+     "date": "2026-07-28",
+     "close": 11374
+    },
+    {
+     "date": "2026-07-29",
+     "close": 11338
+    },
+    {
+     "date": "2026-07-30",
+     "close": 11432
+    },
+    {
+     "date": "2026-07-31",
+     "close": 11520.5
+    },
+    {
+     "date": "2026-08-03",
+     "close": 11856
+    },
+    {
+     "date": "2026-08-04",
+     "close": 11600
+    },
+    {
+     "date": "2026-08-05",
+     "close": 11800
+    },
+    {
+     "date": "2026-08-06",
+     "close": 11620
+    },
+    {
+     "date": "2026-08-07",
+     "close": 11662
+    },
+    {
+     "date": "2026-08-10",
+     "close": 11677
+    },
+    {
+     "date": "2026-08-11",
+     "close": 11717
+    },
+    {
+     "date": "2026-08-12",
+     "close": 11700
+    },
+    {
+     "date": "2026-08-13",
+     "close": 11661
+    },
+    {
+     "date": "2026-08-14",
+     "close": 11700
+    },
+    {
+     "date": "2026-08-17",
+     "close": 11663
+    },
+    {
+     "date": "2026-08-18",
+     "close": 11607
+    },
+    {
+     "date": "2026-08-19",
+     "close": 11645
+    },
+    {
+     "date": "2026-08-20",
+     "close": 11793
+    },
+    {
+     "date": "2026-08-21",
+     "close": 11700
+    },
+    {
+     "date": "2026-08-24",
+     "close": 11800
+    },
+    {
+     "date": "2026-08-25",
+     "close": 11927
+    },
+    {
+     "date": "2026-08-26",
+     "close": 11724
+    },
+    {
+     "date": "2026-08-27",
+     "close": 11720
+    },
+    {
+     "date": "2026-08-28",
+     "close": 11910
+    },
+    {
+     "date": "2026-08-31",
+     "close": 12130
+    },
+    {
+     "date": "2026-09-01",
+     "close": 12361
+    },
+    {
+     "date": "2026-09-02",
+     "close": 12130
+    },
+    {
+     "date": "2026-09-03",
+     "close": 11920
+    },
+    {
+     "date": "2026-09-04",
+     "close": 11919
+    },
+    {
+     "date": "2026-09-07",
+     "close": 11800
+    },
+    {
+     "date": "2026-09-08",
+     "close": 11880
+    },
+    {
+     "date": "2026-09-09",
+     "close": 11790
+    },
+    {
+     "date": "2026-09-10",
+     "close": 11768
+    },
+    {
+     "date": "2026-09-11",
+     "close": 11678
+    },
+    {
+     "date": "2026-09-15",
+     "close": 11424
+    },
+    {
+     "date": "2026-09-16",
+     "close": 11593
+    },
+    {
+     "date": "2026-09-17",
+     "close": 11500
+    },
+    {
+     "date": "2026-09-18",
+     "close": 11414
+    },
+    {
+     "date": "2026-09-21",
+     "close": 11460
+    },
+    {
+     "date": "2026-09-22",
+     "close": 11363
+    },
+    {
+     "date": "2026-09-23",
+     "close": 11400
+    },
+    {
+     "date": "2026-09-24",
+     "close": 11208
+    },
+    {
+     "date": "2026-09-25",
+     "close": 11281
+    },
+    {
+     "date": "2026-09-28",
+     "close": 11024
+    },
+    {
+     "date": "2026-09-29",
+     "close": 10811
+    },
+    {
+     "date": "2026-09-30",
+     "close": 10874
+    },
+    {
+     "date": "2026-10-01",
+     "close": 10045
+    },
+    {
+     "date": "2026-10-05",
+     "close": 10024
+    },
+    {
+     "date": "2026-10-06",
+     "close": 10017
+    },
+    {
+     "date": "2026-10-07",
+     "close": 9884
+    },
+    {
+     "date": "2026-10-08",
+     "close": 9637
+    },
+    {
+     "date": "2026-10-09",
+     "close": 9778
+    },
+    {
+     "date": "2026-10-12",
+     "close": 10034
+    },
+    {
+     "date": "2026-10-13",
+     "close": 10318
+    },
+    {
+     "date": "2026-10-14",
+     "close": 10250
+    },
+    {
+     "date": "2026-10-15",
+     "close": 10385
+    },
+    {
+     "date": "2026-10-16",
+     "close": 10405
+    },
+    {
+     "date": "2026-10-19",
+     "close": 10287
+    },
+    {
+     "date": "2026-10-21",
+     "close": 10072
+    }
+   ],
+   "sector": "Consumer Cyclical",
+   "industry": "Auto Manufacturers"
+  },
+  "BAJAJFINSV": {
+   "price": 1678,
+   "prevClose": 1700,
+   "change": -22,
+   "changePct": -1.29,
+   "dayHigh": 1692.9,
+   "dayLow": 1651.9,
+   "high52": 2195,
+   "low52": 1597,
+   "volume": 1255539,
+   "longName": "Bajaj Finserv Ltd.",
+   "closes": [
+    {
+     "date": "2026-07-22",
+     "close": 1876.4
+    },
+    {
+     "date": "2026-07-23",
+     "close": 1889.4
+    },
+    {
+     "date": "2026-07-24",
+     "close": 1876.7
+    },
+    {
+     "date": "2026-07-27",
+     "close": 1913
+    },
+    {
+     "date": "2026-07-28",
+     "close": 1927.9
+    },
+    {
+     "date": "2026-07-29",
+     "close": 1924.4
+    },
+    {
+     "date": "2026-07-30",
+     "close": 1909.4
+    },
+    {
+     "date": "2026-07-31",
+     "close": 2029.1
+    },
+    {
+     "date": "2026-08-03",
+     "close": 2096
+    },
+    {
+     "date": "2026-08-04",
+     "close": 2105
+    },
+    {
+     "date": "2026-08-05",
+     "close": 2086
+    },
+    {
+     "date": "2026-08-06",
+     "close": 2086
+    },
+    {
+     "date": "2026-08-07",
+     "close": 2008.9
+    },
+    {
+     "date": "2026-08-10",
+     "close": 2021.3
+    },
+    {
+     "date": "2026-08-11",
+     "close": 2032
+    },
+    {
+     "date": "2026-08-12",
+     "close": 2020.5
+    },
+    {
+     "date": "2026-08-13",
+     "close": 2025
+    },
+    {
+     "date": "2026-08-14",
+     "close": 2008.3
+    },
+    {
+     "date": "2026-08-17",
+     "close": 2005
+    },
+    {
+     "date": "2026-08-18",
+     "close": 2011.2
+    },
+    {
+     "date": "2026-08-19",
+     "close": 2012
+    },
+    {
+     "date": "2026-08-20",
+     "close": 2016
+    },
+    {
+     "date": "2026-08-21",
+     "close": 2032.5
+    },
+    {
+     "date": "2026-08-24",
+     "close": 2001.7
+    },
+    {
+     "date": "2026-08-25",
+     "close": 2004
+    },
+    {
+     "date": "2026-08-26",
+     "close": 2010
+    },
+    {
+     "date": "2026-08-27",
+     "close": 2011
+    },
+    {
+     "date": "2026-08-28",
+     "close": 2002
+    },
+    {
+     "date": "2026-08-31",
+     "close": 2021
+    },
+    {
+     "date": "2026-09-01",
+     "close": 1972
+    },
+    {
+     "date": "2026-09-02",
+     "close": 1990
+    },
+    {
+     "date": "2026-09-03",
+     "close": 1992.1
+    },
+    {
+     "date": "2026-09-04",
+     "close": 1970
+    },
+    {
+     "date": "2026-09-07",
+     "close": 1938.6
+    },
+    {
+     "date": "2026-09-08",
+     "close": 1938.1
+    },
+    {
+     "date": "2026-09-09",
+     "close": 1927
+    },
+    {
+     "date": "2026-09-10",
+     "close": 1940.5
+    },
+    {
+     "date": "2026-09-11",
+     "close": 1913.5
+    },
+    {
+     "date": "2026-09-15",
+     "close": 1855.5
+    },
+    {
+     "date": "2026-09-16",
+     "close": 1837
+    },
+    {
+     "date": "2026-09-17",
+     "close": 1859.2
+    },
+    {
+     "date": "2026-09-18",
+     "close": 1852.5
+    },
+    {
+     "date": "2026-09-21",
+     "close": 1849.8
+    },
+    {
+     "date": "2026-09-22",
+     "close": 1823.4
+    },
+    {
+     "date": "2026-09-23",
+     "close": 1846.5
+    },
+    {
+     "date": "2026-09-24",
+     "close": 1762.3
+    },
+    {
+     "date": "2026-09-25",
+     "close": 1771
+    },
+    {
+     "date": "2026-09-28",
+     "close": 1752
+    },
+    {
+     "date": "2026-09-29",
+     "close": 1742.4
+    },
+    {
+     "date": "2026-09-30",
+     "close": 1731
+    },
+    {
+     "date": "2026-10-01",
+     "close": 1732.6
+    },
+    {
+     "date": "2026-10-05",
+     "close": 1751.4
+    },
+    {
+     "date": "2026-10-06",
+     "close": 1752.4
+    },
+    {
+     "date": "2026-10-07",
+     "close": 1743.3
+    },
+    {
+     "date": "2026-10-08",
+     "close": 1708
+    },
+    {
+     "date": "2026-10-09",
+     "close": 1734.7
+    },
+    {
+     "date": "2026-10-12",
+     "close": 1719.9
+    },
+    {
+     "date": "2026-10-13",
+     "close": 1755.7
+    },
+    {
+     "date": "2026-10-14",
+     "close": 1721.7
+    },
+    {
+     "date": "2026-10-15",
+     "close": 1732
+    },
+    {
+     "date": "2026-10-16",
+     "close": 1729
+    },
+    {
+     "date": "2026-10-19",
+     "close": 1700
+    },
+    {
+     "date": "2026-10-21",
+     "close": 1690
+    }
+   ],
+   "sector": "Financial Services",
+   "industry": "Financial Conglomerates"
+  },
+  "BAJFINANCE": {
+   "price": 942.1,
+   "prevClose": 957.35,
+   "change": -15.25,
+   "changePct": -1.59,
+   "dayHigh": 942.1,
+   "dayLow": 907.4,
+   "high52": 1176.4,
+   "low52": 787.9,
+   "volume": 10621157,
+   "longName": "Bajaj Finance Limited",
+   "closes": [
+    {
+     "date": "2026-07-22",
+     "close": 1060.3
+    },
+    {
+     "date": "2026-07-23",
+     "close": 1039.8
+    },
+    {
+     "date": "2026-07-24",
+     "close": 1012.8
+    },
+    {
+     "date": "2026-07-27",
+     "close": 1048.3
+    },
+    {
+     "date": "2026-07-28",
+     "close": 1048.4
+    },
+    {
+     "date": "2026-07-29",
+     "close": 1054.4
+    },
+    {
+     "date": "2026-07-30",
+     "close": 1053.5
+    },
+    {
+     "date": "2026-07-31",
+     "close": 1141.2
+    },
+    {
+     "date": "2026-08-03",
+     "close": 1153
+    },
+    {
+     "date": "2026-08-04",
+     "close": 1149
+    },
+    {
+     "date": "2026-08-05",
+     "close": 1158.8
+    },
+    {
+     "date": "2026-08-06",
+     "close": 1144.8
+    },
+    {
+     "date": "2026-08-07",
+     "close": 1078
+    },
+    {
+     "date": "2026-08-10",
+     "close": 1102.2
+    },
+    {
+     "date": "2026-08-11",
+     "close": 1093.3
+    },
+    {
+     "date": "2026-08-12",
+     "close": 1094.2
+    },
+    {
+     "date": "2026-08-13",
+     "close": 1090.8
+    },
+    {
+     "date": "2026-08-14",
+     "close": 1087
+    },
+    {
+     "date": "2026-08-17",
+     "close": 1089.3
+    },
+    {
+     "date": "2026-08-18",
+     "close": 1094.3
+    },
+    {
+     "date": "2026-08-19",
+     "close": 1080.2
+    },
+    {
+     "date": "2026-08-20",
+     "close": 1095
+    },
+    {
+     "date": "2026-08-21",
+     "close": 1095
+    },
+    {
+     "date": "2026-08-24",
+     "close": 1077
+    },
+    {
+     "date": "2026-08-25",
+     "close": 1087.4
+    },
+    {
+     "date": "2026-08-26",
+     "close": 1085
+    },
+    {
+     "date": "2026-08-27",
+     "close": 1083
+    },
+    {
+     "date": "2026-08-28",
+     "close": 1079.9
+    },
+    {
+     "date": "2026-08-31",
+     "close": 1057
+    },
+    {
+     "date": "2026-09-01",
+     "close": 1053.9
+    },
+    {
+     "date": "2026-09-02",
+     "close": 1055.9
+    },
+    {
+     "date": "2026-09-03",
+     "close": 1049
+    },
+    {
+     "date": "2026-09-04",
+     "close": 1060.5
+    },
+    {
+     "date": "2026-09-07",
+     "close": 1060
+    },
+    {
+     "date": "2026-09-08",
+     "close": 1054.1
+    },
+    {
+     "date": "2026-09-09",
+     "close": 1039.3
+    },
+    {
+     "date": "2026-09-10",
+     "close": 1043.5
+    },
+    {
+     "date": "2026-09-11",
+     "close": 1034.5
+    },
+    {
+     "date": "2026-09-15",
+     "close": 1009.2
+    },
+    {
+     "date": "2026-09-16",
+     "close": 1006.2
+    },
+    {
+     "date": "2026-09-17",
+     "close": 1015
+    },
+    {
+     "date": "2026-09-18",
+     "close": 1040.3
+    },
+    {
+     "date": "2026-09-21",
+     "close": 1021.3
+    },
+    {
+     "date": "2026-09-22",
+     "close": 1008.8
+    },
+    {
+     "date": "2026-09-23",
+     "close": 1043.2
+    },
+    {
+     "date": "2026-09-24",
+     "close": 982
+    },
+    {
+     "date": "2026-09-25",
+     "close": 996.9
+    },
+    {
+     "date": "2026-09-28",
+     "close": 985
+    },
+    {
+     "date": "2026-09-29",
+     "close": 973.8
+    },
+    {
+     "date": "2026-09-30",
+     "close": 959.4
+    },
+    {
+     "date": "2026-10-01",
+     "close": 948.3
+    },
+    {
+     "date": "2026-10-05",
+     "close": 970
+    },
+    {
+     "date": "2026-10-06",
+     "close": 963.1
+    },
+    {
+     "date": "2026-10-07",
+     "close": 963.85
+    },
+    {
+     "date": "2026-10-08",
+     "close": 955.95
+    },
+    {
+     "date": "2026-10-09",
+     "close": 960
+    },
+    {
+     "date": "2026-10-12",
+     "close": 957.25
+    },
+    {
+     "date": "2026-10-13",
+     "close": 982.75
+    },
+    {
+     "date": "2026-10-14",
+     "close": 957
+    },
+    {
+     "date": "2026-10-15",
+     "close": 965.25
+    },
+    {
+     "date": "2026-10-16",
+     "close": 982.1
+    },
+    {
+     "date": "2026-10-19",
+     "close": 957.35
+    },
+    {
+     "date": "2026-10-21",
+     "close": 926
+    }
+   ],
+   "sector": "Financial Services",
+   "industry": "Credit Services"
+  },
+  "BEL": {
+   "price": 364.5,
+   "prevClose": 377.2,
+   "change": -12.7,
+   "changePct": -3.37,
+   "dayHigh": 369.55,
+   "dayLow": 361.7,
+   "high52": 473.45,
+   "low52": 360.5,
+   "volume": 8169838,
+   "longName": "Bharat Electronics Limited",
+   "closes": [
+    {
+     "date": "2026-07-22",
+     "close": 406.75
+    },
+    {
+     "date": "2026-07-23",
+     "close": 405.35
+    },
+    {
+     "date": "2026-07-24",
+     "close": 405
+    },
+    {
+     "date": "2026-07-27",
+     "close": 407.15
+    },
+    {
+     "date": "2026-07-28",
+     "close": 389
+    },
+    {
+     "date": "2026-07-29",
+     "close": 387.55
+    },
+    {
+     "date": "2026-07-30",
+     "close": 384.9
+    },
+    {
+     "date": "2026-07-31",
+     "close": 387.85
+    },
+    {
+     "date": "2026-08-03",
+     "close": 392.15
+    },
+    {
+     "date": "2026-08-04",
+     "close": 391.5
+    },
+    {
+     "date": "2026-08-05",
+     "close": 390
+    },
+    {
+     "date": "2026-08-06",
+     "close": 399.2
+    },
+    {
+     "date": "2026-08-07",
+     "close": 401
+    },
+    {
+     "date": "2026-08-10",
+     "close": 404.35
+    },
+    {
+     "date": "2026-08-11",
+     "close": 405.85
+    },
+    {
+     "date": "2026-08-12",
+     "close": 405.7
+    },
+    {
+     "date": "2026-08-13",
+     "close": 410.5
+    },
+    {
+     "date": "2026-08-14",
+     "close": 410.8
+    },
+    {
+     "date": "2026-08-17",
+     "close": 412.45
+    },
+    {
+     "date": "2026-08-18",
+     "close": 412
+    },
+    {
+     "date": "2026-08-19",
+     "close": 409.2
+    },
+    {
+     "date": "2026-08-20",
+     "close": 409.4
+    },
+    {
+     "date": "2026-08-21",
+     "close": 414
+    },
+    {
+     "date": "2026-08-24",
+     "close": 409
+    },
+    {
+     "date": "2026-08-25",
+     "close": 413.25
+    },
+    {
+     "date": "2026-08-26",
+     "close": 406.9
+    },
+    {
+     "date": "2026-08-27",
+     "close": 411
+    },
+    {
+     "date": "2026-08-28",
+     "close": 411.9
+    },
+    {
+     "date": "2026-08-31",
+     "close": 414.45
+    },
+    {
+     "date": "2026-09-01",
+     "close": 411.2
+    },
+    {
+     "date": "2026-09-02",
+     "close": 405.75
+    },
+    {
+     "date": "2026-09-03",
+     "close": 408.6
+    },
+    {
+     "date": "2026-09-04",
+     "close": 405.35
+    },
+    {
+     "date": "2026-09-07",
+     "close": 404
+    },
+    {
+     "date": "2026-09-08",
+     "close": 410.55
+    },
+    {
+     "date": "2026-09-09",
+     "close": 406
+    },
+    {
+     "date": "2026-09-10",
+     "close": 405
+    },
+    {
+     "date": "2026-09-11",
+     "close": 404.35
+    },
+    {
+     "date": "2026-09-15",
+     "close": 382.9
+    },
+    {
+     "date": "2026-09-16",
+     "close": 385.75
+    },
+    {
+     "date": "2026-09-17",
+     "close": 395.45
+    },
+    {
+     "date": "2026-09-18",
+     "close": 393.3
+    },
+    {
+     "date": "2026-09-21",
+     "close": 398.5
+    },
+    {
+     "date": "2026-09-22",
+     "close": 397.9
+    },
+    {
+     "date": "2026-09-23",
+     "close": 396.05
+    },
+    {
+     "date": "2026-09-24",
+     "close": 392
+    },
+    {
+     "date": "2026-09-25",
+     "close": 393.55
+    },
+    {
+     "date": "2026-09-28",
+     "close": 385.5
+    },
+    {
+     "date": "2026-09-29",
+     "close": 387.75
+    },
+    {
+     "date": "2026-09-30",
+     "close": 388.3
+    },
+    {
+     "date": "2026-10-01",
+     "close": 383.1
+    },
+    {
+     "date": "2026-10-05",
+     "close": 384.85
+    },
+    {
+     "date": "2026-10-06",
+     "close": 387.4
+    },
+    {
+     "date": "2026-10-07",
+     "close": 378.3
+    },
+    {
+     "date": "2026-10-08",
+     "close": 367.3
+    },
+    {
+     "date": "2026-10-09",
+     "close": 368.15
+    },
+    {
+     "date": "2026-10-12",
+     "close": 373.9
+    },
+    {
+     "date": "2026-10-13",
+     "close": 380
+    },
+    {
+     "date": "2026-10-14",
+     "close": 382.35
+    },
+    {
+     "date": "2026-10-15",
+     "close": 380.4
+    },
+    {
+     "date": "2026-10-16",
+     "close": 376.85
+    },
+    {
+     "date": "2026-10-19",
+     "close": 377.2
+    },
+    {
+     "date": "2026-10-21",
+     "close": 371.2
+    }
+   ],
+   "sector": "Industrials",
+   "industry": "Aerospace & Defense"
+  },
+  "BHARTIARTL": {
+   "price": 1895,
+   "prevClose": 1875.2,
+   "change": 19.8,
+   "changePct": 1.06,
+   "dayHigh": 1920.3,
+   "dayLow": 1874.1,
+   "high52": 2174.5,
+   "low52": 1726.3,
+   "volume": 12595786,
+   "longName": "Bharti Airtel Limited",
+   "closes": [
+    {
+     "date": "2026-07-22",
+     "close": 1949
+    },
+    {
+     "date": "2026-07-23",
+     "close": 1931
+    },
+    {
+     "date": "2026-07-24",
+     "close": 1898.2
+    },
+    {
+     "date": "2026-07-27",
+     "close": 1905.3
+    },
+    {
+     "date": "2026-07-28",
+     "close": 1901.8
+    },
+    {
+     "date": "2026-07-29",
+     "close": 1950.2
+    },
+    {
+     "date": "2026-07-30",
+     "close": 1956.8
+    },
+    {
+     "date": "2026-07-31",
+     "close": 1972
+    },
+    {
+     "date": "2026-08-03",
+     "close": 1970.5
+    },
+    {
+     "date": "2026-08-04",
+     "close": 1970.1
+    },
+    {
+     "date": "2026-08-05",
+     "close": 1978
+    },
+    {
+     "date": "2026-08-06",
+     "close": 1948
+    },
+    {
+     "date": "2026-08-07",
+     "close": 1959.9
+    },
+    {
+     "date": "2026-08-10",
+     "close": 1943
+    },
+    {
+     "date": "2026-08-11",
+     "close": 1915.2
+    },
+    {
+     "date": "2026-08-12",
+     "close": 1945
+    },
+    {
+     "date": "2026-08-13",
+     "close": 1939.1
+    },
+    {
+     "date": "2026-08-14",
+     "close": 1992.1
+    },
+    {
+     "date": "2026-08-17",
+     "close": 1969.3
+    },
+    {
+     "date": "2026-08-18",
+     "close": 1934.2
+    },
+    {
+     "date": "2026-08-19",
+     "close": 1922
+    },
+    {
+     "date": "2026-08-20",
+     "close": 1941.7
+    },
+    {
+     "date": "2026-08-21",
+     "close": 1946
+    },
+    {
+     "date": "2026-08-24",
+     "close": 1935
+    },
+    {
+     "date": "2026-08-25",
+     "close": 1947
+    },
+    {
+     "date": "2026-08-26",
+     "close": 1902.1
+    },
+    {
+     "date": "2026-08-27",
+     "close": 1878.3
+    },
+    {
+     "date": "2026-08-28",
+     "close": 1882.4
+    },
+    {
+     "date": "2026-08-31",
+     "close": 1811.9
+    },
+    {
+     "date": "2026-09-01",
+     "close": 1877.2
+    },
+    {
+     "date": "2026-09-02",
+     "close": 1862.8
+    },
+    {
+     "date": "2026-09-03",
+     "close": 1869
+    },
+    {
+     "date": "2026-09-04",
+     "close": 1840
+    },
+    {
+     "date": "2026-09-07",
+     "close": 1854
+    },
+    {
+     "date": "2026-09-08",
+     "close": 1844
+    },
+    {
+     "date": "2026-09-09",
+     "close": 1814.7
+    },
+    {
+     "date": "2026-09-10",
+     "close": 1839
+    },
+    {
+     "date": "2026-09-11",
+     "close": 1831.1
+    },
+    {
+     "date": "2026-09-15",
+     "close": 1830.4
+    },
+    {
+     "date": "2026-09-16",
+     "close": 1835
+    },
+    {
+     "date": "2026-09-17",
+     "close": 1836
+    },
+    {
+     "date": "2026-09-18",
+     "close": 1893.3
+    },
+    {
+     "date": "2026-09-21",
+     "close": 1830.2
+    },
+    {
+     "date": "2026-09-22",
+     "close": 1817.2
+    },
+    {
+     "date": "2026-09-23",
+     "close": 1833.2
+    },
+    {
+     "date": "2026-09-24",
+     "close": 1795.8
+    },
+    {
+     "date": "2026-09-25",
+     "close": 1785.4
+    },
+    {
+     "date": "2026-09-28",
+     "close": 1771.4
+    },
+    {
+     "date": "2026-09-29",
+     "close": 1771.2
+    },
+    {
+     "date": "2026-09-30",
+     "close": 1757
+    },
+    {
+     "date": "2026-10-01",
+     "close": 1741.1
+    },
+    {
+     "date": "2026-10-05",
+     "close": 1779.9
+    },
+    {
+     "date": "2026-10-06",
+     "close": 1810.5
+    },
+    {
+     "date": "2026-10-07",
+     "close": 1833.9
+    },
+    {
+     "date": "2026-10-08",
+     "close": 1804.6
+    },
+    {
+     "date": "2026-10-09",
+     "close": 1805.1
+    },
+    {
+     "date": "2026-10-12",
+     "close": 1778.7
+    },
+    {
+     "date": "2026-10-13",
+     "close": 1806.5
+    },
+    {
+     "date": "2026-10-14",
+     "close": 1794.6
+    },
+    {
+     "date": "2026-10-15",
+     "close": 1854
+    },
+    {
+     "date": "2026-10-16",
+     "close": 1905
+    },
+    {
+     "date": "2026-10-19",
+     "close": 1875.2
+    },
+    {
+     "date": "2026-10-21",
+     "close": 1891.7
+    }
+   ],
+   "sector": "Communication Services",
+   "industry": "Telecom Services"
+  },
+  "COALINDIA": {
+   "price": 402.55,
+   "prevClose": 411.7,
+   "change": -9.15,
+   "changePct": -2.22,
+   "dayHigh": 404.7,
+   "dayLow": 395.65,
+   "high52": 491.25,
+   "low52": 369.6,
+   "volume": 6753782,
+   "longName": "Coal India Limited",
+   "closes": [
+    {
+     "date": "2026-07-22",
+     "close": 428.4
+    },
+    {
+     "date": "2026-07-23",
+     "close": 427.05
+    },
+    {
+     "date": "2026-07-24",
+     "close": 427.4
+    },
+    {
+     "date": "2026-07-27",
+     "close": 427.5
+    },
+    {
+     "date": "2026-07-28",
+     "close": 410.15
+    },
+    {
+     "date": "2026-07-29",
+     "close": 410.05
+    },
+    {
+     "date": "2026-07-30",
+     "close": 417.2
+    },
+    {
+     "date": "2026-07-31",
+     "close": 414.15
+    },
+    {
+     "date": "2026-08-03",
+     "close": 416
+    },
+    {
+     "date": "2026-08-04",
+     "close": 417.6
+    },
+    {
+     "date": "2026-08-05",
+     "close": 415.5
+    },
+    {
+     "date": "2026-08-06",
+     "close": 415.6
+    },
+    {
+     "date": "2026-08-07",
+     "close": 415.25
+    },
+    {
+     "date": "2026-08-10",
+     "close": 411
+    },
+    {
+     "date": "2026-08-11",
+     "close": 412.6
+    },
+    {
+     "date": "2026-08-12",
+     "close": 409.3
+    },
+    {
+     "date": "2026-08-13",
+     "close": 410.5
+    },
+    {
+     "date": "2026-08-14",
+     "close": 407.1
+    },
+    {
+     "date": "2026-08-17",
+     "close": 408.45
+    },
+    {
+     "date": "2026-08-18",
+     "close": 406.9
+    },
+    {
+     "date": "2026-08-19",
+     "close": 400
+    },
+    {
+     "date": "2026-08-20",
+     "close": 402.5
+    },
+    {
+     "date": "2026-08-21",
+     "close": 405.2
+    },
+    {
+     "date": "2026-08-24",
+     "close": 406.9
+    },
+    {
+     "date": "2026-08-25",
+     "close": 404
+    },
+    {
+     "date": "2026-08-26",
+     "close": 403.5
+    },
+    {
+     "date": "2026-08-27",
+     "close": 400
+    },
+    {
+     "date": "2026-08-28",
+     "close": 401
+    },
+    {
+     "date": "2026-08-31",
+     "close": 401.75
+    },
+    {
+     "date": "2026-09-01",
+     "close": 401.6
+    },
+    {
+     "date": "2026-09-02",
+     "close": 417.85
+    },
+    {
+     "date": "2026-09-03",
+     "close": 420.05
+    },
+    {
+     "date": "2026-09-04",
+     "close": 415.35
+    },
+    {
+     "date": "2026-09-07",
+     "close": 418.85
+    },
+    {
+     "date": "2026-09-08",
+     "close": 420.25
+    },
+    {
+     "date": "2026-09-09",
+     "close": 431
+    },
+    {
+     "date": "2026-09-10",
+     "close": 432
+    },
+    {
+     "date": "2026-09-11",
+     "close": 426.4
+    },
+    {
+     "date": "2026-09-15",
+     "close": 419.25
+    },
+    {
+     "date": "2026-09-16",
+     "close": 422.25
+    },
+    {
+     "date": "2026-09-17",
+     "close": 418
+    },
+    {
+     "date": "2026-09-18",
+     "close": 409.9
+    },
+    {
+     "date": "2026-09-21",
+     "close": 414.7
+    },
+    {
+     "date": "2026-09-22",
+     "close": 428
+    },
+    {
+     "date": "2026-09-23",
+     "close": 424.55
+    },
+    {
+     "date": "2026-09-24",
+     "close": 422
+    },
+    {
+     "date": "2026-09-25",
+     "close": 426.1
+    },
+    {
+     "date": "2026-09-28",
+     "close": 422.5
+    },
+    {
+     "date": "2026-09-29",
+     "close": 425
+    },
+    {
+     "date": "2026-09-30",
+     "close": 425
+    },
+    {
+     "date": "2026-10-01",
+     "close": 420.4
+    },
+    {
+     "date": "2026-10-05",
+     "close": 425.1
+    },
+    {
+     "date": "2026-10-06",
+     "close": 411.65
+    },
+    {
+     "date": "2026-10-07",
+     "close": 414.5
+    },
+    {
+     "date": "2026-10-08",
+     "close": 409.35
+    },
+    {
+     "date": "2026-10-09",
+     "close": 411.55
+    },
+    {
+     "date": "2026-10-12",
+     "close": 404.8
+    },
+    {
+     "date": "2026-10-13",
+     "close": 408.5
+    },
+    {
+     "date": "2026-10-14",
+     "close": 417
+    },
+    {
+     "date": "2026-10-15",
+     "close": 418
+    },
+    {
+     "date": "2026-10-16",
+     "close": 417.2
+    },
+    {
+     "date": "2026-10-19",
+     "close": 411.7
+    },
+    {
+     "date": "2026-10-21",
+     "close": 407.5
+    }
+   ],
+   "sector": "Energy",
+   "industry": "Thermal Coal"
+  },
+  "DIVISLAB": {
+   "price": 9162,
+   "prevClose": 9087,
+   "change": 75,
+   "changePct": 0.83,
+   "dayHigh": 9190,
+   "dayLow": 9006.5,
+   "high52": 9740,
+   "low52": 5647.5,
+   "volume": 1040584,
+   "longName": "Divi's Laboratories Limited",
+   "closes": [
+    {
+     "date": "2026-07-22",
+     "close": 7386.5
+    },
+    {
+     "date": "2026-07-23",
+     "close": 7305
+    },
+    {
+     "date": "2026-07-24",
+     "close": 7248.5
+    },
+    {
+     "date": "2026-07-27",
+     "close": 7414
+    },
+    {
+     "date": "2026-07-28",
+     "close": 7425
+    },
+    {
+     "date": "2026-07-29",
+     "close": 7784.5
+    },
+    {
+     "date": "2026-07-30",
+     "close": 7835
+    },
+    {
+     "date": "2026-07-31",
+     "close": 8056
+    },
+    {
+     "date": "2026-08-03",
+     "close": 8585
+    },
+    {
+     "date": "2026-08-04",
+     "close": 8378
+    },
+    {
+     "date": "2026-08-05",
+     "close": 8388
+    },
+    {
+     "date": "2026-08-06",
+     "close": 8349
+    },
+    {
+     "date": "2026-08-07",
+     "close": 8275
+    },
+    {
+     "date": "2026-08-10",
+     "close": 8300
+    },
+    {
+     "date": "2026-08-11",
+     "close": 8578.5
+    },
+    {
+     "date": "2026-08-12",
+     "close": 8600
+    },
+    {
+     "date": "2026-08-13",
+     "close": 8500
+    },
+    {
+     "date": "2026-08-14",
+     "close": 8477
+    },
+    {
+     "date": "2026-08-17",
+     "close": 8481.5
+    },
+    {
+     "date": "2026-08-18",
+     "close": 8588
+    },
+    {
+     "date": "2026-08-19",
+     "close": 8560
+    },
+    {
+     "date": "2026-08-20",
+     "close": 8570
+    },
+    {
+     "date": "2026-08-21",
+     "close": 8597
+    },
+    {
+     "date": "2026-08-24",
+     "close": 8496
+    },
+    {
+     "date": "2026-08-25",
+     "close": 8744.5
+    },
+    {
+     "date": "2026-08-26",
+     "close": 9025
+    },
+    {
+     "date": "2026-08-27",
+     "close": 9060
+    },
+    {
+     "date": "2026-08-28",
+     "close": 9239
+    },
+    {
+     "date": "2026-08-31",
+     "close": 9467
+    },
+    {
+     "date": "2026-09-01",
+     "close": 9165
+    },
+    {
+     "date": "2026-09-02",
+     "close": 9220
+    },
+    {
+     "date": "2026-09-03",
+     "close": 9250
+    },
+    {
+     "date": "2026-09-04",
+     "close": 9100
+    },
+    {
+     "date": "2026-09-07",
+     "close": 9315
+    },
+    {
+     "date": "2026-09-08",
+     "close": 9575
+    },
+    {
+     "date": "2026-09-09",
+     "close": 9488
+    },
+    {
+     "date": "2026-09-10",
+     "close": 9438.5
+    },
+    {
+     "date": "2026-09-11",
+     "close": 9322
+    },
+    {
+     "date": "2026-09-15",
+     "close": 9198
+    },
+    {
+     "date": "2026-09-16",
+     "close": 9158
+    },
+    {
+     "date": "2026-09-17",
+     "close": 9323
+    },
+    {
+     "date": "2026-09-18",
+     "close": 9375
+    },
+    {
+     "date": "2026-09-21",
+     "close": 9410.5
+    },
+    {
+     "date": "2026-09-22",
+     "close": 9352
+    },
+    {
+     "date": "2026-09-23",
+     "close": 9624
+    },
+    {
+     "date": "2026-09-24",
+     "close": 9602
+    },
+    {
+     "date": "2026-09-25",
+     "close": 9619.5
+    },
+    {
+     "date": "2026-09-28",
+     "close": 9550
+    },
+    {
+     "date": "2026-09-29",
+     "close": 9431
+    },
+    {
+     "date": "2026-09-30",
+     "close": 9291.5
+    },
+    {
+     "date": "2026-10-01",
+     "close": 9249
+    },
+    {
+     "date": "2026-10-05",
+     "close": 9196
+    },
+    {
+     "date": "2026-10-06",
+     "close": 9550
+    },
+    {
+     "date": "2026-10-07",
+     "close": 9588
+    },
+    {
+     "date": "2026-10-08",
+     "close": 9361
+    },
+    {
+     "date": "2026-10-09",
+     "close": 9340
+    },
+    {
+     "date": "2026-10-12",
+     "close": 9426
+    },
+    {
+     "date": "2026-10-13",
+     "close": 9285
+    },
+    {
+     "date": "2026-10-14",
+     "close": 9023
+    },
+    {
+     "date": "2026-10-15",
+     "close": 9030
+    },
+    {
+     "date": "2026-10-16",
+     "close": 9144.5
+    },
+    {
+     "date": "2026-10-19",
+     "close": 9087
+    },
+    {
+     "date": "2026-10-21",
+     "close": 9190
+    }
+   ],
+   "sector": "Healthcare",
+   "industry": "Drug Manufacturers—Specialty & Generic"
+  },
+  "DMART": {
+   "price": 3166,
+   "prevClose": 3304,
+   "change": -138,
+   "changePct": -4.18,
+   "dayHigh": 3231.2,
+   "dayLow": 3149.4,
+   "high52": 4644,
+   "low52": 3149.4,
+   "volume": 1329050,
+   "longName": "Avenue Supermarts Limited",
+   "closes": [
+    {
+     "date": "2026-07-22",
+     "close": 4000.5
+    },
+    {
+     "date": "2026-07-23",
+     "close": 4035
+    },
+    {
+     "date": "2026-07-24",
+     "close": 4018.8
+    },
+    {
+     "date": "2026-07-27",
+     "close": 4027.7
+    },
+    {
+     "date": "2026-07-28",
+     "close": 3846.6
+    },
+    {
+     "date": "2026-07-29",
+     "close": 3848.1
+    },
+    {
+     "date": "2026-07-30",
+     "close": 3874
+    },
+    {
+     "date": "2026-07-31",
+     "close": 3921
+    },
+    {
+     "date": "2026-08-03",
+     "close": 4015
+    },
+    {
+     "date": "2026-08-04",
+     "close": 4023
+    },
+    {
+     "date": "2026-08-05",
+     "close": 3946
+    },
+    {
+     "date": "2026-08-06",
+     "close": 3931.2
+    },
+    {
+     "date": "2026-08-07",
+     "close": 3900
+    },
+    {
+     "date": "2026-08-10",
+     "close": 4054
+    },
+    {
+     "date": "2026-08-11",
+     "close": 4054.9
+    },
+    {
+     "date": "2026-08-12",
+     "close": 4040
+    },
+    {
+     "date": "2026-08-13",
+     "close": 4070
+    },
+    {
+     "date": "2026-08-14",
+     "close": 4060
+    },
+    {
+     "date": "2026-08-17",
+     "close": 3995
+    },
+    {
+     "date": "2026-08-18",
+     "close": 3981
+    },
+    {
+     "date": "2026-08-19",
+     "close": 3965
+    },
+    {
+     "date": "2026-08-20",
+     "close": 3960
+    },
+    {
+     "date": "2026-08-21",
+     "close": 3906
+    },
+    {
+     "date": "2026-08-24",
+     "close": 3940
+    },
+    {
+     "date": "2026-08-25",
+     "close": 3909.6
+    },
+    {
+     "date": "2026-08-26",
+     "close": 3826.9
+    },
+    {
+     "date": "2026-08-27",
+     "close": 3847.4
+    },
+    {
+     "date": "2026-08-28",
+     "close": 3830.6
+    },
+    {
+     "date": "2026-08-31",
+     "close": 3900
+    },
+    {
+     "date": "2026-09-01",
+     "close": 3824
+    },
+    {
+     "date": "2026-09-02",
+     "close": 3813.4
+    },
+    {
+     "date": "2026-09-03",
+     "close": 3763
+    },
+    {
+     "date": "2026-09-04",
+     "close": 3770
+    },
+    {
+     "date": "2026-09-07",
+     "close": 3710
+    },
+    {
+     "date": "2026-09-08",
+     "close": 3720.2
+    },
+    {
+     "date": "2026-09-09",
+     "close": 3735
+    },
+    {
+     "date": "2026-09-10",
+     "close": 3690
+    },
+    {
+     "date": "2026-09-11",
+     "close": 3688
+    },
+    {
+     "date": "2026-09-15",
+     "close": 3680
+    },
+    {
+     "date": "2026-09-16",
+     "close": 3720
+    },
+    {
+     "date": "2026-09-17",
+     "close": 3711.2
+    },
+    {
+     "date": "2026-09-18",
+     "close": 3749.9
+    },
+    {
+     "date": "2026-09-21",
+     "close": 3800.4
+    },
+    {
+     "date": "2026-09-22",
+     "close": 3777
+    },
+    {
+     "date": "2026-09-23",
+     "close": 3834.8
+    },
+    {
+     "date": "2026-09-24",
+     "close": 3787.5
+    },
+    {
+     "date": "2026-09-25",
+     "close": 3834.2
+    },
+    {
+     "date": "2026-09-28",
+     "close": 3803.5
+    },
+    {
+     "date": "2026-09-29",
+     "close": 3750
+    },
+    {
+     "date": "2026-09-30",
+     "close": 3801.4
+    },
+    {
+     "date": "2026-10-01",
+     "close": 3813
+    },
+    {
+     "date": "2026-10-05",
+     "close": 3567
+    },
+    {
+     "date": "2026-10-06",
+     "close": 3581.9
+    },
+    {
+     "date": "2026-10-07",
+     "close": 3636
+    },
+    {
+     "date": "2026-10-08",
+     "close": 3585
+    },
+    {
+     "date": "2026-10-09",
+     "close": 3516.8
+    },
+    {
+     "date": "2026-10-12",
+     "close": 3364.9
+    },
+    {
+     "date": "2026-10-13",
+     "close": 3383
+    },
+    {
+     "date": "2026-10-14",
+     "close": 3415
+    },
+    {
+     "date": "2026-10-15",
+     "close": 3378.4
+    },
+    {
+     "date": "2026-10-16",
+     "close": 3342
+    },
+    {
+     "date": "2026-10-19",
+     "close": 3304
+    },
+    {
+     "date": "2026-10-21",
+     "close": 3250.9
+    }
+   ],
+   "sector": "Consumer Defensive",
+   "industry": "Discount Stores"
+  },
+  "EICHERMOT": {
+   "price": 7084.5,
+   "prevClose": 7349,
+   "change": -264.5,
+   "changePct": -3.6,
+   "dayHigh": 7230,
+   "dayLow": 7022,
+   "high52": 8230,
+   "low52": 6442,
+   "volume": 406736,
+   "longName": "Eicher Motors Limited",
+   "closes": [
+    {
+     "date": "2026-07-22",
+     "close": 7632
+    },
+    {
+     "date": "2026-07-23",
+     "close": 7721.5
+    },
+    {
+     "date": "2026-07-24",
+     "close": 7628
+    },
+    {
+     "date": "2026-07-27",
+     "close": 7769.5
+    },
+    {
+     "date": "2026-07-28",
+     "close": 7836
+    },
+    {
+     "date": "2026-07-29",
+     "close": 7779
+    },
+    {
+     "date": "2026-07-30",
+     "close": 7912.5
+    },
+    {
+     "date": "2026-07-31",
+     "close": 7833.5
+    },
+    {
+     "date": "2026-08-03",
+     "close": 8050
+    },
+    {
+     "date": "2026-08-04",
+     "close": 7935
+    },
+    {
+     "date": "2026-08-05",
+     "close": 7986.5
+    },
+    {
+     "date": "2026-08-06",
+     "close": 7967.5
+    },
+    {
+     "date": "2026-08-07",
+     "close": 8020
+    },
+    {
+     "date": "2026-08-10",
+     "close": 7975
+    },
+    {
+     "date": "2026-08-11",
+     "close": 8000
+    },
+    {
+     "date": "2026-08-12",
+     "close": 8049
+    },
+    {
+     "date": "2026-08-13",
+     "close": 8100
+    },
+    {
+     "date": "2026-08-14",
+     "close": 8066.5
+    },
+    {
+     "date": "2026-08-17",
+     "close": 8050
+    },
+    {
+     "date": "2026-08-18",
+     "close": 8018.5
+    },
+    {
+     "date": "2026-08-19",
+     "close": 7990.5
+    },
+    {
+     "date": "2026-08-20",
+     "close": 8042
+    },
+    {
+     "date": "2026-08-21",
+     "close": 8010
+    },
+    {
+     "date": "2026-08-24",
+     "close": 8047
+    },
+    {
+     "date": "2026-08-25",
+     "close": 8055
+    },
+    {
+     "date": "2026-08-26",
+     "close": 8035
+    },
+    {
+     "date": "2026-08-27",
+     "close": 8100
+    },
+    {
+     "date": "2026-08-28",
+     "close": 8059
+    },
+    {
+     "date": "2026-08-31",
+     "close": 7953.5
+    },
+    {
+     "date": "2026-09-01",
+     "close": 7970
+    },
+    {
+     "date": "2026-09-02",
+     "close": 7711.5
+    },
+    {
+     "date": "2026-09-03",
+     "close": 7690
+    },
+    {
+     "date": "2026-09-04",
+     "close": 7630.5
+    },
+    {
+     "date": "2026-09-07",
+     "close": 7672
+    },
+    {
+     "date": "2026-09-08",
+     "close": 7747.5
+    },
+    {
+     "date": "2026-09-09",
+     "close": 7734.5
+    },
+    {
+     "date": "2026-09-10",
+     "close": 7697
+    },
+    {
+     "date": "2026-09-11",
+     "close": 7530
+    },
+    {
+     "date": "2026-09-15",
+     "close": 7452.5
+    },
+    {
+     "date": "2026-09-16",
+     "close": 7500
+    },
+    {
+     "date": "2026-09-17",
+     "close": 7493.5
+    },
+    {
+     "date": "2026-09-18",
+     "close": 7516
+    },
+    {
+     "date": "2026-09-21",
+     "close": 7512.5
+    },
+    {
+     "date": "2026-09-22",
+     "close": 7427
+    },
+    {
+     "date": "2026-09-23",
+     "close": 7470
+    },
+    {
+     "date": "2026-09-24",
+     "close": 7338.5
+    },
+    {
+     "date": "2026-09-25",
+     "close": 7360
+    },
+    {
+     "date": "2026-09-28",
+     "close": 7213.5
+    },
+    {
+     "date": "2026-09-29",
+     "close": 7179
+    },
+    {
+     "date": "2026-09-30",
+     "close": 7150
+    },
+    {
+     "date": "2026-10-01",
+     "close": 6920
+    },
+    {
+     "date": "2026-10-05",
+     "close": 7021.5
+    },
+    {
+     "date": "2026-10-06",
+     "close": 7051
+    },
+    {
+     "date": "2026-10-07",
+     "close": 6960
+    },
+    {
+     "date": "2026-10-08",
+     "close": 6767.5
+    },
+    {
+     "date": "2026-10-09",
+     "close": 7050
+    },
+    {
+     "date": "2026-10-12",
+     "close": 7119
+    },
+    {
+     "date": "2026-10-13",
+     "close": 7163
+    },
+    {
+     "date": "2026-10-14",
+     "close": 7082.5
+    },
+    {
+     "date": "2026-10-15",
+     "close": 7225
+    },
+    {
+     "date": "2026-10-16",
+     "close": 7284.5
+    },
+    {
+     "date": "2026-10-19",
+     "close": 7349
+    },
+    {
+     "date": "2026-10-21",
+     "close": 7170.5
+    }
+   ],
+   "sector": "Consumer Cyclical",
+   "industry": "Auto Manufacturers"
+  },
+  "ETERNAL": {
+   "price": 304.45,
+   "prevClose": 320.2,
+   "change": -15.75,
+   "changePct": -4.92,
+   "dayHigh": 319,
+   "dayLow": 303.6,
+   "high52": 344.4,
+   "low52": 212.6,
+   "volume": 85453094,
+   "longName": "Eternal Limited",
+   "closes": [
+    {
+     "date": "2026-07-22",
+     "close": 284.4
+    },
+    {
+     "date": "2026-07-23",
+     "close": 287.1
+    },
+    {
+     "date": "2026-07-24",
+     "close": 280
+    },
+    {
+     "date": "2026-07-27",
+     "close": 295.85
+    },
+    {
+     "date": "2026-07-28",
+     "close": 308.35
+    },
+    {
+     "date": "2026-07-29",
+     "close": 311.8
+    },
+    {
+     "date": "2026-07-30",
+     "close": 310.65
+    },
+    {
+     "date": "2026-07-31",
+     "close": 302.45
+    },
+    {
+     "date": "2026-08-03",
+     "close": 310.5
+    },
+    {
+     "date": "2026-08-04",
+     "close": 312.4
+    },
+    {
+     "date": "2026-08-05",
+     "close": 310.35
+    },
+    {
+     "date": "2026-08-06",
+     "close": 316.25
+    },
+    {
+     "date": "2026-08-07",
+     "close": 315
+    },
+    {
+     "date": "2026-08-10",
+     "close": 310.25
+    },
+    {
+     "date": "2026-08-11",
+     "close": 318
+    },
+    {
+     "date": "2026-08-12",
+     "close": 314.05
+    },
+    {
+     "date": "2026-08-13",
+     "close": 318
+    },
+    {
+     "date": "2026-08-14",
+     "close": 318.5
+    },
+    {
+     "date": "2026-08-17",
+     "close": 318
+    },
+    {
+     "date": "2026-08-18",
+     "close": 315.9
+    },
+    {
+     "date": "2026-08-19",
+     "close": 320
+    },
+    {
+     "date": "2026-08-20",
+     "close": 327.95
+    },
+    {
+     "date": "2026-08-21",
+     "close": 328
+    },
+    {
+     "date": "2026-08-24",
+     "close": 327.15
+    },
+    {
+     "date": "2026-08-25",
+     "close": 331
+    },
+    {
+     "date": "2026-08-26",
+     "close": 327
+    },
+    {
+     "date": "2026-08-27",
+     "close": 328.5
+    },
+    {
+     "date": "2026-08-28",
+     "close": 328
+    },
+    {
+     "date": "2026-08-31",
+     "close": 328.1
+    },
+    {
+     "date": "2026-09-01",
+     "close": 327.75
+    },
+    {
+     "date": "2026-09-02",
+     "close": 327.3
+    },
+    {
+     "date": "2026-09-03",
+     "close": 324.8
+    },
+    {
+     "date": "2026-09-04",
+     "close": 322.75
+    },
+    {
+     "date": "2026-09-07",
+     "close": 320.8
+    },
+    {
+     "date": "2026-09-08",
+     "close": 321.6
+    },
+    {
+     "date": "2026-09-09",
+     "close": 320.6
+    },
+    {
+     "date": "2026-09-10",
+     "close": 322.1
+    },
+    {
+     "date": "2026-09-11",
+     "close": 323.5
+    },
+    {
+     "date": "2026-09-15",
+     "close": 315.25
+    },
+    {
+     "date": "2026-09-16",
+     "close": 317
+    },
+    {
+     "date": "2026-09-17",
+     "close": 322.35
+    },
+    {
+     "date": "2026-09-18",
+     "close": 326.85
+    },
+    {
+     "date": "2026-09-21",
+     "close": 335.9
+    },
+    {
+     "date": "2026-09-22",
+     "close": 342
+    },
+    {
+     "date": "2026-09-23",
+     "close": 342.65
+    },
+    {
+     "date": "2026-09-24",
+     "close": 335.5
+    },
+    {
+     "date": "2026-09-25",
+     "close": 335
+    },
+    {
+     "date": "2026-09-28",
+     "close": 330.95
+    },
+    {
+     "date": "2026-09-29",
+     "close": 327.85
+    },
+    {
+     "date": "2026-09-30",
+     "close": 320
+    },
+    {
+     "date": "2026-10-01",
+     "close": 313.9
+    },
+    {
+     "date": "2026-10-05",
+     "close": 320.8
+    },
+    {
+     "date": "2026-10-06",
+     "close": 329
+    },
+    {
+     "date": "2026-10-07",
+     "close": 328
+    },
+    {
+     "date": "2026-10-08",
+     "close": 319.05
+    },
+    {
+     "date": "2026-10-09",
+     "close": 323.45
+    },
+    {
+     "date": "2026-10-12",
+     "close": 323
+    },
+    {
+     "date": "2026-10-13",
+     "close": 320.45
+    },
+    {
+     "date": "2026-10-14",
+     "close": 316
+    },
+    {
+     "date": "2026-10-15",
+     "close": 323
+    },
+    {
+     "date": "2026-10-16",
+     "close": 325.3
+    },
+    {
+     "date": "2026-10-19",
+     "close": 320.2
+    },
+    {
+     "date": "2026-10-21",
+     "close": 312.35
+    }
+   ],
+   "sector": "Consumer Cyclical",
+   "industry": "Internet Retail"
+  },
+  "GRASIM": {
+   "price": 2894.4,
+   "prevClose": 2879,
+   "change": 15.4,
+   "changePct": 0.53,
+   "dayHigh": 2894.4,
+   "dayLow": 2828.2,
+   "high52": 3411.1,
+   "low52": 2502.5,
+   "volume": 214524,
+   "longName": "Grasim Industries Limited",
+   "closes": [
+    {
+     "date": "2026-07-22",
+     "close": 3166.3
+    },
+    {
+     "date": "2026-07-23",
+     "close": 3113
+    },
+    {
+     "date": "2026-07-24",
+     "close": 3089.4
+    },
+    {
+     "date": "2026-07-27",
+     "close": 3112.4
+    },
+    {
+     "date": "2026-07-28",
+     "close": 3116.2
+    },
+    {
+     "date": "2026-07-29",
+     "close": 3113
+    },
+    {
+     "date": "2026-07-30",
+     "close": 3104.8
+    },
+    {
+     "date": "2026-07-31",
+     "close": 3100.8
+    },
+    {
+     "date": "2026-08-03",
+     "close": 3260
+    },
+    {
+     "date": "2026-08-04",
+     "close": 3138
+    },
+    {
+     "date": "2026-08-05",
+     "close": 3224
+    },
+    {
+     "date": "2026-08-06",
+     "close": 3220
+    },
+    {
+     "date": "2026-08-07",
+     "close": 3323
+    },
+    {
+     "date": "2026-08-10",
+     "close": 3380.5
+    },
+    {
+     "date": "2026-08-11",
+     "close": 3322.2
+    },
+    {
+     "date": "2026-08-12",
+     "close": 3307.8
+    },
+    {
+     "date": "2026-08-13",
+     "close": 3257
+    },
+    {
+     "date": "2026-08-14",
+     "close": 3248.7
+    },
+    {
+     "date": "2026-08-17",
+     "close": 3250.5
+    },
+    {
+     "date": "2026-08-18",
+     "close": 3278.7
+    },
+    {
+     "date": "2026-08-19",
+     "close": 3270
+    },
+    {
+     "date": "2026-08-20",
+     "close": 3300
+    },
+    {
+     "date": "2026-08-21",
+     "close": 3308
+    },
+    {
+     "date": "2026-08-24",
+     "close": 3288
+    },
+    {
+     "date": "2026-08-25",
+     "close": 3289.6
+    },
+    {
+     "date": "2026-08-26",
+     "close": 3299.9
+    },
+    {
+     "date": "2026-08-27",
+     "close": 3258
+    },
+    {
+     "date": "2026-08-28",
+     "close": 3290
+    },
+    {
+     "date": "2026-08-31",
+     "close": 3371
+    },
+    {
+     "date": "2026-09-01",
+     "close": 3305
+    },
+    {
+     "date": "2026-09-02",
+     "close": 3294.9
+    },
+    {
+     "date": "2026-09-03",
+     "close": 3310
+    },
+    {
+     "date": "2026-09-04",
+     "close": 3322
+    },
+    {
+     "date": "2026-09-07",
+     "close": 3302.4
+    },
+    {
+     "date": "2026-09-08",
+     "close": 3306.8
+    },
+    {
+     "date": "2026-09-09",
+     "close": 3300
+    },
+    {
+     "date": "2026-09-10",
+     "close": 3319
+    },
+    {
+     "date": "2026-09-11",
+     "close": 3281.9
+    },
+    {
+     "date": "2026-09-15",
+     "close": 3171
+    },
+    {
+     "date": "2026-09-16",
+     "close": 3187
+    },
+    {
+     "date": "2026-09-17",
+     "close": 3173.1
+    },
+    {
+     "date": "2026-09-18",
+     "close": 3209.2
+    },
+    {
+     "date": "2026-09-21",
+     "close": 3166
+    },
+    {
+     "date": "2026-09-22",
+     "close": 3128.2
+    },
+    {
+     "date": "2026-09-23",
+     "close": 3188.5
+    },
+    {
+     "date": "2026-09-24",
+     "close": 3166.5
+    },
+    {
+     "date": "2026-09-25",
+     "close": 3191
+    },
+    {
+     "date": "2026-09-28",
+     "close": 3150
+    },
+    {
+     "date": "2026-09-29",
+     "close": 3100
+    },
+    {
+     "date": "2026-09-30",
+     "close": 3061.9
+    },
+    {
+     "date": "2026-10-01",
+     "close": 2962
+    },
+    {
+     "date": "2026-10-05",
+     "close": 2972
+    },
+    {
+     "date": "2026-10-06",
+     "close": 2969
+    },
+    {
+     "date": "2026-10-07",
+     "close": 2921.1
+    },
+    {
+     "date": "2026-10-08",
+     "close": 2856.8
+    },
+    {
+     "date": "2026-10-09",
+     "close": 2890
+    },
+    {
+     "date": "2026-10-12",
+     "close": 2858
+    },
+    {
+     "date": "2026-10-13",
+     "close": 2912
+    },
+    {
+     "date": "2026-10-14",
+     "close": 2873
+    },
+    {
+     "date": "2026-10-15",
+     "close": 2885.9
+    },
+    {
+     "date": "2026-10-16",
+     "close": 2920
+    },
+    {
+     "date": "2026-10-19",
+     "close": 2879
+    },
+    {
+     "date": "2026-10-21",
+     "close": 2889.1
+    }
+   ],
+   "sector": "Basic Materials",
+   "industry": "Building Materials"
+  },
+  "HAL": {
+   "price": 4875,
+   "prevClose": 4959,
+   "change": -84,
+   "changePct": -1.69,
+   "dayHigh": 4901.9,
+   "dayLow": 4765.2,
+   "high52": 5149.9,
+   "low52": 3479.1,
+   "volume": 907063,
+   "longName": "Hindustan Aeronautics Limited",
+   "closes": [
+    {
+     "date": "2026-07-22",
+     "close": 4574.8
+    },
+    {
+     "date": "2026-07-23",
+     "close": 4592.5
+    },
+    {
+     "date": "2026-07-24",
+     "close": 4573.4
+    },
+    {
+     "date": "2026-07-27",
+     "close": 4619
+    },
+    {
+     "date": "2026-07-28",
+     "close": 4600.1
+    },
+    {
+     "date": "2026-07-29",
+     "close": 4592
+    },
+    {
+     "date": "2026-07-30",
+     "close": 4581.4
+    },
+    {
+     "date": "2026-07-31",
+     "close": 4646.5
+    },
+    {
+     "date": "2026-08-03",
+     "close": 4690
+    },
+    {
+     "date": "2026-08-04",
+     "close": 4635
+    },
+    {
+     "date": "2026-08-05",
+     "close": 4645
+    },
+    {
+     "date": "2026-08-06",
+     "close": 4920
+    },
+    {
+     "date": "2026-08-07",
+     "close": 4910
+    },
+    {
+     "date": "2026-08-10",
+     "close": 4928
+    },
+    {
+     "date": "2026-08-11",
+     "close": 4909
+    },
+    {
+     "date": "2026-08-12",
+     "close": 4995
+    },
+    {
+     "date": "2026-08-13",
+     "close": 4945
+    },
+    {
+     "date": "2026-08-14",
+     "close": 5029.9
+    },
+    {
+     "date": "2026-08-17",
+     "close": 5059
+    },
+    {
+     "date": "2026-08-18",
+     "close": 5099
+    },
+    {
+     "date": "2026-08-19",
+     "close": 5017
+    },
+    {
+     "date": "2026-08-20",
+     "close": 4998
+    },
+    {
+     "date": "2026-08-21",
+     "close": 5000
+    },
+    {
+     "date": "2026-08-24",
+     "close": 4906
+    },
+    {
+     "date": "2026-08-25",
+     "close": 4900
+    },
+    {
+     "date": "2026-08-26",
+     "close": 4865.5
+    },
+    {
+     "date": "2026-08-27",
+     "close": 4899
+    },
+    {
+     "date": "2026-08-28",
+     "close": 4861.1
+    },
+    {
+     "date": "2026-08-31",
+     "close": 4801.6
+    },
+    {
+     "date": "2026-09-01",
+     "close": 4807.6
+    },
+    {
+     "date": "2026-09-02",
+     "close": 4780
+    },
+    {
+     "date": "2026-09-03",
+     "close": 4765.6
+    },
+    {
+     "date": "2026-09-04",
+     "close": 4856
+    },
+    {
+     "date": "2026-09-07",
+     "close": 4855.2
+    },
+    {
+     "date": "2026-09-08",
+     "close": 5031.1
+    },
+    {
+     "date": "2026-09-09",
+     "close": 5000.5
+    },
+    {
+     "date": "2026-09-10",
+     "close": 4950
+    },
+    {
+     "date": "2026-09-11",
+     "close": 4905
+    },
+    {
+     "date": "2026-09-15",
+     "close": 4695
+    },
+    {
+     "date": "2026-09-16",
+     "close": 4695.6
+    },
+    {
+     "date": "2026-09-17",
+     "close": 4788
+    },
+    {
+     "date": "2026-09-18",
+     "close": 4800.3
+    },
+    {
+     "date": "2026-09-21",
+     "close": 4826
+    },
+    {
+     "date": "2026-09-22",
+     "close": 4800
+    },
+    {
+     "date": "2026-09-23",
+     "close": 4836
+    },
+    {
+     "date": "2026-09-24",
+     "close": 4774.2
+    },
+    {
+     "date": "2026-09-25",
+     "close": 4800
+    },
+    {
+     "date": "2026-09-28",
+     "close": 4738
+    },
+    {
+     "date": "2026-09-29",
+     "close": 4549.3
+    },
+    {
+     "date": "2026-09-30",
+     "close": 4668
+    },
+    {
+     "date": "2026-10-01",
+     "close": 4601
+    },
+    {
+     "date": "2026-10-05",
+     "close": 4680
+    },
+    {
+     "date": "2026-10-06",
+     "close": 4816
+    },
+    {
+     "date": "2026-10-07",
+     "close": 4746.3
+    },
+    {
+     "date": "2026-10-08",
+     "close": 4647.4
+    },
+    {
+     "date": "2026-10-09",
+     "close": 4655.6
+    },
+    {
+     "date": "2026-10-12",
+     "close": 4760
+    },
+    {
+     "date": "2026-10-13",
+     "close": 4869
+    },
+    {
+     "date": "2026-10-14",
+     "close": 4933
+    },
+    {
+     "date": "2026-10-15",
+     "close": 4910
+    },
+    {
+     "date": "2026-10-16",
+     "close": 4989
+    },
+    {
+     "date": "2026-10-19",
+     "close": 4959
+    },
+    {
+     "date": "2026-10-21",
+     "close": 4854.4
+    }
+   ],
+   "sector": "Industrials",
+   "industry": "Aerospace & Defense"
+  },
+  "HCLTECH": {
+   "price": 1421.7,
+   "prevClose": 1379.9,
+   "change": 41.8,
+   "changePct": 3.03,
+   "dayHigh": 1427.9,
+   "dayLow": 1395.3,
+   "high52": 1780.1,
+   "low52": 1030,
+   "volume": 3570431,
+   "longName": "HCL Technologies Limited",
+   "closes": [
+    {
+     "date": "2026-07-22",
+     "close": 1237.3
+    },
+    {
+     "date": "2026-07-23",
+     "close": 1244.7
+    },
+    {
+     "date": "2026-07-24",
+     "close": 1271
+    },
+    {
+     "date": "2026-07-27",
+     "close": 1295.9
+    },
+    {
+     "date": "2026-07-28",
+     "close": 1318.6
+    },
+    {
+     "date": "2026-07-29",
+     "close": 1344.3
+    },
+    {
+     "date": "2026-07-30",
+     "close": 1352.7
+    },
+    {
+     "date": "2026-07-31",
+     "close": 1346.9
+    },
+    {
+     "date": "2026-08-03",
+     "close": 1377
+    },
+    {
+     "date": "2026-08-04",
+     "close": 1369.9
+    },
+    {
+     "date": "2026-08-05",
+     "close": 1350
+    },
+    {
+     "date": "2026-08-06",
+     "close": 1335
+    },
+    {
+     "date": "2026-08-07",
+     "close": 1356.6
+    },
+    {
+     "date": "2026-08-10",
+     "close": 1357.2
+    },
+    {
+     "date": "2026-08-11",
+     "close": 1365.4
+    },
+    {
+     "date": "2026-08-12",
+     "close": 1365.4
+    },
+    {
+     "date": "2026-08-13",
+     "close": 1370
+    },
+    {
+     "date": "2026-08-14",
+     "close": 1360
+    },
+    {
+     "date": "2026-08-17",
+     "close": 1325
+    },
+    {
+     "date": "2026-08-18",
+     "close": 1298
+    },
+    {
+     "date": "2026-08-19",
+     "close": 1324.8
+    },
+    {
+     "date": "2026-08-20",
+     "close": 1318.4
+    },
+    {
+     "date": "2026-08-21",
+     "close": 1302.5
+    },
+    {
+     "date": "2026-08-24",
+     "close": 1322
+    },
+    {
+     "date": "2026-08-25",
+     "close": 1315.8
+    },
+    {
+     "date": "2026-08-26",
+     "close": 1298.5
+    },
+    {
+     "date": "2026-08-27",
+     "close": 1282
+    },
+    {
+     "date": "2026-08-28",
+     "close": 1316.1
+    },
+    {
+     "date": "2026-08-31",
+     "close": 1312.2
+    },
+    {
+     "date": "2026-09-01",
+     "close": 1351.4
+    },
+    {
+     "date": "2026-09-02",
+     "close": 1331.5
+    },
+    {
+     "date": "2026-09-03",
+     "close": 1319
+    },
+    {
+     "date": "2026-09-04",
+     "close": 1293.4
+    },
+    {
+     "date": "2026-09-07",
+     "close": 1282.8
+    },
+    {
+     "date": "2026-09-08",
+     "close": 1277
+    },
+    {
+     "date": "2026-09-09",
+     "close": 1229.8
+    },
+    {
+     "date": "2026-09-10",
+     "close": 1207
+    },
+    {
+     "date": "2026-09-11",
+     "close": 1206.1
+    },
+    {
+     "date": "2026-09-15",
+     "close": 1253.7
+    },
+    {
+     "date": "2026-09-16",
+     "close": 1253
+    },
+    {
+     "date": "2026-09-17",
+     "close": 1258.3
+    },
+    {
+     "date": "2026-09-18",
+     "close": 1249.3
+    },
+    {
+     "date": "2026-09-21",
+     "close": 1281
+    },
+    {
+     "date": "2026-09-22",
+     "close": 1270.4
+    },
+    {
+     "date": "2026-09-23",
+     "close": 1256.7
+    },
+    {
+     "date": "2026-09-24",
+     "close": 1243.6
+    },
+    {
+     "date": "2026-09-25",
+     "close": 1258
+    },
+    {
+     "date": "2026-09-28",
+     "close": 1252.6
+    },
+    {
+     "date": "2026-09-29",
+     "close": 1222
+    },
+    {
+     "date": "2026-09-30",
+     "close": 1230
+    },
+    {
+     "date": "2026-10-01",
+     "close": 1243.1
+    },
+    {
+     "date": "2026-10-05",
+     "close": 1201.9
+    },
+    {
+     "date": "2026-10-06",
+     "close": 1204.4
+    },
+    {
+     "date": "2026-10-07",
+     "close": 1185
+    },
+    {
+     "date": "2026-10-08",
+     "close": 1176.9
+    },
+    {
+     "date": "2026-10-09",
+     "close": 1216.7
+    },
+    {
+     "date": "2026-10-12",
+     "close": 1223
+    },
+    {
+     "date": "2026-10-13",
+     "close": 1326
+    },
+    {
+     "date": "2026-10-14",
+     "close": 1327
+    },
+    {
+     "date": "2026-10-15",
+     "close": 1360
+    },
+    {
+     "date": "2026-10-16",
+     "close": 1380
+    },
+    {
+     "date": "2026-10-19",
+     "close": 1379.9
+    },
+    {
+     "date": "2026-10-21",
+     "close": 1424.2
+    }
+   ],
+   "sector": "Technology",
+   "industry": "Information Technology Services"
+  },
+  "HDFCBANK": {
+   "price": 694.05,
+   "prevClose": 712,
+   "change": -17.95,
+   "changePct": -2.52,
+   "dayHigh": 703.35,
+   "dayLow": 689.1,
+   "high52": 1020.5,
+   "low52": 681.9,
+   "volume": 60255284,
+   "longName": "HDFC Bank Limited",
+   "closes": [
+    {
+     "date": "2026-07-22",
+     "close": 753.15
+    },
+    {
+     "date": "2026-07-23",
+     "close": 747.25
+    },
+    {
+     "date": "2026-07-24",
+     "close": 742.8
+    },
+    {
+     "date": "2026-07-27",
+     "close": 739.55
+    },
+    {
+     "date": "2026-07-28",
+     "close": 735.4
+    },
+    {
+     "date": "2026-07-29",
+     "close": 748.2
+    },
+    {
+     "date": "2026-07-30",
+     "close": 753.95
+    },
+    {
+     "date": "2026-07-31",
+     "close": 748.15
+    },
+    {
+     "date": "2026-08-03",
+     "close": 753
+    },
+    {
+     "date": "2026-08-04",
+     "close": 742
+    },
+    {
+     "date": "2026-08-05",
+     "close": 735
+    },
+    {
+     "date": "2026-08-06",
+     "close": 734.3
+    },
+    {
+     "date": "2026-08-07",
+     "close": 731
+    },
+    {
+     "date": "2026-08-10",
+     "close": 731
+    },
+    {
+     "date": "2026-08-11",
+     "close": 729
+    },
+    {
+     "date": "2026-08-12",
+     "close": 729
+    },
+    {
+     "date": "2026-08-13",
+     "close": 725
+    },
+    {
+     "date": "2026-08-14",
+     "close": 727
+    },
+    {
+     "date": "2026-08-17",
+     "close": 729
+    },
+    {
+     "date": "2026-08-18",
+     "close": 723
+    },
+    {
+     "date": "2026-08-19",
+     "close": 720
+    },
+    {
+     "date": "2026-08-20",
+     "close": 725.05
+    },
+    {
+     "date": "2026-08-21",
+     "close": 726.95
+    },
+    {
+     "date": "2026-08-24",
+     "close": 729
+    },
+    {
+     "date": "2026-08-25",
+     "close": 727.5
+    },
+    {
+     "date": "2026-08-26",
+     "close": 727.2
+    },
+    {
+     "date": "2026-08-27",
+     "close": 711
+    },
+    {
+     "date": "2026-08-28",
+     "close": 720.3
+    },
+    {
+     "date": "2026-08-31",
+     "close": 709
+    },
+    {
+     "date": "2026-09-01",
+     "close": 711.9
+    },
+    {
+     "date": "2026-09-02",
+     "close": 700.8
+    },
+    {
+     "date": "2026-09-03",
+     "close": 706.65
+    },
+    {
+     "date": "2026-09-04",
+     "close": 712.1
+    },
+    {
+     "date": "2026-09-07",
+     "close": 710.5
+    },
+    {
+     "date": "2026-09-08",
+     "close": 703
+    },
+    {
+     "date": "2026-09-09",
+     "close": 687.1
+    },
+    {
+     "date": "2026-09-10",
+     "close": 693.8
+    },
+    {
+     "date": "2026-09-11",
+     "close": 708.25
+    },
+    {
+     "date": "2026-09-15",
+     "close": 716.55
+    },
+    {
+     "date": "2026-09-16",
+     "close": 721.5
+    },
+    {
+     "date": "2026-09-17",
+     "close": 713
+    },
+    {
+     "date": "2026-09-18",
+     "close": 731
+    },
+    {
+     "date": "2026-09-21",
+     "close": 739.5
+    },
+    {
+     "date": "2026-09-22",
+     "close": 738.6
+    },
+    {
+     "date": "2026-09-23",
+     "close": 737.25
+    },
+    {
+     "date": "2026-09-24",
+     "close": 728.9
+    },
+    {
+     "date": "2026-09-25",
+     "close": 735.6
+    },
+    {
+     "date": "2026-09-28",
+     "close": 719.05
+    },
+    {
+     "date": "2026-09-29",
+     "close": 722.7
+    },
+    {
+     "date": "2026-09-30",
+     "close": 708.7
+    },
+    {
+     "date": "2026-10-01",
+     "close": 721.2
+    },
+    {
+     "date": "2026-10-05",
+     "close": 704.8
+    },
+    {
+     "date": "2026-10-06",
+     "close": 711.45
+    },
+    {
+     "date": "2026-10-07",
+     "close": 702.75
+    },
+    {
+     "date": "2026-10-08",
+     "close": 692.25
+    },
+    {
+     "date": "2026-10-09",
+     "close": 707.25
+    },
+    {
+     "date": "2026-10-12",
+     "close": 704.9
+    },
+    {
+     "date": "2026-10-13",
+     "close": 714
+    },
+    {
+     "date": "2026-10-14",
+     "close": 710.7
+    },
+    {
+     "date": "2026-10-15",
+     "close": 726.85
+    },
+    {
+     "date": "2026-10-16",
+     "close": 728.85
+    },
+    {
+     "date": "2026-10-19",
+     "close": 712
+    },
+    {
+     "date": "2026-10-21",
+     "close": 706.95
+    }
+   ],
+   "sector": "Financial Services",
+   "industry": "Banks—Regional"
+  },
+  "HINDALCO": {
+   "price": 885.6,
+   "prevClose": 900.45,
+   "change": -14.85,
+   "changePct": -1.65,
+   "dayHigh": 892.05,
+   "dayLow": 870,
+   "high52": 1176,
+   "low52": 770.15,
+   "volume": 3615195,
+   "longName": "Hindalco Industries Limited",
+   "closes": [
+    {
+     "date": "2026-07-22",
+     "close": 950
+    },
+    {
+     "date": "2026-07-23",
+     "close": 955.65
+    },
+    {
+     "date": "2026-07-24",
+     "close": 942.8
+    },
+    {
+     "date": "2026-07-27",
+     "close": 945.25
+    },
+    {
+     "date": "2026-07-28",
+     "close": 936.4
+    },
+    {
+     "date": "2026-07-29",
+     "close": 962.45
+    },
+    {
+     "date": "2026-07-30",
+     "close": 970.4
+    },
+    {
+     "date": "2026-07-31",
+     "close": 974.45
+    },
+    {
+     "date": "2026-08-03",
+     "close": 994.9
+    },
+    {
+     "date": "2026-08-04",
+     "close": 1020
+    },
+    {
+     "date": "2026-08-05",
+     "close": 1040
+    },
+    {
+     "date": "2026-08-06",
+     "close": 1027
+    },
+    {
+     "date": "2026-08-07",
+     "close": 1059.6
+    },
+    {
+     "date": "2026-08-10",
+     "close": 1054.05
+    },
+    {
+     "date": "2026-08-11",
+     "close": 1049.1
+    },
+    {
+     "date": "2026-08-12",
+     "close": 1078.5
+    },
+    {
+     "date": "2026-08-13",
+     "close": 1046.25
+    },
+    {
+     "date": "2026-08-14",
+     "close": 1029.5
+    },
+    {
+     "date": "2026-08-17",
+     "close": 1049.9
+    },
+    {
+     "date": "2026-08-18",
+     "close": 1041.6
+    },
+    {
+     "date": "2026-08-19",
+     "close": 1038.95
+    },
+    {
+     "date": "2026-08-20",
+     "close": 1029.85
+    },
+    {
+     "date": "2026-08-21",
+     "close": 1034
+    },
+    {
+     "date": "2026-08-24",
+     "close": 1058.5
+    },
+    {
+     "date": "2026-08-25",
+     "close": 1051.05
+    },
+    {
+     "date": "2026-08-26",
+     "close": 1053
+    },
+    {
+     "date": "2026-08-27",
+     "close": 1024
+    },
+    {
+     "date": "2026-08-28",
+     "close": 1037.4
+    },
+    {
+     "date": "2026-08-31",
+     "close": 1015.45
+    },
+    {
+     "date": "2026-09-01",
+     "close": 1014.4
+    },
+    {
+     "date": "2026-09-02",
+     "close": 1009.7
+    },
+    {
+     "date": "2026-09-03",
+     "close": 1010
+    },
+    {
+     "date": "2026-09-04",
+     "close": 1011
+    },
+    {
+     "date": "2026-09-07",
+     "close": 1006
+    },
+    {
+     "date": "2026-09-08",
+     "close": 1009
+    },
+    {
+     "date": "2026-09-09",
+     "close": 1026.9
+    },
+    {
+     "date": "2026-09-10",
+     "close": 1014
+    },
+    {
+     "date": "2026-09-11",
+     "close": 981.5
+    },
+    {
+     "date": "2026-09-15",
+     "close": 958.7
+    },
+    {
+     "date": "2026-09-16",
+     "close": 972.7
+    },
+    {
+     "date": "2026-09-17",
+     "close": 980.5
+    },
+    {
+     "date": "2026-09-18",
+     "close": 986.5
+    },
+    {
+     "date": "2026-09-21",
+     "close": 981.2
+    },
+    {
+     "date": "2026-09-22",
+     "close": 973
+    },
+    {
+     "date": "2026-09-23",
+     "close": 1003.8
+    },
+    {
+     "date": "2026-09-24",
+     "close": 982
+    },
+    {
+     "date": "2026-09-25",
+     "close": 977
+    },
+    {
+     "date": "2026-09-28",
+     "close": 955.9
+    },
+    {
+     "date": "2026-09-29",
+     "close": 955.2
+    },
+    {
+     "date": "2026-09-30",
+     "close": 941.8
+    },
+    {
+     "date": "2026-10-01",
+     "close": 941.85
+    },
+    {
+     "date": "2026-10-05",
+     "close": 938.4
+    },
+    {
+     "date": "2026-10-06",
+     "close": 940.5
+    },
+    {
+     "date": "2026-10-07",
+     "close": 910.85
+    },
+    {
+     "date": "2026-10-08",
+     "close": 890.15
+    },
+    {
+     "date": "2026-10-09",
+     "close": 900.35
+    },
+    {
+     "date": "2026-10-12",
+     "close": 882.5
+    },
+    {
+     "date": "2026-10-13",
+     "close": 902.25
+    },
+    {
+     "date": "2026-10-14",
+     "close": 882.5
+    },
+    {
+     "date": "2026-10-15",
+     "close": 893.85
+    },
+    {
+     "date": "2026-10-16",
+     "close": 908
+    },
+    {
+     "date": "2026-10-19",
+     "close": 900.45
+    },
+    {
+     "date": "2026-10-21",
+     "close": 892.85
+    }
+   ],
+   "sector": "Basic Materials",
+   "industry": "Aluminum"
+  },
+  "HINDUNILVR": {
+   "price": 1828.3,
+   "prevClose": 1853.2,
+   "change": -24.9,
+   "changePct": -1.34,
+   "dayHigh": 1844.9,
+   "dayLow": 1810.6,
+   "high52": 2667.2,
+   "low52": 1810.6,
+   "volume": 1012054,
+   "longName": "Hindustan Unilever Limited",
+   "closes": [
+    {
+     "date": "2026-07-22",
+     "close": 2154.6
+    },
+    {
+     "date": "2026-07-23",
+     "close": 2161.8
+    },
+    {
+     "date": "2026-07-24",
+     "close": 2145
+    },
+    {
+     "date": "2026-07-27",
+     "close": 2174.6
+    },
+    {
+     "date": "2026-07-28",
+     "close": 2022.7
+    },
+    {
+     "date": "2026-07-29",
+     "close": 2117.8
+    },
+    {
+     "date": "2026-07-30",
+     "close": 2107.9
+    },
+    {
+     "date": "2026-07-31",
+     "close": 2101.3
+    },
+    {
+     "date": "2026-08-03",
+     "close": 2138
+    },
+    {
+     "date": "2026-08-04",
+     "close": 2096.5
+    },
+    {
+     "date": "2026-08-05",
+     "close": 2085.3
+    },
+    {
+     "date": "2026-08-06",
+     "close": 2079.5
+    },
+    {
+     "date": "2026-08-07",
+     "close": 2096
+    },
+    {
+     "date": "2026-08-10",
+     "close": 2087.2
+    },
+    {
+     "date": "2026-08-11",
+     "close": 2064.9
+    },
+    {
+     "date": "2026-08-12",
+     "close": 2063
+    },
+    {
+     "date": "2026-08-13",
+     "close": 2092
+    },
+    {
+     "date": "2026-08-14",
+     "close": 2077
+    },
+    {
+     "date": "2026-08-17",
+     "close": 2055
+    },
+    {
+     "date": "2026-08-18",
+     "close": 2035
+    },
+    {
+     "date": "2026-08-19",
+     "close": 2020.7
+    },
+    {
+     "date": "2026-08-20",
+     "close": 2028
+    },
+    {
+     "date": "2026-08-21",
+     "close": 2015
+    },
+    {
+     "date": "2026-08-24",
+     "close": 2030
+    },
+    {
+     "date": "2026-08-25",
+     "close": 2024.2
+    },
+    {
+     "date": "2026-08-26",
+     "close": 2021
+    },
+    {
+     "date": "2026-08-27",
+     "close": 2009
+    },
+    {
+     "date": "2026-08-28",
+     "close": 2010.4
+    },
+    {
+     "date": "2026-08-31",
+     "close": 1967.4
+    },
+    {
+     "date": "2026-09-01",
+     "close": 1994.8
+    },
+    {
+     "date": "2026-09-02",
+     "close": 1975
+    },
+    {
+     "date": "2026-09-03",
+     "close": 1962
+    },
+    {
+     "date": "2026-09-04",
+     "close": 1973.4
+    },
+    {
+     "date": "2026-09-07",
+     "close": 1960
+    },
+    {
+     "date": "2026-09-08",
+     "close": 1980
+    },
+    {
+     "date": "2026-09-09",
+     "close": 1945
+    },
+    {
+     "date": "2026-09-10",
+     "close": 1942.3
+    },
+    {
+     "date": "2026-09-11",
+     "close": 1927
+    },
+    {
+     "date": "2026-09-15",
+     "close": 1938.1
+    },
+    {
+     "date": "2026-09-16",
+     "close": 1962
+    },
+    {
+     "date": "2026-09-17",
+     "close": 1942.2
+    },
+    {
+     "date": "2026-09-18",
+     "close": 1932
+    },
+    {
+     "date": "2026-09-21",
+     "close": 1947
+    },
+    {
+     "date": "2026-09-22",
+     "close": 1933.8
+    },
+    {
+     "date": "2026-09-23",
+     "close": 1950
+    },
+    {
+     "date": "2026-09-24",
+     "close": 1933.5
+    },
+    {
+     "date": "2026-09-25",
+     "close": 1942.9
+    },
+    {
+     "date": "2026-09-28",
+     "close": 1896
+    },
+    {
+     "date": "2026-09-29",
+     "close": 1863.8
+    },
+    {
+     "date": "2026-09-30",
+     "close": 1879.1
+    },
+    {
+     "date": "2026-10-01",
+     "close": 1836
+    },
+    {
+     "date": "2026-10-05",
+     "close": 1838.4
+    },
+    {
+     "date": "2026-10-06",
+     "close": 1895.2
+    },
+    {
+     "date": "2026-10-07",
+     "close": 1865.4
+    },
+    {
+     "date": "2026-10-08",
+     "close": 1844.5
+    },
+    {
+     "date": "2026-10-09",
+     "close": 1856.7
+    },
+    {
+     "date": "2026-10-12",
+     "close": 1820.7
+    },
+    {
+     "date": "2026-10-13",
+     "close": 1875.5
+    },
+    {
+     "date": "2026-10-14",
+     "close": 1895.5
+    },
+    {
+     "date": "2026-10-15",
+     "close": 1897.1
+    },
+    {
+     "date": "2026-10-16",
+     "close": 1893.8
+    },
+    {
+     "date": "2026-10-19",
+     "close": 1853.2
+    },
+    {
+     "date": "2026-10-21",
+     "close": 1850.2
+    }
+   ],
+   "sector": "Consumer Defensive",
+   "industry": "Household & Personal Products"
+  },
+  "HINDZINC": {
+   "price": 518,
+   "prevClose": 538.4,
+   "change": -20.4,
+   "changePct": -3.79,
+   "dayHigh": 518,
+   "dayLow": 507.4,
+   "high52": 733,
+   "low52": 453.5,
+   "volume": 7450277,
+   "longName": "Hindustan Zinc Limited",
+   "closes": [
+    {
+     "date": "2026-07-22",
+     "close": 535.4
+    },
+    {
+     "date": "2026-07-23",
+     "close": 531.15
+    },
+    {
+     "date": "2026-07-24",
+     "close": 531.95
+    },
+    {
+     "date": "2026-07-27",
+     "close": 529.65
+    },
+    {
+     "date": "2026-07-28",
+     "close": 526.9
+    },
+    {
+     "date": "2026-07-29",
+     "close": 536.7
+    },
+    {
+     "date": "2026-07-30",
+     "close": 535.9
+    },
+    {
+     "date": "2026-07-31",
+     "close": 539.2
+    },
+    {
+     "date": "2026-08-03",
+     "close": 547
+    },
+    {
+     "date": "2026-08-04",
+     "close": 562.9
+    },
+    {
+     "date": "2026-08-05",
+     "close": 596.95
+    },
+    {
+     "date": "2026-08-06",
+     "close": 590
+    },
+    {
+     "date": "2026-08-07",
+     "close": 603
+    },
+    {
+     "date": "2026-08-10",
+     "close": 595.15
+    },
+    {
+     "date": "2026-08-11",
+     "close": 586.65
+    },
+    {
+     "date": "2026-08-12",
+     "close": 584.6
+    },
+    {
+     "date": "2026-08-13",
+     "close": 578.35
+    },
+    {
+     "date": "2026-08-14",
+     "close": 561.9
+    },
+    {
+     "date": "2026-08-17",
+     "close": 567.5
+    },
+    {
+     "date": "2026-08-18",
+     "close": 558
+    },
+    {
+     "date": "2026-08-19",
+     "close": 557
+    },
+    {
+     "date": "2026-08-20",
+     "close": 573.9
+    },
+    {
+     "date": "2026-08-21",
+     "close": 594.9
+    },
+    {
+     "date": "2026-08-24",
+     "close": 604
+    },
+    {
+     "date": "2026-08-25",
+     "close": 592.6
+    },
+    {
+     "date": "2026-08-26",
+     "close": 626.5
+    },
+    {
+     "date": "2026-08-27",
+     "close": 610.1
+    },
+    {
+     "date": "2026-08-28",
+     "close": 622
+    },
+    {
+     "date": "2026-08-31",
+     "close": 595.45
+    },
+    {
+     "date": "2026-09-01",
+     "close": 597
+    },
+    {
+     "date": "2026-09-02",
+     "close": 588.4
+    },
+    {
+     "date": "2026-09-03",
+     "close": 587.95
+    },
+    {
+     "date": "2026-09-04",
+     "close": 601
+    },
+    {
+     "date": "2026-09-07",
+     "close": 589.15
+    },
+    {
+     "date": "2026-09-08",
+     "close": 595.5
+    },
+    {
+     "date": "2026-09-09",
+     "close": 605.4
+    },
+    {
+     "date": "2026-09-10",
+     "close": 593.6
+    },
+    {
+     "date": "2026-09-11",
+     "close": 576.45
+    },
+    {
+     "date": "2026-09-15",
+     "close": 560.9
+    },
+    {
+     "date": "2026-09-16",
+     "close": 567.5
+    },
+    {
+     "date": "2026-09-17",
+     "close": 572.3
+    },
+    {
+     "date": "2026-09-18",
+     "close": 596
+    },
+    {
+     "date": "2026-09-21",
+     "close": 591.8
+    },
+    {
+     "date": "2026-09-22",
+     "close": 590.5
+    },
+    {
+     "date": "2026-09-23",
+     "close": 595.45
+    },
+    {
+     "date": "2026-09-24",
+     "close": 587.15
+    },
+    {
+     "date": "2026-09-25",
+     "close": 588.95
+    },
+    {
+     "date": "2026-09-28",
+     "close": 573
+    },
+    {
+     "date": "2026-09-29",
+     "close": 563.3
+    },
+    {
+     "date": "2026-09-30",
+     "close": 566
+    },
+    {
+     "date": "2026-10-01",
+     "close": 555.05
+    },
+    {
+     "date": "2026-10-05",
+     "close": 560.95
+    },
+    {
+     "date": "2026-10-06",
+     "close": 557.65
+    },
+    {
+     "date": "2026-10-07",
+     "close": 551
+    },
+    {
+     "date": "2026-10-08",
+     "close": 531.75
+    },
+    {
+     "date": "2026-10-09",
+     "close": 543.5
+    },
+    {
+     "date": "2026-10-12",
+     "close": 546.9
+    },
+    {
+     "date": "2026-10-13",
+     "close": 549.6
+    },
+    {
+     "date": "2026-10-14",
+     "close": 540
+    },
+    {
+     "date": "2026-10-15",
+     "close": 531
+    },
+    {
+     "date": "2026-10-16",
+     "close": 540
+    },
+    {
+     "date": "2026-10-19",
+     "close": 538.4
+    },
+    {
+     "date": "2026-10-21",
+     "close": 525
+    }
+   ],
+   "sector": "Basic Materials",
+   "industry": "Other Industrial Metals & Mining"
+  },
+  "ICICIBANK": {
+   "price": 1398.5,
+   "prevClose": 1381,
+   "change": 17.5,
+   "changePct": 1.27,
+   "dayHigh": 1400,
+   "dayLow": 1375.1,
+   "high52": 1480,
+   "low52": 1187.6,
+   "volume": 16079390,
+   "longName": "ICICI Bank Limited",
+   "closes": [
+    {
+     "date": "2026-07-22",
+     "close": 1440.7
+    },
+    {
+     "date": "2026-07-23",
+     "close": 1434.6
+    },
+    {
+     "date": "2026-07-24",
+     "close": 1432.9
+    },
+    {
+     "date": "2026-07-27",
+     "close": 1445.7
+    },
+    {
+     "date": "2026-07-28",
+     "close": 1430.8
+    },
+    {
+     "date": "2026-07-29",
+     "close": 1437.9
+    },
+    {
+     "date": "2026-07-30",
+     "close": 1433.9
+    },
+    {
+     "date": "2026-07-31",
+     "close": 1435.4
+    },
+    {
+     "date": "2026-08-03",
+     "close": 1460
+    },
+    {
+     "date": "2026-08-04",
+     "close": 1454.6
+    },
+    {
+     "date": "2026-08-05",
+     "close": 1450.1
+    },
+    {
+     "date": "2026-08-06",
+     "close": 1457.5
+    },
+    {
+     "date": "2026-08-07",
+     "close": 1421
+    },
+    {
+     "date": "2026-08-10",
+     "close": 1431.8
+    },
+    {
+     "date": "2026-08-11",
+     "close": 1429.6
+    },
+    {
+     "date": "2026-08-12",
+     "close": 1431.7
+    },
+    {
+     "date": "2026-08-13",
+     "close": 1406.8
+    },
+    {
+     "date": "2026-08-14",
+     "close": 1417
+    },
+    {
+     "date": "2026-08-17",
+     "close": 1415.3
+    },
+    {
+     "date": "2026-08-18",
+     "close": 1412
+    },
+    {
+     "date": "2026-08-19",
+     "close": 1402
+    },
+    {
+     "date": "2026-08-20",
+     "close": 1411.9
+    },
+    {
+     "date": "2026-08-21",
+     "close": 1420
+    },
+    {
+     "date": "2026-08-24",
+     "close": 1415
+    },
+    {
+     "date": "2026-08-25",
+     "close": 1422.7
+    },
+    {
+     "date": "2026-08-26",
+     "close": 1430
+    },
+    {
+     "date": "2026-08-27",
+     "close": 1443
+    },
+    {
+     "date": "2026-08-28",
+     "close": 1422.8
+    },
+    {
+     "date": "2026-08-31",
+     "close": 1454
+    },
+    {
+     "date": "2026-09-01",
+     "close": 1438
+    },
+    {
+     "date": "2026-09-02",
+     "close": 1426.5
+    },
+    {
+     "date": "2026-09-03",
+     "close": 1430
+    },
+    {
+     "date": "2026-09-04",
+     "close": 1423.2
+    },
+    {
+     "date": "2026-09-07",
+     "close": 1427.5
+    },
+    {
+     "date": "2026-09-08",
+     "close": 1399.4
+    },
+    {
+     "date": "2026-09-09",
+     "close": 1389.1
+    },
+    {
+     "date": "2026-09-10",
+     "close": 1384.5
+    },
+    {
+     "date": "2026-09-11",
+     "close": 1379.3
+    },
+    {
+     "date": "2026-09-15",
+     "close": 1350.4
+    },
+    {
+     "date": "2026-09-16",
+     "close": 1358.8
+    },
+    {
+     "date": "2026-09-17",
+     "close": 1347.6
+    },
+    {
+     "date": "2026-09-18",
+     "close": 1338.9
+    },
+    {
+     "date": "2026-09-21",
+     "close": 1345
+    },
+    {
+     "date": "2026-09-22",
+     "close": 1339.6
+    },
+    {
+     "date": "2026-09-23",
+     "close": 1340
+    },
+    {
+     "date": "2026-09-24",
+     "close": 1334.5
+    },
+    {
+     "date": "2026-09-25",
+     "close": 1326.8
+    },
+    {
+     "date": "2026-09-28",
+     "close": 1302
+    },
+    {
+     "date": "2026-09-29",
+     "close": 1292.2
+    },
+    {
+     "date": "2026-09-30",
+     "close": 1321.7
+    },
+    {
+     "date": "2026-10-01",
+     "close": 1310.6
+    },
+    {
+     "date": "2026-10-05",
+     "close": 1332
+    },
+    {
+     "date": "2026-10-06",
+     "close": 1342.8
+    },
+    {
+     "date": "2026-10-07",
+     "close": 1357.5
+    },
+    {
+     "date": "2026-10-08",
+     "close": 1349
+    },
+    {
+     "date": "2026-10-09",
+     "close": 1355
+    },
+    {
+     "date": "2026-10-12",
+     "close": 1340
+    },
+    {
+     "date": "2026-10-13",
+     "close": 1360.2
+    },
+    {
+     "date": "2026-10-14",
+     "close": 1338.6
+    },
+    {
+     "date": "2026-10-15",
+     "close": 1389.4
+    },
+    {
+     "date": "2026-10-16",
+     "close": 1397
+    },
+    {
+     "date": "2026-10-19",
+     "close": 1381
+    },
+    {
+     "date": "2026-10-21",
+     "close": 1385
+    }
+   ],
+   "sector": "Financial Services",
+   "industry": "Banks—Regional"
+  },
+  "IDEA": {
+   "price": 11.53,
+   "prevClose": 12.28,
+   "change": -0.75,
+   "changePct": -6.11,
+   "dayHigh": 11.79,
+   "dayLow": 11.23,
+   "high52": 15.79,
+   "low52": 8.13,
+   "volume": 502560506,
+   "longName": "Vodafone Idea Limited",
+   "closes": [
+    {
+     "date": "2026-07-22",
+     "close": 13.54
+    },
+    {
+     "date": "2026-07-23",
+     "close": 13.2
+    },
+    {
+     "date": "2026-07-24",
+     "close": 13.13
+    },
+    {
+     "date": "2026-07-27",
+     "close": 13.06
+    },
+    {
+     "date": "2026-07-28",
+     "close": 12.95
+    },
+    {
+     "date": "2026-07-29",
+     "close": 13.05
+    },
+    {
+     "date": "2026-07-30",
+     "close": 12.87
+    },
+    {
+     "date": "2026-07-31",
+     "close": 13.01
+    },
+    {
+     "date": "2026-08-03",
+     "close": 12.86
+    },
+    {
+     "date": "2026-08-04",
+     "close": 12.9
+    },
+    {
+     "date": "2026-08-05",
+     "close": 12.8
+    },
+    {
+     "date": "2026-08-06",
+     "close": 12.63
+    },
+    {
+     "date": "2026-08-07",
+     "close": 12.73
+    },
+    {
+     "date": "2026-08-10",
+     "close": 12.92
+    },
+    {
+     "date": "2026-08-11",
+     "close": 12.89
+    },
+    {
+     "date": "2026-08-12",
+     "close": 13.5
+    },
+    {
+     "date": "2026-08-13",
+     "close": 13.51
+    },
+    {
+     "date": "2026-08-14",
+     "close": 14.11
+    },
+    {
+     "date": "2026-08-17",
+     "close": 13.71
+    },
+    {
+     "date": "2026-08-18",
+     "close": 14.12
+    },
+    {
+     "date": "2026-08-19",
+     "close": 14.07
+    },
+    {
+     "date": "2026-08-20",
+     "close": 14.03
+    },
+    {
+     "date": "2026-08-21",
+     "close": 13.94
+    },
+    {
+     "date": "2026-08-24",
+     "close": 14.07
+    },
+    {
+     "date": "2026-08-25",
+     "close": 15.19
+    },
+    {
+     "date": "2026-08-26",
+     "close": 15.06
+    },
+    {
+     "date": "2026-08-27",
+     "close": 14.97
+    },
+    {
+     "date": "2026-08-28",
+     "close": 14.68
+    },
+    {
+     "date": "2026-08-31",
+     "close": 14.33
+    },
+    {
+     "date": "2026-09-01",
+     "close": 14.06
+    },
+    {
+     "date": "2026-09-02",
+     "close": 14.53
+    },
+    {
+     "date": "2026-09-03",
+     "close": 14.48
+    },
+    {
+     "date": "2026-09-04",
+     "close": 15.02
+    },
+    {
+     "date": "2026-09-07",
+     "close": 15.6
+    },
+    {
+     "date": "2026-09-08",
+     "close": 15.42
+    },
+    {
+     "date": "2026-09-09",
+     "close": 15.52
+    },
+    {
+     "date": "2026-09-10",
+     "close": 14.9
+    },
+    {
+     "date": "2026-09-11",
+     "close": 14.97
+    },
+    {
+     "date": "2026-09-15",
+     "close": 14.45
+    },
+    {
+     "date": "2026-09-16",
+     "close": 14.26
+    },
+    {
+     "date": "2026-09-17",
+     "close": 14.22
+    },
+    {
+     "date": "2026-09-18",
+     "close": 13.92
+    },
+    {
+     "date": "2026-09-21",
+     "close": 13.84
+    },
+    {
+     "date": "2026-09-22",
+     "close": 14.27
+    },
+    {
+     "date": "2026-09-23",
+     "close": 14.52
+    },
+    {
+     "date": "2026-09-24",
+     "close": 14.12
+    },
+    {
+     "date": "2026-09-25",
+     "close": 14.26
+    },
+    {
+     "date": "2026-09-28",
+     "close": 13.47
+    },
+    {
+     "date": "2026-09-29",
+     "close": 13.56
+    },
+    {
+     "date": "2026-09-30",
+     "close": 12.95
+    },
+    {
+     "date": "2026-10-01",
+     "close": 12.64
+    },
+    {
+     "date": "2026-10-05",
+     "close": 12.74
+    },
+    {
+     "date": "2026-10-06",
+     "close": 13.21
+    },
+    {
+     "date": "2026-10-07",
+     "close": 13.18
+    },
+    {
+     "date": "2026-10-08",
+     "close": 12.8
+    },
+    {
+     "date": "2026-10-09",
+     "close": 13
+    },
+    {
+     "date": "2026-10-12",
+     "close": 12.67
+    },
+    {
+     "date": "2026-10-13",
+     "close": 12.8
+    },
+    {
+     "date": "2026-10-14",
+     "close": 12.67
+    },
+    {
+     "date": "2026-10-15",
+     "close": 12.52
+    },
+    {
+     "date": "2026-10-16",
+     "close": 12.59
+    },
+    {
+     "date": "2026-10-19",
+     "close": 12.28
+    },
+    {
+     "date": "2026-10-21",
+     "close": 11.64
+    }
+   ],
+   "sector": "Communication Services",
+   "industry": "Telecom Services"
+  },
+  "INDIGO": {
+   "price": 4600,
+   "prevClose": 4700,
+   "change": -100,
+   "changePct": -2.13,
+   "dayHigh": 4670,
+   "dayLow": 4546.6,
+   "high52": 5970,
+   "low52": 3895.2,
+   "volume": 491477,
+   "longName": "InterGlobe Aviation Limited",
+   "closes": [
+    {
+     "date": "2026-07-22",
+     "close": 5117
+    },
+    {
+     "date": "2026-07-23",
+     "close": 5023.5
+    },
+    {
+     "date": "2026-07-24",
+     "close": 4985
+    },
+    {
+     "date": "2026-07-27",
+     "close": 5230
+    },
+    {
+     "date": "2026-07-28",
+     "close": 5270.5
+    },
+    {
+     "date": "2026-07-29",
+     "close": 5276.5
+    },
+    {
+     "date": "2026-07-30",
+     "close": 5230.5
+    },
+    {
+     "date": "2026-07-31",
+     "close": 5171
+    },
+    {
+     "date": "2026-08-03",
+     "close": 5400
+    },
+    {
+     "date": "2026-08-04",
+     "close": 5358
+    },
+    {
+     "date": "2026-08-05",
+     "close": 5400
+    },
+    {
+     "date": "2026-08-06",
+     "close": 5318.5
+    },
+    {
+     "date": "2026-08-07",
+     "close": 5333
+    },
+    {
+     "date": "2026-08-10",
+     "close": 5333.5
+    },
+    {
+     "date": "2026-08-11",
+     "close": 5284
+    },
+    {
+     "date": "2026-08-12",
+     "close": 5333
+    },
+    {
+     "date": "2026-08-13",
+     "close": 5370
+    },
+    {
+     "date": "2026-08-14",
+     "close": 5310
+    },
+    {
+     "date": "2026-08-17",
+     "close": 5275.5
+    },
+    {
+     "date": "2026-08-18",
+     "close": 5220
+    },
+    {
+     "date": "2026-08-19",
+     "close": 5193
+    },
+    {
+     "date": "2026-08-20",
+     "close": 5165
+    },
+    {
+     "date": "2026-08-21",
+     "close": 5110
+    },
+    {
+     "date": "2026-08-24",
+     "close": 5115
+    },
+    {
+     "date": "2026-08-25",
+     "close": 5218
+    },
+    {
+     "date": "2026-08-26",
+     "close": 5250.5
+    },
+    {
+     "date": "2026-08-27",
+     "close": 5189
+    },
+    {
+     "date": "2026-08-28",
+     "close": 5166
+    },
+    {
+     "date": "2026-08-31",
+     "close": 5234
+    },
+    {
+     "date": "2026-09-01",
+     "close": 5052
+    },
+    {
+     "date": "2026-09-02",
+     "close": 5020
+    },
+    {
+     "date": "2026-09-03",
+     "close": 4980
+    },
+    {
+     "date": "2026-09-04",
+     "close": 4977
+    },
+    {
+     "date": "2026-09-07",
+     "close": 5001
+    },
+    {
+     "date": "2026-09-08",
+     "close": 5000
+    },
+    {
+     "date": "2026-09-09",
+     "close": 4975
+    },
+    {
+     "date": "2026-09-10",
+     "close": 4945
+    },
+    {
+     "date": "2026-09-11",
+     "close": 4973
+    },
+    {
+     "date": "2026-09-15",
+     "close": 4776
+    },
+    {
+     "date": "2026-09-16",
+     "close": 4733.5
+    },
+    {
+     "date": "2026-09-17",
+     "close": 4845
+    },
+    {
+     "date": "2026-09-18",
+     "close": 4920
+    },
+    {
+     "date": "2026-09-21",
+     "close": 4941
+    },
+    {
+     "date": "2026-09-22",
+     "close": 5030
+    },
+    {
+     "date": "2026-09-23",
+     "close": 5028.5
+    },
+    {
+     "date": "2026-09-24",
+     "close": 4890
+    },
+    {
+     "date": "2026-09-25",
+     "close": 4940
+    },
+    {
+     "date": "2026-09-28",
+     "close": 4874.5
+    },
+    {
+     "date": "2026-09-29",
+     "close": 4872
+    },
+    {
+     "date": "2026-09-30",
+     "close": 4984
+    },
+    {
+     "date": "2026-10-01",
+     "close": 4929.9
+    },
+    {
+     "date": "2026-10-05",
+     "close": 4935
+    },
+    {
+     "date": "2026-10-06",
+     "close": 5050.5
+    },
+    {
+     "date": "2026-10-07",
+     "close": 4990
+    },
+    {
+     "date": "2026-10-08",
+     "close": 4813.1
+    },
+    {
+     "date": "2026-10-09",
+     "close": 4833
+    },
+    {
+     "date": "2026-10-12",
+     "close": 4795
+    },
+    {
+     "date": "2026-10-13",
+     "close": 4800.4
+    },
+    {
+     "date": "2026-10-14",
+     "close": 4718.5
+    },
+    {
+     "date": "2026-10-15",
+     "close": 4778.3
+    },
+    {
+     "date": "2026-10-16",
+     "close": 4686.9
+    },
+    {
+     "date": "2026-10-19",
+     "close": 4700
+    },
+    {
+     "date": "2026-10-21",
+     "close": 4641.5
+    }
+   ],
+   "sector": "Industrials",
+   "industry": "Airlines"
+  },
+  "INFY": {
+   "price": 1153.35,
+   "prevClose": 1130.7,
+   "change": 22.65,
+   "changePct": 2,
+   "dayHigh": 1174.5,
+   "dayLow": 1144.05,
+   "high52": 1728,
+   "low52": 980.4,
+   "volume": 17003258,
+   "longName": "Infosys Limited",
+   "closes": [
+    {
+     "date": "2026-07-22",
+     "close": 1052.1
+    },
+    {
+     "date": "2026-07-23",
+     "close": 1047.4
+    },
+    {
+     "date": "2026-07-24",
+     "close": 1040.9
+    },
+    {
+     "date": "2026-07-27",
+     "close": 1079.2
+    },
+    {
+     "date": "2026-07-28",
+     "close": 1105.7
+    },
+    {
+     "date": "2026-07-29",
+     "close": 1155.6
+    },
+    {
+     "date": "2026-07-30",
+     "close": 1155.1
+    },
+    {
+     "date": "2026-07-31",
+     "close": 1130.1
+    },
+    {
+     "date": "2026-08-03",
+     "close": 1180
+    },
+    {
+     "date": "2026-08-04",
+     "close": 1167.5
+    },
+    {
+     "date": "2026-08-05",
+     "close": 1174
+    },
+    {
+     "date": "2026-08-06",
+     "close": 1165
+    },
+    {
+     "date": "2026-08-07",
+     "close": 1175.1
+    },
+    {
+     "date": "2026-08-10",
+     "close": 1183
+    },
+    {
+     "date": "2026-08-11",
+     "close": 1190.7
+    },
+    {
+     "date": "2026-08-12",
+     "close": 1176.1
+    },
+    {
+     "date": "2026-08-13",
+     "close": 1175
+    },
+    {
+     "date": "2026-08-14",
+     "close": 1169.2
+    },
+    {
+     "date": "2026-08-17",
+     "close": 1139.9
+    },
+    {
+     "date": "2026-08-18",
+     "close": 1115
+    },
+    {
+     "date": "2026-08-19",
+     "close": 1119.8
+    },
+    {
+     "date": "2026-08-20",
+     "close": 1130
+    },
+    {
+     "date": "2026-08-21",
+     "close": 1121
+    },
+    {
+     "date": "2026-08-24",
+     "close": 1130
+    },
+    {
+     "date": "2026-08-25",
+     "close": 1144
+    },
+    {
+     "date": "2026-08-26",
+     "close": 1120
+    },
+    {
+     "date": "2026-08-27",
+     "close": 1110.8
+    },
+    {
+     "date": "2026-08-28",
+     "close": 1144
+    },
+    {
+     "date": "2026-08-31",
+     "close": 1133.8
+    },
+    {
+     "date": "2026-09-01",
+     "close": 1156
+    },
+    {
+     "date": "2026-09-02",
+     "close": 1140
+    },
+    {
+     "date": "2026-09-03",
+     "close": 1130.3
+    },
+    {
+     "date": "2026-09-04",
+     "close": 1130
+    },
+    {
+     "date": "2026-09-07",
+     "close": 1087.5
+    },
+    {
+     "date": "2026-09-08",
+     "close": 1082
+    },
+    {
+     "date": "2026-09-09",
+     "close": 1035
+    },
+    {
+     "date": "2026-09-10",
+     "close": 1036.5
+    },
+    {
+     "date": "2026-09-11",
+     "close": 1037.7
+    },
+    {
+     "date": "2026-09-15",
+     "close": 1077
+    },
+    {
+     "date": "2026-09-16",
+     "close": 1060
+    },
+    {
+     "date": "2026-09-17",
+     "close": 1058.6
+    },
+    {
+     "date": "2026-09-18",
+     "close": 1051.4
+    },
+    {
+     "date": "2026-09-21",
+     "close": 1038.5
+    },
+    {
+     "date": "2026-09-22",
+     "close": 1029.4
+    },
+    {
+     "date": "2026-09-23",
+     "close": 1020.5
+    },
+    {
+     "date": "2026-09-24",
+     "close": 1014.5
+    },
+    {
+     "date": "2026-09-25",
+     "close": 1000.2
+    },
+    {
+     "date": "2026-09-28",
+     "close": 1003.2
+    },
+    {
+     "date": "2026-09-29",
+     "close": 1015.4
+    },
+    {
+     "date": "2026-09-30",
+     "close": 994.1
+    },
+    {
+     "date": "2026-10-01",
+     "close": 1035
+    },
+    {
+     "date": "2026-10-05",
+     "close": 1020.5
+    },
+    {
+     "date": "2026-10-06",
+     "close": 1013.85
+    },
+    {
+     "date": "2026-10-07",
+     "close": 992
+    },
+    {
+     "date": "2026-10-08",
+     "close": 997
+    },
+    {
+     "date": "2026-10-09",
+     "close": 1023.4
+    },
+    {
+     "date": "2026-10-12",
+     "close": 1020
+    },
+    {
+     "date": "2026-10-13",
+     "close": 1062.1
+    },
+    {
+     "date": "2026-10-14",
+     "close": 1088
+    },
+    {
+     "date": "2026-10-15",
+     "close": 1110
+    },
+    {
+     "date": "2026-10-16",
+     "close": 1161.2
+    },
+    {
+     "date": "2026-10-19",
+     "close": 1130.7
+    },
+    {
+     "date": "2026-10-21",
+     "close": 1168
+    }
+   ],
+   "sector": "Technology",
+   "industry": "Information Technology Services"
+  },
+  "IOC": {
+   "price": 130.98,
+   "prevClose": 130.25,
+   "change": 0.73,
+   "changePct": 0.56,
+   "dayHigh": 130.98,
+   "dayLow": 127.75,
+   "high52": 188.96,
+   "low52": 124.92,
+   "volume": 6613678,
+   "longName": "Indian Oil Corporation Limited",
+   "closes": [
+    {
+     "date": "2026-07-22",
+     "close": 142.03
+    },
+    {
+     "date": "2026-07-23",
+     "close": 139.92
+    },
+    {
+     "date": "2026-07-24",
+     "close": 138.47
+    },
+    {
+     "date": "2026-07-27",
+     "close": 141.52
+    },
+    {
+     "date": "2026-07-28",
+     "close": 141.28
+    },
+    {
+     "date": "2026-07-29",
+     "close": 140.11
+    },
+    {
+     "date": "2026-07-30",
+     "close": 139.94
+    },
+    {
+     "date": "2026-07-31",
+     "close": 140.17
+    },
+    {
+     "date": "2026-08-03",
+     "close": 143.7
+    },
+    {
+     "date": "2026-08-04",
+     "close": 141.6
+    },
+    {
+     "date": "2026-08-05",
+     "close": 144
+    },
+    {
+     "date": "2026-08-06",
+     "close": 142.66
+    },
+    {
+     "date": "2026-08-07",
+     "close": 143.38
+    },
+    {
+     "date": "2026-08-10",
+     "close": 142
+    },
+    {
+     "date": "2026-08-11",
+     "close": 140
+    },
+    {
+     "date": "2026-08-12",
+     "close": 140.6
+    },
+    {
+     "date": "2026-08-13",
+     "close": 141.5
+    },
+    {
+     "date": "2026-08-14",
+     "close": 139.4
+    },
+    {
+     "date": "2026-08-17",
+     "close": 138.61
+    },
+    {
+     "date": "2026-08-18",
+     "close": 137.8
+    },
+    {
+     "date": "2026-08-19",
+     "close": 136.3
+    },
+    {
+     "date": "2026-08-20",
+     "close": 135.9
+    },
+    {
+     "date": "2026-08-21",
+     "close": 135.9
+    },
+    {
+     "date": "2026-08-24",
+     "close": 138.5
+    },
+    {
+     "date": "2026-08-25",
+     "close": 139
+    },
+    {
+     "date": "2026-08-26",
+     "close": 139.48
+    },
+    {
+     "date": "2026-08-27",
+     "close": 137.57
+    },
+    {
+     "date": "2026-08-28",
+     "close": 137.1
+    },
+    {
+     "date": "2026-08-31",
+     "close": 139.13
+    },
+    {
+     "date": "2026-09-01",
+     "close": 136.53
+    },
+    {
+     "date": "2026-09-02",
+     "close": 137
+    },
+    {
+     "date": "2026-09-03",
+     "close": 137.8
+    },
+    {
+     "date": "2026-09-04",
+     "close": 137.6
+    },
+    {
+     "date": "2026-09-07",
+     "close": 135.15
+    },
+    {
+     "date": "2026-09-08",
+     "close": 134.35
+    },
+    {
+     "date": "2026-09-09",
+     "close": 135.6
+    },
+    {
+     "date": "2026-09-10",
+     "close": 134.94
+    },
+    {
+     "date": "2026-09-11",
+     "close": 135.11
+    },
+    {
+     "date": "2026-09-15",
+     "close": 132.03
+    },
+    {
+     "date": "2026-09-16",
+     "close": 134.75
+    },
+    {
+     "date": "2026-09-17",
+     "close": 134.27
+    },
+    {
+     "date": "2026-09-18",
+     "close": 137
+    },
+    {
+     "date": "2026-09-21",
+     "close": 136.53
+    },
+    {
+     "date": "2026-09-22",
+     "close": 137.8
+    },
+    {
+     "date": "2026-09-23",
+     "close": 138.15
+    },
+    {
+     "date": "2026-09-24",
+     "close": 136.27
+    },
+    {
+     "date": "2026-09-25",
+     "close": 135.7
+    },
+    {
+     "date": "2026-09-28",
+     "close": 133.32
+    },
+    {
+     "date": "2026-09-29",
+     "close": 131.33
+    },
+    {
+     "date": "2026-09-30",
+     "close": 134.93
+    },
+    {
+     "date": "2026-10-01",
+     "close": 131.34
+    },
+    {
+     "date": "2026-10-05",
+     "close": 130.5
+    },
+    {
+     "date": "2026-10-06",
+     "close": 131.6
+    },
+    {
+     "date": "2026-10-07",
+     "close": 130
+    },
+    {
+     "date": "2026-10-08",
+     "close": 126.25
+    },
+    {
+     "date": "2026-10-09",
+     "close": 126.35
+    },
+    {
+     "date": "2026-10-12",
+     "close": 125.35
+    },
+    {
+     "date": "2026-10-13",
+     "close": 126.14
+    },
+    {
+     "date": "2026-10-14",
+     "close": 127.8
+    },
+    {
+     "date": "2026-10-15",
+     "close": 128.83
+    },
+    {
+     "date": "2026-10-16",
+     "close": 130.38
+    },
+    {
+     "date": "2026-10-19",
+     "close": 130.25
+    },
+    {
+     "date": "2026-10-21",
+     "close": 129.61
+    }
+   ],
+   "sector": "Energy",
+   "industry": "Oil & Gas Refining & Marketing"
+  },
+  "IRFC": {
+   "price": 77,
+   "prevClose": 78.44,
+   "change": -1.44,
+   "changePct": -1.84,
+   "dayHigh": 77.73,
+   "dayLow": 75.6,
+   "high52": 137.17,
+   "low52": 74.06,
+   "volume": 8917328,
+   "longName": "Indian Railway Finance Corporation Limited",
+   "closes": [
+    {
+     "date": "2026-07-22",
+     "close": 87.39
+    },
+    {
+     "date": "2026-07-23",
+     "close": 87.03
+    },
+    {
+     "date": "2026-07-24",
+     "close": 87.62
+    },
+    {
+     "date": "2026-07-27",
+     "close": 88.13
+    },
+    {
+     "date": "2026-07-28",
+     "close": 87.15
+    },
+    {
+     "date": "2026-07-29",
+     "close": 89.13
+    },
+    {
+     "date": "2026-07-30",
+     "close": 88.92
+    },
+    {
+     "date": "2026-07-31",
+     "close": 89.15
+    },
+    {
+     "date": "2026-08-03",
+     "close": 90.25
+    },
+    {
+     "date": "2026-08-04",
+     "close": 89.6
+    },
+    {
+     "date": "2026-08-05",
+     "close": 88.9
+    },
+    {
+     "date": "2026-08-06",
+     "close": 89.29
+    },
+    {
+     "date": "2026-08-07",
+     "close": 88.75
+    },
+    {
+     "date": "2026-08-10",
+     "close": 88.5
+    },
+    {
+     "date": "2026-08-11",
+     "close": 87.91
+    },
+    {
+     "date": "2026-08-12",
+     "close": 88.26
+    },
+    {
+     "date": "2026-08-13",
+     "close": 88.35
+    },
+    {
+     "date": "2026-08-14",
+     "close": 87.57
+    },
+    {
+     "date": "2026-08-17",
+     "close": 87.05
+    },
+    {
+     "date": "2026-08-18",
+     "close": 86.11
+    },
+    {
+     "date": "2026-08-19",
+     "close": 85.18
+    },
+    {
+     "date": "2026-08-20",
+     "close": 86.47
+    },
+    {
+     "date": "2026-08-21",
+     "close": 86.4
+    },
+    {
+     "date": "2026-08-24",
+     "close": 85.99
+    },
+    {
+     "date": "2026-08-25",
+     "close": 85.45
+    },
+    {
+     "date": "2026-08-26",
+     "close": 85.7
+    },
+    {
+     "date": "2026-08-27",
+     "close": 84.65
+    },
+    {
+     "date": "2026-08-28",
+     "close": 83.9
+    },
+    {
+     "date": "2026-08-31",
+     "close": 83.34
+    },
+    {
+     "date": "2026-09-01",
+     "close": 82.5
+    },
+    {
+     "date": "2026-09-02",
+     "close": 82.48
+    },
+    {
+     "date": "2026-09-03",
+     "close": 82.65
+    },
+    {
+     "date": "2026-09-04",
+     "close": 83.4
+    },
+    {
+     "date": "2026-09-07",
+     "close": 83
+    },
+    {
+     "date": "2026-09-08",
+     "close": 82
+    },
+    {
+     "date": "2026-09-09",
+     "close": 81.39
+    },
+    {
+     "date": "2026-09-10",
+     "close": 81.08
+    },
+    {
+     "date": "2026-09-11",
+     "close": 81.09
+    },
+    {
+     "date": "2026-09-15",
+     "close": 79.15
+    },
+    {
+     "date": "2026-09-16",
+     "close": 78.95
+    },
+    {
+     "date": "2026-09-17",
+     "close": 79.31
+    },
+    {
+     "date": "2026-09-18",
+     "close": 81.5
+    },
+    {
+     "date": "2026-09-21",
+     "close": 80.22
+    },
+    {
+     "date": "2026-09-22",
+     "close": 80
+    },
+    {
+     "date": "2026-09-23",
+     "close": 81
+    },
+    {
+     "date": "2026-09-24",
+     "close": 79.86
+    },
+    {
+     "date": "2026-09-25",
+     "close": 79.95
+    },
+    {
+     "date": "2026-09-28",
+     "close": 78.55
+    },
+    {
+     "date": "2026-09-29",
+     "close": 80.26
+    },
+    {
+     "date": "2026-09-30",
+     "close": 79.28
+    },
+    {
+     "date": "2026-10-01",
+     "close": 77.06
+    },
+    {
+     "date": "2026-10-05",
+     "close": 76.5
+    },
+    {
+     "date": "2026-10-06",
+     "close": 77.1
+    },
+    {
+     "date": "2026-10-07",
+     "close": 76.15
+    },
+    {
+     "date": "2026-10-08",
+     "close": 74.3
+    },
+    {
+     "date": "2026-10-09",
+     "close": 74.7
+    },
+    {
+     "date": "2026-10-12",
+     "close": 77.5
+    },
+    {
+     "date": "2026-10-13",
+     "close": 79.62
+    },
+    {
+     "date": "2026-10-14",
+     "close": 79.75
+    },
+    {
+     "date": "2026-10-15",
+     "close": 78.9
+    },
+    {
+     "date": "2026-10-16",
+     "close": 80.25
+    },
+    {
+     "date": "2026-10-19",
+     "close": 78.44
+    },
+    {
+     "date": "2026-10-21",
+     "close": 76.8
+    }
+   ],
+   "sector": "Financial Services",
+   "industry": "Credit Services"
+  },
+  "ITC": {
+   "price": 258.9,
+   "prevClose": 260.8,
+   "change": -1.9,
+   "changePct": -0.73,
+   "dayHigh": 261,
+   "dayLow": 256.35,
+   "high52": 426.4,
+   "low52": 253.15,
+   "volume": 15277449,
+   "longName": "ITC Limited",
+   "closes": [
+    {
+     "date": "2026-07-22",
+     "close": 280.8
+    },
+    {
+     "date": "2026-07-23",
+     "close": 281.3
+    },
+    {
+     "date": "2026-07-24",
+     "close": 283.45
+    },
+    {
+     "date": "2026-07-27",
+     "close": 285.85
+    },
+    {
+     "date": "2026-07-28",
+     "close": 284.65
+    },
+    {
+     "date": "2026-07-29",
+     "close": 286.25
+    },
+    {
+     "date": "2026-07-30",
+     "close": 285.05
+    },
+    {
+     "date": "2026-07-31",
+     "close": 281
+    },
+    {
+     "date": "2026-08-03",
+     "close": 287
+    },
+    {
+     "date": "2026-08-04",
+     "close": 289
+    },
+    {
+     "date": "2026-08-05",
+     "close": 286.95
+    },
+    {
+     "date": "2026-08-06",
+     "close": 285.9
+    },
+    {
+     "date": "2026-08-07",
+     "close": 286.1
+    },
+    {
+     "date": "2026-08-10",
+     "close": 282.65
+    },
+    {
+     "date": "2026-08-11",
+     "close": 279
+    },
+    {
+     "date": "2026-08-12",
+     "close": 276.15
+    },
+    {
+     "date": "2026-08-13",
+     "close": 278.5
+    },
+    {
+     "date": "2026-08-14",
+     "close": 278.2
+    },
+    {
+     "date": "2026-08-17",
+     "close": 273.05
+    },
+    {
+     "date": "2026-08-18",
+     "close": 270
+    },
+    {
+     "date": "2026-08-19",
+     "close": 267.05
+    },
+    {
+     "date": "2026-08-20",
+     "close": 271.65
+    },
+    {
+     "date": "2026-08-21",
+     "close": 269.4
+    },
+    {
+     "date": "2026-08-24",
+     "close": 269.7
+    },
+    {
+     "date": "2026-08-25",
+     "close": 271.4
+    },
+    {
+     "date": "2026-08-26",
+     "close": 270.25
+    },
+    {
+     "date": "2026-08-27",
+     "close": 269
+    },
+    {
+     "date": "2026-08-28",
+     "close": 266
+    },
+    {
+     "date": "2026-08-31",
+     "close": 255.5
+    },
+    {
+     "date": "2026-09-01",
+     "close": 266.6
+    },
+    {
+     "date": "2026-09-02",
+     "close": 266.3
+    },
+    {
+     "date": "2026-09-03",
+     "close": 263
+    },
+    {
+     "date": "2026-09-04",
+     "close": 264.1
+    },
+    {
+     "date": "2026-09-07",
+     "close": 263.5
+    },
+    {
+     "date": "2026-09-08",
+     "close": 263.5
+    },
+    {
+     "date": "2026-09-09",
+     "close": 260.8
+    },
+    {
+     "date": "2026-09-10",
+     "close": 259.3
+    },
+    {
+     "date": "2026-09-11",
+     "close": 259.85
+    },
+    {
+     "date": "2026-09-15",
+     "close": 258
+    },
+    {
+     "date": "2026-09-16",
+     "close": 264.15
+    },
+    {
+     "date": "2026-09-17",
+     "close": 266.2
+    },
+    {
+     "date": "2026-09-18",
+     "close": 262.3
+    },
+    {
+     "date": "2026-09-21",
+     "close": 267
+    },
+    {
+     "date": "2026-09-22",
+     "close": 265.8
+    },
+    {
+     "date": "2026-09-23",
+     "close": 270.15
+    },
+    {
+     "date": "2026-09-24",
+     "close": 268
+    },
+    {
+     "date": "2026-09-25",
+     "close": 269
+    },
+    {
+     "date": "2026-09-28",
+     "close": 265.2
+    },
+    {
+     "date": "2026-09-29",
+     "close": 265.1
+    },
+    {
+     "date": "2026-09-30",
+     "close": 262.75
+    },
+    {
+     "date": "2026-10-01",
+     "close": 255.9
+    },
+    {
+     "date": "2026-10-05",
+     "close": 268.9
+    },
+    {
+     "date": "2026-10-06",
+     "close": 266.7
+    },
+    {
+     "date": "2026-10-07",
+     "close": 265.7
+    },
+    {
+     "date": "2026-10-08",
+     "close": 255
+    },
+    {
+     "date": "2026-10-09",
+     "close": 266
+    },
+    {
+     "date": "2026-10-12",
+     "close": 257.9
+    },
+    {
+     "date": "2026-10-13",
+     "close": 261
+    },
+    {
+     "date": "2026-10-14",
+     "close": 261.5
+    },
+    {
+     "date": "2026-10-15",
+     "close": 263.9
+    },
+    {
+     "date": "2026-10-16",
+     "close": 263.5
+    },
+    {
+     "date": "2026-10-19",
+     "close": 260.8
+    },
+    {
+     "date": "2026-10-21",
+     "close": 262
+    }
+   ],
+   "sector": null,
+   "industry": null
+  },
+  "JSWSTEEL": {
+   "price": 1220,
+   "prevClose": 1241.3,
+   "change": -21.3,
+   "changePct": -1.72,
+   "dayHigh": 1227.8,
+   "dayLow": 1200.3,
+   "high52": 1351,
+   "low52": 1073.2,
+   "volume": 1333154,
+   "longName": "JSW Steel Limited",
+   "closes": [
+    {
+     "date": "2026-07-22",
+     "close": 1266.9
+    },
+    {
+     "date": "2026-07-23",
+     "close": 1246.8
+    },
+    {
+     "date": "2026-07-24",
+     "close": 1240.8
+    },
+    {
+     "date": "2026-07-27",
+     "close": 1244.6
+    },
+    {
+     "date": "2026-07-28",
+     "close": 1246.9
+    },
+    {
+     "date": "2026-07-29",
+     "close": 1276.6
+    },
+    {
+     "date": "2026-07-30",
+     "close": 1270.8
+    },
+    {
+     "date": "2026-07-31",
+     "close": 1270
+    },
+    {
+     "date": "2026-08-03",
+     "close": 1292.3
+    },
+    {
+     "date": "2026-08-04",
+     "close": 1300
+    },
+    {
+     "date": "2026-08-05",
+     "close": 1330
+    },
+    {
+     "date": "2026-08-06",
+     "close": 1307.9
+    },
+    {
+     "date": "2026-08-07",
+     "close": 1299.5
+    },
+    {
+     "date": "2026-08-10",
+     "close": 1302
+    },
+    {
+     "date": "2026-08-11",
+     "close": 1283.4
+    },
+    {
+     "date": "2026-08-12",
+     "close": 1269.1
+    },
+    {
+     "date": "2026-08-13",
+     "close": 1275
+    },
+    {
+     "date": "2026-08-14",
+     "close": 1270
+    },
+    {
+     "date": "2026-08-17",
+     "close": 1277.8
+    },
+    {
+     "date": "2026-08-18",
+     "close": 1267.6
+    },
+    {
+     "date": "2026-08-19",
+     "close": 1285.8
+    },
+    {
+     "date": "2026-08-20",
+     "close": 1299.7
+    },
+    {
+     "date": "2026-08-21",
+     "close": 1293.7
+    },
+    {
+     "date": "2026-08-24",
+     "close": 1327
+    },
+    {
+     "date": "2026-08-25",
+     "close": 1320.3
+    },
+    {
+     "date": "2026-08-26",
+     "close": 1341
+    },
+    {
+     "date": "2026-08-27",
+     "close": 1337.5
+    },
+    {
+     "date": "2026-08-28",
+     "close": 1334.9
+    },
+    {
+     "date": "2026-08-31",
+     "close": 1307.7
+    },
+    {
+     "date": "2026-09-01",
+     "close": 1313.5
+    },
+    {
+     "date": "2026-09-02",
+     "close": 1306
+    },
+    {
+     "date": "2026-09-03",
+     "close": 1308
+    },
+    {
+     "date": "2026-09-04",
+     "close": 1325
+    },
+    {
+     "date": "2026-09-07",
+     "close": 1302
+    },
+    {
+     "date": "2026-09-08",
+     "close": 1297.3
+    },
+    {
+     "date": "2026-09-09",
+     "close": 1310
+    },
+    {
+     "date": "2026-09-10",
+     "close": 1304
+    },
+    {
+     "date": "2026-09-11",
+     "close": 1265
+    },
+    {
+     "date": "2026-09-15",
+     "close": 1229.2
+    },
+    {
+     "date": "2026-09-16",
+     "close": 1248.9
+    },
+    {
+     "date": "2026-09-17",
+     "close": 1253.4
+    },
+    {
+     "date": "2026-09-18",
+     "close": 1275.6
+    },
+    {
+     "date": "2026-09-21",
+     "close": 1268.6
+    },
+    {
+     "date": "2026-09-22",
+     "close": 1267
+    },
+    {
+     "date": "2026-09-23",
+     "close": 1297.8
+    },
+    {
+     "date": "2026-09-24",
+     "close": 1273.2
+    },
+    {
+     "date": "2026-09-25",
+     "close": 1277
+    },
+    {
+     "date": "2026-09-28",
+     "close": 1264.1
+    },
+    {
+     "date": "2026-09-29",
+     "close": 1272.4
+    },
+    {
+     "date": "2026-09-30",
+     "close": 1253.4
+    },
+    {
+     "date": "2026-10-01",
+     "close": 1233
+    },
+    {
+     "date": "2026-10-05",
+     "close": 1235.3
+    },
+    {
+     "date": "2026-10-06",
+     "close": 1259.6
+    },
+    {
+     "date": "2026-10-07",
+     "close": 1230
+    },
+    {
+     "date": "2026-10-08",
+     "close": 1175.2
+    },
+    {
+     "date": "2026-10-09",
+     "close": 1168
+    },
+    {
+     "date": "2026-10-12",
+     "close": 1173
+    },
+    {
+     "date": "2026-10-13",
+     "close": 1176.6
+    },
+    {
+     "date": "2026-10-14",
+     "close": 1176.2
+    },
+    {
+     "date": "2026-10-15",
+     "close": 1200.4
+    },
+    {
+     "date": "2026-10-16",
+     "close": 1216.3
+    },
+    {
+     "date": "2026-10-19",
+     "close": 1241.3
+    },
+    {
+     "date": "2026-10-21",
+     "close": 1222.9
+    }
+   ],
+   "sector": "Basic Materials",
+   "industry": "Steel"
+  },
+  "KOTAKBANK": {
+   "price": 437,
+   "prevClose": 442.3,
+   "change": -5.3,
+   "changePct": -1.2,
+   "dayHigh": 442.5,
+   "dayLow": 433.75,
+   "high52": 453.1,
+   "low52": 345.5,
+   "volume": 16698413,
+   "longName": "Kotak Mahindra Bank Limited",
+   "closes": [
+    {
+     "date": "2026-07-22",
+     "close": 381.15
+    },
+    {
+     "date": "2026-07-23",
+     "close": 383.35
+    },
+    {
+     "date": "2026-07-24",
+     "close": 384.75
+    },
+    {
+     "date": "2026-07-27",
+     "close": 384.65
+    },
+    {
+     "date": "2026-07-28",
+     "close": 385.3
+    },
+    {
+     "date": "2026-07-29",
+     "close": 390.2
+    },
+    {
+     "date": "2026-07-30",
+     "close": 389.4
+    },
+    {
+     "date": "2026-07-31",
+     "close": 390.3
+    },
+    {
+     "date": "2026-08-03",
+     "close": 397.5
+    },
+    {
+     "date": "2026-08-04",
+     "close": 398
+    },
+    {
+     "date": "2026-08-05",
+     "close": 400
+    },
+    {
+     "date": "2026-08-06",
+     "close": 394
+    },
+    {
+     "date": "2026-08-07",
+     "close": 390.75
+    },
+    {
+     "date": "2026-08-10",
+     "close": 393.5
+    },
+    {
+     "date": "2026-08-11",
+     "close": 392.9
+    },
+    {
+     "date": "2026-08-12",
+     "close": 390.5
+    },
+    {
+     "date": "2026-08-13",
+     "close": 392.4
+    },
+    {
+     "date": "2026-08-14",
+     "close": 391.15
+    },
+    {
+     "date": "2026-08-17",
+     "close": 392.7
+    },
+    {
+     "date": "2026-08-18",
+     "close": 387.65
+    },
+    {
+     "date": "2026-08-19",
+     "close": 390.25
+    },
+    {
+     "date": "2026-08-20",
+     "close": 397.35
+    },
+    {
+     "date": "2026-08-21",
+     "close": 402.8
+    },
+    {
+     "date": "2026-08-24",
+     "close": 401.45
+    },
+    {
+     "date": "2026-08-25",
+     "close": 401.6
+    },
+    {
+     "date": "2026-08-26",
+     "close": 416.7
+    },
+    {
+     "date": "2026-08-27",
+     "close": 424.2
+    },
+    {
+     "date": "2026-08-28",
+     "close": 423.7
+    },
+    {
+     "date": "2026-08-31",
+     "close": 419.4
+    },
+    {
+     "date": "2026-09-01",
+     "close": 425
+    },
+    {
+     "date": "2026-09-02",
+     "close": 423.5
+    },
+    {
+     "date": "2026-09-03",
+     "close": 421.15
+    },
+    {
+     "date": "2026-09-04",
+     "close": 424.5
+    },
+    {
+     "date": "2026-09-07",
+     "close": 422.1
+    },
+    {
+     "date": "2026-09-08",
+     "close": 419.25
+    },
+    {
+     "date": "2026-09-09",
+     "close": 414
+    },
+    {
+     "date": "2026-09-10",
+     "close": 416.55
+    },
+    {
+     "date": "2026-09-11",
+     "close": 419
+    },
+    {
+     "date": "2026-09-15",
+     "close": 409.8
+    },
+    {
+     "date": "2026-09-16",
+     "close": 415
+    },
+    {
+     "date": "2026-09-17",
+     "close": 416.5
+    },
+    {
+     "date": "2026-09-18",
+     "close": 412.5
+    },
+    {
+     "date": "2026-09-21",
+     "close": 414.8
+    },
+    {
+     "date": "2026-09-22",
+     "close": 412.65
+    },
+    {
+     "date": "2026-09-23",
+     "close": 413.25
+    },
+    {
+     "date": "2026-09-24",
+     "close": 405
+    },
+    {
+     "date": "2026-09-25",
+     "close": 404
+    },
+    {
+     "date": "2026-09-28",
+     "close": 401.55
+    },
+    {
+     "date": "2026-09-29",
+     "close": 406
+    },
+    {
+     "date": "2026-09-30",
+     "close": 417
+    },
+    {
+     "date": "2026-10-01",
+     "close": 418.35
+    },
+    {
+     "date": "2026-10-05",
+     "close": 416
+    },
+    {
+     "date": "2026-10-06",
+     "close": 431.9
+    },
+    {
+     "date": "2026-10-07",
+     "close": 440
+    },
+    {
+     "date": "2026-10-08",
+     "close": 435
+    },
+    {
+     "date": "2026-10-09",
+     "close": 441
+    },
+    {
+     "date": "2026-10-12",
+     "close": 443.4
+    },
+    {
+     "date": "2026-10-13",
+     "close": 439
+    },
+    {
+     "date": "2026-10-14",
+     "close": 438.05
+    },
+    {
+     "date": "2026-10-15",
+     "close": 447.95
+    },
+    {
+     "date": "2026-10-16",
+     "close": 447.4
+    },
+    {
+     "date": "2026-10-19",
+     "close": 442.3
+    },
+    {
+     "date": "2026-10-21",
+     "close": 437.8
+    }
+   ],
+   "sector": "Financial Services",
+   "industry": "Banks—Regional"
+  },
+  "LICI": {
+   "price": 387.5,
+   "prevClose": 393.35,
+   "change": -5.85,
+   "changePct": -1.49,
+   "dayHigh": 391,
+   "dayLow": 384.2,
+   "high52": 468.48,
+   "low52": 360.75,
+   "volume": 10469640,
+   "longName": "Life Insurance Corporation of India",
+   "closes": [
+    {
+     "date": "2026-07-22",
+     "close": 423.3
+    },
+    {
+     "date": "2026-07-23",
+     "close": 421.4
+    },
+    {
+     "date": "2026-07-24",
+     "close": 421.3
+    },
+    {
+     "date": "2026-07-27",
+     "close": 424.35
+    },
+    {
+     "date": "2026-07-28",
+     "close": 427.15
+    },
+    {
+     "date": "2026-07-29",
+     "close": 423.9
+    },
+    {
+     "date": "2026-07-30",
+     "close": 422.85
+    },
+    {
+     "date": "2026-07-31",
+     "close": 424.7
+    },
+    {
+     "date": "2026-08-03",
+     "close": 428.5
+    },
+    {
+     "date": "2026-08-04",
+     "close": 391.3
+    },
+    {
+     "date": "2026-08-05",
+     "close": 393
+    },
+    {
+     "date": "2026-08-06",
+     "close": 387.55
+    },
+    {
+     "date": "2026-08-07",
+     "close": 394
+    },
+    {
+     "date": "2026-08-10",
+     "close": 393
+    },
+    {
+     "date": "2026-08-11",
+     "close": 406
+    },
+    {
+     "date": "2026-08-12",
+     "close": 417
+    },
+    {
+     "date": "2026-08-13",
+     "close": 412.15
+    },
+    {
+     "date": "2026-08-14",
+     "close": 413.5
+    },
+    {
+     "date": "2026-08-17",
+     "close": 410
+    },
+    {
+     "date": "2026-08-18",
+     "close": 410
+    },
+    {
+     "date": "2026-08-19",
+     "close": 413.1
+    },
+    {
+     "date": "2026-08-20",
+     "close": 419
+    },
+    {
+     "date": "2026-08-21",
+     "close": 422.25
+    },
+    {
+     "date": "2026-08-24",
+     "close": 421.85
+    },
+    {
+     "date": "2026-08-25",
+     "close": 424
+    },
+    {
+     "date": "2026-08-26",
+     "close": 415.3
+    },
+    {
+     "date": "2026-08-27",
+     "close": 413.95
+    },
+    {
+     "date": "2026-08-28",
+     "close": 422
+    },
+    {
+     "date": "2026-08-31",
+     "close": 418
+    },
+    {
+     "date": "2026-09-01",
+     "close": 412.15
+    },
+    {
+     "date": "2026-09-02",
+     "close": 408.25
+    },
+    {
+     "date": "2026-09-03",
+     "close": 416.9
+    },
+    {
+     "date": "2026-09-04",
+     "close": 415.35
+    },
+    {
+     "date": "2026-09-07",
+     "close": 411.5
+    },
+    {
+     "date": "2026-09-08",
+     "close": 410.75
+    },
+    {
+     "date": "2026-09-09",
+     "close": 407.5
+    },
+    {
+     "date": "2026-09-10",
+     "close": 405.6
+    },
+    {
+     "date": "2026-09-11",
+     "close": 404.1
+    },
+    {
+     "date": "2026-09-15",
+     "close": 391.5
+    },
+    {
+     "date": "2026-09-16",
+     "close": 395.5
+    },
+    {
+     "date": "2026-09-17",
+     "close": 400
+    },
+    {
+     "date": "2026-09-18",
+     "close": 407.7
+    },
+    {
+     "date": "2026-09-21",
+     "close": 400
+    },
+    {
+     "date": "2026-09-22",
+     "close": 404.55
+    },
+    {
+     "date": "2026-09-23",
+     "close": 407.5
+    },
+    {
+     "date": "2026-09-24",
+     "close": 406
+    },
+    {
+     "date": "2026-09-25",
+     "close": 409.05
+    },
+    {
+     "date": "2026-09-28",
+     "close": 400.65
+    },
+    {
+     "date": "2026-09-29",
+     "close": 390
+    },
+    {
+     "date": "2026-09-30",
+     "close": 395.2
+    },
+    {
+     "date": "2026-10-01",
+     "close": 391.85
+    },
+    {
+     "date": "2026-10-05",
+     "close": 388.7
+    },
+    {
+     "date": "2026-10-06",
+     "close": 390
+    },
+    {
+     "date": "2026-10-07",
+     "close": 386.3
+    },
+    {
+     "date": "2026-10-08",
+     "close": 379.25
+    },
+    {
+     "date": "2026-10-09",
+     "close": 394.25
+    },
+    {
+     "date": "2026-10-12",
+     "close": 391.5
+    },
+    {
+     "date": "2026-10-13",
+     "close": 394.05
+    },
+    {
+     "date": "2026-10-14",
+     "close": 394
+    },
+    {
+     "date": "2026-10-15",
+     "close": 394
+    },
+    {
+     "date": "2026-10-16",
+     "close": 397.75
+    },
+    {
+     "date": "2026-10-19",
+     "close": 393.35
+    },
+    {
+     "date": "2026-10-21",
+     "close": 392.05
+    }
+   ],
+   "sector": "Financial Services",
+   "industry": "Insurance—Life"
+  },
+  "LT": {
+   "price": 3638.3,
+   "prevClose": 3661.9,
+   "change": -23.6,
+   "changePct": -0.64,
+   "dayHigh": 3689.9,
+   "dayLow": 3595,
+   "high52": 4440,
+   "low52": 3288.1,
+   "volume": 2631262,
+   "longName": "Larsen & Toubro Limited",
+   "closes": [
+    {
+     "date": "2026-07-22",
+     "close": 3817.4
+    },
+    {
+     "date": "2026-07-23",
+     "close": 3792.4
+    },
+    {
+     "date": "2026-07-24",
+     "close": 3785.6
+    },
+    {
+     "date": "2026-07-27",
+     "close": 3806
+    },
+    {
+     "date": "2026-07-28",
+     "close": 3832
+    },
+    {
+     "date": "2026-07-29",
+     "close": 3931.4
+    },
+    {
+     "date": "2026-07-30",
+     "close": 3937.7
+    },
+    {
+     "date": "2026-07-31",
+     "close": 3938.9
+    },
+    {
+     "date": "2026-08-03",
+     "close": 4025
+    },
+    {
+     "date": "2026-08-04",
+     "close": 3990
+    },
+    {
+     "date": "2026-08-05",
+     "close": 4057
+    },
+    {
+     "date": "2026-08-06",
+     "close": 4061.8
+    },
+    {
+     "date": "2026-08-07",
+     "close": 4056
+    },
+    {
+     "date": "2026-08-10",
+     "close": 4080
+    },
+    {
+     "date": "2026-08-11",
+     "close": 4037.4
+    },
+    {
+     "date": "2026-08-12",
+     "close": 4020
+    },
+    {
+     "date": "2026-08-13",
+     "close": 4070.7
+    },
+    {
+     "date": "2026-08-14",
+     "close": 4057
+    },
+    {
+     "date": "2026-08-17",
+     "close": 4086.7
+    },
+    {
+     "date": "2026-08-18",
+     "close": 4064.3
+    },
+    {
+     "date": "2026-08-19",
+     "close": 4041.3
+    },
+    {
+     "date": "2026-08-20",
+     "close": 4081
+    },
+    {
+     "date": "2026-08-21",
+     "close": 4093
+    },
+    {
+     "date": "2026-08-24",
+     "close": 4090
+    },
+    {
+     "date": "2026-08-25",
+     "close": 4119
+    },
+    {
+     "date": "2026-08-26",
+     "close": 4038.1
+    },
+    {
+     "date": "2026-08-27",
+     "close": 4027
+    },
+    {
+     "date": "2026-08-28",
+     "close": 4045.8
+    },
+    {
+     "date": "2026-08-31",
+     "close": 4044.9
+    },
+    {
+     "date": "2026-09-01",
+     "close": 3980.1
+    },
+    {
+     "date": "2026-09-02",
+     "close": 3981
+    },
+    {
+     "date": "2026-09-03",
+     "close": 3975
+    },
+    {
+     "date": "2026-09-04",
+     "close": 3964.1
+    },
+    {
+     "date": "2026-09-07",
+     "close": 3999
+    },
+    {
+     "date": "2026-09-08",
+     "close": 3946.1
+    },
+    {
+     "date": "2026-09-09",
+     "close": 3922.6
+    },
+    {
+     "date": "2026-09-10",
+     "close": 3955
+    },
+    {
+     "date": "2026-09-11",
+     "close": 3930.7
+    },
+    {
+     "date": "2026-09-15",
+     "close": 3850.7
+    },
+    {
+     "date": "2026-09-16",
+     "close": 3807.7
+    },
+    {
+     "date": "2026-09-17",
+     "close": 3836.2
+    },
+    {
+     "date": "2026-09-18",
+     "close": 3885
+    },
+    {
+     "date": "2026-09-21",
+     "close": 3904.8
+    },
+    {
+     "date": "2026-09-22",
+     "close": 3866.4
+    },
+    {
+     "date": "2026-09-23",
+     "close": 3929.9
+    },
+    {
+     "date": "2026-09-24",
+     "close": 3858.4
+    },
+    {
+     "date": "2026-09-25",
+     "close": 3876.2
+    },
+    {
+     "date": "2026-09-28",
+     "close": 3766.4
+    },
+    {
+     "date": "2026-09-29",
+     "close": 3749.1
+    },
+    {
+     "date": "2026-09-30",
+     "close": 3760
+    },
+    {
+     "date": "2026-10-01",
+     "close": 3693.4
+    },
+    {
+     "date": "2026-10-05",
+     "close": 3750
+    },
+    {
+     "date": "2026-10-06",
+     "close": 3770
+    },
+    {
+     "date": "2026-10-07",
+     "close": 3701.5
+    },
+    {
+     "date": "2026-10-08",
+     "close": 3625.1
+    },
+    {
+     "date": "2026-10-09",
+     "close": 3703.3
+    },
+    {
+     "date": "2026-10-12",
+     "close": 3627.5
+    },
+    {
+     "date": "2026-10-13",
+     "close": 3675
+    },
+    {
+     "date": "2026-10-14",
+     "close": 3642
+    },
+    {
+     "date": "2026-10-15",
+     "close": 3632
+    },
+    {
+     "date": "2026-10-16",
+     "close": 3627.1
+    },
+    {
+     "date": "2026-10-19",
+     "close": 3661.9
+    },
+    {
+     "date": "2026-10-21",
+     "close": 3636
+    }
+   ],
+   "sector": "Industrials",
+   "industry": "Engineering & Construction"
+  },
+  "M&M": {
+   "price": 2864.1,
+   "prevClose": 2907,
+   "change": -42.9,
+   "changePct": -1.48,
+   "dayHigh": 2873,
+   "dayLow": 2818.2,
+   "high52": 3839.9,
+   "low52": 2744.3,
+   "volume": 1756091,
+   "longName": "Mahindra & Mahindra Limited",
+   "closes": [
+    {
+     "date": "2026-07-22",
+     "close": 3175.3
+    },
+    {
+     "date": "2026-07-23",
+     "close": 3229.7
+    },
+    {
+     "date": "2026-07-24",
+     "close": 3161.4
+    },
+    {
+     "date": "2026-07-27",
+     "close": 3238.6
+    },
+    {
+     "date": "2026-07-28",
+     "close": 3271.2
+    },
+    {
+     "date": "2026-07-29",
+     "close": 3221.8
+    },
+    {
+     "date": "2026-07-30",
+     "close": 3283.7
+    },
+    {
+     "date": "2026-07-31",
+     "close": 3398.5
+    },
+    {
+     "date": "2026-08-03",
+     "close": 3428.6
+    },
+    {
+     "date": "2026-08-04",
+     "close": 3433
+    },
+    {
+     "date": "2026-08-05",
+     "close": 3455.4
+    },
+    {
+     "date": "2026-08-06",
+     "close": 3406
+    },
+    {
+     "date": "2026-08-07",
+     "close": 3502
+    },
+    {
+     "date": "2026-08-10",
+     "close": 3517
+    },
+    {
+     "date": "2026-08-11",
+     "close": 3460.1
+    },
+    {
+     "date": "2026-08-12",
+     "close": 3403.6
+    },
+    {
+     "date": "2026-08-13",
+     "close": 3428.2
+    },
+    {
+     "date": "2026-08-14",
+     "close": 3428.3
+    },
+    {
+     "date": "2026-08-17",
+     "close": 3390.4
+    },
+    {
+     "date": "2026-08-18",
+     "close": 3421.5
+    },
+    {
+     "date": "2026-08-19",
+     "close": 3415
+    },
+    {
+     "date": "2026-08-20",
+     "close": 3424.8
+    },
+    {
+     "date": "2026-08-21",
+     "close": 3412.2
+    },
+    {
+     "date": "2026-08-24",
+     "close": 3414.1
+    },
+    {
+     "date": "2026-08-25",
+     "close": 3443
+    },
+    {
+     "date": "2026-08-26",
+     "close": 3398.2
+    },
+    {
+     "date": "2026-08-27",
+     "close": 3330
+    },
+    {
+     "date": "2026-08-28",
+     "close": 3334
+    },
+    {
+     "date": "2026-08-31",
+     "close": 3282
+    },
+    {
+     "date": "2026-09-01",
+     "close": 3259
+    },
+    {
+     "date": "2026-09-02",
+     "close": 3190
+    },
+    {
+     "date": "2026-09-03",
+     "close": 3150
+    },
+    {
+     "date": "2026-09-04",
+     "close": 3170
+    },
+    {
+     "date": "2026-09-07",
+     "close": 3160
+    },
+    {
+     "date": "2026-09-08",
+     "close": 3160
+    },
+    {
+     "date": "2026-09-09",
+     "close": 3150
+    },
+    {
+     "date": "2026-09-10",
+     "close": 3123.8
+    },
+    {
+     "date": "2026-09-11",
+     "close": 3107
+    },
+    {
+     "date": "2026-09-15",
+     "close": 3029.5
+    },
+    {
+     "date": "2026-09-16",
+     "close": 3070
+    },
+    {
+     "date": "2026-09-17",
+     "close": 3076.5
+    },
+    {
+     "date": "2026-09-18",
+     "close": 3052
+    },
+    {
+     "date": "2026-09-21",
+     "close": 3055.3
+    },
+    {
+     "date": "2026-09-22",
+     "close": 3044.5
+    },
+    {
+     "date": "2026-09-23",
+     "close": 3035
+    },
+    {
+     "date": "2026-09-24",
+     "close": 2982.7
+    },
+    {
+     "date": "2026-09-25",
+     "close": 3035
+    },
+    {
+     "date": "2026-09-28",
+     "close": 2995
+    },
+    {
+     "date": "2026-09-29",
+     "close": 2947.8
+    },
+    {
+     "date": "2026-09-30",
+     "close": 2950
+    },
+    {
+     "date": "2026-10-01",
+     "close": 2860
+    },
+    {
+     "date": "2026-10-05",
+     "close": 2857.6
+    },
+    {
+     "date": "2026-10-06",
+     "close": 2855
+    },
+    {
+     "date": "2026-10-07",
+     "close": 2800
+    },
+    {
+     "date": "2026-10-08",
+     "close": 2751.2
+    },
+    {
+     "date": "2026-10-09",
+     "close": 2796.2
+    },
+    {
+     "date": "2026-10-12",
+     "close": 2813
+    },
+    {
+     "date": "2026-10-13",
+     "close": 2864.4
+    },
+    {
+     "date": "2026-10-14",
+     "close": 2793.7
+    },
+    {
+     "date": "2026-10-15",
+     "close": 2861.7
+    },
+    {
+     "date": "2026-10-16",
+     "close": 2920.9
+    },
+    {
+     "date": "2026-10-19",
+     "close": 2907
+    },
+    {
+     "date": "2026-10-21",
+     "close": 2889
+    }
+   ],
+   "sector": "Consumer Cyclical",
+   "industry": "Auto Manufacturers"
+  },
+  "MARUTI": {
+   "price": 11170,
+   "prevClose": 11475,
+   "change": -305,
+   "changePct": -2.66,
+   "dayHigh": 11208,
+   "dayLow": 10985,
+   "high52": 17370,
+   "low52": 10985,
+   "volume": 407458,
+   "longName": "Maruti Suzuki India Limited",
+   "closes": [
+    {
+     "date": "2026-07-22",
+     "close": 13545
+    },
+    {
+     "date": "2026-07-23",
+     "close": 13403
+    },
+    {
+     "date": "2026-07-24",
+     "close": 13442
+    },
+    {
+     "date": "2026-07-27",
+     "close": 13730
+    },
+    {
+     "date": "2026-07-28",
+     "close": 13802
+    },
+    {
+     "date": "2026-07-29",
+     "close": 13948
+    },
+    {
+     "date": "2026-07-30",
+     "close": 14188
+    },
+    {
+     "date": "2026-07-31",
+     "close": 14234
+    },
+    {
+     "date": "2026-08-03",
+     "close": 14150
+    },
+    {
+     "date": "2026-08-04",
+     "close": 14168
+    },
+    {
+     "date": "2026-08-05",
+     "close": 14190
+    },
+    {
+     "date": "2026-08-06",
+     "close": 14080
+    },
+    {
+     "date": "2026-08-07",
+     "close": 14037
+    },
+    {
+     "date": "2026-08-10",
+     "close": 14097
+    },
+    {
+     "date": "2026-08-11",
+     "close": 13990
+    },
+    {
+     "date": "2026-08-12",
+     "close": 13875
+    },
+    {
+     "date": "2026-08-13",
+     "close": 13905
+    },
+    {
+     "date": "2026-08-14",
+     "close": 13834
+    },
+    {
+     "date": "2026-08-17",
+     "close": 13760
+    },
+    {
+     "date": "2026-08-18",
+     "close": 13691
+    },
+    {
+     "date": "2026-08-19",
+     "close": 13690
+    },
+    {
+     "date": "2026-08-20",
+     "close": 13809
+    },
+    {
+     "date": "2026-08-21",
+     "close": 13565
+    },
+    {
+     "date": "2026-08-24",
+     "close": 13620
+    },
+    {
+     "date": "2026-08-25",
+     "close": 13678
+    },
+    {
+     "date": "2026-08-26",
+     "close": 13520
+    },
+    {
+     "date": "2026-08-27",
+     "close": 13440
+    },
+    {
+     "date": "2026-08-28",
+     "close": 13376
+    },
+    {
+     "date": "2026-08-31",
+     "close": 13547
+    },
+    {
+     "date": "2026-09-01",
+     "close": 12950
+    },
+    {
+     "date": "2026-09-02",
+     "close": 12849
+    },
+    {
+     "date": "2026-09-03",
+     "close": 12857
+    },
+    {
+     "date": "2026-09-04",
+     "close": 12694
+    },
+    {
+     "date": "2026-09-07",
+     "close": 12760
+    },
+    {
+     "date": "2026-09-08",
+     "close": 12641
+    },
+    {
+     "date": "2026-09-09",
+     "close": 12618
+    },
+    {
+     "date": "2026-09-10",
+     "close": 12590
+    },
+    {
+     "date": "2026-09-11",
+     "close": 12400
+    },
+    {
+     "date": "2026-09-15",
+     "close": 12231
+    },
+    {
+     "date": "2026-09-16",
+     "close": 12166
+    },
+    {
+     "date": "2026-09-17",
+     "close": 12338
+    },
+    {
+     "date": "2026-09-18",
+     "close": 12103
+    },
+    {
+     "date": "2026-09-21",
+     "close": 12153
+    },
+    {
+     "date": "2026-09-22",
+     "close": 12190
+    },
+    {
+     "date": "2026-09-23",
+     "close": 12230
+    },
+    {
+     "date": "2026-09-24",
+     "close": 11990
+    },
+    {
+     "date": "2026-09-25",
+     "close": 12065
+    },
+    {
+     "date": "2026-09-28",
+     "close": 12008
+    },
+    {
+     "date": "2026-09-29",
+     "close": 11877
+    },
+    {
+     "date": "2026-09-30",
+     "close": 11967
+    },
+    {
+     "date": "2026-10-01",
+     "close": 11386
+    },
+    {
+     "date": "2026-10-05",
+     "close": 11532
+    },
+    {
+     "date": "2026-10-06",
+     "close": 11625
+    },
+    {
+     "date": "2026-10-07",
+     "close": 11450
+    },
+    {
+     "date": "2026-10-08",
+     "close": 11228
+    },
+    {
+     "date": "2026-10-09",
+     "close": 11420
+    },
+    {
+     "date": "2026-10-12",
+     "close": 11315
+    },
+    {
+     "date": "2026-10-13",
+     "close": 11245
+    },
+    {
+     "date": "2026-10-14",
+     "close": 11178
+    },
+    {
+     "date": "2026-10-15",
+     "close": 11445
+    },
+    {
+     "date": "2026-10-16",
+     "close": 11489
+    },
+    {
+     "date": "2026-10-19",
+     "close": 11475
+    },
+    {
+     "date": "2026-10-21",
+     "close": 11200
+    }
+   ],
+   "sector": "Consumer Cyclical",
+   "industry": "Auto Manufacturers"
+  },
+  "NESTLEIND": {
+   "price": 1189.9,
+   "prevClose": 1242.7,
+   "change": -52.8,
+   "changePct": -4.25,
+   "dayHigh": 1210,
+   "dayLow": 1181.3,
+   "high52": 1553,
+   "low52": 1159.4,
+   "volume": 1993076,
+   "longName": "Nestlé India Limited",
+   "closes": [
+    {
+     "date": "2026-07-22",
+     "close": 1493.6
+    },
+    {
+     "date": "2026-07-23",
+     "close": 1447.9
+    },
+    {
+     "date": "2026-07-24",
+     "close": 1443.5
+    },
+    {
+     "date": "2026-07-27",
+     "close": 1446.1
+    },
+    {
+     "date": "2026-07-28",
+     "close": 1491.8
+    },
+    {
+     "date": "2026-07-29",
+     "close": 1503.3
+    },
+    {
+     "date": "2026-07-30",
+     "close": 1520.7
+    },
+    {
+     "date": "2026-07-31",
+     "close": 1509.6
+    },
+    {
+     "date": "2026-08-03",
+     "close": 1530
+    },
+    {
+     "date": "2026-08-04",
+     "close": 1520
+    },
+    {
+     "date": "2026-08-05",
+     "close": 1520
+    },
+    {
+     "date": "2026-08-06",
+     "close": 1535
+    },
+    {
+     "date": "2026-08-07",
+     "close": 1540
+    },
+    {
+     "date": "2026-08-10",
+     "close": 1528.6
+    },
+    {
+     "date": "2026-08-11",
+     "close": 1493.2
+    },
+    {
+     "date": "2026-08-12",
+     "close": 1507
+    },
+    {
+     "date": "2026-08-13",
+     "close": 1506.9
+    },
+    {
+     "date": "2026-08-14",
+     "close": 1499.1
+    },
+    {
+     "date": "2026-08-17",
+     "close": 1470
+    },
+    {
+     "date": "2026-08-18",
+     "close": 1462.5
+    },
+    {
+     "date": "2026-08-19",
+     "close": 1465
+    },
+    {
+     "date": "2026-08-20",
+     "close": 1458
+    },
+    {
+     "date": "2026-08-21",
+     "close": 1477.1
+    },
+    {
+     "date": "2026-08-24",
+     "close": 1471.3
+    },
+    {
+     "date": "2026-08-25",
+     "close": 1479
+    },
+    {
+     "date": "2026-08-26",
+     "close": 1451.5
+    },
+    {
+     "date": "2026-08-27",
+     "close": 1450
+    },
+    {
+     "date": "2026-08-28",
+     "close": 1454.6
+    },
+    {
+     "date": "2026-08-31",
+     "close": 1496.5
+    },
+    {
+     "date": "2026-09-01",
+     "close": 1438.2
+    },
+    {
+     "date": "2026-09-02",
+     "close": 1425
+    },
+    {
+     "date": "2026-09-03",
+     "close": 1416
+    },
+    {
+     "date": "2026-09-04",
+     "close": 1410.5
+    },
+    {
+     "date": "2026-09-07",
+     "close": 1398
+    },
+    {
+     "date": "2026-09-08",
+     "close": 1400.5
+    },
+    {
+     "date": "2026-09-09",
+     "close": 1393
+    },
+    {
+     "date": "2026-09-10",
+     "close": 1386.2
+    },
+    {
+     "date": "2026-09-11",
+     "close": 1383.3
+    },
+    {
+     "date": "2026-09-15",
+     "close": 1362
+    },
+    {
+     "date": "2026-09-16",
+     "close": 1384.5
+    },
+    {
+     "date": "2026-09-17",
+     "close": 1370.6
+    },
+    {
+     "date": "2026-09-18",
+     "close": 1372.4
+    },
+    {
+     "date": "2026-09-21",
+     "close": 1385
+    },
+    {
+     "date": "2026-09-22",
+     "close": 1363.9
+    },
+    {
+     "date": "2026-09-23",
+     "close": 1387.2
+    },
+    {
+     "date": "2026-09-24",
+     "close": 1351
+    },
+    {
+     "date": "2026-09-25",
+     "close": 1362.6
+    },
+    {
+     "date": "2026-09-28",
+     "close": 1346
+    },
+    {
+     "date": "2026-09-29",
+     "close": 1345.7
+    },
+    {
+     "date": "2026-09-30",
+     "close": 1310
+    },
+    {
+     "date": "2026-10-01",
+     "close": 1307.7
+    },
+    {
+     "date": "2026-10-05",
+     "close": 1297.1
+    },
+    {
+     "date": "2026-10-06",
+     "close": 1341.4
+    },
+    {
+     "date": "2026-10-07",
+     "close": 1324
+    },
+    {
+     "date": "2026-10-08",
+     "close": 1319
+    },
+    {
+     "date": "2026-10-09",
+     "close": 1333
+    },
+    {
+     "date": "2026-10-12",
+     "close": 1324.7
+    },
+    {
+     "date": "2026-10-13",
+     "close": 1334
+    },
+    {
+     "date": "2026-10-14",
+     "close": 1383.2
+    },
+    {
+     "date": "2026-10-15",
+     "close": 1275.8
+    },
+    {
+     "date": "2026-10-16",
+     "close": 1265.5
+    },
+    {
+     "date": "2026-10-19",
+     "close": 1242.7
+    },
+    {
+     "date": "2026-10-21",
+     "close": 1223.9
+    }
+   ],
+   "sector": "Consumer Defensive",
+   "industry": "Packaged Foods"
+  },
+  "NHPC": {
+   "price": 72.38,
+   "prevClose": 70.7,
+   "change": 1.68,
+   "changePct": 2.38,
+   "dayHigh": 72.74,
+   "dayLow": 71.7,
+   "high52": 87.29,
+   "low52": 70.25,
+   "volume": 7046188,
+   "longName": "NHPC Limited",
+   "closes": [
+    {
+     "date": "2026-07-22",
+     "close": 80.28
+    },
+    {
+     "date": "2026-07-23",
+     "close": 80.25
+    },
+    {
+     "date": "2026-07-24",
+     "close": 79.39
+    },
+    {
+     "date": "2026-07-27",
+     "close": 79.72
+    },
+    {
+     "date": "2026-07-28",
+     "close": 78.28
+    },
+    {
+     "date": "2026-07-29",
+     "close": 77.9
+    },
+    {
+     "date": "2026-07-30",
+     "close": 78.07
+    },
+    {
+     "date": "2026-07-31",
+     "close": 78.73
+    },
+    {
+     "date": "2026-08-03",
+     "close": 79.25
+    },
+    {
+     "date": "2026-08-04",
+     "close": 80.5
+    },
+    {
+     "date": "2026-08-05",
+     "close": 78.6
+    },
+    {
+     "date": "2026-08-06",
+     "close": 77.5
+    },
+    {
+     "date": "2026-08-07",
+     "close": 76.92
+    },
+    {
+     "date": "2026-08-10",
+     "close": 77.2
+    },
+    {
+     "date": "2026-08-11",
+     "close": 76.95
+    },
+    {
+     "date": "2026-08-12",
+     "close": 76.85
+    },
+    {
+     "date": "2026-08-13",
+     "close": 77.5
+    },
+    {
+     "date": "2026-08-14",
+     "close": 76.9
+    },
+    {
+     "date": "2026-08-17",
+     "close": 76.6
+    },
+    {
+     "date": "2026-08-18",
+     "close": 76.73
+    },
+    {
+     "date": "2026-08-19",
+     "close": 76.17
+    },
+    {
+     "date": "2026-08-20",
+     "close": 76.35
+    },
+    {
+     "date": "2026-08-21",
+     "close": 76.15
+    },
+    {
+     "date": "2026-08-24",
+     "close": 76.65
+    },
+    {
+     "date": "2026-08-25",
+     "close": 76.62
+    },
+    {
+     "date": "2026-08-26",
+     "close": 76.24
+    },
+    {
+     "date": "2026-08-27",
+     "close": 76.55
+    },
+    {
+     "date": "2026-08-28",
+     "close": 74.82
+    },
+    {
+     "date": "2026-08-31",
+     "close": 76.72
+    },
+    {
+     "date": "2026-09-01",
+     "close": 76.3
+    },
+    {
+     "date": "2026-09-02",
+     "close": 75.65
+    },
+    {
+     "date": "2026-09-03",
+     "close": 76.45
+    },
+    {
+     "date": "2026-09-04",
+     "close": 76.25
+    },
+    {
+     "date": "2026-09-07",
+     "close": 76
+    },
+    {
+     "date": "2026-09-08",
+     "close": 75.9
+    },
+    {
+     "date": "2026-09-09",
+     "close": 76.69
+    },
+    {
+     "date": "2026-09-10",
+     "close": 76.35
+    },
+    {
+     "date": "2026-09-11",
+     "close": 76.38
+    },
+    {
+     "date": "2026-09-15",
+     "close": 76.04
+    },
+    {
+     "date": "2026-09-16",
+     "close": 75.41
+    },
+    {
+     "date": "2026-09-17",
+     "close": 75.2
+    },
+    {
+     "date": "2026-09-18",
+     "close": 76.95
+    },
+    {
+     "date": "2026-09-21",
+     "close": 75.8
+    },
+    {
+     "date": "2026-09-22",
+     "close": 76.01
+    },
+    {
+     "date": "2026-09-23",
+     "close": 76.74
+    },
+    {
+     "date": "2026-09-24",
+     "close": 76.25
+    },
+    {
+     "date": "2026-09-25",
+     "close": 76
+    },
+    {
+     "date": "2026-09-28",
+     "close": 74.5
+    },
+    {
+     "date": "2026-09-29",
+     "close": 73.32
+    },
+    {
+     "date": "2026-09-30",
+     "close": 72.81
+    },
+    {
+     "date": "2026-10-01",
+     "close": 71.75
+    },
+    {
+     "date": "2026-10-05",
+     "close": 72
+    },
+    {
+     "date": "2026-10-06",
+     "close": 73.11
+    },
+    {
+     "date": "2026-10-07",
+     "close": 72.5
+    },
+    {
+     "date": "2026-10-08",
+     "close": 71.65
+    },
+    {
+     "date": "2026-10-09",
+     "close": 72.99
+    },
+    {
+     "date": "2026-10-12",
+     "close": 73.4
+    },
+    {
+     "date": "2026-10-13",
+     "close": 73.49
+    },
+    {
+     "date": "2026-10-14",
+     "close": 73.72
+    },
+    {
+     "date": "2026-10-15",
+     "close": 72.7
+    },
+    {
+     "date": "2026-10-16",
+     "close": 71.44
+    },
+    {
+     "date": "2026-10-19",
+     "close": 70.7
+    },
+    {
+     "date": "2026-10-21",
+     "close": 72.65
+    }
+   ],
+   "sector": "Utilities",
+   "industry": "Utilities—Renewable"
+  },
+  "NTPC": {
+   "price": 302.6,
+   "prevClose": 309,
+   "change": -6.4,
+   "changePct": -2.07,
+   "dayHigh": 302.8,
+   "dayLow": 297.55,
+   "high52": 414.4,
+   "low52": 297.55,
+   "volume": 7540012,
+   "longName": "NTPC Limited",
+   "closes": [
+    {
+     "date": "2026-07-22",
+     "close": 350.5
+    },
+    {
+     "date": "2026-07-23",
+     "close": 348.6
+    },
+    {
+     "date": "2026-07-24",
+     "close": 347.2
+    },
+    {
+     "date": "2026-07-27",
+     "close": 350.8
+    },
+    {
+     "date": "2026-07-28",
+     "close": 343.75
+    },
+    {
+     "date": "2026-07-29",
+     "close": 343.5
+    },
+    {
+     "date": "2026-07-30",
+     "close": 344.85
+    },
+    {
+     "date": "2026-07-31",
+     "close": 347.25
+    },
+    {
+     "date": "2026-08-03",
+     "close": 350.9
+    },
+    {
+     "date": "2026-08-04",
+     "close": 343.65
+    },
+    {
+     "date": "2026-08-05",
+     "close": 349.9
+    },
+    {
+     "date": "2026-08-06",
+     "close": 345
+    },
+    {
+     "date": "2026-08-07",
+     "close": 342.5
+    },
+    {
+     "date": "2026-08-10",
+     "close": 340.45
+    },
+    {
+     "date": "2026-08-11",
+     "close": 338.45
+    },
+    {
+     "date": "2026-08-12",
+     "close": 339.45
+    },
+    {
+     "date": "2026-08-13",
+     "close": 344.25
+    },
+    {
+     "date": "2026-08-14",
+     "close": 340
+    },
+    {
+     "date": "2026-08-17",
+     "close": 337
+    },
+    {
+     "date": "2026-08-18",
+     "close": 337.1
+    },
+    {
+     "date": "2026-08-19",
+     "close": 336.55
+    },
+    {
+     "date": "2026-08-20",
+     "close": 337.5
+    },
+    {
+     "date": "2026-08-21",
+     "close": 340
+    },
+    {
+     "date": "2026-08-24",
+     "close": 339.5
+    },
+    {
+     "date": "2026-08-25",
+     "close": 339.85
+    },
+    {
+     "date": "2026-08-26",
+     "close": 334.6
+    },
+    {
+     "date": "2026-08-27",
+     "close": 330.9
+    },
+    {
+     "date": "2026-08-28",
+     "close": 330.05
+    },
+    {
+     "date": "2026-08-31",
+     "close": 327.4
+    },
+    {
+     "date": "2026-09-01",
+     "close": 327.5
+    },
+    {
+     "date": "2026-09-02",
+     "close": 330
+    },
+    {
+     "date": "2026-09-03",
+     "close": 330.9
+    },
+    {
+     "date": "2026-09-04",
+     "close": 332.5
+    },
+    {
+     "date": "2026-09-07",
+     "close": 332
+    },
+    {
+     "date": "2026-09-08",
+     "close": 330.8
+    },
+    {
+     "date": "2026-09-09",
+     "close": 334.5
+    },
+    {
+     "date": "2026-09-10",
+     "close": 335
+    },
+    {
+     "date": "2026-09-11",
+     "close": 333.4
+    },
+    {
+     "date": "2026-09-15",
+     "close": 329.5
+    },
+    {
+     "date": "2026-09-16",
+     "close": 327
+    },
+    {
+     "date": "2026-09-17",
+     "close": 329.6
+    },
+    {
+     "date": "2026-09-18",
+     "close": 323.65
+    },
+    {
+     "date": "2026-09-21",
+     "close": 326.4
+    },
+    {
+     "date": "2026-09-22",
+     "close": 327.8
+    },
+    {
+     "date": "2026-09-23",
+     "close": 326
+    },
+    {
+     "date": "2026-09-24",
+     "close": 326.6
+    },
+    {
+     "date": "2026-09-25",
+     "close": 326.6
+    },
+    {
+     "date": "2026-09-28",
+     "close": 321.1
+    },
+    {
+     "date": "2026-09-29",
+     "close": 323.5
+    },
+    {
+     "date": "2026-09-30",
+     "close": 322.75
+    },
+    {
+     "date": "2026-10-01",
+     "close": 315.1
+    },
+    {
+     "date": "2026-10-05",
+     "close": 321.8
+    },
+    {
+     "date": "2026-10-06",
+     "close": 321.45
+    },
+    {
+     "date": "2026-10-07",
+     "close": 316.75
+    },
+    {
+     "date": "2026-10-08",
+     "close": 309.7
+    },
+    {
+     "date": "2026-10-09",
+     "close": 312
+    },
+    {
+     "date": "2026-10-12",
+     "close": 310
+    },
+    {
+     "date": "2026-10-13",
+     "close": 311
+    },
+    {
+     "date": "2026-10-14",
+     "close": 313.7
+    },
+    {
+     "date": "2026-10-15",
+     "close": 314.65
+    },
+    {
+     "date": "2026-10-16",
+     "close": 315.15
+    },
+    {
+     "date": "2026-10-19",
+     "close": 309
+    },
+    {
+     "date": "2026-10-21",
+     "close": 303
+    }
+   ],
+   "sector": "Utilities",
+   "industry": "Utilities—Regulated Electric"
+  },
+  "ONGC": {
+   "price": 225,
+   "prevClose": 225,
+   "change": 0,
+   "changePct": 0,
+   "dayHigh": 226.2,
+   "dayLow": 224,
+   "high52": 307.5,
+   "low52": 218.53,
+   "volume": 9713001,
+   "longName": "Oil and Natural Gas Corporation Limited",
+   "closes": [
+    {
+     "date": "2026-07-22",
+     "close": 251.9
+    },
+    {
+     "date": "2026-07-23",
+     "close": 252.37
+    },
+    {
+     "date": "2026-07-24",
+     "close": 248.76
+    },
+    {
+     "date": "2026-07-27",
+     "close": 238.56
+    },
+    {
+     "date": "2026-07-28",
+     "close": 238.91
+    },
+    {
+     "date": "2026-07-29",
+     "close": 238.31
+    },
+    {
+     "date": "2026-07-30",
+     "close": 241.59
+    },
+    {
+     "date": "2026-07-31",
+     "close": 242.53
+    },
+    {
+     "date": "2026-08-03",
+     "close": 242
+    },
+    {
+     "date": "2026-08-04",
+     "close": 242
+    },
+    {
+     "date": "2026-08-05",
+     "close": 240.2
+    },
+    {
+     "date": "2026-08-06",
+     "close": 237.8
+    },
+    {
+     "date": "2026-08-07",
+     "close": 238.85
+    },
+    {
+     "date": "2026-08-10",
+     "close": 239.84
+    },
+    {
+     "date": "2026-08-11",
+     "close": 239.45
+    },
+    {
+     "date": "2026-08-12",
+     "close": 239.05
+    },
+    {
+     "date": "2026-08-13",
+     "close": 239.9
+    },
+    {
+     "date": "2026-08-14",
+     "close": 236.4
+    },
+    {
+     "date": "2026-08-17",
+     "close": 238.49
+    },
+    {
+     "date": "2026-08-18",
+     "close": 239.5
+    },
+    {
+     "date": "2026-08-19",
+     "close": 238
+    },
+    {
+     "date": "2026-08-20",
+     "close": 238.5
+    },
+    {
+     "date": "2026-08-21",
+     "close": 236.4
+    },
+    {
+     "date": "2026-08-24",
+     "close": 236.55
+    },
+    {
+     "date": "2026-08-25",
+     "close": 234
+    },
+    {
+     "date": "2026-08-26",
+     "close": 232.21
+    },
+    {
+     "date": "2026-08-27",
+     "close": 232
+    },
+    {
+     "date": "2026-08-28",
+     "close": 232.25
+    },
+    {
+     "date": "2026-08-31",
+     "close": 231.8
+    },
+    {
+     "date": "2026-09-01",
+     "close": 236.45
+    },
+    {
+     "date": "2026-09-02",
+     "close": 237.5
+    },
+    {
+     "date": "2026-09-03",
+     "close": 236
+    },
+    {
+     "date": "2026-09-04",
+     "close": 234.65
+    },
+    {
+     "date": "2026-09-07",
+     "close": 233.7
+    },
+    {
+     "date": "2026-09-08",
+     "close": 236
+    },
+    {
+     "date": "2026-09-09",
+     "close": 234.02
+    },
+    {
+     "date": "2026-09-10",
+     "close": 237.27
+    },
+    {
+     "date": "2026-09-11",
+     "close": 232.5
+    },
+    {
+     "date": "2026-09-15",
+     "close": 235.95
+    },
+    {
+     "date": "2026-09-16",
+     "close": 236.8
+    },
+    {
+     "date": "2026-09-17",
+     "close": 232.43
+    },
+    {
+     "date": "2026-09-18",
+     "close": 232.8
+    },
+    {
+     "date": "2026-09-21",
+     "close": 235.63
+    },
+    {
+     "date": "2026-09-22",
+     "close": 236.13
+    },
+    {
+     "date": "2026-09-23",
+     "close": 236.9
+    },
+    {
+     "date": "2026-09-24",
+     "close": 239
+    },
+    {
+     "date": "2026-09-25",
+     "close": 235.86
+    },
+    {
+     "date": "2026-09-28",
+     "close": 230
+    },
+    {
+     "date": "2026-09-29",
+     "close": 230
+    },
+    {
+     "date": "2026-09-30",
+     "close": 225.8
+    },
+    {
+     "date": "2026-10-01",
+     "close": 222.37
+    },
+    {
+     "date": "2026-10-05",
+     "close": 224.9
+    },
+    {
+     "date": "2026-10-06",
+     "close": 224.2
+    },
+    {
+     "date": "2026-10-07",
+     "close": 221.88
+    },
+    {
+     "date": "2026-10-08",
+     "close": 219.8
+    },
+    {
+     "date": "2026-10-09",
+     "close": 221.27
+    },
+    {
+     "date": "2026-10-12",
+     "close": 220
+    },
+    {
+     "date": "2026-10-13",
+     "close": 222.65
+    },
+    {
+     "date": "2026-10-14",
+     "close": 225.5
+    },
+    {
+     "date": "2026-10-15",
+     "close": 224.64
+    },
+    {
+     "date": "2026-10-16",
+     "close": 222
+    },
+    {
+     "date": "2026-10-19",
+     "close": 225
+    },
+    {
+     "date": "2026-10-21",
+     "close": 225.62
+    }
+   ],
+   "sector": "Energy",
+   "industry": "Oil & Gas Integrated"
+  },
+  "POWERGRID": {
+   "price": 248.4,
+   "prevClose": 250.35,
+   "change": -1.95,
+   "changePct": -0.78,
+   "dayHigh": 249.35,
+   "dayLow": 244.65,
+   "high52": 324.95,
+   "low52": 244.65,
+   "volume": 7028569,
+   "longName": "Power Grid Corporation of India Limited",
+   "closes": [
+    {
+     "date": "2026-07-22",
+     "close": 289.3
+    },
+    {
+     "date": "2026-07-23",
+     "close": 289.8
+    },
+    {
+     "date": "2026-07-24",
+     "close": 288.2
+    },
+    {
+     "date": "2026-07-27",
+     "close": 288.85
+    },
+    {
+     "date": "2026-07-28",
+     "close": 285.3
+    },
+    {
+     "date": "2026-07-29",
+     "close": 282.85
+    },
+    {
+     "date": "2026-07-30",
+     "close": 285.7
+    },
+    {
+     "date": "2026-07-31",
+     "close": 284.25
+    },
+    {
+     "date": "2026-08-03",
+     "close": 287
+    },
+    {
+     "date": "2026-08-04",
+     "close": 283.4
+    },
+    {
+     "date": "2026-08-05",
+     "close": 281.75
+    },
+    {
+     "date": "2026-08-06",
+     "close": 270.75
+    },
+    {
+     "date": "2026-08-07",
+     "close": 271.6
+    },
+    {
+     "date": "2026-08-10",
+     "close": 270.1
+    },
+    {
+     "date": "2026-08-11",
+     "close": 267.95
+    },
+    {
+     "date": "2026-08-12",
+     "close": 269.45
+    },
+    {
+     "date": "2026-08-13",
+     "close": 266.6
+    },
+    {
+     "date": "2026-08-14",
+     "close": 266.05
+    },
+    {
+     "date": "2026-08-17",
+     "close": 266.15
+    },
+    {
+     "date": "2026-08-18",
+     "close": 268
+    },
+    {
+     "date": "2026-08-19",
+     "close": 263.5
+    },
+    {
+     "date": "2026-08-20",
+     "close": 264.8
+    },
+    {
+     "date": "2026-08-21",
+     "close": 272.4
+    },
+    {
+     "date": "2026-08-24",
+     "close": 271.4
+    },
+    {
+     "date": "2026-08-25",
+     "close": 271
+    },
+    {
+     "date": "2026-08-26",
+     "close": 265.2
+    },
+    {
+     "date": "2026-08-27",
+     "close": 264.9
+    },
+    {
+     "date": "2026-08-28",
+     "close": 266.05
+    },
+    {
+     "date": "2026-08-31",
+     "close": 263.55
+    },
+    {
+     "date": "2026-09-01",
+     "close": 264.55
+    },
+    {
+     "date": "2026-09-02",
+     "close": 266.8
+    },
+    {
+     "date": "2026-09-03",
+     "close": 265.6
+    },
+    {
+     "date": "2026-09-04",
+     "close": 266
+    },
+    {
+     "date": "2026-09-07",
+     "close": 266.45
+    },
+    {
+     "date": "2026-09-08",
+     "close": 265.75
+    },
+    {
+     "date": "2026-09-09",
+     "close": 265.85
+    },
+    {
+     "date": "2026-09-10",
+     "close": 271.75
+    },
+    {
+     "date": "2026-09-11",
+     "close": 269.1
+    },
+    {
+     "date": "2026-09-15",
+     "close": 262.8
+    },
+    {
+     "date": "2026-09-16",
+     "close": 262.8
+    },
+    {
+     "date": "2026-09-17",
+     "close": 263.75
+    },
+    {
+     "date": "2026-09-18",
+     "close": 270.3
+    },
+    {
+     "date": "2026-09-21",
+     "close": 266.1
+    },
+    {
+     "date": "2026-09-22",
+     "close": 265.95
+    },
+    {
+     "date": "2026-09-23",
+     "close": 270.2
+    },
+    {
+     "date": "2026-09-24",
+     "close": 266.4
+    },
+    {
+     "date": "2026-09-25",
+     "close": 269.5
+    },
+    {
+     "date": "2026-09-28",
+     "close": 261.85
+    },
+    {
+     "date": "2026-09-29",
+     "close": 261.5
+    },
+    {
+     "date": "2026-09-30",
+     "close": 260.5
+    },
+    {
+     "date": "2026-10-01",
+     "close": 254.55
+    },
+    {
+     "date": "2026-10-05",
+     "close": 257
+    },
+    {
+     "date": "2026-10-06",
+     "close": 257.2
+    },
+    {
+     "date": "2026-10-07",
+     "close": 253.05
+    },
+    {
+     "date": "2026-10-08",
+     "close": 244.65
+    },
+    {
+     "date": "2026-10-09",
+     "close": 249.15
+    },
+    {
+     "date": "2026-10-12",
+     "close": 249
+    },
+    {
+     "date": "2026-10-13",
+     "close": 250.5
+    },
+    {
+     "date": "2026-10-14",
+     "close": 248.95
+    },
+    {
+     "date": "2026-10-15",
+     "close": 249.85
+    },
+    {
+     "date": "2026-10-16",
+     "close": 250.45
+    },
+    {
+     "date": "2026-10-19",
+     "close": 250.35
+    },
+    {
+     "date": "2026-10-21",
+     "close": 252.15
+    }
+   ],
+   "sector": "Utilities",
+   "industry": "Utilities—Regulated Electric"
+  },
+  "RELIANCE": {
+   "price": 1184.5,
+   "prevClose": 1202,
+   "change": -17.5,
+   "changePct": -1.46,
+   "dayHigh": 1208,
+   "dayLow": 1184.5,
+   "high52": 1611.8,
+   "low52": 1152.2,
+   "volume": 14931109,
+   "longName": "Reliance Industries Limited",
+   "closes": [
+    {
+     "date": "2026-07-22",
+     "close": 1288.6
+    },
+    {
+     "date": "2026-07-23",
+     "close": 1272.2
+    },
+    {
+     "date": "2026-07-24",
+     "close": 1278
+    },
+    {
+     "date": "2026-07-27",
+     "close": 1280
+    },
+    {
+     "date": "2026-07-28",
+     "close": 1267.7
+    },
+    {
+     "date": "2026-07-29",
+     "close": 1275.9
+    },
+    {
+     "date": "2026-07-30",
+     "close": 1292.9
+    },
+    {
+     "date": "2026-07-31",
+     "close": 1307.8
+    },
+    {
+     "date": "2026-08-03",
+     "close": 1319
+    },
+    {
+     "date": "2026-08-04",
+     "close": 1290.9
+    },
+    {
+     "date": "2026-08-05",
+     "close": 1280
+    },
+    {
+     "date": "2026-08-06",
+     "close": 1325
+    },
+    {
+     "date": "2026-08-07",
+     "close": 1334.8
+    },
+    {
+     "date": "2026-08-10",
+     "close": 1327.3
+    },
+    {
+     "date": "2026-08-11",
+     "close": 1323.9
+    },
+    {
+     "date": "2026-08-12",
+     "close": 1329
+    },
+    {
+     "date": "2026-08-13",
+     "close": 1317
+    },
+    {
+     "date": "2026-08-14",
+     "close": 1310
+    },
+    {
+     "date": "2026-08-17",
+     "close": 1316
+    },
+    {
+     "date": "2026-08-18",
+     "close": 1322
+    },
+    {
+     "date": "2026-08-19",
+     "close": 1311
+    },
+    {
+     "date": "2026-08-20",
+     "close": 1313.2
+    },
+    {
+     "date": "2026-08-21",
+     "close": 1316
+    },
+    {
+     "date": "2026-08-24",
+     "close": 1309.8
+    },
+    {
+     "date": "2026-08-25",
+     "close": 1317
+    },
+    {
+     "date": "2026-08-26",
+     "close": 1298
+    },
+    {
+     "date": "2026-08-27",
+     "close": 1282.2
+    },
+    {
+     "date": "2026-08-28",
+     "close": 1287
+    },
+    {
+     "date": "2026-08-31",
+     "close": 1277
+    },
+    {
+     "date": "2026-09-01",
+     "close": 1309
+    },
+    {
+     "date": "2026-09-02",
+     "close": 1313.1
+    },
+    {
+     "date": "2026-09-03",
+     "close": 1302.5
+    },
+    {
+     "date": "2026-09-04",
+     "close": 1322
+    },
+    {
+     "date": "2026-09-07",
+     "close": 1309.5
+    },
+    {
+     "date": "2026-09-08",
+     "close": 1294.9
+    },
+    {
+     "date": "2026-09-09",
+     "close": 1279
+    },
+    {
+     "date": "2026-09-10",
+     "close": 1274
+    },
+    {
+     "date": "2026-09-11",
+     "close": 1257.5
+    },
+    {
+     "date": "2026-09-15",
+     "close": 1235.3
+    },
+    {
+     "date": "2026-09-16",
+     "close": 1240
+    },
+    {
+     "date": "2026-09-17",
+     "close": 1243.9
+    },
+    {
+     "date": "2026-09-18",
+     "close": 1226.4
+    },
+    {
+     "date": "2026-09-21",
+     "close": 1247.4
+    },
+    {
+     "date": "2026-09-22",
+     "close": 1240.4
+    },
+    {
+     "date": "2026-09-23",
+     "close": 1248
+    },
+    {
+     "date": "2026-09-24",
+     "close": 1219.2
+    },
+    {
+     "date": "2026-09-25",
+     "close": 1226
+    },
+    {
+     "date": "2026-09-28",
+     "close": 1197.6
+    },
+    {
+     "date": "2026-09-29",
+     "close": 1182
+    },
+    {
+     "date": "2026-09-30",
+     "close": 1187
+    },
+    {
+     "date": "2026-10-01",
+     "close": 1167.7
+    },
+    {
+     "date": "2026-10-05",
+     "close": 1186.4
+    },
+    {
+     "date": "2026-10-06",
+     "close": 1218
+    },
+    {
+     "date": "2026-10-07",
+     "close": 1207.7
+    },
+    {
+     "date": "2026-10-08",
+     "close": 1178
+    },
+    {
+     "date": "2026-10-09",
+     "close": 1170.3
+    },
+    {
+     "date": "2026-10-12",
+     "close": 1158.9
+    },
+    {
+     "date": "2026-10-13",
+     "close": 1166.7
+    },
+    {
+     "date": "2026-10-14",
+     "close": 1174.6
+    },
+    {
+     "date": "2026-10-15",
+     "close": 1215
+    },
+    {
+     "date": "2026-10-16",
+     "close": 1211.2
+    },
+    {
+     "date": "2026-10-19",
+     "close": 1202
+    },
+    {
+     "date": "2026-10-21",
+     "close": 1209
+    }
+   ],
+   "sector": "Energy",
+   "industry": "Oil & Gas Refining & Marketing"
+  },
+  "SBIN": {
+   "price": 970,
+   "prevClose": 973.7,
+   "change": -3.7,
+   "changePct": -0.38,
+   "dayHigh": 970.9,
+   "dayLow": 950.05,
+   "high52": 1234.7,
+   "low52": 900.95,
+   "volume": 5755456,
+   "longName": "State Bank of India",
+   "closes": [
+    {
+     "date": "2026-07-22",
+     "close": 1025
+    },
+    {
+     "date": "2026-07-23",
+     "close": 1012.6
+    },
+    {
+     "date": "2026-07-24",
+     "close": 1015
+    },
+    {
+     "date": "2026-07-27",
+     "close": 1020.6
+    },
+    {
+     "date": "2026-07-28",
+     "close": 1013.2
+    },
+    {
+     "date": "2026-07-29",
+     "close": 1013.7
+    },
+    {
+     "date": "2026-07-30",
+     "close": 1025.3
+    },
+    {
+     "date": "2026-07-31",
+     "close": 1027.4
+    },
+    {
+     "date": "2026-08-03",
+     "close": 1045
+    },
+    {
+     "date": "2026-08-04",
+     "close": 1042.7
+    },
+    {
+     "date": "2026-08-05",
+     "close": 1055
+    },
+    {
+     "date": "2026-08-06",
+     "close": 1085
+    },
+    {
+     "date": "2026-08-07",
+     "close": 1097.2
+    },
+    {
+     "date": "2026-08-10",
+     "close": 1071
+    },
+    {
+     "date": "2026-08-11",
+     "close": 1066
+    },
+    {
+     "date": "2026-08-12",
+     "close": 1082
+    },
+    {
+     "date": "2026-08-13",
+     "close": 1083
+    },
+    {
+     "date": "2026-08-14",
+     "close": 1067.7
+    },
+    {
+     "date": "2026-08-17",
+     "close": 1061.2
+    },
+    {
+     "date": "2026-08-18",
+     "close": 1053
+    },
+    {
+     "date": "2026-08-19",
+     "close": 1048.6
+    },
+    {
+     "date": "2026-08-20",
+     "close": 1048
+    },
+    {
+     "date": "2026-08-21",
+     "close": 1048.7
+    },
+    {
+     "date": "2026-08-24",
+     "close": 1039.5
+    },
+    {
+     "date": "2026-08-25",
+     "close": 1048
+    },
+    {
+     "date": "2026-08-26",
+     "close": 1052
+    },
+    {
+     "date": "2026-08-27",
+     "close": 1042.9
+    },
+    {
+     "date": "2026-08-28",
+     "close": 1047.5
+    },
+    {
+     "date": "2026-08-31",
+     "close": 1060
+    },
+    {
+     "date": "2026-09-01",
+     "close": 1034.5
+    },
+    {
+     "date": "2026-09-02",
+     "close": 1020.9
+    },
+    {
+     "date": "2026-09-03",
+     "close": 1023.4
+    },
+    {
+     "date": "2026-09-04",
+     "close": 1016.1
+    },
+    {
+     "date": "2026-09-07",
+     "close": 1005.9
+    },
+    {
+     "date": "2026-09-08",
+     "close": 1008
+    },
+    {
+     "date": "2026-09-09",
+     "close": 1000.5
+    },
+    {
+     "date": "2026-09-10",
+     "close": 1009.7
+    },
+    {
+     "date": "2026-09-11",
+     "close": 995.7
+    },
+    {
+     "date": "2026-09-15",
+     "close": 968
+    },
+    {
+     "date": "2026-09-16",
+     "close": 991.4
+    },
+    {
+     "date": "2026-09-17",
+     "close": 988.7
+    },
+    {
+     "date": "2026-09-18",
+     "close": 996.2
+    },
+    {
+     "date": "2026-09-21",
+     "close": 996
+    },
+    {
+     "date": "2026-09-22",
+     "close": 987
+    },
+    {
+     "date": "2026-09-23",
+     "close": 994.1
+    },
+    {
+     "date": "2026-09-24",
+     "close": 978.5
+    },
+    {
+     "date": "2026-09-25",
+     "close": 983
+    },
+    {
+     "date": "2026-09-28",
+     "close": 962
+    },
+    {
+     "date": "2026-09-29",
+     "close": 964.7
+    },
+    {
+     "date": "2026-09-30",
+     "close": 959.5
+    },
+    {
+     "date": "2026-10-01",
+     "close": 954.1
+    },
+    {
+     "date": "2026-10-05",
+     "close": 958
+    },
+    {
+     "date": "2026-10-06",
+     "close": 958.75
+    },
+    {
+     "date": "2026-10-07",
+     "close": 954
+    },
+    {
+     "date": "2026-10-08",
+     "close": 940
+    },
+    {
+     "date": "2026-10-09",
+     "close": 959.1
+    },
+    {
+     "date": "2026-10-12",
+     "close": 941
+    },
+    {
+     "date": "2026-10-13",
+     "close": 957
+    },
+    {
+     "date": "2026-10-14",
+     "close": 954.9
+    },
+    {
+     "date": "2026-10-15",
+     "close": 960
+    },
+    {
+     "date": "2026-10-16",
+     "close": 962.6
+    },
+    {
+     "date": "2026-10-19",
+     "close": 973.7
+    },
+    {
+     "date": "2026-10-21",
+     "close": 963
+    }
+   ],
+   "sector": "Financial Services",
+   "industry": "Banks—Regional"
+  },
+  "SHRIRAMFIN": {
+   "price": 900.9,
+   "prevClose": 926.5,
+   "change": -25.6,
+   "changePct": -2.76,
+   "dayHigh": 905.6,
+   "dayLow": 885,
+   "high52": 1153.7,
+   "low52": 695.25,
+   "volume": 4312212,
+   "longName": "Shriram Finance Limited",
+   "closes": [
+    {
+     "date": "2026-07-22",
+     "close": 1058.8
+    },
+    {
+     "date": "2026-07-23",
+     "close": 1025.8
+    },
+    {
+     "date": "2026-07-24",
+     "close": 1005.1
+    },
+    {
+     "date": "2026-07-27",
+     "close": 1038.2
+    },
+    {
+     "date": "2026-07-28",
+     "close": 1040.9
+    },
+    {
+     "date": "2026-07-29",
+     "close": 1044.7
+    },
+    {
+     "date": "2026-07-30",
+     "close": 1027.2
+    },
+    {
+     "date": "2026-07-31",
+     "close": 1046.7
+    },
+    {
+     "date": "2026-08-03",
+     "close": 1090.2
+    },
+    {
+     "date": "2026-08-04",
+     "close": 1087.3
+    },
+    {
+     "date": "2026-08-05",
+     "close": 1122.4
+    },
+    {
+     "date": "2026-08-06",
+     "close": 1141
+    },
+    {
+     "date": "2026-08-07",
+     "close": 1115
+    },
+    {
+     "date": "2026-08-10",
+     "close": 1137.8
+    },
+    {
+     "date": "2026-08-11",
+     "close": 1129.9
+    },
+    {
+     "date": "2026-08-12",
+     "close": 1117.2
+    },
+    {
+     "date": "2026-08-13",
+     "close": 1132.3
+    },
+    {
+     "date": "2026-08-14",
+     "close": 1122
+    },
+    {
+     "date": "2026-08-17",
+     "close": 1122
+    },
+    {
+     "date": "2026-08-18",
+     "close": 1108.4
+    },
+    {
+     "date": "2026-08-19",
+     "close": 1106
+    },
+    {
+     "date": "2026-08-20",
+     "close": 1128.2
+    },
+    {
+     "date": "2026-08-21",
+     "close": 1130
+    },
+    {
+     "date": "2026-08-24",
+     "close": 1119
+    },
+    {
+     "date": "2026-08-25",
+     "close": 1138.5
+    },
+    {
+     "date": "2026-08-26",
+     "close": 1117.5
+    },
+    {
+     "date": "2026-08-27",
+     "close": 1101
+    },
+    {
+     "date": "2026-08-28",
+     "close": 1086.9
+    },
+    {
+     "date": "2026-08-31",
+     "close": 1109.9
+    },
+    {
+     "date": "2026-09-01",
+     "close": 1059.1
+    },
+    {
+     "date": "2026-09-02",
+     "close": 1047
+    },
+    {
+     "date": "2026-09-03",
+     "close": 1044.2
+    },
+    {
+     "date": "2026-09-04",
+     "close": 1041
+    },
+    {
+     "date": "2026-09-07",
+     "close": 1037
+    },
+    {
+     "date": "2026-09-08",
+     "close": 1029
+    },
+    {
+     "date": "2026-09-09",
+     "close": 1029
+    },
+    {
+     "date": "2026-09-10",
+     "close": 1038
+    },
+    {
+     "date": "2026-09-11",
+     "close": 1028.6
+    },
+    {
+     "date": "2026-09-15",
+     "close": 979.8
+    },
+    {
+     "date": "2026-09-16",
+     "close": 979
+    },
+    {
+     "date": "2026-09-17",
+     "close": 995
+    },
+    {
+     "date": "2026-09-18",
+     "close": 1010
+    },
+    {
+     "date": "2026-09-21",
+     "close": 1011.8
+    },
+    {
+     "date": "2026-09-22",
+     "close": 1006
+    },
+    {
+     "date": "2026-09-23",
+     "close": 1010.8
+    },
+    {
+     "date": "2026-09-24",
+     "close": 990
+    },
+    {
+     "date": "2026-09-25",
+     "close": 994.1
+    },
+    {
+     "date": "2026-09-28",
+     "close": 976.3
+    },
+    {
+     "date": "2026-09-29",
+     "close": 971.5
+    },
+    {
+     "date": "2026-09-30",
+     "close": 982.7
+    },
+    {
+     "date": "2026-10-01",
+     "close": 945
+    },
+    {
+     "date": "2026-10-05",
+     "close": 971.4
+    },
+    {
+     "date": "2026-10-06",
+     "close": 965.05
+    },
+    {
+     "date": "2026-10-07",
+     "close": 948
+    },
+    {
+     "date": "2026-10-08",
+     "close": 917.25
+    },
+    {
+     "date": "2026-10-09",
+     "close": 940.45
+    },
+    {
+     "date": "2026-10-12",
+     "close": 929.4
+    },
+    {
+     "date": "2026-10-13",
+     "close": 988
+    },
+    {
+     "date": "2026-10-14",
+     "close": 950
+    },
+    {
+     "date": "2026-10-15",
+     "close": 943.8
+    },
+    {
+     "date": "2026-10-16",
+     "close": 939.95
+    },
+    {
+     "date": "2026-10-19",
+     "close": 926.5
+    },
+    {
+     "date": "2026-10-21",
+     "close": 904.95
+    }
+   ],
+   "sector": "Financial Services",
+   "industry": "Credit Services"
+  },
+  "SOLARINDS": {
+   "price": 19010,
+   "prevClose": 19803,
+   "change": -793,
+   "changePct": -4,
+   "dayHigh": 19130,
+   "dayLow": 18569,
+   "high52": 22700,
+   "low52": 11646,
+   "volume": 136643,
+   "longName": "Solar Industries India Limited",
+   "closes": [
+    {
+     "date": "2026-07-22",
+     "close": 18856
+    },
+    {
+     "date": "2026-07-23",
+     "close": 18621
+    },
+    {
+     "date": "2026-07-24",
+     "close": 18494
+    },
+    {
+     "date": "2026-07-27",
+     "close": 18628
+    },
+    {
+     "date": "2026-07-28",
+     "close": 18244
+    },
+    {
+     "date": "2026-07-29",
+     "close": 18080
+    },
+    {
+     "date": "2026-07-30",
+     "close": 18053
+    },
+    {
+     "date": "2026-07-31",
+     "close": 18391
+    },
+    {
+     "date": "2026-08-03",
+     "close": 18659
+    },
+    {
+     "date": "2026-08-04",
+     "close": 18700
+    },
+    {
+     "date": "2026-08-05",
+     "close": 18400
+    },
+    {
+     "date": "2026-08-06",
+     "close": 18496
+    },
+    {
+     "date": "2026-08-07",
+     "close": 18650
+    },
+    {
+     "date": "2026-08-10",
+     "close": 18820
+    },
+    {
+     "date": "2026-08-11",
+     "close": 18770
+    },
+    {
+     "date": "2026-08-12",
+     "close": 18730
+    },
+    {
+     "date": "2026-08-13",
+     "close": 20324
+    },
+    {
+     "date": "2026-08-14",
+     "close": 19969
+    },
+    {
+     "date": "2026-08-17",
+     "close": 20000
+    },
+    {
+     "date": "2026-08-18",
+     "close": 20280
+    },
+    {
+     "date": "2026-08-19",
+     "close": 19721
+    },
+    {
+     "date": "2026-08-20",
+     "close": 19760
+    },
+    {
+     "date": "2026-08-21",
+     "close": 19900
+    },
+    {
+     "date": "2026-08-24",
+     "close": 19925
+    },
+    {
+     "date": "2026-08-25",
+     "close": 19800
+    },
+    {
+     "date": "2026-08-26",
+     "close": 20097
+    },
+    {
+     "date": "2026-08-27",
+     "close": 20580
+    },
+    {
+     "date": "2026-08-28",
+     "close": 20400
+    },
+    {
+     "date": "2026-08-31",
+     "close": 20108
+    },
+    {
+     "date": "2026-09-01",
+     "close": 20060
+    },
+    {
+     "date": "2026-09-02",
+     "close": 20600
+    },
+    {
+     "date": "2026-09-03",
+     "close": 21500
+    },
+    {
+     "date": "2026-09-04",
+     "close": 21445
+    },
+    {
+     "date": "2026-09-07",
+     "close": 21950
+    },
+    {
+     "date": "2026-09-08",
+     "close": 22455
+    },
+    {
+     "date": "2026-09-09",
+     "close": 22355
+    },
+    {
+     "date": "2026-09-10",
+     "close": 22370
+    },
+    {
+     "date": "2026-09-11",
+     "close": 22290
+    },
+    {
+     "date": "2026-09-15",
+     "close": 19250
+    },
+    {
+     "date": "2026-09-16",
+     "close": 18900
+    },
+    {
+     "date": "2026-09-17",
+     "close": 18815
+    },
+    {
+     "date": "2026-09-18",
+     "close": 18555
+    },
+    {
+     "date": "2026-09-21",
+     "close": 19265
+    },
+    {
+     "date": "2026-09-22",
+     "close": 19890
+    },
+    {
+     "date": "2026-09-23",
+     "close": 19730
+    },
+    {
+     "date": "2026-09-24",
+     "close": 19480
+    },
+    {
+     "date": "2026-09-25",
+     "close": 19745
+    },
+    {
+     "date": "2026-09-28",
+     "close": 19150
+    },
+    {
+     "date": "2026-09-29",
+     "close": 18650
+    },
+    {
+     "date": "2026-09-30",
+     "close": 19700
+    },
+    {
+     "date": "2026-10-01",
+     "close": 19400
+    },
+    {
+     "date": "2026-10-05",
+     "close": 19540
+    },
+    {
+     "date": "2026-10-06",
+     "close": 20071
+    },
+    {
+     "date": "2026-10-07",
+     "close": 20050
+    },
+    {
+     "date": "2026-10-08",
+     "close": 19870
+    },
+    {
+     "date": "2026-10-09",
+     "close": 20000
+    },
+    {
+     "date": "2026-10-12",
+     "close": 20334
+    },
+    {
+     "date": "2026-10-13",
+     "close": 20087
+    },
+    {
+     "date": "2026-10-14",
+     "close": 20170
+    },
+    {
+     "date": "2026-10-15",
+     "close": 19866
+    },
+    {
+     "date": "2026-10-16",
+     "close": 20011
+    },
+    {
+     "date": "2026-10-19",
+     "close": 19803
+    },
+    {
+     "date": "2026-10-21",
+     "close": 19259
+    }
+   ],
+   "sector": "Basic Materials",
+   "industry": "Specialty Chemicals"
+  },
+  "SOUTHBANK": {
+   "price": 55.75,
+   "prevClose": 54.26,
+   "change": 1.49,
+   "changePct": 2.75,
+   "dayHigh": 56.23,
+   "dayLow": 54.02,
+   "high52": 56.25,
+   "low52": 33.38,
+   "volume": 25751133,
+   "longName": "The South Indian Bank Limited",
+   "closes": [
+    {
+     "date": "2026-07-22",
+     "close": 48
+    },
+    {
+     "date": "2026-07-23",
+     "close": 47.5
+    },
+    {
+     "date": "2026-07-24",
+     "close": 46.52
+    },
+    {
+     "date": "2026-07-27",
+     "close": 47.9
+    },
+    {
+     "date": "2026-07-28",
+     "close": 47.13
+    },
+    {
+     "date": "2026-07-29",
+     "close": 46.49
+    },
+    {
+     "date": "2026-07-30",
+     "close": 46.89
+    },
+    {
+     "date": "2026-07-31",
+     "close": 46.7
+    },
+    {
+     "date": "2026-08-03",
+     "close": 47.07
+    },
+    {
+     "date": "2026-08-04",
+     "close": 46.86
+    },
+    {
+     "date": "2026-08-05",
+     "close": 46.92
+    },
+    {
+     "date": "2026-08-06",
+     "close": 47.43
+    },
+    {
+     "date": "2026-08-07",
+     "close": 47.17
+    },
+    {
+     "date": "2026-08-10",
+     "close": 46
+    },
+    {
+     "date": "2026-08-11",
+     "close": 45.81
+    },
+    {
+     "date": "2026-08-12",
+     "close": 46.22
+    },
+    {
+     "date": "2026-08-13",
+     "close": 45.66
+    },
+    {
+     "date": "2026-08-14",
+     "close": 45.74
+    },
+    {
+     "date": "2026-08-17",
+     "close": 45.22
+    },
+    {
+     "date": "2026-08-18",
+     "close": 45.09
+    },
+    {
+     "date": "2026-08-19",
+     "close": 45
+    },
+    {
+     "date": "2026-08-20",
+     "close": 45.16
+    },
+    {
+     "date": "2026-08-21",
+     "close": 44.97
+    },
+    {
+     "date": "2026-08-24",
+     "close": 45.16
+    },
+    {
+     "date": "2026-08-25",
+     "close": 45.35
+    },
+    {
+     "date": "2026-08-26",
+     "close": 46.32
+    },
+    {
+     "date": "2026-08-27",
+     "close": 45.73
+    },
+    {
+     "date": "2026-08-28",
+     "close": 45.37
+    },
+    {
+     "date": "2026-08-31",
+     "close": 45.66
+    },
+    {
+     "date": "2026-09-01",
+     "close": 45.91
+    },
+    {
+     "date": "2026-09-02",
+     "close": 45.74
+    },
+    {
+     "date": "2026-09-03",
+     "close": 47.7
+    },
+    {
+     "date": "2026-09-04",
+     "close": 47.29
+    },
+    {
+     "date": "2026-09-07",
+     "close": 46.54
+    },
+    {
+     "date": "2026-09-08",
+     "close": 46.82
+    },
+    {
+     "date": "2026-09-09",
+     "close": 46.41
+    },
+    {
+     "date": "2026-09-10",
+     "close": 46.08
+    },
+    {
+     "date": "2026-09-11",
+     "close": 46.18
+    },
+    {
+     "date": "2026-09-15",
+     "close": 45
+    },
+    {
+     "date": "2026-09-16",
+     "close": 45.19
+    },
+    {
+     "date": "2026-09-17",
+     "close": 45.88
+    },
+    {
+     "date": "2026-09-18",
+     "close": 46.07
+    },
+    {
+     "date": "2026-09-21",
+     "close": 45.52
+    },
+    {
+     "date": "2026-09-22",
+     "close": 45.23
+    },
+    {
+     "date": "2026-09-23",
+     "close": 47.08
+    },
+    {
+     "date": "2026-09-24",
+     "close": 49.9
+    },
+    {
+     "date": "2026-09-25",
+     "close": 49.95
+    },
+    {
+     "date": "2026-09-28",
+     "close": 48.64
+    },
+    {
+     "date": "2026-09-29",
+     "close": 48.71
+    },
+    {
+     "date": "2026-09-30",
+     "close": 48.24
+    },
+    {
+     "date": "2026-10-01",
+     "close": 47.44
+    },
+    {
+     "date": "2026-10-05",
+     "close": 48.54
+    },
+    {
+     "date": "2026-10-06",
+     "close": 47.23
+    },
+    {
+     "date": "2026-10-07",
+     "close": 47.47
+    },
+    {
+     "date": "2026-10-08",
+     "close": 46.39
+    },
+    {
+     "date": "2026-10-09",
+     "close": 47.91
+    },
+    {
+     "date": "2026-10-12",
+     "close": 49.01
+    },
+    {
+     "date": "2026-10-13",
+     "close": 49.13
+    },
+    {
+     "date": "2026-10-14",
+     "close": 49.64
+    },
+    {
+     "date": "2026-10-15",
+     "close": 51.48
+    },
+    {
+     "date": "2026-10-16",
+     "close": 51.45
+    },
+    {
+     "date": "2026-10-19",
+     "close": 54.26
+    },
+    {
+     "date": "2026-10-21",
+     "close": 54.97
+    }
+   ],
+   "sector": "Financial Services",
+   "industry": "Banks—Regional"
+  },
+  "SUNPHARMA": {
+   "price": 1758,
+   "prevClose": 1743,
+   "change": 15,
+   "changePct": 0.86,
+   "dayHigh": 1758,
+   "dayLow": 1719.1,
+   "high52": 2046.9,
+   "low52": 1583.7,
+   "volume": 1778495,
+   "longName": "Sun Pharmaceutical Industries Limited",
+   "closes": [
+    {
+     "date": "2026-07-22",
+     "close": 1943
+    },
+    {
+     "date": "2026-07-23",
+     "close": 1954
+    },
+    {
+     "date": "2026-07-24",
+     "close": 1941.1
+    },
+    {
+     "date": "2026-07-27",
+     "close": 1973.7
+    },
+    {
+     "date": "2026-07-28",
+     "close": 1976.7
+    },
+    {
+     "date": "2026-07-29",
+     "close": 1989.9
+    },
+    {
+     "date": "2026-07-30",
+     "close": 2001.1
+    },
+    {
+     "date": "2026-07-31",
+     "close": 1990.5
+    },
+    {
+     "date": "2026-08-03",
+     "close": 1963.5
+    },
+    {
+     "date": "2026-08-04",
+     "close": 1964
+    },
+    {
+     "date": "2026-08-05",
+     "close": 1940
+    },
+    {
+     "date": "2026-08-06",
+     "close": 1951
+    },
+    {
+     "date": "2026-08-07",
+     "close": 1945
+    },
+    {
+     "date": "2026-08-10",
+     "close": 1944.4
+    },
+    {
+     "date": "2026-08-11",
+     "close": 1942
+    },
+    {
+     "date": "2026-08-12",
+     "close": 1944
+    },
+    {
+     "date": "2026-08-13",
+     "close": 1932
+    },
+    {
+     "date": "2026-08-14",
+     "close": 1930
+    },
+    {
+     "date": "2026-08-17",
+     "close": 1882
+    },
+    {
+     "date": "2026-08-18",
+     "close": 1875.1
+    },
+    {
+     "date": "2026-08-19",
+     "close": 1900
+    },
+    {
+     "date": "2026-08-20",
+     "close": 1904
+    },
+    {
+     "date": "2026-08-21",
+     "close": 1902.4
+    },
+    {
+     "date": "2026-08-24",
+     "close": 1910
+    },
+    {
+     "date": "2026-08-25",
+     "close": 1922
+    },
+    {
+     "date": "2026-08-26",
+     "close": 1899.5
+    },
+    {
+     "date": "2026-08-27",
+     "close": 1913.3
+    },
+    {
+     "date": "2026-08-28",
+     "close": 1920
+    },
+    {
+     "date": "2026-08-31",
+     "close": 1984.8
+    },
+    {
+     "date": "2026-09-01",
+     "close": 1929
+    },
+    {
+     "date": "2026-09-02",
+     "close": 1931.7
+    },
+    {
+     "date": "2026-09-03",
+     "close": 1916
+    },
+    {
+     "date": "2026-09-04",
+     "close": 1899
+    },
+    {
+     "date": "2026-09-07",
+     "close": 1895
+    },
+    {
+     "date": "2026-09-08",
+     "close": 1885.9
+    },
+    {
+     "date": "2026-09-09",
+     "close": 1864.9
+    },
+    {
+     "date": "2026-09-10",
+     "close": 1861
+    },
+    {
+     "date": "2026-09-11",
+     "close": 1840
+    },
+    {
+     "date": "2026-09-15",
+     "close": 1835
+    },
+    {
+     "date": "2026-09-16",
+     "close": 1853.5
+    },
+    {
+     "date": "2026-09-17",
+     "close": 1867.3
+    },
+    {
+     "date": "2026-09-18",
+     "close": 1837.3
+    },
+    {
+     "date": "2026-09-21",
+     "close": 1868.9
+    },
+    {
+     "date": "2026-09-22",
+     "close": 1846.4
+    },
+    {
+     "date": "2026-09-23",
+     "close": 1865
+    },
+    {
+     "date": "2026-09-24",
+     "close": 1849.9
+    },
+    {
+     "date": "2026-09-25",
+     "close": 1852.2
+    },
+    {
+     "date": "2026-09-28",
+     "close": 1838
+    },
+    {
+     "date": "2026-09-29",
+     "close": 1865
+    },
+    {
+     "date": "2026-09-30",
+     "close": 1816.6
+    },
+    {
+     "date": "2026-10-01",
+     "close": 1801
+    },
+    {
+     "date": "2026-10-05",
+     "close": 1779.7
+    },
+    {
+     "date": "2026-10-06",
+     "close": 1804.1
+    },
+    {
+     "date": "2026-10-07",
+     "close": 1781
+    },
+    {
+     "date": "2026-10-08",
+     "close": 1759.8
+    },
+    {
+     "date": "2026-10-09",
+     "close": 1760
+    },
+    {
+     "date": "2026-10-12",
+     "close": 1760
+    },
+    {
+     "date": "2026-10-13",
+     "close": 1770.7
+    },
+    {
+     "date": "2026-10-14",
+     "close": 1746.4
+    },
+    {
+     "date": "2026-10-15",
+     "close": 1764
+    },
+    {
+     "date": "2026-10-16",
+     "close": 1758.8
+    },
+    {
+     "date": "2026-10-19",
+     "close": 1743
+    },
+    {
+     "date": "2026-10-21",
+     "close": 1745.1
+    }
+   ],
+   "sector": "Healthcare",
+   "industry": "Drug Manufacturers—Specialty & Generic"
+  },
+  "SUZLON": {
+   "price": 38.57,
+   "prevClose": 40.38,
+   "change": -1.81,
+   "changePct": -4.48,
+   "dayHigh": 39.23,
+   "dayLow": 38.26,
+   "high52": 61.5,
+   "low52": 36.31,
+   "volume": 51295632,
+   "longName": "Suzlon Energy Limited",
+   "closes": [
+    {
+     "date": "2026-07-22",
+     "close": 53.01
+    },
+    {
+     "date": "2026-07-23",
+     "close": 52.39
+    },
+    {
+     "date": "2026-07-24",
+     "close": 52.28
+    },
+    {
+     "date": "2026-07-27",
+     "close": 53.15
+    },
+    {
+     "date": "2026-07-28",
+     "close": 48.02
+    },
+    {
+     "date": "2026-07-29",
+     "close": 47.45
+    },
+    {
+     "date": "2026-07-30",
+     "close": 47.4
+    },
+    {
+     "date": "2026-07-31",
+     "close": 48.01
+    },
+    {
+     "date": "2026-08-03",
+     "close": 48.1
+    },
+    {
+     "date": "2026-08-04",
+     "close": 48.01
+    },
+    {
+     "date": "2026-08-05",
+     "close": 48.15
+    },
+    {
+     "date": "2026-08-06",
+     "close": 48.1
+    },
+    {
+     "date": "2026-08-07",
+     "close": 48.15
+    },
+    {
+     "date": "2026-08-10",
+     "close": 47.5
+    },
+    {
+     "date": "2026-08-11",
+     "close": 47.5
+    },
+    {
+     "date": "2026-08-12",
+     "close": 47.35
+    },
+    {
+     "date": "2026-08-13",
+     "close": 47.61
+    },
+    {
+     "date": "2026-08-14",
+     "close": 47.1
+    },
+    {
+     "date": "2026-08-17",
+     "close": 49
+    },
+    {
+     "date": "2026-08-18",
+     "close": 47.78
+    },
+    {
+     "date": "2026-08-19",
+     "close": 46.77
+    },
+    {
+     "date": "2026-08-20",
+     "close": 47
+    },
+    {
+     "date": "2026-08-21",
+     "close": 46.71
+    },
+    {
+     "date": "2026-08-24",
+     "close": 47.05
+    },
+    {
+     "date": "2026-08-25",
+     "close": 46.75
+    },
+    {
+     "date": "2026-08-26",
+     "close": 46.94
+    },
+    {
+     "date": "2026-08-27",
+     "close": 46.81
+    },
+    {
+     "date": "2026-08-28",
+     "close": 46.79
+    },
+    {
+     "date": "2026-08-31",
+     "close": 47.52
+    },
+    {
+     "date": "2026-09-01",
+     "close": 46.5
+    },
+    {
+     "date": "2026-09-02",
+     "close": 45.46
+    },
+    {
+     "date": "2026-09-03",
+     "close": 46.03
+    },
+    {
+     "date": "2026-09-04",
+     "close": 45.35
+    },
+    {
+     "date": "2026-09-07",
+     "close": 45.55
+    },
+    {
+     "date": "2026-09-08",
+     "close": 45.5
+    },
+    {
+     "date": "2026-09-09",
+     "close": 45.45
+    },
+    {
+     "date": "2026-09-10",
+     "close": 44.22
+    },
+    {
+     "date": "2026-09-11",
+     "close": 44.12
+    },
+    {
+     "date": "2026-09-15",
+     "close": 42.9
+    },
+    {
+     "date": "2026-09-16",
+     "close": 42.15
+    },
+    {
+     "date": "2026-09-17",
+     "close": 42.54
+    },
+    {
+     "date": "2026-09-18",
+     "close": 43.14
+    },
+    {
+     "date": "2026-09-21",
+     "close": 43.34
+    },
+    {
+     "date": "2026-09-22",
+     "close": 43
+    },
+    {
+     "date": "2026-09-23",
+     "close": 42.39
+    },
+    {
+     "date": "2026-09-24",
+     "close": 40.74
+    },
+    {
+     "date": "2026-09-25",
+     "close": 40.8
+    },
+    {
+     "date": "2026-09-28",
+     "close": 39.66
+    },
+    {
+     "date": "2026-09-29",
+     "close": 39.5
+    },
+    {
+     "date": "2026-09-30",
+     "close": 39.49
+    },
+    {
+     "date": "2026-10-01",
+     "close": 38.91
+    },
+    {
+     "date": "2026-10-05",
+     "close": 38.92
+    },
+    {
+     "date": "2026-10-06",
+     "close": 39.16
+    },
+    {
+     "date": "2026-10-07",
+     "close": 38.34
+    },
+    {
+     "date": "2026-10-08",
+     "close": 36.43
+    },
+    {
+     "date": "2026-10-09",
+     "close": 37.6
+    },
+    {
+     "date": "2026-10-12",
+     "close": 39.57
+    },
+    {
+     "date": "2026-10-13",
+     "close": 40.19
+    },
+    {
+     "date": "2026-10-14",
+     "close": 40.8
+    },
+    {
+     "date": "2026-10-15",
+     "close": 40.95
+    },
+    {
+     "date": "2026-10-16",
+     "close": 42
+    },
+    {
+     "date": "2026-10-19",
+     "close": 40.38
+    },
+    {
+     "date": "2026-10-21",
+     "close": 39.4
+    }
+   ],
+   "sector": "Industrials",
+   "industry": "Specialty Industrial Machinery"
+  },
+  "TATASTEEL": {
+   "price": 172.33,
+   "prevClose": 174.04,
+   "change": -1.71,
+   "changePct": -0.98,
+   "dayHigh": 172.33,
+   "dayLow": 168.1,
+   "high52": 224.4,
+   "low52": 160.06,
+   "volume": 16692588,
+   "longName": "Tata Steel Limited",
+   "closes": [
+    {
+     "date": "2026-07-22",
+     "close": 186.53
+    },
+    {
+     "date": "2026-07-23",
+     "close": 184.23
+    },
+    {
+     "date": "2026-07-24",
+     "close": 182.67
+    },
+    {
+     "date": "2026-07-27",
+     "close": 184.25
+    },
+    {
+     "date": "2026-07-28",
+     "close": 182.63
+    },
+    {
+     "date": "2026-07-29",
+     "close": 187.27
+    },
+    {
+     "date": "2026-07-30",
+     "close": 186.92
+    },
+    {
+     "date": "2026-07-31",
+     "close": 189.69
+    },
+    {
+     "date": "2026-08-03",
+     "close": 191
+    },
+    {
+     "date": "2026-08-04",
+     "close": 190.95
+    },
+    {
+     "date": "2026-08-05",
+     "close": 192.99
+    },
+    {
+     "date": "2026-08-06",
+     "close": 189.3
+    },
+    {
+     "date": "2026-08-07",
+     "close": 187.55
+    },
+    {
+     "date": "2026-08-10",
+     "close": 190.24
+    },
+    {
+     "date": "2026-08-11",
+     "close": 188.25
+    },
+    {
+     "date": "2026-08-12",
+     "close": 186.2
+    },
+    {
+     "date": "2026-08-13",
+     "close": 184.85
+    },
+    {
+     "date": "2026-08-14",
+     "close": 183.5
+    },
+    {
+     "date": "2026-08-17",
+     "close": 186
+    },
+    {
+     "date": "2026-08-18",
+     "close": 185.5
+    },
+    {
+     "date": "2026-08-19",
+     "close": 184
+    },
+    {
+     "date": "2026-08-20",
+     "close": 183.5
+    },
+    {
+     "date": "2026-08-21",
+     "close": 183
+    },
+    {
+     "date": "2026-08-24",
+     "close": 186.3
+    },
+    {
+     "date": "2026-08-25",
+     "close": 186.94
+    },
+    {
+     "date": "2026-08-26",
+     "close": 188.01
+    },
+    {
+     "date": "2026-08-27",
+     "close": 186.8
+    },
+    {
+     "date": "2026-08-28",
+     "close": 186.5
+    },
+    {
+     "date": "2026-08-31",
+     "close": 184.35
+    },
+    {
+     "date": "2026-09-01",
+     "close": 184.07
+    },
+    {
+     "date": "2026-09-02",
+     "close": 183.85
+    },
+    {
+     "date": "2026-09-03",
+     "close": 184.2
+    },
+    {
+     "date": "2026-09-04",
+     "close": 188.79
+    },
+    {
+     "date": "2026-09-07",
+     "close": 185.61
+    },
+    {
+     "date": "2026-09-08",
+     "close": 184.15
+    },
+    {
+     "date": "2026-09-09",
+     "close": 188.75
+    },
+    {
+     "date": "2026-09-10",
+     "close": 186.78
+    },
+    {
+     "date": "2026-09-11",
+     "close": 183
+    },
+    {
+     "date": "2026-09-15",
+     "close": 183.65
+    },
+    {
+     "date": "2026-09-16",
+     "close": 183
+    },
+    {
+     "date": "2026-09-17",
+     "close": 187.29
+    },
+    {
+     "date": "2026-09-18",
+     "close": 185.54
+    },
+    {
+     "date": "2026-09-21",
+     "close": 183.4
+    },
+    {
+     "date": "2026-09-22",
+     "close": 184.97
+    },
+    {
+     "date": "2026-09-23",
+     "close": 190.82
+    },
+    {
+     "date": "2026-09-24",
+     "close": 188.02
+    },
+    {
+     "date": "2026-09-25",
+     "close": 187.97
+    },
+    {
+     "date": "2026-09-28",
+     "close": 186.3
+    },
+    {
+     "date": "2026-09-29",
+     "close": 188
+    },
+    {
+     "date": "2026-09-30",
+     "close": 184.3
+    },
+    {
+     "date": "2026-10-01",
+     "close": 178
+    },
+    {
+     "date": "2026-10-05",
+     "close": 178.14
+    },
+    {
+     "date": "2026-10-06",
+     "close": 178.69
+    },
+    {
+     "date": "2026-10-07",
+     "close": 175.64
+    },
+    {
+     "date": "2026-10-08",
+     "close": 171.96
+    },
+    {
+     "date": "2026-10-09",
+     "close": 173.8
+    },
+    {
+     "date": "2026-10-12",
+     "close": 172.24
+    },
+    {
+     "date": "2026-10-13",
+     "close": 175
+    },
+    {
+     "date": "2026-10-14",
+     "close": 174.49
+    },
+    {
+     "date": "2026-10-15",
+     "close": 176.4
+    },
+    {
+     "date": "2026-10-16",
+     "close": 175.5
+    },
+    {
+     "date": "2026-10-19",
+     "close": 174.04
+    },
+    {
+     "date": "2026-10-21",
+     "close": 172.45
+    }
+   ],
+   "sector": "Basic Materials",
+   "industry": "Steel"
+  },
+  "TCS": {
+   "price": 2506.9,
+   "prevClose": 2460.9,
+   "change": 46,
+   "changePct": 1.87,
+   "dayHigh": 2533,
+   "dayLow": 2479,
+   "high52": 3350,
+   "low52": 1976.8,
+   "volume": 4174647,
+   "longName": "Tata Consultancy Services Limited",
+   "closes": [
+    {
+     "date": "2026-07-22",
+     "close": 2208.3
+    },
+    {
+     "date": "2026-07-23",
+     "close": 2242.9
+    },
+    {
+     "date": "2026-07-24",
+     "close": 2254.3
+    },
+    {
+     "date": "2026-07-27",
+     "close": 2295.6
+    },
+    {
+     "date": "2026-07-28",
+     "close": 2398
+    },
+    {
+     "date": "2026-07-29",
+     "close": 2446.6
+    },
+    {
+     "date": "2026-07-30",
+     "close": 2431.8
+    },
+    {
+     "date": "2026-07-31",
+     "close": 2365.6
+    },
+    {
+     "date": "2026-08-03",
+     "close": 2473.7
+    },
+    {
+     "date": "2026-08-04",
+     "close": 2460
+    },
+    {
+     "date": "2026-08-05",
+     "close": 2413
+    },
+    {
+     "date": "2026-08-06",
+     "close": 2373
+    },
+    {
+     "date": "2026-08-07",
+     "close": 2452.7
+    },
+    {
+     "date": "2026-08-10",
+     "close": 2425.7
+    },
+    {
+     "date": "2026-08-11",
+     "close": 2445.7
+    },
+    {
+     "date": "2026-08-12",
+     "close": 2349.7
+    },
+    {
+     "date": "2026-08-13",
+     "close": 2375
+    },
+    {
+     "date": "2026-08-14",
+     "close": 2361
+    },
+    {
+     "date": "2026-08-17",
+     "close": 2313.2
+    },
+    {
+     "date": "2026-08-18",
+     "close": 2280
+    },
+    {
+     "date": "2026-08-19",
+     "close": 2289
+    },
+    {
+     "date": "2026-08-20",
+     "close": 2298
+    },
+    {
+     "date": "2026-08-21",
+     "close": 2302
+    },
+    {
+     "date": "2026-08-24",
+     "close": 2284.1
+    },
+    {
+     "date": "2026-08-25",
+     "close": 2296.2
+    },
+    {
+     "date": "2026-08-26",
+     "close": 2270
+    },
+    {
+     "date": "2026-08-27",
+     "close": 2248.4
+    },
+    {
+     "date": "2026-08-28",
+     "close": 2342
+    },
+    {
+     "date": "2026-08-31",
+     "close": 2399.3
+    },
+    {
+     "date": "2026-09-01",
+     "close": 2369
+    },
+    {
+     "date": "2026-09-02",
+     "close": 2348
+    },
+    {
+     "date": "2026-09-03",
+     "close": 2320.1
+    },
+    {
+     "date": "2026-09-04",
+     "close": 2304
+    },
+    {
+     "date": "2026-09-07",
+     "close": 2270
+    },
+    {
+     "date": "2026-09-08",
+     "close": 2255.5
+    },
+    {
+     "date": "2026-09-09",
+     "close": 2208
+    },
+    {
+     "date": "2026-09-10",
+     "close": 2204.1
+    },
+    {
+     "date": "2026-09-11",
+     "close": 2200.8
+    },
+    {
+     "date": "2026-09-15",
+     "close": 2251
+    },
+    {
+     "date": "2026-09-16",
+     "close": 2188.8
+    },
+    {
+     "date": "2026-09-17",
+     "close": 2190
+    },
+    {
+     "date": "2026-09-18",
+     "close": 2105
+    },
+    {
+     "date": "2026-09-21",
+     "close": 2128.7
+    },
+    {
+     "date": "2026-09-22",
+     "close": 2105
+    },
+    {
+     "date": "2026-09-23",
+     "close": 2089.6
+    },
+    {
+     "date": "2026-09-24",
+     "close": 2087
+    },
+    {
+     "date": "2026-09-25",
+     "close": 2082
+    },
+    {
+     "date": "2026-09-28",
+     "close": 2070.7
+    },
+    {
+     "date": "2026-09-29",
+     "close": 2032.4
+    },
+    {
+     "date": "2026-09-30",
+     "close": 2050.6
+    },
+    {
+     "date": "2026-10-01",
+     "close": 2075
+    },
+    {
+     "date": "2026-10-05",
+     "close": 2114.4
+    },
+    {
+     "date": "2026-10-06",
+     "close": 2100
+    },
+    {
+     "date": "2026-10-07",
+     "close": 2080.3
+    },
+    {
+     "date": "2026-10-08",
+     "close": 2076
+    },
+    {
+     "date": "2026-10-09",
+     "close": 2156
+    },
+    {
+     "date": "2026-10-12",
+     "close": 2125
+    },
+    {
+     "date": "2026-10-13",
+     "close": 2269.3
+    },
+    {
+     "date": "2026-10-14",
+     "close": 2304.9
+    },
+    {
+     "date": "2026-10-15",
+     "close": 2350
+    },
+    {
+     "date": "2026-10-16",
+     "close": 2465
+    },
+    {
+     "date": "2026-10-19",
+     "close": 2460.9
+    },
+    {
+     "date": "2026-10-21",
+     "close": 2529
+    }
+   ],
+   "sector": "Technology",
+   "industry": "Information Technology Services"
+  },
+  "TITAN": {
+   "price": 4350,
+   "prevClose": 4424.2,
+   "change": -74.2,
+   "changePct": -1.68,
+   "dayHigh": 4373.7,
+   "dayLow": 4300.1,
+   "high52": 5186.7,
+   "low52": 3667.3,
+   "volume": 426229,
+   "longName": "Titan Company Limited",
+   "closes": [
+    {
+     "date": "2026-07-22",
+     "close": 4711.6
+    },
+    {
+     "date": "2026-07-23",
+     "close": 4697.3
+    },
+    {
+     "date": "2026-07-24",
+     "close": 4677
+    },
+    {
+     "date": "2026-07-27",
+     "close": 4740.1
+    },
+    {
+     "date": "2026-07-28",
+     "close": 4849.7
+    },
+    {
+     "date": "2026-07-29",
+     "close": 4850.2
+    },
+    {
+     "date": "2026-07-30",
+     "close": 4850
+    },
+    {
+     "date": "2026-07-31",
+     "close": 4875.2
+    },
+    {
+     "date": "2026-08-03",
+     "close": 5000
+    },
+    {
+     "date": "2026-08-04",
+     "close": 4935
+    },
+    {
+     "date": "2026-08-05",
+     "close": 4912.4
+    },
+    {
+     "date": "2026-08-06",
+     "close": 4998
+    },
+    {
+     "date": "2026-08-07",
+     "close": 4941
+    },
+    {
+     "date": "2026-08-10",
+     "close": 5090
+    },
+    {
+     "date": "2026-08-11",
+     "close": 5128
+    },
+    {
+     "date": "2026-08-12",
+     "close": 5099
+    },
+    {
+     "date": "2026-08-13",
+     "close": 5063.7
+    },
+    {
+     "date": "2026-08-14",
+     "close": 5056.2
+    },
+    {
+     "date": "2026-08-17",
+     "close": 5068.5
+    },
+    {
+     "date": "2026-08-18",
+     "close": 5048.6
+    },
+    {
+     "date": "2026-08-19",
+     "close": 5068
+    },
+    {
+     "date": "2026-08-20",
+     "close": 5068
+    },
+    {
+     "date": "2026-08-21",
+     "close": 5086.1
+    },
+    {
+     "date": "2026-08-24",
+     "close": 5079
+    },
+    {
+     "date": "2026-08-25",
+     "close": 5124.8
+    },
+    {
+     "date": "2026-08-26",
+     "close": 5100
+    },
+    {
+     "date": "2026-08-27",
+     "close": 5139.3
+    },
+    {
+     "date": "2026-08-28",
+     "close": 5169.2
+    },
+    {
+     "date": "2026-08-31",
+     "close": 5102.4
+    },
+    {
+     "date": "2026-09-01",
+     "close": 5050
+    },
+    {
+     "date": "2026-09-02",
+     "close": 5074
+    },
+    {
+     "date": "2026-09-03",
+     "close": 5027
+    },
+    {
+     "date": "2026-09-04",
+     "close": 5020
+    },
+    {
+     "date": "2026-09-07",
+     "close": 4995
+    },
+    {
+     "date": "2026-09-08",
+     "close": 4987
+    },
+    {
+     "date": "2026-09-09",
+     "close": 5005
+    },
+    {
+     "date": "2026-09-10",
+     "close": 5021
+    },
+    {
+     "date": "2026-09-11",
+     "close": 5009.5
+    },
+    {
+     "date": "2026-09-15",
+     "close": 4856
+    },
+    {
+     "date": "2026-09-16",
+     "close": 4908.5
+    },
+    {
+     "date": "2026-09-17",
+     "close": 4841
+    },
+    {
+     "date": "2026-09-18",
+     "close": 4798.5
+    },
+    {
+     "date": "2026-09-21",
+     "close": 4875
+    },
+    {
+     "date": "2026-09-22",
+     "close": 4928.5
+    },
+    {
+     "date": "2026-09-23",
+     "close": 4880
+    },
+    {
+     "date": "2026-09-24",
+     "close": 4832.5
+    },
+    {
+     "date": "2026-09-25",
+     "close": 4884
+    },
+    {
+     "date": "2026-09-28",
+     "close": 4819.5
+    },
+    {
+     "date": "2026-09-29",
+     "close": 4675
+    },
+    {
+     "date": "2026-09-30",
+     "close": 4587
+    },
+    {
+     "date": "2026-10-01",
+     "close": 4515.7
+    },
+    {
+     "date": "2026-10-05",
+     "close": 4580
+    },
+    {
+     "date": "2026-10-06",
+     "close": 4550
+    },
+    {
+     "date": "2026-10-07",
+     "close": 4377
+    },
+    {
+     "date": "2026-10-08",
+     "close": 4359.5
+    },
+    {
+     "date": "2026-10-09",
+     "close": 4410
+    },
+    {
+     "date": "2026-10-12",
+     "close": 4400
+    },
+    {
+     "date": "2026-10-13",
+     "close": 4487
+    },
+    {
+     "date": "2026-10-14",
+     "close": 4444
+    },
+    {
+     "date": "2026-10-15",
+     "close": 4455.8
+    },
+    {
+     "date": "2026-10-16",
+     "close": 4444.8
+    },
+    {
+     "date": "2026-10-19",
+     "close": 4424.2
+    },
+    {
+     "date": "2026-10-21",
+     "close": 4380.9
+    }
+   ],
+   "sector": "Consumer Cyclical",
+   "industry": "Luxury Goods"
+  },
+  "TORNTPHARM": {
+   "price": 4615.3,
+   "prevClose": 4558.7,
+   "change": 56.6,
+   "changePct": 1.24,
+   "dayHigh": 4649.6,
+   "dayLow": 4500.3,
+   "high52": 5250,
+   "low52": 3532.6,
+   "volume": 207982,
+   "longName": "Torrent Pharmaceuticals Limited",
+   "closes": [
+    {
+     "date": "2026-07-22",
+     "close": 5033.4
+    },
+    {
+     "date": "2026-07-23",
+     "close": 5065.2
+    },
+    {
+     "date": "2026-07-24",
+     "close": 4961.5
+    },
+    {
+     "date": "2026-07-27",
+     "close": 5019.5
+    },
+    {
+     "date": "2026-07-28",
+     "close": 4898.3
+    },
+    {
+     "date": "2026-07-29",
+     "close": 4878.5
+    },
+    {
+     "date": "2026-07-30",
+     "close": 4872.1
+    },
+    {
+     "date": "2026-07-31",
+     "close": 5122.8
+    },
+    {
+     "date": "2026-08-03",
+     "close": 5050
+    },
+    {
+     "date": "2026-08-04",
+     "close": 5030
+    },
+    {
+     "date": "2026-08-05",
+     "close": 5000
+    },
+    {
+     "date": "2026-08-06",
+     "close": 4956
+    },
+    {
+     "date": "2026-08-07",
+     "close": 4924
+    },
+    {
+     "date": "2026-08-10",
+     "close": 4924
+    },
+    {
+     "date": "2026-08-11",
+     "close": 4886
+    },
+    {
+     "date": "2026-08-12",
+     "close": 4893
+    },
+    {
+     "date": "2026-08-13",
+     "close": 4914.5
+    },
+    {
+     "date": "2026-08-14",
+     "close": 4833
+    },
+    {
+     "date": "2026-08-17",
+     "close": 4900
+    },
+    {
+     "date": "2026-08-18",
+     "close": 4971
+    },
+    {
+     "date": "2026-08-19",
+     "close": 5013
+    },
+    {
+     "date": "2026-08-20",
+     "close": 5005
+    },
+    {
+     "date": "2026-08-21",
+     "close": 4896.5
+    },
+    {
+     "date": "2026-08-24",
+     "close": 4886.5
+    },
+    {
+     "date": "2026-08-25",
+     "close": 4932
+    },
+    {
+     "date": "2026-08-26",
+     "close": 4890
+    },
+    {
+     "date": "2026-08-27",
+     "close": 4999
+    },
+    {
+     "date": "2026-08-28",
+     "close": 5050
+    },
+    {
+     "date": "2026-08-31",
+     "close": 5066
+    },
+    {
+     "date": "2026-09-01",
+     "close": 4965.5
+    },
+    {
+     "date": "2026-09-02",
+     "close": 5012
+    },
+    {
+     "date": "2026-09-03",
+     "close": 4905.5
+    },
+    {
+     "date": "2026-09-04",
+     "close": 4857
+    },
+    {
+     "date": "2026-09-07",
+     "close": 4914
+    },
+    {
+     "date": "2026-09-08",
+     "close": 4960
+    },
+    {
+     "date": "2026-09-09",
+     "close": 4930
+    },
+    {
+     "date": "2026-09-10",
+     "close": 4930
+    },
+    {
+     "date": "2026-09-11",
+     "close": 4965.5
+    },
+    {
+     "date": "2026-09-15",
+     "close": 4850
+    },
+    {
+     "date": "2026-09-16",
+     "close": 4812.5
+    },
+    {
+     "date": "2026-09-17",
+     "close": 4875
+    },
+    {
+     "date": "2026-09-18",
+     "close": 4840
+    },
+    {
+     "date": "2026-09-21",
+     "close": 4970
+    },
+    {
+     "date": "2026-09-22",
+     "close": 4935
+    },
+    {
+     "date": "2026-09-23",
+     "close": 4985
+    },
+    {
+     "date": "2026-09-24",
+     "close": 4928.5
+    },
+    {
+     "date": "2026-09-25",
+     "close": 4988.5
+    },
+    {
+     "date": "2026-09-28",
+     "close": 4869
+    },
+    {
+     "date": "2026-09-29",
+     "close": 4894
+    },
+    {
+     "date": "2026-09-30",
+     "close": 4800
+    },
+    {
+     "date": "2026-10-01",
+     "close": 4767.3
+    },
+    {
+     "date": "2026-10-05",
+     "close": 4772
+    },
+    {
+     "date": "2026-10-06",
+     "close": 4772
+    },
+    {
+     "date": "2026-10-07",
+     "close": 4716.2
+    },
+    {
+     "date": "2026-10-08",
+     "close": 4617.1
+    },
+    {
+     "date": "2026-10-09",
+     "close": 4656.9
+    },
+    {
+     "date": "2026-10-12",
+     "close": 4682
+    },
+    {
+     "date": "2026-10-13",
+     "close": 4642.9
+    },
+    {
+     "date": "2026-10-14",
+     "close": 4580
+    },
+    {
+     "date": "2026-10-15",
+     "close": 4584.1
+    },
+    {
+     "date": "2026-10-16",
+     "close": 4558.9
+    },
+    {
+     "date": "2026-10-19",
+     "close": 4558.7
+    },
+    {
+     "date": "2026-10-21",
+     "close": 4553.8
+    }
+   ],
+   "sector": "Healthcare",
+   "industry": "Drug Manufacturers—Specialty & Generic"
+  },
+  "TVSMOTOR": {
+   "price": 3974,
+   "prevClose": 4074,
+   "change": -100,
+   "changePct": -2.45,
+   "dayHigh": 4006.6,
+   "dayLow": 3915,
+   "high52": 4484.5,
+   "low52": 3228,
+   "volume": 610895,
+   "longName": "TVS Motor Company Limited",
+   "closes": [
+    {
+     "date": "2026-07-22",
+     "close": 3907.6
+    },
+    {
+     "date": "2026-07-23",
+     "close": 3919.8
+    },
+    {
+     "date": "2026-07-24",
+     "close": 3870.2
+    },
+    {
+     "date": "2026-07-27",
+     "close": 3876.4
+    },
+    {
+     "date": "2026-07-28",
+     "close": 3993.5
+    },
+    {
+     "date": "2026-07-29",
+     "close": 4075.6
+    },
+    {
+     "date": "2026-07-30",
+     "close": 4208.4
+    },
+    {
+     "date": "2026-07-31",
+     "close": 4313.1
+    },
+    {
+     "date": "2026-08-03",
+     "close": 4389
+    },
+    {
+     "date": "2026-08-04",
+     "close": 4360
+    },
+    {
+     "date": "2026-08-05",
+     "close": 4455.2
+    },
+    {
+     "date": "2026-08-06",
+     "close": 4375
+    },
+    {
+     "date": "2026-08-07",
+     "close": 4440.9
+    },
+    {
+     "date": "2026-08-10",
+     "close": 4466.2
+    },
+    {
+     "date": "2026-08-11",
+     "close": 4400
+    },
+    {
+     "date": "2026-08-12",
+     "close": 4375
+    },
+    {
+     "date": "2026-08-13",
+     "close": 4342.2
+    },
+    {
+     "date": "2026-08-14",
+     "close": 4307
+    },
+    {
+     "date": "2026-08-17",
+     "close": 4385.9
+    },
+    {
+     "date": "2026-08-18",
+     "close": 4356.8
+    },
+    {
+     "date": "2026-08-19",
+     "close": 4361.1
+    },
+    {
+     "date": "2026-08-20",
+     "close": 4390
+    },
+    {
+     "date": "2026-08-21",
+     "close": 4390
+    },
+    {
+     "date": "2026-08-24",
+     "close": 4363.5
+    },
+    {
+     "date": "2026-08-25",
+     "close": 4420
+    },
+    {
+     "date": "2026-08-26",
+     "close": 4464
+    },
+    {
+     "date": "2026-08-27",
+     "close": 4409.8
+    },
+    {
+     "date": "2026-08-28",
+     "close": 4304.2
+    },
+    {
+     "date": "2026-08-31",
+     "close": 4341.3
+    },
+    {
+     "date": "2026-09-01",
+     "close": 4203
+    },
+    {
+     "date": "2026-09-02",
+     "close": 4200
+    },
+    {
+     "date": "2026-09-03",
+     "close": 4200
+    },
+    {
+     "date": "2026-09-04",
+     "close": 4133.1
+    },
+    {
+     "date": "2026-09-07",
+     "close": 4132
+    },
+    {
+     "date": "2026-09-08",
+     "close": 4133.2
+    },
+    {
+     "date": "2026-09-09",
+     "close": 4151.1
+    },
+    {
+     "date": "2026-09-10",
+     "close": 4121.5
+    },
+    {
+     "date": "2026-09-11",
+     "close": 4125
+    },
+    {
+     "date": "2026-09-15",
+     "close": 4050
+    },
+    {
+     "date": "2026-09-16",
+     "close": 4033
+    },
+    {
+     "date": "2026-09-17",
+     "close": 4101.7
+    },
+    {
+     "date": "2026-09-18",
+     "close": 4171.3
+    },
+    {
+     "date": "2026-09-21",
+     "close": 4155
+    },
+    {
+     "date": "2026-09-22",
+     "close": 4140
+    },
+    {
+     "date": "2026-09-23",
+     "close": 4135
+    },
+    {
+     "date": "2026-09-24",
+     "close": 4091
+    },
+    {
+     "date": "2026-09-25",
+     "close": 4157.3
+    },
+    {
+     "date": "2026-09-28",
+     "close": 4095
+    },
+    {
+     "date": "2026-09-29",
+     "close": 4091.1
+    },
+    {
+     "date": "2026-09-30",
+     "close": 4106
+    },
+    {
+     "date": "2026-10-01",
+     "close": 4021
+    },
+    {
+     "date": "2026-10-05",
+     "close": 4031
+    },
+    {
+     "date": "2026-10-06",
+     "close": 3981
+    },
+    {
+     "date": "2026-10-07",
+     "close": 3926
+    },
+    {
+     "date": "2026-10-08",
+     "close": 3839.4
+    },
+    {
+     "date": "2026-10-09",
+     "close": 3866.8
+    },
+    {
+     "date": "2026-10-12",
+     "close": 3940.3
+    },
+    {
+     "date": "2026-10-13",
+     "close": 4011.5
+    },
+    {
+     "date": "2026-10-14",
+     "close": 3969.7
+    },
+    {
+     "date": "2026-10-15",
+     "close": 4020
+    },
+    {
+     "date": "2026-10-16",
+     "close": 4095.1
+    },
+    {
+     "date": "2026-10-19",
+     "close": 4074
+    },
+    {
+     "date": "2026-10-21",
+     "close": 3992.6
+    }
+   ],
+   "sector": "Consumer Cyclical",
+   "industry": "Auto Manufacturers"
+  },
+  "ULTRACEMCO": {
+   "price": 10958,
+   "prevClose": 10650,
+   "change": 308,
+   "changePct": 2.89,
+   "dayHigh": 10976,
+   "dayLow": 10651,
+   "high52": 13110,
+   "low52": 10325,
+   "volume": 172207,
+   "longName": "UltraTech Cement Limited",
+   "closes": [
+    {
+     "date": "2026-07-22",
+     "close": 11893
+    },
+    {
+     "date": "2026-07-23",
+     "close": 11908
+    },
+    {
+     "date": "2026-07-24",
+     "close": 11846
+    },
+    {
+     "date": "2026-07-27",
+     "close": 11881
+    },
+    {
+     "date": "2026-07-28",
+     "close": 11956
+    },
+    {
+     "date": "2026-07-29",
+     "close": 11998
+    },
+    {
+     "date": "2026-07-30",
+     "close": 11847
+    },
+    {
+     "date": "2026-07-31",
+     "close": 11903
+    },
+    {
+     "date": "2026-08-03",
+     "close": 12054
+    },
+    {
+     "date": "2026-08-04",
+     "close": 12050
+    },
+    {
+     "date": "2026-08-05",
+     "close": 12190
+    },
+    {
+     "date": "2026-08-06",
+     "close": 12075
+    },
+    {
+     "date": "2026-08-07",
+     "close": 12105
+    },
+    {
+     "date": "2026-08-10",
+     "close": 12038
+    },
+    {
+     "date": "2026-08-11",
+     "close": 11780
+    },
+    {
+     "date": "2026-08-12",
+     "close": 11891
+    },
+    {
+     "date": "2026-08-13",
+     "close": 11706
+    },
+    {
+     "date": "2026-08-14",
+     "close": 11619
+    },
+    {
+     "date": "2026-08-17",
+     "close": 11681
+    },
+    {
+     "date": "2026-08-18",
+     "close": 11499
+    },
+    {
+     "date": "2026-08-19",
+     "close": 11450
+    },
+    {
+     "date": "2026-08-20",
+     "close": 11575
+    },
+    {
+     "date": "2026-08-21",
+     "close": 11570
+    },
+    {
+     "date": "2026-08-24",
+     "close": 11504
+    },
+    {
+     "date": "2026-08-25",
+     "close": 11540
+    },
+    {
+     "date": "2026-08-26",
+     "close": 11717
+    },
+    {
+     "date": "2026-08-27",
+     "close": 11717
+    },
+    {
+     "date": "2026-08-28",
+     "close": 11589
+    },
+    {
+     "date": "2026-08-31",
+     "close": 11450
+    },
+    {
+     "date": "2026-09-01",
+     "close": 11400
+    },
+    {
+     "date": "2026-09-02",
+     "close": 11393
+    },
+    {
+     "date": "2026-09-03",
+     "close": 11275
+    },
+    {
+     "date": "2026-09-04",
+     "close": 11408
+    },
+    {
+     "date": "2026-09-07",
+     "close": 11175
+    },
+    {
+     "date": "2026-09-08",
+     "close": 11009
+    },
+    {
+     "date": "2026-09-09",
+     "close": 10900
+    },
+    {
+     "date": "2026-09-10",
+     "close": 10979
+    },
+    {
+     "date": "2026-09-11",
+     "close": 11000
+    },
+    {
+     "date": "2026-09-15",
+     "close": 10697
+    },
+    {
+     "date": "2026-09-16",
+     "close": 10700
+    },
+    {
+     "date": "2026-09-17",
+     "close": 10764
+    },
+    {
+     "date": "2026-09-18",
+     "close": 11014
+    },
+    {
+     "date": "2026-09-21",
+     "close": 11100
+    },
+    {
+     "date": "2026-09-22",
+     "close": 11000
+    },
+    {
+     "date": "2026-09-23",
+     "close": 11155
+    },
+    {
+     "date": "2026-09-24",
+     "close": 11056
+    },
+    {
+     "date": "2026-09-25",
+     "close": 11155
+    },
+    {
+     "date": "2026-09-28",
+     "close": 11025
+    },
+    {
+     "date": "2026-09-29",
+     "close": 10829
+    },
+    {
+     "date": "2026-09-30",
+     "close": 10956
+    },
+    {
+     "date": "2026-10-01",
+     "close": 10710
+    },
+    {
+     "date": "2026-10-05",
+     "close": 10850
+    },
+    {
+     "date": "2026-10-06",
+     "close": 10750
+    },
+    {
+     "date": "2026-10-07",
+     "close": 10658
+    },
+    {
+     "date": "2026-10-08",
+     "close": 10426
+    },
+    {
+     "date": "2026-10-09",
+     "close": 10675
+    },
+    {
+     "date": "2026-10-12",
+     "close": 10520
+    },
+    {
+     "date": "2026-10-13",
+     "close": 10750
+    },
+    {
+     "date": "2026-10-14",
+     "close": 10795
+    },
+    {
+     "date": "2026-10-15",
+     "close": 10862
+    },
+    {
+     "date": "2026-10-16",
+     "close": 10907
+    },
+    {
+     "date": "2026-10-19",
+     "close": 10650
+    },
+    {
+     "date": "2026-10-21",
+     "close": 10849
+    }
+   ],
+   "sector": "Basic Materials",
+   "industry": "Building Materials"
+  },
+  "WIPRO": {
+   "price": 190.41,
+   "prevClose": 182.14,
+   "change": 8.27,
+   "changePct": 4.54,
+   "dayHigh": 192.88,
+   "dayLow": 188.97,
+   "high52": 273.1,
+   "low52": 156.79,
+   "volume": 45942579,
+   "longName": "Wipro Limited",
+   "closes": [
+    {
+     "date": "2026-07-22",
+     "close": 174.44
+    },
+    {
+     "date": "2026-07-23",
+     "close": 174.82
+    },
+    {
+     "date": "2026-07-24",
+     "close": 177.12
+    },
+    {
+     "date": "2026-07-27",
+     "close": 178.53
+    },
+    {
+     "date": "2026-07-28",
+     "close": 181.12
+    },
+    {
+     "date": "2026-07-29",
+     "close": 183.61
+    },
+    {
+     "date": "2026-07-30",
+     "close": 186.33
+    },
+    {
+     "date": "2026-07-31",
+     "close": 183.65
+    },
+    {
+     "date": "2026-08-03",
+     "close": 188.66
+    },
+    {
+     "date": "2026-08-04",
+     "close": 186.3
+    },
+    {
+     "date": "2026-08-05",
+     "close": 186.99
+    },
+    {
+     "date": "2026-08-06",
+     "close": 186.12
+    },
+    {
+     "date": "2026-08-07",
+     "close": 187.53
+    },
+    {
+     "date": "2026-08-10",
+     "close": 185.5
+    },
+    {
+     "date": "2026-08-11",
+     "close": 184.6
+    },
+    {
+     "date": "2026-08-12",
+     "close": 183.94
+    },
+    {
+     "date": "2026-08-13",
+     "close": 183.1
+    },
+    {
+     "date": "2026-08-14",
+     "close": 184
+    },
+    {
+     "date": "2026-08-17",
+     "close": 181.9
+    },
+    {
+     "date": "2026-08-18",
+     "close": 178.06
+    },
+    {
+     "date": "2026-08-19",
+     "close": 179.55
+    },
+    {
+     "date": "2026-08-20",
+     "close": 181
+    },
+    {
+     "date": "2026-08-21",
+     "close": 180.79
+    },
+    {
+     "date": "2026-08-24",
+     "close": 181.31
+    },
+    {
+     "date": "2026-08-25",
+     "close": 180.09
+    },
+    {
+     "date": "2026-08-26",
+     "close": 177.35
+    },
+    {
+     "date": "2026-08-27",
+     "close": 176.4
+    },
+    {
+     "date": "2026-08-28",
+     "close": 180.95
+    },
+    {
+     "date": "2026-08-31",
+     "close": 184.5
+    },
+    {
+     "date": "2026-09-01",
+     "close": 181.7
+    },
+    {
+     "date": "2026-09-02",
+     "close": 177.09
+    },
+    {
+     "date": "2026-09-03",
+     "close": 175.72
+    },
+    {
+     "date": "2026-09-04",
+     "close": 176.4
+    },
+    {
+     "date": "2026-09-07",
+     "close": 172.8
+    },
+    {
+     "date": "2026-09-08",
+     "close": 171.5
+    },
+    {
+     "date": "2026-09-09",
+     "close": 167
+    },
+    {
+     "date": "2026-09-10",
+     "close": 166.3
+    },
+    {
+     "date": "2026-09-11",
+     "close": 167.4
+    },
+    {
+     "date": "2026-09-15",
+     "close": 170
+    },
+    {
+     "date": "2026-09-16",
+     "close": 166.89
+    },
+    {
+     "date": "2026-09-17",
+     "close": 166.4
+    },
+    {
+     "date": "2026-09-18",
+     "close": 166.83
+    },
+    {
+     "date": "2026-09-21",
+     "close": 164.55
+    },
+    {
+     "date": "2026-09-22",
+     "close": 166
+    },
+    {
+     "date": "2026-09-23",
+     "close": 164.9
+    },
+    {
+     "date": "2026-09-24",
+     "close": 163.64
+    },
+    {
+     "date": "2026-09-25",
+     "close": 164.02
+    },
+    {
+     "date": "2026-09-28",
+     "close": 161.56
+    },
+    {
+     "date": "2026-09-29",
+     "close": 156.79
+    },
+    {
+     "date": "2026-09-30",
+     "close": 158.5
+    },
+    {
+     "date": "2026-10-01",
+     "close": 159.35
+    },
+    {
+     "date": "2026-10-05",
+     "close": 162.14
+    },
+    {
+     "date": "2026-10-06",
+     "close": 161.84
+    },
+    {
+     "date": "2026-10-07",
+     "close": 159.6
+    },
+    {
+     "date": "2026-10-08",
+     "close": 158.38
+    },
+    {
+     "date": "2026-10-09",
+     "close": 162.57
+    },
+    {
+     "date": "2026-10-12",
+     "close": 161.8
+    },
+    {
+     "date": "2026-10-13",
+     "close": 169
+    },
+    {
+     "date": "2026-10-14",
+     "close": 170.92
+    },
+    {
+     "date": "2026-10-15",
+     "close": 174.05
+    },
+    {
+     "date": "2026-10-16",
+     "close": 184.4
+    },
+    {
+     "date": "2026-10-19",
+     "close": 182.14
+    },
+    {
+     "date": "2026-10-21",
+     "close": 189.17
+    }
+   ],
+   "sector": "Technology",
+   "industry": "Information Technology Services"
+  },
+  "YESBANK": {
+   "price": 16.05,
+   "prevClose": 16.88,
+   "change": -0.83,
+   "changePct": -4.92,
+   "dayHigh": 16.52,
+   "dayLow": 16.05,
+   "high52": 25.78,
+   "low52": 16.02,
+   "volume": 133611660,
+   "longName": "Yes Bank Limited",
+   "closes": [
+    {
+     "date": "2026-07-22",
+     "close": 23.24
+    },
+    {
+     "date": "2026-07-23",
+     "close": 22.93
+    },
+    {
+     "date": "2026-07-24",
+     "close": 22.95
+    },
+    {
+     "date": "2026-07-27",
+     "close": 22.94
+    },
+    {
+     "date": "2026-07-28",
+     "close": 22.81
+    },
+    {
+     "date": "2026-07-29",
+     "close": 22.84
+    },
+    {
+     "date": "2026-07-30",
+     "close": 22.54
+    },
+    {
+     "date": "2026-07-31",
+     "close": 22.77
+    },
+    {
+     "date": "2026-08-03",
+     "close": 23
+    },
+    {
+     "date": "2026-08-04",
+     "close": 23
+    },
+    {
+     "date": "2026-08-05",
+     "close": 22.97
+    },
+    {
+     "date": "2026-08-06",
+     "close": 22.68
+    },
+    {
+     "date": "2026-08-07",
+     "close": 22.69
+    },
+    {
+     "date": "2026-08-10",
+     "close": 22.75
+    },
+    {
+     "date": "2026-08-11",
+     "close": 22.75
+    },
+    {
+     "date": "2026-08-12",
+     "close": 22.98
+    },
+    {
+     "date": "2026-08-13",
+     "close": 22.98
+    },
+    {
+     "date": "2026-08-14",
+     "close": 22.67
+    },
+    {
+     "date": "2026-08-17",
+     "close": 22.92
+    },
+    {
+     "date": "2026-08-18",
+     "close": 22.46
+    },
+    {
+     "date": "2026-08-19",
+     "close": 22.74
+    },
+    {
+     "date": "2026-08-20",
+     "close": 22.74
+    },
+    {
+     "date": "2026-08-21",
+     "close": 22.8
+    },
+    {
+     "date": "2026-08-24",
+     "close": 22.6
+    },
+    {
+     "date": "2026-08-25",
+     "close": 22.5
+    },
+    {
+     "date": "2026-08-26",
+     "close": 22.38
+    },
+    {
+     "date": "2026-08-27",
+     "close": 22.26
+    },
+    {
+     "date": "2026-08-28",
+     "close": 22.1
+    },
+    {
+     "date": "2026-08-31",
+     "close": 22.83
+    },
+    {
+     "date": "2026-09-01",
+     "close": 22.1
+    },
+    {
+     "date": "2026-09-02",
+     "close": 22.15
+    },
+    {
+     "date": "2026-09-03",
+     "close": 22.54
+    },
+    {
+     "date": "2026-09-04",
+     "close": 22.5
+    },
+    {
+     "date": "2026-09-07",
+     "close": 22.42
+    },
+    {
+     "date": "2026-09-08",
+     "close": 22.52
+    },
+    {
+     "date": "2026-09-09",
+     "close": 22.42
+    },
+    {
+     "date": "2026-09-10",
+     "close": 22.3
+    },
+    {
+     "date": "2026-09-11",
+     "close": 23.48
+    },
+    {
+     "date": "2026-09-15",
+     "close": 23.07
+    },
+    {
+     "date": "2026-09-16",
+     "close": 23.4
+    },
+    {
+     "date": "2026-09-17",
+     "close": 23.13
+    },
+    {
+     "date": "2026-09-18",
+     "close": 22.72
+    },
+    {
+     "date": "2026-09-21",
+     "close": 23.17
+    },
+    {
+     "date": "2026-09-22",
+     "close": 23.2
+    },
+    {
+     "date": "2026-09-23",
+     "close": 23.24
+    },
+    {
+     "date": "2026-09-24",
+     "close": 22.44
+    },
+    {
+     "date": "2026-09-25",
+     "close": 22.5
+    },
+    {
+     "date": "2026-09-28",
+     "close": 21.18
+    },
+    {
+     "date": "2026-09-29",
+     "close": 20.71
+    },
+    {
+     "date": "2026-09-30",
+     "close": 20.95
+    },
+    {
+     "date": "2026-10-01",
+     "close": 20.75
+    },
+    {
+     "date": "2026-10-05",
+     "close": 21.06
+    },
+    {
+     "date": "2026-10-06",
+     "close": 20.86
+    },
+    {
+     "date": "2026-10-07",
+     "close": 20.79
+    },
+    {
+     "date": "2026-10-08",
+     "close": 20.45
+    },
+    {
+     "date": "2026-10-09",
+     "close": 20.5
+    },
+    {
+     "date": "2026-10-12",
+     "close": 20.44
+    },
+    {
+     "date": "2026-10-13",
+     "close": 20.85
+    },
+    {
+     "date": "2026-10-14",
+     "close": 21.2
+    },
+    {
+     "date": "2026-10-15",
+     "close": 18.12
+    },
+    {
+     "date": "2026-10-16",
+     "close": 17.5
+    },
+    {
+     "date": "2026-10-19",
+     "close": 16.88
+    },
+    {
+     "date": "2026-10-21",
+     "close": 16.41
+    }
+   ],
+   "sector": "Financial Services",
+   "industry": "Banks—Regional"
+  }
+ }
+}
+```
+
 ### `src/shared/data/us-market-snapshot.json`
 
 ```json
 {
  "source": "Yahoo Finance (public chart endpoint)",
- "fetchedAt": "2026-11-01T19:29:36.501Z",
+ "fetchedAt": "2026-11-03T10:12:30.415Z",
  "symbols": [
   "AAL",
   "AAPL",
+  "ABBV",
   "ABNB",
   "ADBE",
+  "AEO",
+  "AMC",
   "AMD",
   "AMZN",
+  "ANF",
   "AVGO",
   "BA",
+  "BAC",
+  "BB",
   "BBWI",
+  "BIRK",
+  "BLNK",
+  "BOOT",
   "BOTZ",
+  "BROS",
   "BYND",
+  "CAKE",
+  "CAR",
   "CAVA",
+  "CHPT",
+  "CHWY",
   "CLOV",
+  "CMG",
   "COIN",
+  "COLM",
   "COST",
+  "CPRI",
+  "CQQQ",
   "CRM",
   "CROX",
   "CRWD",
   "CSCO",
   "CVX",
+  "CZR",
+  "DAL",
+  "DASH",
+  "DDOG",
+  "DELL",
   "DIS",
+  "DXJ",
   "EB",
+  "EBAY",
+  "ELF",
   "EPI",
   "ETSY",
   "EWJ",
   "EWY",
+  "EZU",
   "F",
+  "FEZ",
+  "FIVE",
+  "FLKR",
   "FUBO",
+  "FXI",
+  "GAP",
+  "GE",
   "GM",
   "GOOG",
   "GOOGL",
   "GPRO",
   "HAS",
   "HD",
+  "HEWJ",
   "HOG",
+  "HOOD",
+  "IBM",
+  "IEUR",
   "INDA",
   "INTC",
   "IRBT",
   "ITA",
+  "JBLU",
   "JNJ",
   "JPM",
   "KO",
   "KWEB",
   "LAZR",
+  "LCID",
+  "LEVI",
+  "LLY",
   "LULU",
   "LYFT",
+  "M",
   "MA",
+  "MAR",
   "MAT",
   "MCD",
   "MCHI",
   "META",
+  "MRK",
   "MSFT",
   "MU",
+  "NET",
   "NFLX",
+  "NIO",
   "NKE",
   "NVD",
   "NVDA",
   "NVDL",
   "OPEN",
   "ORCL",
+  "PENN",
   "PEP",
   "PFE",
+  "PG",
+  "PLAY",
+  "PLNT",
   "PLTR",
   "PLUG",
   "PTON",
   "PYPL",
   "QCOM",
   "QQQ",
+  "QS",
+  "RBLX",
+  "RH",
+  "RIG",
   "RIVN",
   "SBUX",
+  "SCJ",
+  "SHAK",
   "SHOP",
+  "SIRI",
   "SLB",
   "SMH",
+  "SNAP",
   "SNBR",
   "SNOW",
   "SONO",
+  "SOUN",
   "SOXL",
   "SOXS",
   "SPCE",
+  "SPOT",
   "SPXL",
   "SPXS",
   "SPY",
   "SQQQ",
   "TGT",
+  "TLRY",
+  "TMUS",
   "TQQQ",
+  "TRIP",
   "TSLA",
+  "TTD",
+  "U",
+  "UAL",
   "UBER",
   "UFO",
   "UNH",
+  "URBN",
   "V",
+  "VFC",
   "VGK",
   "VTI",
+  "WEN",
+  "WFC",
+  "WING",
   "WMT",
+  "WOOF",
   "XLE",
-  "XOM"
+  "XLF",
+  "XLV",
+  "XOM",
+  "YETI",
+  "ZM"
  ],
  "quotes": {
   "AAL": {
    "name": "American Airlines Group Inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 12.6,
-   "open": 12.64,
-   "prevClose": 12.78,
-   "change": -0.18,
-   "changePct": -1.41,
-   "dayHigh": 12.64,
-   "dayLow": 12.27,
+   "price": 13.08,
+   "open": 13.09,
+   "prevClose": 12.6,
+   "change": 0.48,
+   "changePct": 3.81,
+   "dayHigh": 13.4,
+   "dayLow": 12.96,
    "high52": 18.79,
    "low52": 10.09,
-   "volume": 60054246,
+   "volume": 84185003,
    "closes": [
-    13.37,
-    13.13,
-    12.94,
     12.83,
     13,
     12.85,
@@ -37609,27 +55141,25 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     12.61,
     12.58,
     12.78,
-    12.6
+    12.6,
+    13.08
    ]
   },
   "AAPL": {
    "name": "Apple Inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 344.63,
-   "open": 346.72,
-   "prevClose": 348.91,
-   "change": -4.28,
-   "changePct": -1.23,
-   "dayHigh": 349.19,
-   "dayLow": 342.35,
+   "price": 338.32,
+   "open": 342.67,
+   "prevClose": 344.63,
+   "change": -6.31,
+   "changePct": -1.83,
+   "dayHigh": 343.78,
+   "dayLow": 335.84,
    "high52": 351.73,
    "low52": 243.42,
-   "volume": 67841555,
+   "volume": 64689155,
    "closes": [
-    333.02,
-    330.32,
-    333.69,
     332.89,
     333.63,
     336.67,
@@ -37649,27 +55179,63 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     347.1,
     343.83,
     348.91,
-    344.63
+    344.63,
+    338.32
+   ]
+  },
+  "ABBV": {
+   "name": "AbbVie Inc.",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 288.84,
+   "open": 290.38,
+   "prevClose": 294.89,
+   "change": -6.05,
+   "changePct": -2.05,
+   "dayHigh": 294.86,
+   "dayLow": 286.14,
+   "high52": 298.74,
+   "low52": 190.75,
+   "volume": 8850080,
+   "closes": [
+    265.76,
+    266.69,
+    271.36,
+    272.42,
+    276.47,
+    281.12,
+    274.36,
+    283.48,
+    283.4,
+    285.42,
+    282.68,
+    289.08,
+    284.8,
+    285.19,
+    285.64,
+    286.74,
+    286.39,
+    285.99,
+    290.79,
+    294.89,
+    288.84
    ]
   },
   "ABNB": {
    "name": "Airbnb, Inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 164.39,
-   "open": 166.67,
-   "prevClose": 166.45,
-   "change": -2.06,
-   "changePct": -1.24,
-   "dayHigh": 166.85,
-   "dayLow": 164.1,
+   "price": 171.11,
+   "open": 167.6,
+   "prevClose": 164.39,
+   "change": 6.72,
+   "changePct": 4.09,
+   "dayHigh": 173.05,
+   "dayLow": 166.51,
    "high52": 193.45,
    "low52": 110.81,
-   "volume": 4024388,
+   "volume": 5960555,
    "closes": [
-    160.65,
-    160.47,
-    162.43,
     164.07,
     160.39,
     160.63,
@@ -37689,27 +55255,25 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     168.82,
     166.04,
     166.45,
-    164.39
+    164.39,
+    171.11
    ]
   },
   "ADBE": {
    "name": "Adobe Inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 250.23,
-   "open": 253.4,
-   "prevClose": 248.12,
-   "change": 2.11,
-   "changePct": 0.85,
-   "dayHigh": 257.13,
-   "dayLow": 248.8,
+   "price": 251.47,
+   "open": 249.96,
+   "prevClose": 250.23,
+   "change": 1.24,
+   "changePct": 0.5,
+   "dayHigh": 255.43,
+   "dayLow": 248.62,
    "high52": 362.71,
    "low52": 190.12,
-   "volume": 5823508,
+   "volume": 3882346,
    "closes": [
-    239.94,
-    241.28,
-    237.69,
     238.79,
     238.12,
     232.77,
@@ -37729,27 +55293,101 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     248.36,
     249.76,
     248.12,
-    250.23
+    250.23,
+    251.47
+   ]
+  },
+  "AEO": {
+   "name": "American Eagle Outfitters, Inc.",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 19.75,
+   "open": 19.62,
+   "prevClose": 19.61,
+   "change": 0.14,
+   "changePct": 0.71,
+   "dayHigh": 20.27,
+   "dayLow": 19.62,
+   "high52": 28.46,
+   "low52": 14.1,
+   "volume": 5660365,
+   "closes": [
+    18.11,
+    17.89,
+    17.66,
+    17.97,
+    18.17,
+    18.07,
+    17.78,
+    17.6,
+    18.05,
+    17.98,
+    17.93,
+    17.81,
+    17.38,
+    17.89,
+    17.91,
+    18.81,
+    19.42,
+    19.46,
+    20.12,
+    19.61,
+    19.75
+   ]
+  },
+  "AMC": {
+   "name": "AMC Entertainment Holdings, Inc.",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 3.19,
+   "open": 3.1,
+   "prevClose": 3.06,
+   "change": 0.13,
+   "changePct": 4.25,
+   "dayHigh": 3.26,
+   "dayLow": 3.04,
+   "high52": 3.4,
+   "low52": 0.93,
+   "volume": 29144200,
+   "closes": [
+    2.79,
+    2.95,
+    2.88,
+    2.88,
+    2.98,
+    3,
+    3.06,
+    2.89,
+    3.02,
+    2.91,
+    2.98,
+    3.08,
+    3.04,
+    2.93,
+    2.9,
+    2.89,
+    2.99,
+    2.99,
+    3.08,
+    3.06,
+    3.19
    ]
   },
   "AMD": {
    "name": "Advanced Micro Devices, Inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 504.8,
-   "open": 508.53,
-   "prevClose": 566.42,
-   "change": -61.62,
-   "changePct": -10.88,
-   "dayHigh": 520.4,
-   "dayLow": 492.24,
+   "price": 466.84,
+   "open": 510.71,
+   "prevClose": 504.8,
+   "change": -37.96,
+   "changePct": -7.52,
+   "dayHigh": 512.82,
+   "dayLow": 466.07,
    "high52": 658.52,
    "low52": 188.22,
-   "volume": 39697503,
+   "volume": 32129533,
    "closes": [
-    611.76,
-    615.73,
-    633.91,
     631.75,
     649.42,
     645.86,
@@ -37769,27 +55407,25 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     560.26,
     578.44,
     566.42,
-    504.8
+    504.8,
+    466.84
    ]
   },
   "AMZN": {
    "name": "Amazon.com, Inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 240.35,
-   "open": 232.54,
-   "prevClose": 243.79,
-   "change": -3.44,
-   "changePct": -1.41,
-   "dayHigh": 241.55,
-   "dayLow": 229.36,
+   "price": 245.63,
+   "open": 243.01,
+   "prevClose": 240.35,
+   "change": 5.28,
+   "changePct": 2.2,
+   "dayHigh": 253.81,
+   "dayLow": 242.28,
    "high52": 287.2,
    "low52": 196,
-   "volume": 104894738,
+   "volume": 58327853,
    "closes": [
-    249.15,
-    248.23,
-    251.52,
     251.4,
     256.29,
     259.92,
@@ -37809,27 +55445,63 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     253.1,
     254.6,
     243.79,
-    240.35
+    240.35,
+    245.63
+   ]
+  },
+  "ANF": {
+   "name": "Abercrombie & Fitch Co.",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 164.17,
+   "open": 165.28,
+   "prevClose": 164.44,
+   "change": -0.27,
+   "changePct": -0.16,
+   "dayHigh": 169.24,
+   "dayLow": 163.88,
+   "high52": 169.24,
+   "low52": 65.45,
+   "volume": 1134181,
+   "closes": [
+    141.4,
+    141.39,
+    139.44,
+    141.41,
+    142.58,
+    145.91,
+    150.88,
+    149.74,
+    151.99,
+    153.26,
+    162.01,
+    161.73,
+    159.64,
+    161.49,
+    155.82,
+    164.73,
+    165.38,
+    161.24,
+    165.77,
+    164.44,
+    164.17
    ]
   },
   "AVGO": {
    "name": "Broadcom Inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 326.08,
-   "open": 330.72,
-   "prevClose": 345,
-   "change": -18.92,
-   "changePct": -5.48,
-   "dayHigh": 331.98,
-   "dayLow": 319.3,
+   "price": 322.23,
+   "open": 328.37,
+   "prevClose": 326.08,
+   "change": -3.85,
+   "changePct": -1.18,
+   "dayHigh": 333.56,
+   "dayLow": 321.87,
    "high52": 495,
    "low52": 289.96,
-   "volume": 36511750,
+   "volume": 20318871,
    "closes": [
-    351.19,
-    343.64,
-    355.14,
     362.51,
     375.81,
     376.51,
@@ -37849,27 +55521,25 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     342.33,
     351.81,
     345,
-    326.08
+    326.08,
+    322.23
    ]
   },
   "BA": {
    "name": "The Boeing Company",
    "exchange": "NYSE",
    "type": "EQUITY",
-   "price": 171.55,
-   "open": 171.1,
-   "prevClose": 172.65,
-   "change": -1.1,
-   "changePct": -0.64,
-   "dayHigh": 173.82,
-   "dayLow": 170.37,
+   "price": 175.4,
+   "open": 173.21,
+   "prevClose": 171.55,
+   "change": 3.85,
+   "changePct": 2.24,
+   "dayHigh": 177.37,
+   "dayLow": 172.8,
    "high52": 254.35,
    "low52": 165.01,
-   "volume": 8726123,
+   "volume": 9439858,
    "closes": [
-    186.05,
-    192.28,
-    193.56,
     192.72,
     189.82,
     188.32,
@@ -37889,27 +55559,101 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     168.18,
     167.14,
     172.65,
-    171.55
+    171.55,
+    175.4
+   ]
+  },
+  "BAC": {
+   "name": "Bank of America Corporation",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 49.57,
+   "open": 50.45,
+   "prevClose": 50.01,
+   "change": -0.44,
+   "changePct": -0.88,
+   "dayHigh": 50.47,
+   "dayLow": 49.45,
+   "high52": 65.23,
+   "low52": 46.12,
+   "volume": 48512490,
+   "closes": [
+    54,
+    54.09,
+    53.52,
+    53.61,
+    54.32,
+    54.58,
+    53.96,
+    51.39,
+    51.7,
+    51.23,
+    50.39,
+    50.64,
+    50.78,
+    51.08,
+    50.56,
+    50.52,
+    50.68,
+    50.85,
+    51.14,
+    50.01,
+    49.57
+   ]
+  },
+  "BB": {
+   "name": "BlackBerry Limited",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 8.02,
+   "open": 8.45,
+   "prevClose": 8.42,
+   "change": -0.4,
+   "changePct": -4.75,
+   "dayHigh": 8.45,
+   "dayLow": 8.01,
+   "high52": 13.59,
+   "low52": 3.12,
+   "volume": 12253892,
+   "closes": [
+    9.08,
+    9.58,
+    8.77,
+    8.63,
+    8.91,
+    8.45,
+    8.47,
+    8.23,
+    8.7,
+    8.06,
+    8.16,
+    8.87,
+    9.41,
+    8.59,
+    8.92,
+    9.19,
+    9.55,
+    9.4,
+    9.19,
+    8.42,
+    8.02
    ]
   },
   "BBWI": {
    "name": "Bath & Body Works, Inc.",
    "exchange": "NYSE",
    "type": "EQUITY",
-   "price": 22.77,
-   "open": 22.78,
-   "prevClose": 22.78,
-   "change": -0.01,
-   "changePct": -0.04,
-   "dayHigh": 23.07,
-   "dayLow": 22.38,
+   "price": 23.19,
+   "open": 23.3,
+   "prevClose": 22.77,
+   "change": 0.42,
+   "changePct": 1.84,
+   "dayHigh": 23.66,
+   "dayLow": 22.94,
    "high52": 25.21,
    "low52": 14.28,
-   "volume": 6572732,
+   "volume": 7247716,
    "closes": [
-    15.92,
-    16.4,
-    16.06,
     17.46,
     17.93,
     17.81,
@@ -37929,27 +55673,139 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     21.95,
     21.64,
     22.78,
-    22.77
+    22.77,
+    23.19
+   ]
+  },
+  "BIRK": {
+   "name": "Birkenstock Holding plc",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 35.54,
+   "open": 33.81,
+   "prevClose": 33.43,
+   "change": 2.11,
+   "changePct": 6.31,
+   "dayHigh": 35.77,
+   "dayLow": 33.71,
+   "high52": 50.73,
+   "low52": 29.93,
+   "volume": 2590203,
+   "closes": [
+    33.77,
+    34,
+    33.17,
+    33.12,
+    33.65,
+    33.85,
+    34.18,
+    33.92,
+    35.89,
+    33.85,
+    32.71,
+    32.78,
+    32.32,
+    33.68,
+    32.57,
+    32.61,
+    32.26,
+    31.59,
+    33.39,
+    33.43,
+    35.54
+   ]
+  },
+  "BLNK": {
+   "name": "Blink Charging Co.",
+   "exchange": "NASDAQ",
+   "type": "EQUITY",
+   "price": 0.43,
+   "open": 0.41,
+   "prevClose": 0.4,
+   "change": 0.03,
+   "changePct": 7.5,
+   "dayHigh": 0.44,
+   "dayLow": 0.4,
+   "high52": 1.7,
+   "low52": 0.38,
+   "volume": 2278953,
+   "closes": [
+    0.55,
+    0.51,
+    0.51,
+    0.48,
+    0.47,
+    0.48,
+    0.48,
+    0.45,
+    0.44,
+    0.42,
+    0.42,
+    0.42,
+    0.42,
+    0.4,
+    0.38,
+    0.38,
+    0.38,
+    0.41,
+    0.41,
+    0.4,
+    0.43
+   ]
+  },
+  "BOOT": {
+   "name": "Boot Barn Holdings, Inc.",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 137.32,
+   "open": 134,
+   "prevClose": 132.24,
+   "change": 5.08,
+   "changePct": 3.84,
+   "dayHigh": 139.48,
+   "dayLow": 133.23,
+   "high52": 210.25,
+   "low52": 110.53,
+   "volume": 1310033,
+   "closes": [
+    122.88,
+    124.32,
+    122.34,
+    121.6,
+    119.96,
+    119.97,
+    117.57,
+    112.86,
+    120.62,
+    121.72,
+    119.36,
+    115.35,
+    116.09,
+    119.76,
+    115.18,
+    114.18,
+    111.69,
+    113.3,
+    130.48,
+    132.24,
+    137.32
    ]
   },
   "BOTZ": {
    "name": "Global X Robotics & Artificial Intelligence ETF",
    "exchange": "NASDAQ",
    "type": "ETF",
-   "price": 32.22,
-   "open": 32.6,
-   "prevClose": 33.42,
-   "change": -1.2,
-   "changePct": -3.59,
-   "dayHigh": 32.6,
-   "dayLow": 31.9,
+   "price": 32.27,
+   "open": 32.58,
+   "prevClose": 32.22,
+   "change": 0.05,
+   "changePct": 0.16,
+   "dayHigh": 32.91,
+   "dayLow": 32.2,
    "high52": 41.71,
    "low52": 31.88,
-   "volume": 911761,
+   "volume": 766492,
    "closes": [
-    35.23,
-    35.43,
-    36.03,
     36.2,
     36.17,
     35.67,
@@ -37969,27 +55825,63 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     33.48,
     34.03,
     33.42,
-    32.22
+    32.22,
+    32.27
+   ]
+  },
+  "BROS": {
+   "name": "Dutch Bros Inc.",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 43.87,
+   "open": 42.6,
+   "prevClose": 42.87,
+   "change": 1,
+   "changePct": 2.33,
+   "dayHigh": 45.1,
+   "dayLow": 42.6,
+   "high52": 74.02,
+   "low52": 36.51,
+   "volume": 5833257,
+   "closes": [
+    38.23,
+    39.06,
+    38.18,
+    39.78,
+    38.05,
+    37.28,
+    37.98,
+    39.17,
+    41.1,
+    41.16,
+    42.86,
+    43.82,
+    42.26,
+    41.75,
+    41.49,
+    42.02,
+    41.64,
+    42.93,
+    43.98,
+    42.87,
+    43.87
    ]
   },
   "BYND": {
    "name": "Beyond Meat, Inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 6.91,
-   "open": 7.2,
-   "prevClose": 7.38,
-   "change": -0.47,
-   "changePct": -6.37,
-   "dayHigh": 7.2,
-   "dayLow": 6.75,
+   "price": 7.05,
+   "open": 7.01,
+   "prevClose": 6.91,
+   "change": 0.14,
+   "changePct": 2.03,
+   "dayHigh": 7.7,
+   "dayLow": 7.01,
    "high52": 46.8,
    "low52": 6.49,
-   "volume": 1024658,
+   "volume": 883178,
    "closes": [
-    8.26,
-    8.26,
-    8.25,
     8.06,
     7.99,
     7.66,
@@ -38009,27 +55901,101 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     7,
     7.13,
     7.38,
-    6.91
+    6.91,
+    7.05
+   ]
+  },
+  "CAKE": {
+   "name": "The Cheesecake Factory Incorporated",
+   "exchange": "NASDAQ",
+   "type": "EQUITY",
+   "price": 112.96,
+   "open": 113.69,
+   "prevClose": 112.64,
+   "change": 0.32,
+   "changePct": 0.28,
+   "dayHigh": 117.96,
+   "dayLow": 112.87,
+   "high52": 118.63,
+   "low52": 43.07,
+   "volume": 1478759,
+   "closes": [
+    109.03,
+    108.23,
+    106.99,
+    106.91,
+    108.45,
+    109,
+    112.37,
+    112.85,
+    116.59,
+    114.92,
+    116.18,
+    116.43,
+    114.39,
+    112.44,
+    108.37,
+    110.13,
+    108.47,
+    105.73,
+    113.12,
+    112.64,
+    112.96
+   ]
+  },
+  "CAR": {
+   "name": "Avis Budget Group, Inc.",
+   "exchange": "NASDAQ",
+   "type": "EQUITY",
+   "price": 111.52,
+   "open": 109.61,
+   "prevClose": 107.99,
+   "change": 3.53,
+   "changePct": 3.27,
+   "dayHigh": 114.36,
+   "dayLow": 108.23,
+   "high52": 847.7,
+   "low52": 85.96,
+   "volume": 713639,
+   "closes": [
+    107.98,
+    112.65,
+    110.22,
+    110,
+    105.98,
+    105.1,
+    107.6,
+    106.72,
+    109.77,
+    102.83,
+    102.38,
+    102.45,
+    98.39,
+    101.55,
+    101.34,
+    101.86,
+    102.21,
+    101.74,
+    108.16,
+    107.99,
+    111.52
    ]
   },
   "CAVA": {
    "name": "CAVA Group, Inc.",
    "exchange": "NYSE",
    "type": "EQUITY",
-   "price": 58.74,
-   "open": 59.21,
-   "prevClose": 59.21,
-   "change": -0.47,
-   "changePct": -0.79,
-   "dayHigh": 60.33,
-   "dayLow": 58.09,
+   "price": 62.05,
+   "open": 59.53,
+   "prevClose": 58.74,
+   "change": 3.31,
+   "changePct": 5.64,
+   "dayHigh": 62.95,
+   "dayLow": 59,
    "high52": 98.79,
    "low52": 43.41,
-   "volume": 2330547,
+   "volume": 3904409,
    "closes": [
-    54.1,
-    54.4,
-    54.41,
     54.1,
     52.64,
     52.07,
@@ -38049,27 +56015,101 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     51.86,
     54.25,
     59.21,
-    58.74
+    58.74,
+    62.05
+   ]
+  },
+  "CHPT": {
+   "name": "ChargePoint Holdings, Inc.",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 9.88,
+   "open": 9.77,
+   "prevClose": 9.54,
+   "change": 0.34,
+   "changePct": 3.56,
+   "dayHigh": 10.73,
+   "dayLow": 9.73,
+   "high52": 11.26,
+   "low52": 4.44,
+   "volume": 1377462,
+   "closes": [
+    8.93,
+    8.67,
+    8.22,
+    8.13,
+    7.92,
+    7.22,
+    7.22,
+    6.65,
+    7.23,
+    6.91,
+    7.15,
+    7.83,
+    8.39,
+    8.21,
+    8.35,
+    8.24,
+    8.73,
+    9.22,
+    9.27,
+    9.54,
+    9.88
+   ]
+  },
+  "CHWY": {
+   "name": "Chewy, Inc.",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 22.27,
+   "open": 21.4,
+   "prevClose": 21.29,
+   "change": 0.98,
+   "changePct": 4.6,
+   "dayHigh": 22.57,
+   "dayLow": 21.15,
+   "high52": 37.34,
+   "low52": 17.4,
+   "volume": 6610503,
+   "closes": [
+    18.22,
+    18.14,
+    18.22,
+    18.91,
+    18.95,
+    19.5,
+    19.71,
+    20.83,
+    21.31,
+    20.97,
+    20.53,
+    21.53,
+    21.33,
+    22.33,
+    21.93,
+    21.9,
+    21.52,
+    20.64,
+    20.83,
+    21.29,
+    22.27
    ]
   },
   "CLOV": {
    "name": "Clover Health Investments, Corp.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 4.46,
+   "price": 4.31,
    "open": 4.53,
-   "prevClose": 4.58,
-   "change": -0.12,
-   "changePct": -2.62,
-   "dayHigh": 4.57,
-   "dayLow": 4.35,
+   "prevClose": 4.46,
+   "change": -0.15,
+   "changePct": -3.36,
+   "dayHigh": 4.53,
+   "dayLow": 4.27,
    "high52": 5.59,
    "low52": 1.58,
-   "volume": 4651444,
+   "volume": 5005122,
    "closes": [
-    4.31,
-    4.23,
-    4.38,
     4.68,
     4.6,
     4.56,
@@ -38089,27 +56129,63 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     4.63,
     4.79,
     4.58,
-    4.46
+    4.46,
+    4.31
+   ]
+  },
+  "CMG": {
+   "name": "Chipotle Mexican Grill, Inc.",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 32.91,
+   "open": 31.9,
+   "prevClose": 31.89,
+   "change": 1.02,
+   "changePct": 3.2,
+   "dayHigh": 33.35,
+   "dayLow": 31.9,
+   "high52": 41.42,
+   "low52": 27.31,
+   "volume": 19854563,
+   "closes": [
+    30.85,
+    30.9,
+    30.77,
+    32.68,
+    31.59,
+    30.4,
+    30.35,
+    30.52,
+    30.58,
+    29.89,
+    29.85,
+    29.65,
+    28.12,
+    28.14,
+    27.52,
+    28.41,
+    27.98,
+    28.73,
+    31.28,
+    31.89,
+    32.91
    ]
   },
   "COIN": {
    "name": "Coinbase Global, Inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 143.54,
-   "open": 148.23,
-   "prevClose": 160.59,
-   "change": -17.05,
-   "changePct": -10.62,
-   "dayHigh": 148.5,
-   "dayLow": 136.9,
+   "price": 137.83,
+   "open": 140.36,
+   "prevClose": 143.54,
+   "change": -5.71,
+   "changePct": -3.98,
+   "dayHigh": 143.77,
+   "dayLow": 135.47,
    "high52": 342.8,
-   "low52": 136.89,
-   "volume": 20893993,
+   "low52": 135.47,
+   "volume": 10634242,
    "closes": [
-    186.41,
-    189.29,
-    183,
     188.22,
     185.74,
     178.45,
@@ -38129,27 +56205,63 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     161.09,
     162.32,
     160.59,
-    143.54
+    143.54,
+    137.83
+   ]
+  },
+  "COLM": {
+   "name": "Columbia Sportswear Company",
+   "exchange": "NASDAQ",
+   "type": "EQUITY",
+   "price": 71.12,
+   "open": 67.49,
+   "prevClose": 67.54,
+   "change": 3.58,
+   "changePct": 5.3,
+   "dayHigh": 71.17,
+   "dayLow": 66.97,
+   "high52": 71.17,
+   "low52": 48.16,
+   "volume": 1358777,
+   "closes": [
+    56.93,
+    57.45,
+    56.53,
+    56.76,
+    57.04,
+    56.34,
+    57.06,
+    57.7,
+    60.82,
+    60.16,
+    59.98,
+    61.1,
+    59.51,
+    62.07,
+    61.35,
+    60.82,
+    61.17,
+    60.9,
+    63.69,
+    67.54,
+    71.12
    ]
   },
   "COST": {
    "name": "Costco Wholesale Corporation",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 1012.28,
-   "open": 1012.05,
-   "prevClose": 996.08,
-   "change": 16.2,
-   "changePct": 1.63,
-   "dayHigh": 1021.25,
-   "dayLow": 1006.56,
+   "price": 1040.55,
+   "open": 1015.87,
+   "prevClose": 1012.28,
+   "change": 28.27,
+   "changePct": 2.79,
+   "dayHigh": 1042.57,
+   "dayLow": 1014.34,
    "high52": 1096.5,
    "low52": 844.06,
-   "volume": 3466739,
+   "volume": 3114312,
    "closes": [
-    910.34,
-    914.94,
-    920.65,
     923.52,
     935.68,
     942.25,
@@ -38169,27 +56281,101 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     992.13,
     982.73,
     996.08,
-    1012.28
+    1012.28,
+    1040.55
+   ]
+  },
+  "CPRI": {
+   "name": "Capri Holdings Limited",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 20.05,
+   "open": 18.94,
+   "prevClose": 18.68,
+   "change": 1.37,
+   "changePct": 7.33,
+   "dayHigh": 20.57,
+   "dayLow": 19.19,
+   "high52": 28.27,
+   "low52": 12.4,
+   "volume": 7449406,
+   "closes": [
+    14.49,
+    14.67,
+    14.44,
+    14.68,
+    14.95,
+    15.09,
+    15.16,
+    15.02,
+    15.85,
+    15.95,
+    16.15,
+    16.51,
+    15.7,
+    16.36,
+    15.87,
+    15.57,
+    15.42,
+    15.29,
+    16.06,
+    18.68,
+    20.05
+   ]
+  },
+  "CQQQ": {
+   "name": "Invesco China Technology ETF",
+   "exchange": "NYSE ARCA",
+   "type": "ETF",
+   "price": 38.5,
+   "open": 38.57,
+   "prevClose": 37.78,
+   "change": 0.72,
+   "changePct": 1.91,
+   "dayHigh": 39.06,
+   "dayLow": 38.5,
+   "high52": 58.92,
+   "low52": 37.58,
+   "volume": 1193652,
+   "closes": [
+    45.05,
+    45.03,
+    44.44,
+    43.07,
+    43.88,
+    42.98,
+    43.09,
+    42,
+    41.98,
+    41.09,
+    40.99,
+    41.53,
+    41.11,
+    39.93,
+    40.26,
+    40.03,
+    39.49,
+    39.79,
+    38.74,
+    37.78,
+    38.5
    ]
   },
   "CRM": {
    "name": "Salesforce, Inc.",
    "exchange": "NYSE",
    "type": "EQUITY",
-   "price": 229.17,
-   "open": 231.34,
-   "prevClose": 230.9,
-   "change": -1.73,
-   "changePct": -0.75,
-   "dayHigh": 234.62,
-   "dayLow": 227.68,
+   "price": 226.18,
+   "open": 229.75,
+   "prevClose": 229.17,
+   "change": -2.99,
+   "changePct": -1.3,
+   "dayHigh": 232.95,
+   "dayLow": 225.15,
    "high52": 269.11,
    "low52": 146.32,
-   "volume": 7886465,
+   "volume": 6621619,
    "closes": [
-    229.57,
-    236.69,
-    234.69,
     229.79,
     224.99,
     224.56,
@@ -38209,27 +56395,25 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     240.89,
     242.11,
     230.9,
-    229.17
+    229.17,
+    226.18
    ]
   },
   "CROX": {
    "name": "Crocs, Inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 150.52,
-   "open": 151.73,
-   "prevClose": 150.26,
-   "change": 0.26,
-   "changePct": 0.17,
-   "dayHigh": 154.05,
-   "dayLow": 149,
-   "high52": 154.05,
+   "price": 153.13,
+   "open": 151.63,
+   "prevClose": 150.52,
+   "change": 2.61,
+   "changePct": 1.73,
+   "dayHigh": 156.71,
+   "dayLow": 150.26,
+   "high52": 156.71,
    "low52": 73.21,
-   "volume": 2119913,
+   "volume": 1497442,
    "closes": [
-    117.31,
-    119.24,
-    118.09,
     118.19,
     120.22,
     115.2,
@@ -38249,27 +56433,25 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     119.5,
     119.69,
     150.26,
-    150.52
+    150.52,
+    153.13
    ]
   },
   "CRWD": {
    "name": "CrowdStrike Holdings, Inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 250.43,
-   "open": 261.06,
-   "prevClose": 261.15,
-   "change": -10.72,
-   "changePct": -4.1,
-   "dayHigh": 264.9,
-   "dayLow": 245.15,
+   "price": 241.81,
+   "open": 253,
+   "prevClose": 250.43,
+   "change": -8.62,
+   "changePct": -3.44,
+   "dayHigh": 253.61,
+   "dayLow": 240.17,
    "high52": 286.99,
    "low52": 85.68,
-   "volume": 12503061,
+   "volume": 9274782,
    "closes": [
-    264.75,
-    266.09,
-    270.04,
     272.67,
     278.86,
     265.44,
@@ -38289,27 +56471,25 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     268.02,
     266.66,
     261.15,
-    250.43
+    250.43,
+    241.81
    ]
   },
   "CSCO": {
    "name": "Cisco Systems, Inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 104.51,
-   "open": 108.77,
-   "prevClose": 108.59,
-   "change": -4.08,
-   "changePct": -3.76,
-   "dayHigh": 108.77,
-   "dayLow": 103.15,
+   "price": 101.61,
+   "open": 105.42,
+   "prevClose": 104.51,
+   "change": -2.9,
+   "changePct": -2.77,
+   "dayHigh": 105.42,
+   "dayLow": 101.41,
    "high52": 130.37,
    "low52": 70.54,
-   "volume": 24706212,
+   "volume": 26009032,
    "closes": [
-    107.63,
-    108.76,
-    112.2,
     112.82,
     117.94,
     117.39,
@@ -38329,27 +56509,25 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     111.38,
     110.29,
     108.59,
-    104.51
+    104.51,
+    101.61
    ]
   },
   "CVX": {
    "name": "Chevron Corporation",
    "exchange": "NYSE",
    "type": "EQUITY",
-   "price": 235.52,
-   "open": 234.01,
-   "prevClose": 231.46,
-   "change": 4.06,
-   "changePct": 1.75,
-   "dayHigh": 236.46,
-   "dayLow": 233.22,
+   "price": 227.77,
+   "open": 232.5,
+   "prevClose": 235.52,
+   "change": -7.75,
+   "changePct": -3.29,
+   "dayHigh": 233.25,
+   "dayLow": 227.42,
    "high52": 236.48,
    "low52": 146.49,
-   "volume": 11009664,
+   "volume": 9170787,
    "closes": [
-    204.21,
-    207.1,
-    206.69,
     206.47,
     207.58,
     205.15,
@@ -38369,27 +56547,215 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     228.23,
     229.2,
     231.46,
-    235.52
+    235.52,
+    227.77
+   ]
+  },
+  "CZR": {
+   "name": "Caesars Entertainment, Inc.",
+   "exchange": "NASDAQ",
+   "type": "EQUITY",
+   "price": 28.99,
+   "open": 29.05,
+   "prevClose": 29.09,
+   "change": -0.1,
+   "changePct": -0.34,
+   "dayHigh": 29.11,
+   "dayLow": 28.96,
+   "high52": 30.88,
+   "low52": 17.86,
+   "volume": 7102887,
+   "closes": [
+    29.65,
+    29.65,
+    29.49,
+    29.52,
+    29.5,
+    29.58,
+    29.47,
+    29.3,
+    29.25,
+    28.8,
+    29.04,
+    29.09,
+    28.9,
+    29.07,
+    28.8,
+    28.99,
+    28.85,
+    28.57,
+    29.13,
+    29.09,
+    28.99
+   ]
+  },
+  "DAL": {
+   "name": "Delta Air Lines, Inc.",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 83.42,
+   "open": 83.04,
+   "prevClose": 80.15,
+   "change": 3.27,
+   "changePct": 4.08,
+   "dayHigh": 84.07,
+   "dayLow": 82.24,
+   "high52": 95.68,
+   "low52": 55.03,
+   "volume": 7588384,
+   "closes": [
+    83.08,
+    83.66,
+    82.97,
+    82.14,
+    82.17,
+    80.11,
+    79.57,
+    76.65,
+    78.08,
+    75.37,
+    74.63,
+    76.66,
+    77.67,
+    79.26,
+    76.78,
+    79.16,
+    81.45,
+    80.35,
+    81.64,
+    80.15,
+    83.42
+   ]
+  },
+  "DASH": {
+   "name": "DoorDash, Inc.",
+   "exchange": "NASDAQ",
+   "type": "EQUITY",
+   "price": 190.07,
+   "open": 181.17,
+   "prevClose": 178.99,
+   "change": 11.08,
+   "changePct": 6.19,
+   "dayHigh": 191.02,
+   "dayLow": 177,
+   "high52": 258,
+   "low52": 143.3,
+   "volume": 6211986,
+   "closes": [
+    191.77,
+    193.62,
+    191.24,
+    191.71,
+    196.5,
+    194.24,
+    193.09,
+    184.01,
+    193.05,
+    189.15,
+    193.53,
+    191.67,
+    184.45,
+    185.94,
+    179.38,
+    168.44,
+    170.56,
+    169.49,
+    179,
+    178.99,
+    190.07
+   ]
+  },
+  "DDOG": {
+   "name": "Datadog, Inc.",
+   "exchange": "NASDAQ",
+   "type": "EQUITY",
+   "price": 216.1,
+   "open": 235.51,
+   "prevClose": 235.27,
+   "change": -19.17,
+   "changePct": -8.15,
+   "dayHigh": 236.39,
+   "dayLow": 215.73,
+   "high52": 300.68,
+   "low52": 98.01,
+   "volume": 4651321,
+   "closes": [
+    276.42,
+    278.24,
+    271.34,
+    273.8,
+    293.26,
+    287.29,
+    283.34,
+    269.33,
+    266.25,
+    247.11,
+    260.36,
+    256.43,
+    273.09,
+    257.75,
+    269.65,
+    280.24,
+    280.82,
+    278.41,
+    265.84,
+    235.27,
+    216.1
+   ]
+  },
+  "DELL": {
+   "name": "Dell Technologies Inc.",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 392.78,
+   "open": 423,
+   "prevClose": 424.3,
+   "change": -31.52,
+   "changePct": -7.43,
+   "dayHigh": 424.13,
+   "dayLow": 391.29,
+   "high52": 595.51,
+   "low52": 110.22,
+   "volume": 6608456,
+   "closes": [
+    552.29,
+    574,
+    578.96,
+    574.55,
+    586.06,
+    576.76,
+    572.47,
+    507.93,
+    473.39,
+    451.71,
+    455.44,
+    461.56,
+    485.88,
+    452.95,
+    456.44,
+    467.09,
+    501.96,
+    493.79,
+    475.51,
+    424.3,
+    392.78
    ]
   },
   "DIS": {
    "name": "The Walt Disney Company",
    "exchange": "NYSE",
    "type": "EQUITY",
-   "price": 110.94,
-   "open": 111.82,
-   "prevClose": 110.91,
-   "change": 0.03,
-   "changePct": 0.03,
-   "dayHigh": 112.47,
-   "dayLow": 110.76,
+   "price": 113.11,
+   "open": 111.78,
+   "prevClose": 110.94,
+   "change": 2.17,
+   "changePct": 1.96,
+   "dayHigh": 113.79,
+   "dayLow": 111.81,
    "high52": 117.09,
    "low52": 92.19,
-   "volume": 6143195,
+   "volume": 7437480,
    "closes": [
-    104.9,
-    101.33,
-    102.19,
     103.61,
     104.03,
     104.75,
@@ -38409,27 +56775,155 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     110.23,
     109.04,
     110.91,
-    110.94
+    110.94,
+    113.11
+   ]
+  },
+  "DXJ": {
+   "name": "WisdomTree Japan Hedged Equity Fund",
+   "exchange": "NYSE ARCA",
+   "type": "ETF",
+   "price": 58.89,
+   "open": 58.76,
+   "prevClose": 58.39,
+   "change": 0.5,
+   "changePct": 0.86,
+   "dayHigh": 59.38,
+   "dayLow": 58.73,
+   "high52": 61.55,
+   "low52": 44.75,
+   "volume": 510806,
+   "closes": [
+    61.16,
+    61.29,
+    60.67,
+    60.22,
+    60.71,
+    60.67,
+    60.6,
+    60.09,
+    59.83,
+    59.8,
+    59.86,
+    60.01,
+    60,
+    59.02,
+    58.64,
+    59.17,
+    59.89,
+    59.46,
+    59.59,
+    58.39,
+    58.89
+   ]
+  },
+  "EB": {
+   "name": null,
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": null,
+   "open": null,
+   "prevClose": null,
+   "change": null,
+   "changePct": null,
+   "dayHigh": null,
+   "dayLow": null,
+   "high52": null,
+   "low52": null,
+   "volume": null,
+   "closes": []
+  },
+  "EBAY": {
+   "name": "eBay Inc.",
+   "exchange": "NASDAQ",
+   "type": "EQUITY",
+   "price": 120.93,
+   "open": 121.63,
+   "prevClose": 121.64,
+   "change": -0.71,
+   "changePct": -0.58,
+   "dayHigh": 123.92,
+   "dayLow": 120.31,
+   "high52": 124.59,
+   "low52": 78.03,
+   "volume": 4027217,
+   "closes": [
+    107.14,
+    107.06,
+    107.6,
+    111.98,
+    112.19,
+    114.65,
+    116.41,
+    116.88,
+    122.91,
+    120.28,
+    120.47,
+    121.19,
+    122.9,
+    122.04,
+    121.41,
+    118.62,
+    117.83,
+    118.02,
+    121.19,
+    121.64,
+    120.93
+   ]
+  },
+  "ELF": {
+   "name": "e.l.f. Beauty, Inc.",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 110.68,
+   "open": 114.37,
+   "prevClose": 111.69,
+   "change": -1.01,
+   "changePct": -0.9,
+   "dayHigh": 115,
+   "dayLow": 109.77,
+   "high52": 123.07,
+   "low52": 48.82,
+   "volume": 1265602,
+   "closes": [
+    103.75,
+    102.79,
+    105.03,
+    105.96,
+    109.23,
+    109.94,
+    108.16,
+    108.13,
+    116.11,
+    113.54,
+    113.48,
+    114.74,
+    113.78,
+    114.99,
+    114.24,
+    112.94,
+    113.17,
+    115.41,
+    112.95,
+    111.69,
+    110.68
    ]
   },
   "EPI": {
    "name": "WisdomTree India Earnings Fund",
    "exchange": "NYSE ARCA",
    "type": "ETF",
-   "price": 40.97,
-   "open": 40.69,
-   "prevClose": 40.78,
-   "change": 0.19,
-   "changePct": 0.47,
-   "dayHigh": 41,
-   "dayLow": 40.7,
+   "price": 41.69,
+   "open": 41.52,
+   "prevClose": 40.97,
+   "change": 0.72,
+   "changePct": 1.76,
+   "dayHigh": 41.83,
+   "dayLow": 41.53,
    "high52": 46.83,
    "low52": 39.36,
-   "volume": 430982,
+   "volume": 888517,
    "closes": [
-    40.73,
-    40.44,
-    40.53,
     40.51,
     40.57,
     40.09,
@@ -38449,27 +56943,25 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     40.32,
     40.33,
     40.78,
-    40.97
+    40.97,
+    41.69
    ]
   },
   "ETSY": {
    "name": "Etsy, Inc.",
    "exchange": "NYSE",
    "type": "EQUITY",
-   "price": 88.96,
-   "open": 90.42,
-   "prevClose": 91.59,
-   "change": -2.63,
-   "changePct": -2.87,
-   "dayHigh": 92.77,
-   "dayLow": 87.93,
-   "high52": 94.49,
+   "price": 92.45,
+   "open": 90.53,
+   "prevClose": 88.96,
+   "change": 3.49,
+   "changePct": 3.92,
+   "dayHigh": 95.49,
+   "dayLow": 90.02,
+   "high52": 95.49,
    "low52": 44,
-   "volume": 3428330,
+   "volume": 5003048,
    "closes": [
-    71.49,
-    72.84,
-    72.77,
     70.89,
     71.39,
     71.49,
@@ -38489,27 +56981,25 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     87.66,
     92.35,
     91.59,
-    88.96
+    88.96,
+    92.45
    ]
   },
   "EWJ": {
    "name": "iShares MSCI Japan ETF",
    "exchange": "NYSE ARCA",
    "type": "ETF",
-   "price": 92.91,
-   "open": 93.08,
-   "prevClose": 94.94,
-   "change": -2.03,
-   "changePct": -2.14,
-   "dayHigh": 93.24,
-   "dayLow": 92.07,
+   "price": 92.84,
+   "open": 92.91,
+   "prevClose": 92.91,
+   "change": -0.07,
+   "changePct": -0.08,
+   "dayHigh": 93.88,
+   "dayLow": 92.75,
    "high52": 99.98,
    "low52": 79.48,
-   "volume": 7345784,
+   "volume": 3908370,
    "closes": [
-    97.46,
-    97.38,
-    98.92,
     99.3,
     99.32,
     98.32,
@@ -38529,27 +57019,25 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     95.25,
     94.99,
     94.94,
-    92.91
+    92.91,
+    92.84
    ]
   },
   "EWY": {
    "name": "iShares MSCI South Korea ETF",
    "exchange": "NYSE ARCA",
    "type": "ETF",
-   "price": 152.89,
-   "open": 153.89,
-   "prevClose": 161.83,
-   "change": -8.94,
-   "changePct": -5.52,
-   "dayHigh": 155.04,
-   "dayLow": 150.7,
+   "price": 151.62,
+   "open": 158.37,
+   "prevClose": 152.89,
+   "change": -1.27,
+   "changePct": -0.83,
+   "dayHigh": 158.91,
+   "dayLow": 151.48,
    "high52": 220.89,
    "low52": 86.9,
-   "volume": 22500953,
+   "volume": 15065157,
    "closes": [
-    182.78,
-    186.11,
-    191.88,
     191.46,
     186.4,
     183.69,
@@ -38569,27 +57057,63 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     157.46,
     165.91,
     161.83,
-    152.89
+    152.89,
+    151.62
+   ]
+  },
+  "EZU": {
+   "name": "iShares MSCI Eurozone ETF",
+   "exchange": "Cboe US",
+   "type": "ETF",
+   "price": 65.71,
+   "open": 65.45,
+   "prevClose": 65.16,
+   "change": 0.55,
+   "changePct": 0.84,
+   "dayHigh": 66.26,
+   "dayLow": 65.45,
+   "high52": 72.2,
+   "low52": 59.92,
+   "volume": 1588642,
+   "closes": [
+    66.79,
+    67,
+    65.9,
+    65.63,
+    65.88,
+    65.61,
+    65.88,
+    65.33,
+    66.02,
+    65.82,
+    65.13,
+    65.62,
+    66.08,
+    65.04,
+    64.63,
+    64.93,
+    65.59,
+    65.72,
+    66.23,
+    65.16,
+    65.71
    ]
   },
   "F": {
    "name": "Ford Motor Company",
    "exchange": "NYSE",
    "type": "EQUITY",
-   "price": 12.25,
-   "open": 12.28,
-   "prevClose": 12.36,
-   "change": -0.11,
-   "changePct": -0.89,
-   "dayHigh": 12.34,
-   "dayLow": 12.12,
+   "price": 12.6,
+   "open": 12.4,
+   "prevClose": 12.25,
+   "change": 0.35,
+   "changePct": 2.86,
+   "dayHigh": 12.65,
+   "dayLow": 12.38,
    "high52": 17.78,
    "low52": 11.11,
-   "volume": 44464123,
+   "volume": 53362018,
    "closes": [
-    12.06,
-    12.27,
-    12.1,
     12.15,
     12.28,
     12.12,
@@ -38609,27 +57133,139 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     11.71,
     11.95,
     12.36,
-    12.25
+    12.25,
+    12.6
+   ]
+  },
+  "FEZ": {
+   "name": "State Street SPDR EURO STOXX 50 ETF",
+   "exchange": "NYSE ARCA",
+   "type": "ETF",
+   "price": 65.39,
+   "open": 65.54,
+   "prevClose": 65.03,
+   "change": 0.36,
+   "changePct": 0.55,
+   "dayHigh": 65.94,
+   "dayLow": 65.34,
+   "high52": 72.36,
+   "low52": 59.57,
+   "volume": 1431505,
+   "closes": [
+    66.74,
+    66.79,
+    65.8,
+    65.57,
+    65.92,
+    65.59,
+    65.77,
+    65.37,
+    66.05,
+    65.85,
+    65.11,
+    65.61,
+    66.12,
+    65.06,
+    64.56,
+    64.76,
+    65.37,
+    65.5,
+    66.05,
+    65.03,
+    65.39
+   ]
+  },
+  "FIVE": {
+   "name": "Five Below, Inc.",
+   "exchange": "NASDAQ",
+   "type": "EQUITY",
+   "price": 238.97,
+   "open": 241.42,
+   "prevClose": 240.96,
+   "change": -1.99,
+   "changePct": -0.83,
+   "dayHigh": 245.61,
+   "dayLow": 238.77,
+   "high52": 263.88,
+   "low52": 143.02,
+   "volume": 892351,
+   "closes": [
+    215.93,
+    209.92,
+    204.24,
+    209.73,
+    214.73,
+    213.58,
+    213.35,
+    218.95,
+    223.23,
+    222.72,
+    225.61,
+    223.8,
+    224.1,
+    225.87,
+    223.24,
+    230,
+    231.25,
+    234.47,
+    245.5,
+    240.96,
+    238.97
+   ]
+  },
+  "FLKR": {
+   "name": "Franklin FTSE South Korea ETF",
+   "exchange": "NYSE ARCA",
+   "type": "ETF",
+   "price": 49.99,
+   "open": 52.15,
+   "prevClose": 50.42,
+   "change": -0.43,
+   "changePct": -0.85,
+   "dayHigh": 52.27,
+   "dayLow": 49.99,
+   "high52": 72.49,
+   "low52": 29.06,
+   "volume": 644083,
+   "closes": [
+    62.68,
+    61.26,
+    60.37,
+    57.99,
+    58.36,
+    56.03,
+    54.89,
+    52.81,
+    51.61,
+    49.94,
+    51.94,
+    51.16,
+    51.77,
+    49.45,
+    50.15,
+    50.45,
+    51.86,
+    54.59,
+    53.18,
+    50.42,
+    49.99
    ]
   },
   "FUBO": {
    "name": "FuboTV Inc.",
    "exchange": "NYSE",
    "type": "EQUITY",
-   "price": 7.62,
-   "open": 7.81,
-   "prevClose": 7.96,
-   "change": -0.34,
-   "changePct": -4.27,
-   "dayHigh": 7.9,
-   "dayLow": 7.48,
+   "price": 7.61,
+   "open": 7.67,
+   "prevClose": 7.62,
+   "change": -0.01,
+   "changePct": -0.13,
+   "dayHigh": 7.92,
+   "dayLow": 7.55,
    "high52": 50.4,
    "low52": 7.48,
-   "volume": 1102895,
+   "volume": 766984,
    "closes": [
-    8.96,
-    8.88,
-    8.66,
     8.62,
     8.83,
     9.25,
@@ -38649,27 +57285,139 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     7.8,
     7.98,
     7.96,
-    7.62
+    7.62,
+    7.61
+   ]
+  },
+  "FXI": {
+   "name": "iShares China Large-Cap ETF",
+   "exchange": "NYSE ARCA",
+   "type": "ETF",
+   "price": 33.21,
+   "open": 33.1,
+   "prevClose": 33.08,
+   "change": 0.13,
+   "changePct": 0.39,
+   "dayHigh": 33.42,
+   "dayLow": 33.09,
+   "high52": 41.22,
+   "low52": 31.19,
+   "volume": 20630515,
+   "closes": [
+    33.85,
+    33.77,
+    33.42,
+    33.45,
+    34.24,
+    34.14,
+    34.17,
+    33.86,
+    34.26,
+    33.84,
+    33.53,
+    33.51,
+    32.94,
+    32.45,
+    32.31,
+    32.51,
+    32.5,
+    32.46,
+    32.69,
+    33.08,
+    33.21
+   ]
+  },
+  "GAP": {
+   "name": "The Gap, Inc.",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 22.22,
+   "open": 22.5,
+   "prevClose": 22.32,
+   "change": -0.1,
+   "changePct": -0.45,
+   "dayHigh": 22.74,
+   "dayLow": 22.05,
+   "high52": 29.36,
+   "low52": 18.11,
+   "volume": 6257925,
+   "closes": [
+    23.3,
+    23.79,
+    23.61,
+    23.36,
+    23.23,
+    22.78,
+    22.83,
+    22.67,
+    23.46,
+    23.12,
+    23.54,
+    23.47,
+    22.69,
+    22.91,
+    22.32,
+    22.26,
+    21.7,
+    22,
+    22.89,
+    22.32,
+    22.22
+   ]
+  },
+  "GE": {
+   "name": "GE Aerospace",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 315.78,
+   "open": 309.2,
+   "prevClose": 301.8,
+   "change": 13.98,
+   "changePct": 4.63,
+   "dayHigh": 316.79,
+   "dayLow": 308.17,
+   "high52": 388.84,
+   "low52": 268.91,
+   "volume": 4829940,
+   "closes": [
+    306.34,
+    309.39,
+    303.62,
+    305.62,
+    308.2,
+    308.64,
+    307.63,
+    307.02,
+    312,
+    313.83,
+    311.28,
+    299.87,
+    295.88,
+    293.54,
+    285.64,
+    288.43,
+    297.66,
+    301.13,
+    313.05,
+    301.8,
+    315.78
    ]
   },
   "GM": {
    "name": "General Motors Company",
    "exchange": "NYSE",
    "type": "EQUITY",
-   "price": 87.4,
-   "open": 85.51,
-   "prevClose": 85.72,
-   "change": 1.68,
-   "changePct": 1.96,
-   "dayHigh": 88.02,
-   "dayLow": 84.73,
+   "price": 89.94,
+   "open": 88.5,
+   "prevClose": 87.4,
+   "change": 2.54,
+   "changePct": 2.91,
+   "dayHigh": 90.03,
+   "dayLow": 87.92,
    "high52": 91.85,
    "low52": 66.75,
-   "volume": 11691040,
+   "volume": 8429526,
    "closes": [
-    77,
-    79.31,
-    78.27,
     80.23,
     82.01,
     80.99,
@@ -38689,27 +57437,25 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     80.54,
     82.48,
     85.72,
-    87.4
+    87.4,
+    89.94
    ]
   },
   "GOOG": {
    "name": "Alphabet Inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 278.22,
-   "open": 279.69,
-   "prevClose": 282.32,
-   "change": -4.1,
-   "changePct": -1.45,
-   "dayHigh": 281.86,
-   "dayLow": 275.35,
+   "price": 278.04,
+   "open": 280.58,
+   "prevClose": 278.22,
+   "change": -0.18,
+   "changePct": -0.06,
+   "dayHigh": 285.21,
+   "dayLow": 277.78,
    "high52": 404.47,
    "low52": 271.41,
-   "volume": 45116487,
+   "volume": 29219125,
    "closes": [
-    340.74,
-    334.93,
-    340.35,
     343.83,
     344.59,
     347.37,
@@ -38729,27 +57475,25 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     316.83,
     321.89,
     282.32,
-    278.22
+    278.22,
+    278.04
    ]
   },
   "GOOGL": {
    "name": "Alphabet Inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 279.84,
-   "open": 281.12,
-   "prevClose": 283.82,
-   "change": -3.98,
-   "changePct": -1.4,
-   "dayHigh": 283.14,
-   "dayLow": 276.92,
+   "price": 278.99,
+   "open": 282.46,
+   "prevClose": 279.84,
+   "change": -0.85,
+   "changePct": -0.3,
+   "dayHigh": 287,
+   "dayLow": 278.87,
    "high52": 408.61,
    "low52": 270.7,
-   "volume": 65695032,
+   "volume": 48504345,
    "closes": [
-    344.08,
-    338.24,
-    343.5,
     346.47,
     347.68,
     350.5,
@@ -38769,27 +57513,25 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     320.58,
     324.89,
     283.82,
-    279.84
+    279.84,
+    278.99
    ]
   },
   "GPRO": {
    "name": "GoPro, Inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 0.93,
-   "open": 1,
-   "prevClose": 1,
-   "change": -0.07,
-   "changePct": -7,
-   "dayHigh": 1.01,
-   "dayLow": 0.92,
+   "price": 0.96,
+   "open": 0.95,
+   "prevClose": 0.93,
+   "change": 0.03,
+   "changePct": 3.23,
+   "dayHigh": 0.98,
+   "dayLow": 0.93,
    "high52": 2.05,
    "low52": 0.57,
-   "volume": 10147238,
+   "volume": 9811781,
    "closes": [
-    1.29,
-    1.33,
-    1.35,
     1.36,
     1.32,
     1.22,
@@ -38809,27 +57551,25 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     1.02,
     1.03,
     1,
-    0.93
+    0.93,
+    0.95
    ]
   },
   "HAS": {
    "name": "Hasbro, Inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 119.09,
-   "open": 120.1,
-   "prevClose": 119.57,
-   "change": -0.48,
-   "changePct": -0.4,
-   "dayHigh": 120.36,
-   "dayLow": 118.16,
+   "price": 118.36,
+   "open": 119.4,
+   "prevClose": 119.09,
+   "change": -0.73,
+   "changePct": -0.61,
+   "dayHigh": 120.15,
+   "dayLow": 118.18,
    "high52": 121.04,
    "low52": 74.78,
-   "volume": 1921808,
+   "volume": 1967698,
    "closes": [
-    87.68,
-    89.98,
-    89.54,
     92.38,
     91.03,
     90.75,
@@ -38849,27 +57589,25 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     118.33,
     118.68,
     119.57,
-    119.09
+    119.09,
+    118.36
    ]
   },
   "HD": {
    "name": "The Home Depot, Inc.",
    "exchange": "NYSE",
    "type": "EQUITY",
-   "price": 329.2,
-   "open": 333.35,
-   "prevClose": 328.98,
-   "change": 0.22,
-   "changePct": 0.07,
-   "dayHigh": 334.8,
-   "dayLow": 328.56,
+   "price": 341.15,
+   "open": 334.08,
+   "prevClose": 329.2,
+   "change": 11.95,
+   "changePct": 3.63,
+   "dayHigh": 341.54,
+   "dayLow": 333,
    "high52": 397.63,
    "low52": 277.15,
-   "volume": 3936972,
+   "volume": 4778206,
    "closes": [
-    284.49,
-    282.46,
-    282.85,
     281.15,
     286.69,
     285.77,
@@ -38889,27 +57627,63 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     318.5,
     317.56,
     328.98,
-    329.2
+    329.2,
+    341.15
+   ]
+  },
+  "HEWJ": {
+   "name": "iShares Currency Hedged MSCI Japan ETF",
+   "exchange": "NYSE ARCA",
+   "type": "ETF",
+   "price": 62.54,
+   "open": 62.68,
+   "prevClose": 62.44,
+   "change": 0.1,
+   "changePct": 0.16,
+   "dayHigh": 63.16,
+   "dayLow": 62.54,
+   "high52": 67.27,
+   "low52": 51.98,
+   "volume": 66242,
+   "closes": [
+    66.78,
+    66.82,
+    66.15,
+    65.58,
+    66.09,
+    65.87,
+    65.59,
+    64.61,
+    64.35,
+    63.91,
+    64.27,
+    64.42,
+    64.61,
+    63.2,
+    62.87,
+    63.38,
+    63.73,
+    64.01,
+    63.98,
+    62.44,
+    62.54
    ]
   },
   "HOG": {
    "name": "Harley-Davidson, Inc.",
    "exchange": "NYSE",
    "type": "EQUITY",
-   "price": 31.22,
-   "open": 30.26,
-   "prevClose": 30.33,
-   "change": 0.89,
-   "changePct": 2.93,
-   "dayHigh": 31.22,
-   "dayLow": 29.93,
-   "high52": 31.23,
+   "price": 33.07,
+   "open": 31.6,
+   "prevClose": 31.22,
+   "change": 1.85,
+   "changePct": 5.93,
+   "dayHigh": 33.38,
+   "dayLow": 31.6,
+   "high52": 33.38,
    "low52": 17.09,
-   "volume": 3251566,
+   "volume": 4682265,
    "closes": [
-    24.43,
-    24.83,
-    24.55,
     26.19,
     26.94,
     26.95,
@@ -38929,27 +57703,139 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     29.44,
     29.52,
     30.33,
-    31.22
+    31.22,
+    33.07
+   ]
+  },
+  "HOOD": {
+   "name": "Robinhood Markets, Inc.",
+   "exchange": "NASDAQ",
+   "type": "EQUITY",
+   "price": 83.84,
+   "open": 85.56,
+   "prevClose": 84.99,
+   "change": -1.15,
+   "changePct": -1.35,
+   "dayHigh": 87.37,
+   "dayLow": 83.35,
+   "high52": 149.41,
+   "low52": 63.52,
+   "volume": 19525136,
+   "closes": [
+    114.11,
+    112,
+    109.51,
+    107.01,
+    109.02,
+    109.22,
+    110.52,
+    101.08,
+    103.99,
+    98.87,
+    96.52,
+    98.21,
+    101.93,
+    96.58,
+    95.07,
+    92.84,
+    94.56,
+    91.43,
+    91.59,
+    84.99,
+    83.84
+   ]
+  },
+  "IBM": {
+   "name": "International Business Machines Corporation",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 252.51,
+   "open": 258.12,
+   "prevClose": 257.81,
+   "change": -5.3,
+   "changePct": -2.06,
+   "dayHigh": 259.87,
+   "dayLow": 252.36,
+   "high52": 332.46,
+   "low52": 199.19,
+   "volume": 5592757,
+   "closes": [
+    221.58,
+    221.29,
+    220.51,
+    226.61,
+    227.13,
+    227.02,
+    230.78,
+    227.88,
+    234.12,
+    232.14,
+    236.39,
+    241.92,
+    251.46,
+    252.11,
+    253.56,
+    253.44,
+    250.25,
+    253.22,
+    258.28,
+    257.81,
+    252.51
+   ]
+  },
+  "IEUR": {
+   "name": "iShares Core MSCI Europe ETF",
+   "exchange": "NYSE ARCA",
+   "type": "ETF",
+   "price": 74.79,
+   "open": 74.71,
+   "prevClose": 74.4,
+   "change": 0.39,
+   "changePct": 0.52,
+   "dayHigh": 75.16,
+   "dayLow": 74.72,
+   "high52": 78.9,
+   "low52": 66.45,
+   "volume": 772780,
+   "closes": [
+    73.31,
+    73.58,
+    72.7,
+    72.58,
+    73.1,
+    72.84,
+    73.3,
+    73.05,
+    74.05,
+    74.09,
+    73.36,
+    74.01,
+    74.3,
+    73.71,
+    73.3,
+    73.49,
+    73.91,
+    74.1,
+    74.85,
+    74.4,
+    74.79
    ]
   },
   "INDA": {
    "name": "iShares MSCI India ETF",
    "exchange": "Cboe US",
    "type": "ETF",
-   "price": 47.72,
-   "open": 47.42,
-   "prevClose": 47.41,
-   "change": 0.31,
-   "changePct": 0.65,
-   "dayHigh": 47.76,
-   "dayLow": 47.42,
+   "price": 48.45,
+   "open": 48.24,
+   "prevClose": 47.72,
+   "change": 0.73,
+   "changePct": 1.53,
+   "dayHigh": 48.54,
+   "dayLow": 48.16,
    "high52": 55.1,
    "low52": 45.21,
-   "volume": 6258413,
+   "volume": 9860116,
    "closes": [
-    46.68,
-    46.36,
-    46.52,
     46.57,
     46.73,
     46.11,
@@ -38969,27 +57855,25 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     46.74,
     46.79,
     47.41,
-    47.72
+    47.72,
+    48.45
    ]
   },
   "INTC": {
    "name": "Intel Corporation",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 65.76,
-   "open": 68.36,
-   "prevClose": 92.07,
-   "change": -26.31,
-   "changePct": -28.58,
-   "dayHigh": 68.77,
-   "dayLow": 63.2,
+   "price": 59.97,
+   "open": 65.4,
+   "prevClose": 65.76,
+   "change": -5.79,
+   "changePct": -8.8,
+   "dayHigh": 65.72,
+   "dayLow": 59.4,
    "high52": 142.35,
    "low52": 32.89,
-   "volume": 455599430,
+   "volume": 230485372,
    "closes": [
-    120.23,
-    120,
-    119.33,
     116.19,
     112.5,
     113.12,
@@ -39009,27 +57893,41 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     93.74,
     95.53,
     92.07,
-    65.76
+    65.76,
+    59.97
    ]
+  },
+  "IRBT": {
+   "name": null,
+   "exchange": "NASDAQ",
+   "type": "EQUITY",
+   "price": null,
+   "open": null,
+   "prevClose": null,
+   "change": null,
+   "changePct": null,
+   "dayHigh": null,
+   "dayLow": null,
+   "high52": null,
+   "low52": null,
+   "volume": null,
+   "closes": []
   },
   "ITA": {
    "name": "iShares U.S. Aerospace & Defense ETF",
    "exchange": "Cboe US",
    "type": "ETF",
-   "price": 209.74,
-   "open": 214,
-   "prevClose": 214.3,
-   "change": -4.56,
-   "changePct": -2.13,
-   "dayHigh": 215.55,
-   "dayLow": 208.72,
+   "price": 214.68,
+   "open": 212.07,
+   "prevClose": 209.74,
+   "change": 4.94,
+   "changePct": 2.36,
+   "dayHigh": 215.69,
+   "dayLow": 211.87,
    "high52": 256.6,
    "low52": 195.71,
-   "volume": 1299312,
+   "volume": 1072347,
    "closes": [
-    207.18,
-    208.04,
-    207.79,
     206.98,
     208.26,
     203.6,
@@ -39049,27 +57947,63 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     206.22,
     207.74,
     214.3,
-    209.74
+    209.74,
+    214.68
+   ]
+  },
+  "JBLU": {
+   "name": "JetBlue Airways Corporation",
+   "exchange": "NASDAQ",
+   "type": "EQUITY",
+   "price": 3.17,
+   "open": 2.99,
+   "prevClose": 2.85,
+   "change": 0.32,
+   "changePct": 11.23,
+   "dayHigh": 3.23,
+   "dayLow": 2.97,
+   "high52": 6.62,
+   "low52": 2.16,
+   "volume": 32585866,
+   "closes": [
+    4.06,
+    4.03,
+    3.97,
+    3.92,
+    3.84,
+    3.62,
+    3.35,
+    3.01,
+    3.15,
+    2.93,
+    2.91,
+    2.91,
+    2.93,
+    2.65,
+    2.63,
+    2.37,
+    2.82,
+    2.85,
+    3.05,
+    2.85,
+    3.17
    ]
   },
   "JNJ": {
    "name": "Johnson & Johnson",
    "exchange": "NYSE",
    "type": "EQUITY",
-   "price": 273.2,
-   "open": 280,
-   "prevClose": 275.2,
-   "change": -2,
-   "changePct": -0.73,
-   "dayHigh": 282,
-   "dayLow": 273.15,
+   "price": 270.56,
+   "open": 272.06,
+   "prevClose": 273.2,
+   "change": -2.64,
+   "changePct": -0.97,
+   "dayHigh": 273.01,
+   "dayLow": 267.44,
    "high52": 282.02,
    "low52": 185.12,
-   "volume": 8968187,
+   "volume": 8262644,
    "closes": [
-    264.74,
-    258.66,
-    256.03,
     252.93,
     254.78,
     258.45,
@@ -39089,27 +58023,25 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     268.73,
     271.04,
     275.2,
-    273.2
+    273.2,
+    270.56
    ]
   },
   "JPM": {
    "name": "JPMorgan Chase & Co.",
    "exchange": "NYSE",
    "type": "EQUITY",
-   "price": 337.04,
-   "open": 345.29,
-   "prevClose": 343.58,
-   "change": -6.54,
-   "changePct": -1.9,
-   "dayHigh": 345.29,
-   "dayLow": 335.12,
+   "price": 340.58,
+   "open": 340.94,
+   "prevClose": 337.04,
+   "change": 3.54,
+   "changePct": 1.05,
+   "dayHigh": 342.4,
+   "dayLow": 339.92,
    "high52": 366.5,
    "low52": 279.1,
-   "volume": 7829798,
+   "volume": 6014579,
    "closes": [
-    330.83,
-    333.18,
-    332.38,
     332.38,
     331.28,
     329.58,
@@ -39129,27 +58061,25 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     335.79,
     339.3,
     343.58,
-    337.04
+    337.04,
+    340.58
    ]
   },
   "KO": {
    "name": "The Coca-Cola Company",
    "exchange": "NYSE",
    "type": "EQUITY",
-   "price": 94.08,
-   "open": 94.52,
-   "prevClose": 92.82,
-   "change": 1.26,
-   "changePct": 1.36,
-   "dayHigh": 95.08,
-   "dayLow": 93.95,
-   "high52": 95.37,
+   "price": 95.83,
+   "open": 94.28,
+   "prevClose": 94.08,
+   "change": 1.75,
+   "changePct": 1.86,
+   "dayHigh": 96.26,
+   "dayLow": 94.28,
+   "high52": 96.26,
    "low52": 67.27,
-   "volume": 18358783,
+   "volume": 22706151,
    "closes": [
-    86.08,
-    86.1,
-    85.65,
     86.51,
     86.17,
     85.82,
@@ -39169,27 +58099,25 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     91.18,
     91.73,
     92.82,
-    94.08
+    94.08,
+    95.83
    ]
   },
   "KWEB": {
    "name": "KraneShares CSI China Internet ETF",
    "exchange": "NYSE ARCA",
    "type": "ETF",
-   "price": 22.74,
-   "open": 22.78,
-   "prevClose": 22.79,
-   "change": -0.05,
-   "changePct": -0.22,
-   "dayHigh": 22.95,
-   "dayLow": 22.69,
+   "price": 23.35,
+   "open": 23.19,
+   "prevClose": 22.74,
+   "change": 0.61,
+   "changePct": 2.68,
+   "dayHigh": 23.65,
+   "dayLow": 23.18,
    "high52": 40.1,
    "low52": 22.54,
-   "volume": 14936590,
+   "volume": 30354294,
    "closes": [
-    24.51,
-    24.33,
-    23.86,
     24.56,
     24.54,
     24.33,
@@ -39209,27 +58137,25 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     23.13,
     22.99,
     22.79,
-    22.74
+    22.74,
+    23.35
    ]
   },
   "LAZR": {
    "name": "Tema Photonics & Optical ETF",
    "exchange": "NYSE ARCA",
    "type": "ETF",
-   "price": 34.09,
-   "open": 34.67,
-   "prevClose": 37.1,
-   "change": -3.01,
-   "changePct": -8.11,
-   "dayHigh": 35.15,
-   "dayLow": 33.04,
+   "price": 32.02,
+   "open": 34.58,
+   "prevClose": 34.09,
+   "change": -2.07,
+   "changePct": -6.07,
+   "dayHigh": 34.15,
+   "dayLow": 31.96,
    "high52": 50.82,
-   "low52": 32.55,
-   "volume": 350704,
+   "low52": 31.96,
+   "volume": 176470,
    "closes": [
-    44.46,
-    45.63,
-    48.28,
     48.35,
     48.63,
     47.78,
@@ -39249,27 +58175,139 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     36.33,
     37.91,
     37.1,
-    34.09
+    34.09,
+    32.02
+   ]
+  },
+  "LCID": {
+   "name": "Lucid Group, Inc.",
+   "exchange": "NASDAQ",
+   "type": "EQUITY",
+   "price": 3,
+   "open": 3.09,
+   "prevClose": 3.02,
+   "change": -0.02,
+   "changePct": -0.66,
+   "dayHigh": 3.3,
+   "dayLow": 2.99,
+   "high52": 18.1,
+   "low52": 2.37,
+   "volume": 12709565,
+   "closes": [
+    4.17,
+    4.16,
+    3.89,
+    3.82,
+    3.79,
+    3.43,
+    3.36,
+    3.29,
+    3.5,
+    3.13,
+    3.1,
+    3.27,
+    3.21,
+    3.46,
+    3.52,
+    3.4,
+    3.31,
+    3.41,
+    3.2,
+    3.02,
+    3
+   ]
+  },
+  "LEVI": {
+   "name": "Levi Strauss & Co.",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 23.03,
+   "open": 22.72,
+   "prevClose": 22.5,
+   "change": 0.53,
+   "changePct": 2.36,
+   "dayHigh": 23.19,
+   "dayLow": 22.72,
+   "high52": 25.7,
+   "low52": 17.72,
+   "volume": 2963945,
+   "closes": [
+    20.27,
+    20.53,
+    19.51,
+    19.05,
+    18.7,
+    19.24,
+    19.48,
+    19.57,
+    20.65,
+    20.44,
+    20.63,
+    20.85,
+    20.93,
+    21.36,
+    21.13,
+    21.84,
+    21.78,
+    21.63,
+    22.61,
+    22.5,
+    23.03
+   ]
+  },
+  "LLY": {
+   "name": "Eli Lilly and Company",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 1410.99,
+   "open": 1393.15,
+   "prevClose": 1417.54,
+   "change": -6.55,
+   "changePct": -0.46,
+   "dayHigh": 1421.99,
+   "dayLow": 1387.1,
+   "high52": 1449.68,
+   "low52": 850.51,
+   "volume": 3737111,
+   "closes": [
+    1143.12,
+    1157.49,
+    1188.72,
+    1169.6,
+    1179.27,
+    1182.62,
+    1166.51,
+    1208.74,
+    1251.61,
+    1257.03,
+    1240.34,
+    1283.66,
+    1270.75,
+    1306.69,
+    1273.46,
+    1279.14,
+    1281.91,
+    1288.3,
+    1373.7,
+    1417.54,
+    1410.99
    ]
   },
   "LULU": {
    "name": "lululemon athletica inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 107.24,
-   "open": 110.1,
-   "prevClose": 109.82,
-   "change": -2.58,
-   "changePct": -2.35,
-   "dayHigh": 111.68,
-   "dayLow": 106.56,
+   "price": 107.83,
+   "open": 107.48,
+   "prevClose": 107.24,
+   "change": 0.59,
+   "changePct": 0.55,
+   "dayHigh": 110.19,
+   "dayLow": 107.27,
    "high52": 225.98,
    "low52": 90.38,
-   "volume": 3923320,
+   "volume": 2621947,
    "closes": [
-    96.19,
-    95.86,
-    94.46,
     93.14,
     93.61,
     91.88,
@@ -39289,27 +58327,25 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     104.59,
     105.22,
     109.82,
-    107.24
+    107.24,
+    107.83
    ]
   },
   "LYFT": {
    "name": "Lyft, Inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 16.16,
-   "open": 16.33,
-   "prevClose": 16.41,
-   "change": -0.25,
-   "changePct": -1.52,
-   "dayHigh": 16.36,
-   "dayLow": 15.84,
+   "price": 16.62,
+   "open": 16.35,
+   "prevClose": 16.16,
+   "change": 0.46,
+   "changePct": 2.85,
+   "dayHigh": 16.99,
+   "dayLow": 16.23,
    "high52": 25.54,
    "low52": 12.46,
-   "volume": 8116278,
+   "volume": 10646286,
    "closes": [
-    15.01,
-    15.21,
-    15.46,
     15.73,
     15.76,
     15.6,
@@ -39329,27 +58365,63 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     16.79,
     16.34,
     16.41,
-    16.16
+    16.16,
+    16.62
+   ]
+  },
+  "M": {
+   "name": "Macy's, Inc.",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 24.33,
+   "open": 24.48,
+   "prevClose": 24.11,
+   "change": 0.22,
+   "changePct": 0.91,
+   "dayHigh": 24.69,
+   "dayLow": 24.02,
+   "high52": 26.59,
+   "low52": 16.69,
+   "volume": 5731290,
+   "closes": [
+    22.51,
+    22.46,
+    22.79,
+    22.79,
+    22.67,
+    22.99,
+    22.74,
+    22.68,
+    24.22,
+    24,
+    23.6,
+    23.41,
+    23.43,
+    24.17,
+    24.1,
+    23.59,
+    23.86,
+    23.74,
+    24.72,
+    24.11,
+    24.33
    ]
   },
   "MA": {
    "name": "Mastercard Incorporated",
    "exchange": "NYSE",
    "type": "EQUITY",
-   "price": 638.01,
-   "open": 642.43,
-   "prevClose": 635.7,
-   "change": 2.31,
-   "changePct": 0.36,
-   "dayHigh": 644.21,
-   "dayLow": 633.41,
-   "high52": 644.24,
+   "price": 658.1,
+   "open": 638.32,
+   "prevClose": 638.01,
+   "change": 20.09,
+   "changePct": 3.15,
+   "dayHigh": 661.34,
+   "dayLow": 638.25,
+   "high52": 661.34,
    "low52": 464.52,
-   "volume": 4516903,
+   "volume": 3977345,
    "closes": [
-    551.47,
-    550,
-    552.26,
     564.59,
     566.58,
     570.06,
@@ -39369,27 +58441,63 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     609.85,
     610.31,
     635.7,
-    638.01
+    638.01,
+    658.1
+   ]
+  },
+  "MAR": {
+   "name": "Marriott International, Inc.",
+   "exchange": "NASDAQ",
+   "type": "EQUITY",
+   "price": 416.3,
+   "open": 425,
+   "prevClose": 399.3,
+   "change": 17,
+   "changePct": 4.26,
+   "dayHigh": 433.3,
+   "dayLow": 411.8,
+   "high52": 433.3,
+   "low52": 258.99,
+   "volume": 2590311,
+   "closes": [
+    355.89,
+    361.28,
+    356.5,
+    361.08,
+    365.88,
+    369.3,
+    371.5,
+    371.82,
+    385.71,
+    388.05,
+    390.7,
+    397.31,
+    404,
+    396.8,
+    390.71,
+    394.75,
+    390.23,
+    394.4,
+    399.65,
+    399.3,
+    416.3
    ]
   },
   "MAT": {
    "name": "Mattel, Inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 15.42,
-   "open": 15.52,
-   "prevClose": 15.48,
-   "change": -0.06,
-   "changePct": -0.39,
-   "dayHigh": 15.6,
-   "dayLow": 15.27,
+   "price": 15.53,
+   "open": 15.51,
+   "prevClose": 15.42,
+   "change": 0.11,
+   "changePct": 0.71,
+   "dayHigh": 15.85,
+   "dayLow": 15.45,
    "high52": 22.48,
    "low52": 12.4,
-   "volume": 4564989,
+   "volume": 4511429,
    "closes": [
-    12.66,
-    15.04,
-    15.27,
     16.05,
     15.93,
     16.37,
@@ -39409,27 +58517,25 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     15.43,
     15.28,
     15.48,
-    15.42
+    15.42,
+    15.53
    ]
   },
   "MCD": {
    "name": "McDonald's Corporation",
    "exchange": "NYSE",
    "type": "EQUITY",
-   "price": 258.12,
-   "open": 260.38,
-   "prevClose": 257.38,
-   "change": 0.74,
-   "changePct": 0.29,
-   "dayHigh": 262.88,
-   "dayLow": 257.11,
+   "price": 265.64,
+   "open": 260.02,
+   "prevClose": 258.12,
+   "change": 7.52,
+   "changePct": 2.91,
+   "dayHigh": 265.64,
+   "dayLow": 259.75,
    "high52": 341.75,
    "low52": 229.2,
-   "volume": 6521726,
+   "volume": 6480042,
    "closes": [
-    230.94,
-    231.83,
-    231.89,
     233.04,
     232.45,
     230.88,
@@ -39449,27 +58555,25 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     249.47,
     250.5,
     257.38,
-    258.12
+    258.12,
+    265.64
    ]
   },
   "MCHI": {
    "name": "iShares MSCI China ETF",
    "exchange": "NASDAQ",
    "type": "ETF",
-   "price": 49.07,
-   "open": 49.03,
-   "prevClose": 48.96,
-   "change": 0.11,
-   "changePct": 0.22,
-   "dayHigh": 49.18,
-   "dayLow": 48.91,
+   "price": 49.59,
+   "open": 49.45,
+   "prevClose": 49.07,
+   "change": 0.52,
+   "changePct": 1.06,
+   "dayHigh": 49.95,
+   "dayLow": 49.45,
    "high52": 65.37,
    "low52": 48.65,
-   "volume": 2627256,
+   "volume": 2188252,
    "closes": [
-    52.19,
-    52.11,
-    51.24,
     52.28,
     52.22,
     51.64,
@@ -39489,27 +58593,25 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     49.08,
     49.04,
     48.96,
-    49.07
+    49.07,
+    49.59
    ]
   },
   "META": {
    "name": "Meta Platforms, Inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 614.99,
-   "open": 614.51,
-   "prevClose": 624.52,
-   "change": -9.53,
-   "changePct": -1.53,
-   "dayHigh": 626.37,
-   "dayLow": 610.14,
+   "price": 606.73,
+   "open": 614.44,
+   "prevClose": 614.99,
+   "change": -8.26,
+   "changePct": -1.34,
+   "dayHigh": 621.69,
+   "dayLow": 606.41,
    "high52": 779.82,
    "low52": 520.26,
-   "volume": 25364656,
+   "volume": 19494137,
    "closes": [
-    725.18,
-    725.93,
-    728.08,
     741.9,
     738.88,
     721.31,
@@ -39529,27 +58631,63 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     620.19,
     612.49,
     624.52,
-    614.99
+    614.99,
+    606.73
+   ]
+  },
+  "MRK": {
+   "name": "Merck & Co., Inc.",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 148.36,
+   "open": 148.82,
+   "prevClose": 149.52,
+   "change": -1.16,
+   "changePct": -0.78,
+   "dayHigh": 150.25,
+   "dayLow": 147.12,
+   "high52": 156.92,
+   "low52": 82.01,
+   "volume": 9095330,
+   "closes": [
+    139.54,
+    141.94,
+    142.79,
+    142.38,
+    145.6,
+    145.45,
+    141.98,
+    147.37,
+    145.19,
+    145.95,
+    143.63,
+    148.3,
+    149.88,
+    147.24,
+    145.27,
+    140.61,
+    141.82,
+    140.93,
+    146.33,
+    149.52,
+    148.36
    ]
   },
   "MSFT": {
    "name": "Microsoft Corporation",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 521.91,
-   "open": 525.27,
-   "prevClose": 530.14,
-   "change": -8.23,
-   "changePct": -1.55,
-   "dayHigh": 526,
-   "dayLow": 514.35,
+   "price": 507.12,
+   "open": 524.02,
+   "prevClose": 521.91,
+   "change": -14.79,
+   "changePct": -2.83,
+   "dayHigh": 529.63,
+   "dayLow": 504.96,
    "high52": 551.15,
    "low52": 349.2,
-   "volume": 35652049,
+   "volume": 34738903,
    "closes": [
-    512.9,
-    512.8,
-    517.53,
     525.18,
     529.3,
     529.76,
@@ -39569,27 +58707,25 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     531.33,
     531.01,
     530.14,
-    521.91
+    521.91,
+    507.12
    ]
   },
   "MU": {
    "name": "Micron Technology, Inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 884.74,
-   "open": 884,
-   "prevClose": 934.27,
-   "change": -49.53,
-   "changePct": -5.3,
-   "dayHigh": 906.54,
-   "dayLow": 861.59,
+   "price": 833.59,
+   "open": 890.54,
+   "prevClose": 884.74,
+   "change": -51.15,
+   "changePct": -5.78,
+   "dayHigh": 892.08,
+   "dayLow": 829.24,
    "high52": 1255,
    "low52": 192.59,
-   "volume": 30872693,
+   "volume": 29868539,
    "closes": [
-    1065.11,
-    1097.39,
-    1074.89,
     1063.96,
     1045.56,
     1088,
@@ -39609,27 +58745,63 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     928.76,
     983.23,
     934.27,
-    884.74
+    884.74,
+    833.59
+   ]
+  },
+  "NET": {
+   "name": "Cloudflare, Inc.",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 265.17,
+   "open": 282.27,
+   "prevClose": 280.7,
+   "change": -15.53,
+   "changePct": -5.53,
+   "dayHigh": 282,
+   "dayLow": 263.86,
+   "high52": 370.35,
+   "low52": 158.83,
+   "volume": 4126436,
+   "closes": [
+    359.49,
+    355.01,
+    342.97,
+    341.89,
+    360.93,
+    350.87,
+    347.7,
+    324.33,
+    316.32,
+    296.3,
+    297.58,
+    291.69,
+    307.22,
+    303.61,
+    325.73,
+    331.86,
+    327.8,
+    318.72,
+    310.3,
+    280.7,
+    265.17
    ]
   },
   "NFLX": {
    "name": "Netflix, Inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 62.08,
-   "open": 62.66,
-   "prevClose": 62.05,
-   "change": 0.03,
-   "changePct": 0.05,
-   "dayHigh": 63.05,
-   "dayLow": 61.64,
+   "price": 62.34,
+   "open": 62.2,
+   "prevClose": 62.08,
+   "change": 0.26,
+   "changePct": 0.42,
+   "dayHigh": 62.89,
+   "dayLow": 61.72,
    "high52": 116.73,
    "low52": 61.39,
-   "volume": 52331670,
+   "volume": 40911045,
    "closes": [
-    69.58,
-    67.85,
-    67.06,
     67.5,
     68.69,
     69.7,
@@ -39649,27 +58821,63 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     62.52,
     61.99,
     62.05,
-    62.08
+    62.08,
+    62.34
+   ]
+  },
+  "NIO": {
+   "name": "NIO Inc.",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 3.19,
+   "open": 3.23,
+   "prevClose": 3.21,
+   "change": -0.02,
+   "changePct": -0.62,
+   "dayHigh": 3.28,
+   "dayLow": 3.18,
+   "high52": 7.54,
+   "low52": 3.16,
+   "volume": 31405621,
+   "closes": [
+    3.42,
+    3.48,
+    3.54,
+    3.41,
+    3.58,
+    3.47,
+    3.56,
+    3.41,
+    3.5,
+    3.43,
+    3.39,
+    3.43,
+    3.36,
+    3.31,
+    3.29,
+    3.26,
+    3.29,
+    3.32,
+    3.32,
+    3.21,
+    3.19
    ]
   },
   "NKE": {
    "name": "NIKE, Inc.",
    "exchange": "NYSE",
    "type": "EQUITY",
-   "price": 38.67,
-   "open": 38.9,
-   "prevClose": 38.42,
-   "change": 0.25,
-   "changePct": 0.65,
-   "dayHigh": 39.24,
-   "dayLow": 38.48,
+   "price": 39.12,
+   "open": 39,
+   "prevClose": 38.67,
+   "change": 0.45,
+   "changePct": 1.16,
+   "dayHigh": 39.57,
+   "dayLow": 38.95,
    "high52": 69.14,
    "low52": 31.97,
-   "volume": 26957486,
+   "volume": 22959016,
    "closes": [
-    35.4,
-    35.15,
-    33.87,
     33.96,
     34.61,
     34.36,
@@ -39689,27 +58897,25 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     37.56,
     37.15,
     38.42,
-    38.67
+    38.67,
+    39.12
    ]
   },
   "NVD": {
    "name": "Graniteshares 2x Short NVDA Daily ETF",
    "exchange": "NASDAQ",
    "type": "ETF",
-   "price": 4.43,
-   "open": 4.26,
-   "prevClose": 4.09,
-   "change": 0.34,
-   "changePct": 8.31,
-   "dayHigh": 4.58,
-   "dayLow": 4.27,
+   "price": 4.54,
+   "open": 4.3,
+   "prevClose": 4.43,
+   "change": 0.11,
+   "changePct": 2.48,
+   "dayHigh": 4.56,
+   "dayLow": 4.2,
    "high52": 9.76,
    "low52": 3.19,
-   "volume": 143182184,
+   "volume": 190470563,
    "closes": [
-    3.64,
-    3.54,
-    3.45,
     3.31,
     3.3,
     3.35,
@@ -39729,27 +58935,25 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     3.93,
     4.01,
     4.09,
-    4.43
+    4.43,
+    4.54
    ]
   },
   "NVDA": {
    "name": "NVIDIA Corporation",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 204.64,
-   "open": 208.94,
-   "prevClose": 213.66,
-   "change": -9.02,
-   "changePct": -4.22,
-   "dayHigh": 209.05,
-   "dayLow": 200.92,
+   "price": 202.06,
+   "open": 207.53,
+   "prevClose": 204.64,
+   "change": -2.58,
+   "changePct": -1.26,
+   "dayHigh": 209.98,
+   "dayLow": 201.66,
    "high52": 243.37,
    "low52": 164.27,
-   "volume": 168386423,
+   "volume": 119222246,
    "closes": [
-    228.38,
-    230.86,
-    233.95,
     238.9,
     239.24,
     237.47,
@@ -39769,27 +58973,25 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     217.94,
     215.38,
     213.66,
-    204.64
+    204.64,
+    202.06
    ]
   },
   "NVDL": {
    "name": "GraniteShares 2x Long NVDA Daily ETF",
    "exchange": "NASDAQ",
    "type": "ETF",
-   "price": 28.97,
-   "open": 30.14,
-   "prevClose": 31.6,
-   "change": -2.63,
-   "changePct": -8.32,
-   "dayHigh": 30.23,
-   "dayLow": 27.83,
+   "price": 28.24,
+   "open": 29.75,
+   "prevClose": 28.97,
+   "change": -0.73,
+   "changePct": -2.52,
+   "dayHigh": 30.43,
+   "dayLow": 28.09,
    "high52": 43.27,
    "low52": 21.54,
-   "volume": 12879546,
+   "volume": 7509179,
    "closes": [
-    36.71,
-    37.52,
-    38.5,
     40.17,
     40.17,
     39.57,
@@ -39809,7 +59011,8 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     32.92,
     32.15,
     31.6,
-    28.97
+    28.97,
+    28.24
    ]
   },
   "OPEN": {
@@ -39817,19 +59020,16 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
    "exchange": "NASDAQ",
    "type": "EQUITY",
    "price": 1.8,
-   "open": 1.86,
-   "prevClose": 1.9,
-   "change": -0.1,
-   "changePct": -5.26,
-   "dayHigh": 1.88,
-   "dayLow": 1.76,
+   "open": 1.85,
+   "prevClose": 1.8,
+   "change": 0,
+   "changePct": 0,
+   "dayHigh": 1.95,
+   "dayLow": 1.79,
    "high52": 9.46,
    "low52": 1.76,
-   "volume": 31961118,
+   "volume": 31498544,
    "closes": [
-    2.37,
-    2.4,
-    2.44,
     2.31,
     2.27,
     2.27,
@@ -39849,6 +59049,7 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     1.91,
     1.91,
     1.9,
+    1.8,
     1.8
    ]
   },
@@ -39856,20 +59057,17 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
    "name": "Oracle Corporation",
    "exchange": "NYSE",
    "type": "EQUITY",
-   "price": 130.67,
-   "open": 133.62,
-   "prevClose": 139.56,
-   "change": -8.89,
-   "changePct": -6.37,
-   "dayHigh": 135.2,
-   "dayLow": 129.27,
+   "price": 119.22,
+   "open": 125.88,
+   "prevClose": 130.67,
+   "change": -11.45,
+   "changePct": -8.76,
+   "dayHigh": 126.5,
+   "dayLow": 118.43,
    "high52": 265.62,
    "low52": 114.5,
-   "volume": 40052541,
+   "volume": 58710047,
    "closes": [
-    137.3,
-    138.07,
-    142.3,
     142.48,
     144.77,
     143.56,
@@ -39889,27 +59087,63 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     130.53,
     144.54,
     139.56,
-    130.67
+    130.67,
+    119.22
+   ]
+  },
+  "PENN": {
+   "name": "PENN Entertainment, Inc.",
+   "exchange": "NASDAQ",
+   "type": "EQUITY",
+   "price": 17.02,
+   "open": 16.05,
+   "prevClose": 15.89,
+   "change": 1.13,
+   "changePct": 7.11,
+   "dayHigh": 17.45,
+   "dayLow": 16,
+   "high52": 22.36,
+   "low52": 11.65,
+   "volume": 4108359,
+   "closes": [
+    15.1,
+    15.91,
+    15.72,
+    15.76,
+    15.48,
+    15.4,
+    15.37,
+    14.52,
+    15.21,
+    14.94,
+    14.71,
+    14.96,
+    14.89,
+    15.46,
+    14.5,
+    14.9,
+    14.83,
+    14.72,
+    15.33,
+    15.89,
+    17.02
    ]
   },
   "PEP": {
    "name": "PepsiCo, Inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 137.34,
-   "open": 136.58,
-   "prevClose": 133.79,
-   "change": 3.55,
-   "changePct": 2.65,
-   "dayHigh": 138.59,
-   "dayLow": 135.8,
+   "price": 140.42,
+   "open": 138.28,
+   "prevClose": 137.34,
+   "change": 3.08,
+   "changePct": 2.24,
+   "dayHigh": 140.65,
+   "dayLow": 137.92,
    "high52": 171.48,
    "low52": 123.47,
-   "volume": 19505523,
+   "volume": 9351020,
    "closes": [
-    126.72,
-    125.6,
-    125.89,
     125.65,
     125.71,
     123.73,
@@ -39929,27 +59163,25 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     133.5,
     132.63,
     133.79,
-    137.34
+    137.34,
+    140.42
    ]
   },
   "PFE": {
    "name": "Pfizer Inc.",
    "exchange": "NYSE",
    "type": "EQUITY",
-   "price": 30.52,
-   "open": 30.51,
-   "prevClose": 29.95,
-   "change": 0.57,
-   "changePct": 1.9,
-   "dayHigh": 30.67,
-   "dayLow": 30.14,
-   "high52": 30.67,
+   "price": 30.67,
+   "open": 30.45,
+   "prevClose": 30.52,
+   "change": 0.15,
+   "changePct": 0.49,
+   "dayHigh": 31.04,
+   "dayLow": 30.2,
+   "high52": 31.04,
    "low52": 23.62,
-   "volume": 37087729,
+   "volume": 50815555,
    "closes": [
-    28.52,
-    28.12,
-    27.8,
     27.41,
     27.5,
     28,
@@ -39969,27 +59201,139 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     29.8,
     29.45,
     29.95,
-    30.52
+    30.52,
+    30.67
+   ]
+  },
+  "PG": {
+   "name": "The Procter & Gamble Company",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 163.56,
+   "open": 162.24,
+   "prevClose": 161.57,
+   "change": 1.99,
+   "changePct": 1.23,
+   "dayHigh": 164.34,
+   "dayLow": 162.24,
+   "high52": 167.25,
+   "low52": 137.62,
+   "volume": 9724324,
+   "closes": [
+    145.94,
+    148.41,
+    147.82,
+    150.59,
+    151.23,
+    153.2,
+    153.04,
+    156.53,
+    157.08,
+    159.35,
+    157.69,
+    159.32,
+    156.84,
+    165.59,
+    161.02,
+    159.92,
+    159.23,
+    158.26,
+    160.59,
+    161.57,
+    163.56
+   ]
+  },
+  "PLAY": {
+   "name": "Dave & Buster's Entertainment, Inc.",
+   "exchange": "NASDAQ",
+   "type": "EQUITY",
+   "price": 8.51,
+   "open": 7.9,
+   "prevClose": 7.83,
+   "change": 0.68,
+   "changePct": 8.68,
+   "dayHigh": 8.7,
+   "dayLow": 7.9,
+   "high52": 22.1,
+   "low52": 6.26,
+   "volume": 2228239,
+   "closes": [
+    6.76,
+    6.86,
+    6.56,
+    6.97,
+    6.9,
+    7.09,
+    7.39,
+    7.15,
+    7.96,
+    7.6,
+    7.71,
+    7.79,
+    7.23,
+    7.46,
+    6.96,
+    7.07,
+    7.58,
+    7.71,
+    8.13,
+    7.83,
+    8.51
+   ]
+  },
+  "PLNT": {
+   "name": "Planet Fitness, Inc.",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 55.65,
+   "open": 54.83,
+   "prevClose": 53.58,
+   "change": 2.07,
+   "changePct": 3.86,
+   "dayHigh": 55.89,
+   "dayLow": 54.46,
+   "high52": 114.26,
+   "low52": 37.03,
+   "volume": 1473886,
+   "closes": [
+    42.07,
+    42.25,
+    43.09,
+    44.03,
+    47.98,
+    47.89,
+    47.45,
+    46.95,
+    49.41,
+    50.92,
+    52.89,
+    52.96,
+    51.69,
+    53.27,
+    52.52,
+    52.44,
+    52.26,
+    52.63,
+    53.72,
+    53.58,
+    55.65
    ]
   },
   "PLTR": {
    "name": "Palantir Technologies Inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 184.11,
-   "open": 193.63,
-   "prevClose": 196.42,
-   "change": -12.31,
-   "changePct": -6.27,
-   "dayHigh": 193.92,
-   "dayLow": 183.68,
+   "price": 178.34,
+   "open": 186.52,
+   "prevClose": 184.11,
+   "change": -5.77,
+   "changePct": -3.13,
+   "dayHigh": 187.55,
+   "dayLow": 178.13,
    "high52": 212.94,
    "low52": 106.37,
-   "volume": 27070005,
+   "volume": 37089804,
    "closes": [
-    187.05,
-    190.04,
-    188.75,
     189.4,
     192.07,
     194.12,
@@ -40009,27 +59353,25 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     198.73,
     196.81,
     196.42,
-    184.11
+    184.11,
+    178.34
    ]
   },
   "PLUG": {
    "name": "Plug Power Inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 1.37,
-   "open": 1.37,
-   "prevClose": 1.42,
-   "change": -0.05,
-   "changePct": -3.52,
-   "dayHigh": 1.41,
-   "dayLow": 1.34,
+   "price": 1.31,
+   "open": 1.39,
+   "prevClose": 1.37,
+   "change": -0.06,
+   "changePct": -4.38,
+   "dayHigh": 1.42,
+   "dayLow": 1.3,
    "high52": 4.33,
-   "low52": 1.34,
-   "volume": 34041188,
+   "low52": 1.3,
+   "volume": 44037337,
    "closes": [
-    1.94,
-    1.89,
-    1.9,
     1.89,
     1.86,
     1.78,
@@ -40049,27 +59391,25 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     1.4,
     1.42,
     1.42,
-    1.37
+    1.37,
+    1.31
    ]
   },
   "PTON": {
    "name": "Peloton Interactive, Inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 5.12,
-   "open": 5.29,
-   "prevClose": 5.28,
-   "change": -0.16,
-   "changePct": -3.03,
-   "dayHigh": 5.29,
-   "dayLow": 5.08,
+   "price": 5.3,
+   "open": 5.14,
+   "prevClose": 5.12,
+   "change": 0.18,
+   "changePct": 3.52,
+   "dayHigh": 5.36,
+   "dayLow": 5.11,
    "high52": 7.92,
    "low52": 3.65,
-   "volume": 5449113,
+   "volume": 7639138,
    "closes": [
-    4.99,
-    4.97,
-    4.92,
     5.01,
     4.87,
     4.85,
@@ -40089,27 +59429,25 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     5.3,
     5.27,
     5.28,
-    5.12
+    5.12,
+    5.3
    ]
   },
   "PYPL": {
    "name": "PayPal Holdings, Inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 57.01,
-   "open": 56.92,
-   "prevClose": 56.95,
-   "change": 0.06,
-   "changePct": 0.11,
-   "dayHigh": 57.62,
-   "dayLow": 56.48,
+   "price": 58.78,
+   "open": 57.68,
+   "prevClose": 57.01,
+   "change": 1.77,
+   "changePct": 3.1,
+   "dayHigh": 59.03,
+   "dayLow": 57.27,
    "high52": 70.35,
    "low52": 38.46,
-   "volume": 15364954,
+   "volume": 14896219,
    "closes": [
-    52.53,
-    53.06,
-    52.8,
     54.41,
     54.61,
     54.95,
@@ -40129,27 +59467,25 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     56.09,
     56.55,
     56.95,
-    57.01
+    57.01,
+    58.78
    ]
   },
   "QCOM": {
    "name": "QUALCOMM Incorporated",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 164.79,
-   "open": 174.82,
-   "prevClose": 185.41,
-   "change": -20.62,
-   "changePct": -11.12,
-   "dayHigh": 176.17,
-   "dayLow": 161.72,
+   "price": 162.08,
+   "open": 166.44,
+   "prevClose": 164.79,
+   "change": -2.71,
+   "changePct": -1.64,
+   "dayHigh": 169.52,
+   "dayLow": 161.46,
    "high52": 259.92,
    "low52": 121.99,
-   "volume": 24111889,
+   "volume": 11019565,
    "closes": [
-    184.04,
-    182.09,
-    184.87,
     180.79,
     181.03,
     177.12,
@@ -40169,27 +59505,25 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     184.17,
     182.97,
     185.41,
-    164.79
+    164.79,
+    162.08
    ]
   },
   "QQQ": {
    "name": "Invesco QQQ Trust",
    "exchange": "NASDAQ",
    "type": "ETF",
-   "price": 690.49,
-   "open": 697.21,
-   "prevClose": 715.34,
-   "change": -24.85,
-   "changePct": -3.47,
-   "dayHigh": 698.63,
-   "dayLow": 683.45,
+   "price": 681.09,
+   "open": 695.32,
+   "prevClose": 690.49,
+   "change": -9.4,
+   "changePct": -1.36,
+   "dayHigh": 699.43,
+   "dayLow": 680.33,
    "high52": 762.86,
    "low52": 555.6,
-   "volume": 85242074,
+   "volume": 54716423,
    "closes": [
-    739.77,
-    742.03,
-    749.58,
     756.2,
     759.66,
     757.73,
@@ -40209,27 +59543,177 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     721.25,
     725.61,
     715.34,
-    690.49
+    690.49,
+    681.09
+   ]
+  },
+  "QS": {
+   "name": "QuantumScape Corporation",
+   "exchange": "NASDAQ",
+   "type": "EQUITY",
+   "price": 4.02,
+   "open": 4.15,
+   "prevClose": 4.06,
+   "change": -0.04,
+   "changePct": -0.99,
+   "dayHigh": 4.22,
+   "dayLow": 3.99,
+   "high52": 17.86,
+   "low52": 3.8,
+   "volume": 13263774,
+   "closes": [
+    4.62,
+    4.65,
+    4.52,
+    4.58,
+    4.58,
+    4.27,
+    4.12,
+    3.93,
+    4.23,
+    4.01,
+    3.89,
+    3.98,
+    3.98,
+    4.15,
+    4.03,
+    3.9,
+    4.18,
+    4.24,
+    4.2,
+    4.06,
+    4.02
+   ]
+  },
+  "RBLX": {
+   "name": "Roblox Corporation",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 42.88,
+   "open": 42.9,
+   "prevClose": 42.99,
+   "change": -0.11,
+   "changePct": -0.26,
+   "dayHigh": 44.79,
+   "dayLow": 41.78,
+   "high52": 113.6,
+   "low52": 33.88,
+   "volume": 14261200,
+   "closes": [
+    44.58,
+    45.56,
+    46.41,
+    45.52,
+    48.09,
+    49.58,
+    49.51,
+    47.54,
+    51.13,
+    49.55,
+    50.75,
+    52.35,
+    52.55,
+    53.96,
+    52.89,
+    54.37,
+    54.47,
+    53.28,
+    52.46,
+    42.99,
+    42.88
+   ]
+  },
+  "RH": {
+   "name": "RH",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 146.52,
+   "open": 148.55,
+   "prevClose": 146.66,
+   "change": -0.14,
+   "changePct": -0.1,
+   "dayHigh": 155,
+   "dayLow": 145.29,
+   "high52": 239.4,
+   "low52": 106.3,
+   "volume": 775541,
+   "closes": [
+    117.45,
+    117.16,
+    115.19,
+    113.67,
+    116.99,
+    116.76,
+    115.88,
+    110.99,
+    117.87,
+    112.99,
+    114.03,
+    119.74,
+    128.01,
+    140.15,
+    137.43,
+    135.72,
+    140.76,
+    145.06,
+    150.79,
+    146.66,
+    146.52
+   ]
+  },
+  "RIG": {
+   "name": "Transocean Ltd.",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 6.23,
+   "open": 6.65,
+   "prevClose": 6.94,
+   "change": -0.71,
+   "changePct": -10.23,
+   "dayHigh": 6.77,
+   "dayLow": 6.21,
+   "high52": 7.66,
+   "low52": 3.68,
+   "volume": 45683885,
+   "closes": [
+    5.51,
+    5.4,
+    5.39,
+    5.54,
+    5.51,
+    5.6,
+    5.65,
+    5.58,
+    5.51,
+    5.62,
+    5.89,
+    5.82,
+    6.04,
+    6.08,
+    6.41,
+    6.53,
+    6.46,
+    6.71,
+    6.69,
+    6.94,
+    6.23
    ]
   },
   "RIVN": {
    "name": "Rivian Automotive, Inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 12.16,
-   "open": 12.1,
-   "prevClose": 11.45,
-   "change": 0.71,
-   "changePct": 6.2,
-   "dayHigh": 12.27,
-   "dayLow": 11.53,
+   "price": 13.19,
+   "open": 12.75,
+   "prevClose": 12.16,
+   "change": 1.03,
+   "changePct": 8.47,
+   "dayHigh": 13.7,
+   "dayLow": 12.65,
    "high52": 22.69,
    "low52": 11.38,
-   "volume": 62702140,
+   "volume": 65299674,
    "closes": [
-    14.94,
-    14.76,
-    14.3,
     14.6,
     14.51,
     14.34,
@@ -40249,27 +59733,25 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     11.82,
     11.67,
     11.45,
-    12.16
+    12.16,
+    13.19
    ]
   },
   "SBUX": {
    "name": "Starbucks Corporation",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 103.65,
-   "open": 105.71,
-   "prevClose": 105.51,
-   "change": -1.86,
-   "changePct": -1.76,
-   "dayHigh": 106.25,
-   "dayLow": 102.24,
+   "price": 104.4,
+   "open": 104.41,
+   "prevClose": 103.67,
+   "change": 0.73,
+   "changePct": 0.7,
+   "dayHigh": 105.06,
+   "dayLow": 102.29,
    "high52": 110.51,
    "low52": 77.99,
-   "volume": 14220252,
+   "volume": 9915772,
    "closes": [
-    93.96,
-    94.88,
-    94.71,
     94.43,
     96.11,
     93.58,
@@ -40289,27 +59771,101 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     103.04,
     103.2,
     105.51,
-    103.67
+    103.67,
+    104.4
+   ]
+  },
+  "SCJ": {
+   "name": "iShares MSCI Japan Small-Cap ETF",
+   "exchange": "NYSE ARCA",
+   "type": "ETF",
+   "price": 105.98,
+   "open": 105.9,
+   "prevClose": 105.3,
+   "change": 0.68,
+   "changePct": 0.65,
+   "dayHigh": 106.49,
+   "dayLow": 105.98,
+   "high52": 111.44,
+   "low52": 88.54,
+   "volume": 7552,
+   "closes": [
+    110.65,
+    110.89,
+    110.19,
+    109.26,
+    110.03,
+    109.72,
+    110.02,
+    108.56,
+    108.07,
+    108.32,
+    107.75,
+    107.43,
+    107.55,
+    106.89,
+    106.25,
+    106.77,
+    107.76,
+    106.79,
+    106.78,
+    105.3,
+    105.98
+   ]
+  },
+  "SHAK": {
+   "name": "Shake Shack Inc.",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 72.46,
+   "open": 70.43,
+   "prevClose": 70.48,
+   "change": 1.98,
+   "changePct": 2.81,
+   "dayHigh": 73.08,
+   "dayLow": 69.57,
+   "high52": 107.46,
+   "low52": 51.6,
+   "volume": 1796365,
+   "closes": [
+    62.4,
+    64.61,
+    64.17,
+    67.31,
+    66.9,
+    69.34,
+    71.06,
+    68.77,
+    70.61,
+    69.99,
+    71.87,
+    69.74,
+    67.84,
+    67.88,
+    65.16,
+    64.89,
+    64.54,
+    67.22,
+    70.51,
+    70.48,
+    72.46
    ]
   },
   "SHOP": {
    "name": "Shopify Inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 157.49,
-   "open": 161.89,
-   "prevClose": 166.89,
-   "change": -9.4,
-   "changePct": -5.63,
-   "dayHigh": 161.95,
-   "dayLow": 154.26,
+   "price": 156.22,
+   "open": 158.29,
+   "prevClose": 157.49,
+   "change": -1.27,
+   "changePct": -0.81,
+   "dayHigh": 160.88,
+   "dayLow": 153.33,
    "high52": 180.88,
    "low52": 94,
-   "volume": 10541418,
+   "volume": 13919506,
    "closes": [
-    148.3,
-    149.09,
-    151.39,
     160.11,
     164.44,
     166.03,
@@ -40329,27 +59885,63 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     165.81,
     168.22,
     166.89,
-    157.49
+    157.49,
+    156.22
+   ]
+  },
+  "SIRI": {
+   "name": "Sirius XM Holdings Inc.",
+   "exchange": "NASDAQ",
+   "type": "EQUITY",
+   "price": 29.57,
+   "open": 29.2,
+   "prevClose": 29.01,
+   "change": 0.56,
+   "changePct": 1.93,
+   "dayHigh": 29.73,
+   "dayLow": 29.05,
+   "high52": 32.66,
+   "low52": 19.77,
+   "volume": 4793874,
+   "closes": [
+    26.31,
+    26.36,
+    25.95,
+    26.33,
+    26.51,
+    26.61,
+    26.57,
+    26.51,
+    27.15,
+    26.97,
+    26.84,
+    27.16,
+    26.96,
+    27.54,
+    27.63,
+    27.42,
+    27.25,
+    27.32,
+    28.67,
+    29.01,
+    29.57
    ]
   },
   "SLB": {
    "name": "SLB N.V.",
    "exchange": "NYSE",
    "type": "EQUITY",
-   "price": 53.74,
-   "open": 53.29,
-   "prevClose": 53.81,
-   "change": -0.07,
-   "changePct": -0.13,
-   "dayHigh": 54.13,
-   "dayLow": 53.03,
+   "price": 52.31,
+   "open": 52.3,
+   "prevClose": 53.74,
+   "change": -1.43,
+   "changePct": -2.66,
+   "dayHigh": 53.83,
+   "dayLow": 52.23,
    "high52": 60.46,
    "low52": 34.65,
-   "volume": 12752871,
+   "volume": 11945165,
    "closes": [
-    48.72,
-    48.66,
-    48.74,
     50.28,
     50,
     47.96,
@@ -40369,27 +59961,25 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     54.08,
     53.75,
     53.81,
-    53.74
+    53.74,
+    52.31
    ]
   },
   "SMH": {
    "name": "VanEck Semiconductor ETF",
    "exchange": "NASDAQ",
    "type": "ETF",
-   "price": 522.49,
-   "open": 532.58,
-   "prevClose": 561.67,
-   "change": -39.18,
-   "changePct": -6.98,
-   "dayHigh": 535.32,
-   "dayLow": 511.63,
+   "price": 508.31,
+   "open": 529.05,
+   "prevClose": 522.49,
+   "change": -14.18,
+   "changePct": -2.71,
+   "dayHigh": 532.76,
+   "dayLow": 506.45,
    "high52": 671.83,
    "low52": 315.05,
-   "volume": 17601979,
+   "volume": 8863693,
    "closes": [
-    609,
-    617.81,
-    630.6,
     633.9,
     632.5,
     625.03,
@@ -40409,7 +59999,46 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     557.98,
     567.67,
     561.67,
-    522.49
+    522.49,
+    508.31
+   ]
+  },
+  "SNAP": {
+   "name": "Snap Inc.",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 5.45,
+   "open": 5.38,
+   "prevClose": 5.34,
+   "change": 0.11,
+   "changePct": 2.06,
+   "dayHigh": 5.65,
+   "dayLow": 5.33,
+   "high52": 9.13,
+   "low52": 3.81,
+   "volume": 39403564,
+   "closes": [
+    5.61,
+    5.78,
+    5.81,
+    5.86,
+    6.23,
+    6.53,
+    6.49,
+    6.1,
+    6.44,
+    6.13,
+    6.27,
+    6.38,
+    6.35,
+    6.35,
+    6.34,
+    6.34,
+    6.08,
+    5.96,
+    5.68,
+    5.34,
+    5.45
    ]
   },
   "SNBR": {
@@ -40432,20 +60061,17 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
    "name": "Snowflake Inc.",
    "exchange": "NYSE",
    "type": "EQUITY",
-   "price": 306.08,
-   "open": 313.25,
-   "prevClose": 330.27,
-   "change": -24.19,
-   "changePct": -7.32,
-   "dayHigh": 314.93,
-   "dayLow": 295.26,
+   "price": 290.68,
+   "open": 306,
+   "prevClose": 306.08,
+   "change": -15.4,
+   "changePct": -5.03,
+   "dayHigh": 306.96,
+   "dayLow": 287.93,
    "high52": 384.56,
    "low52": 118.3,
-   "volume": 7747027,
+   "volume": 6437324,
    "closes": [
-    339.56,
-    341.99,
-    341.04,
     338.99,
     335.95,
     332.85,
@@ -40465,27 +60091,25 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     337.42,
     339.91,
     330.27,
-    306.08
+    306.08,
+    290.68
    ]
   },
   "SONO": {
    "name": "Sonos, Inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 16.17,
-   "open": 17.42,
-   "prevClose": 17.46,
-   "change": -1.29,
-   "changePct": -7.39,
-   "dayHigh": 17.42,
-   "dayLow": 15.98,
+   "price": 15.73,
+   "open": 16.39,
+   "prevClose": 16.17,
+   "change": -0.44,
+   "changePct": -2.72,
+   "dayHigh": 16.67,
+   "dayLow": 15.69,
    "high52": 19.82,
    "low52": 12.44,
-   "volume": 1533616,
+   "volume": 1630590,
    "closes": [
-    17.89,
-    17.75,
-    17.7,
     17.94,
     17.43,
     16.98,
@@ -40505,27 +60129,63 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     17.87,
     17.75,
     17.46,
-    16.17
+    16.17,
+    15.73
+   ]
+  },
+  "SOUN": {
+   "name": "SoundHound AI, Inc.",
+   "exchange": "NASDAQ",
+   "type": "EQUITY",
+   "price": 4.09,
+   "open": 4.28,
+   "prevClose": 4.22,
+   "change": -0.13,
+   "changePct": -3.08,
+   "dayHigh": 4.42,
+   "dayLow": 4.09,
+   "high52": 17.85,
+   "low52": 4.04,
+   "volume": 17247939,
+   "closes": [
+    5.88,
+    5.72,
+    5.63,
+    5.52,
+    5.39,
+    4.97,
+    4.88,
+    4.53,
+    4.89,
+    4.72,
+    4.65,
+    4.7,
+    4.61,
+    4.5,
+    4.43,
+    4.24,
+    4.37,
+    4.44,
+    4.36,
+    4.22,
+    4.09
    ]
   },
   "SOXL": {
    "name": "Direxion Daily Semiconductor Bull 3X Shares",
    "exchange": "NYSE ARCA",
    "type": "ETF",
-   "price": 77.05,
-   "open": 81.79,
-   "prevClose": 102.39,
-   "change": -25.34,
-   "changePct": -24.75,
-   "dayHigh": 84.19,
-   "dayLow": 70.23,
+   "price": 68.17,
+   "open": 79.45,
+   "prevClose": 77.05,
+   "change": -8.88,
+   "changePct": -11.52,
+   "dayHigh": 81.07,
+   "dayLow": 67.5,
    "high52": 302,
    "low52": 28.12,
-   "volume": 199204589,
+   "volume": 159025645,
    "closes": [
-    147.86,
-    153.69,
-    163.71,
     164.27,
     164.26,
     158.91,
@@ -40545,27 +60205,25 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     101.08,
     107.35,
     102.39,
-    77.05
+    77.05,
+    68.17
    ]
   },
   "SOXS": {
    "name": "Direxion Daily Semiconductor Bear 3X Shares",
    "exchange": "NYSE ARCA",
    "type": "ETF",
-   "price": 52.08,
-   "open": 50.12,
-   "prevClose": 41.68,
-   "change": 10.4,
-   "changePct": 24.95,
-   "dayHigh": 54.85,
-   "dayLow": 49.15,
+   "price": 58.09,
+   "open": 50.38,
+   "prevClose": 52.08,
+   "change": 6.01,
+   "changePct": 11.54,
+   "dayHigh": 58.52,
+   "dayLow": 49.31,
    "high52": 1030,
    "low52": 28.46,
-   "volume": 95869283,
+   "volume": 77017172,
    "closes": [
-    33.08,
-    31.76,
-    29.71,
     29.62,
     29.63,
     30.65,
@@ -40585,27 +60243,25 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     42.5,
     39.78,
     41.68,
-    52.08
+    52.08,
+    58.09
    ]
   },
   "SPCE": {
    "name": "Virgin Galactic Holdings, Inc.",
    "exchange": "NYSE",
    "type": "EQUITY",
-   "price": 2.58,
-   "open": 2.64,
-   "prevClose": 2.73,
-   "change": -0.15,
-   "changePct": -5.49,
-   "dayHigh": 2.66,
-   "dayLow": 2.5,
+   "price": 2.47,
+   "open": 2.62,
+   "prevClose": 2.58,
+   "change": -0.11,
+   "changePct": -4.26,
+   "dayHigh": 2.63,
+   "dayLow": 2.45,
    "high52": 8.9,
    "low52": 2.13,
-   "volume": 5127084,
+   "volume": 5087555,
    "closes": [
-    2.99,
-    2.99,
-    3.03,
     3.05,
     3.07,
     3.01,
@@ -40625,27 +60281,63 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     2.69,
     2.66,
     2.73,
-    2.58
+    2.58,
+    2.47
+   ]
+  },
+  "SPOT": {
+   "name": "Spotify Technology S.A.",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 594.04,
+   "open": 588.8,
+   "prevClose": 593.44,
+   "change": 0.6,
+   "changePct": 0.1,
+   "dayHigh": 600.18,
+   "dayLow": 581.28,
+   "high52": 668.5,
+   "low52": 405,
+   "volume": 1753645,
+   "closes": [
+    483.05,
+    488.13,
+    512.92,
+    526.42,
+    529.14,
+    528.8,
+    527.45,
+    523.96,
+    533.37,
+    530.46,
+    518.76,
+    526.08,
+    525.34,
+    583.66,
+    584.22,
+    572.36,
+    555.45,
+    538.4,
+    557.24,
+    593.44,
+    594.04
    ]
   },
   "SPXL": {
    "name": "Direxion Daily S&P500 Bull 3X Shares",
    "exchange": "NYSE ARCA",
    "type": "ETF",
-   "price": 270.35,
-   "open": 276.63,
-   "prevClose": 285.67,
-   "change": -15.32,
-   "changePct": -5.36,
-   "dayHigh": 276.72,
-   "dayLow": 264.36,
+   "price": 266.32,
+   "open": 274.14,
+   "prevClose": 270.35,
+   "change": -4.03,
+   "changePct": -1.49,
+   "dayHigh": 278.82,
+   "dayLow": 265.77,
    "high52": 303.18,
    "low52": 168.04,
-   "volume": 3003617,
+   "volume": 2269902,
    "closes": [
-    281.1,
-    282.7,
-    288.65,
     294.56,
     299.21,
     296.91,
@@ -40665,27 +60357,25 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     286.21,
     288.95,
     285.67,
-    270.35
+    270.35,
+    266.32
    ]
   },
   "SPXS": {
    "name": "Direxion Daily S&P 500 Bear 3X Shares",
    "exchange": "NYSE ARCA",
    "type": "ETF",
-   "price": 25.63,
-   "open": 25.09,
-   "prevClose": 24.3,
-   "change": 1.33,
-   "changePct": 5.47,
-   "dayHigh": 26.14,
-   "dayLow": 25.08,
+   "price": 26.01,
+   "open": 25.27,
+   "prevClose": 25.63,
+   "change": 0.38,
+   "changePct": 1.48,
+   "dayHigh": 26.05,
+   "dayLow": 24.81,
    "high52": 44.83,
    "low52": 23.04,
-   "volume": 15973258,
+   "volume": 10554277,
    "closes": [
-    24.77,
-    24.62,
-    24.12,
     23.64,
     23.26,
     23.45,
@@ -40705,27 +60395,25 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     24.27,
     24.01,
     24.3,
-    25.63
+    25.63,
+    26.01
    ]
   },
   "SPY": {
    "name": "State Street SPDR S&P 500 ETF Trust",
    "exchange": "NYSE ARCA",
    "type": "ETF",
-   "price": 755.72,
-   "open": 761.38,
-   "prevClose": 769.36,
-   "change": -13.64,
-   "changePct": -1.77,
-   "dayHigh": 761.46,
-   "dayLow": 750.36,
+   "price": 752.1,
+   "open": 759.45,
+   "prevClose": 755.72,
+   "change": -3.62,
+   "changePct": -0.48,
+   "dayHigh": 763.86,
+   "dayLow": 751.6,
    "high52": 781.62,
    "low52": 629.28,
-   "volume": 77142196,
+   "volume": 50778592,
    "closes": [
-    762.63,
-    763.99,
-    769.64,
     774.83,
     779.09,
     777.22,
@@ -40745,27 +60433,25 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     769.66,
     772.31,
     769.36,
-    755.72
+    755.72,
+    752.1
    ]
   },
   "SQQQ": {
    "name": "ProShares UltraPro Short QQQ",
    "exchange": "NASDAQ",
    "type": "ETF",
-   "price": 41.83,
-   "open": 40.78,
-   "prevClose": 37.83,
-   "change": 4,
-   "changePct": 10.57,
-   "dayHigh": 42.96,
-   "dayLow": 40.55,
+   "price": 43.55,
+   "open": 40.99,
+   "prevClose": 41.83,
+   "change": 1.72,
+   "changePct": 4.11,
+   "dayHigh": 43.7,
+   "dayLow": 40.24,
    "high52": 90.72,
    "low52": 31.42,
-   "volume": 67107225,
+   "volume": 53112899,
    "closes": [
-    34.41,
-    34.11,
-    33.12,
     32.25,
     31.83,
     32.07,
@@ -40785,27 +60471,25 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     36.93,
     36.28,
     37.83,
-    41.83
+    41.83,
+    43.55
    ]
   },
   "TGT": {
    "name": "Target Corporation",
    "exchange": "NYSE",
    "type": "EQUITY",
-   "price": 154.38,
-   "open": 154.68,
-   "prevClose": 151.82,
-   "change": 2.56,
-   "changePct": 1.69,
-   "dayHigh": 155.49,
-   "dayLow": 152.06,
+   "price": 158.38,
+   "open": 155.13,
+   "prevClose": 154.38,
+   "change": 4,
+   "changePct": 2.59,
+   "dayHigh": 159.29,
+   "dayLow": 155,
    "high52": 170.75,
    "low52": 83.44,
-   "volume": 5164432,
+   "volume": 4279508,
    "closes": [
-    156.69,
-    156.7,
-    156,
     152.99,
     154.33,
     150.92,
@@ -40825,27 +60509,101 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     148.01,
     148.96,
     151.82,
-    154.38
+    154.38,
+    158.38
+   ]
+  },
+  "TLRY": {
+   "name": "Tilray Brands, Inc.",
+   "exchange": "NASDAQ",
+   "type": "EQUITY",
+   "price": 2.55,
+   "open": 2.58,
+   "prevClose": 2.53,
+   "change": 0.02,
+   "changePct": 0.79,
+   "dayHigh": 2.66,
+   "dayLow": 2.52,
+   "high52": 15.7,
+   "low52": 2.49,
+   "volume": 4611682,
+   "closes": [
+    3.72,
+    3.78,
+    3.72,
+    3.59,
+    3.54,
+    3.36,
+    3.27,
+    3.14,
+    3.21,
+    3.04,
+    3.03,
+    3.03,
+    2.92,
+    2.93,
+    2.81,
+    2.72,
+    2.77,
+    2.69,
+    2.64,
+    2.53,
+    2.55
+   ]
+  },
+  "TMUS": {
+   "name": "T-Mobile US, Inc.",
+   "exchange": "NASDAQ",
+   "type": "EQUITY",
+   "price": 160.15,
+   "open": 153.66,
+   "prevClose": 156.44,
+   "change": 3.71,
+   "changePct": 2.37,
+   "dayHigh": 160.48,
+   "dayLow": 154,
+   "high52": 224.75,
+   "low52": 143.75,
+   "volume": 7259759,
+   "closes": [
+    164.64,
+    165.93,
+    167.65,
+    171.31,
+    148.58,
+    151.87,
+    153.73,
+    157.79,
+    157.03,
+    159.1,
+    156.09,
+    157.75,
+    153.75,
+    158.79,
+    146.54,
+    146.93,
+    146.83,
+    148.08,
+    147.29,
+    156.44,
+    160.15
    ]
   },
   "TQQQ": {
    "name": "ProShares UltraPro QQQ",
    "exchange": "NASDAQ",
    "type": "ETF",
-   "price": 62.01,
-   "open": 63.93,
-   "prevClose": 69.26,
-   "change": -7.25,
-   "changePct": -10.47,
-   "dayHigh": 64.33,
-   "dayLow": 59.95,
+   "price": 59.46,
+   "open": 63.25,
+   "prevClose": 62.01,
+   "change": -2.55,
+   "changePct": -4.11,
+   "dayHigh": 64.35,
+   "dayLow": 59.22,
    "high52": 88.09,
    "low52": 37.32,
-   "volume": 108409521,
+   "volume": 73778531,
    "closes": [
-    78.03,
-    78.73,
-    81.01,
     83.12,
     84.25,
     83.62,
@@ -40865,27 +60623,63 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     71.04,
     72.36,
     69.26,
-    62.01
+    62.01,
+    59.46
+   ]
+  },
+  "TRIP": {
+   "name": "Tripadvisor, Inc.",
+   "exchange": "NASDAQ",
+   "type": "EQUITY",
+   "price": 9.44,
+   "open": 9.32,
+   "prevClose": 9.22,
+   "change": 0.22,
+   "changePct": 2.39,
+   "dayHigh": 9.65,
+   "dayLow": 9.26,
+   "high52": 17.53,
+   "low52": 8.02,
+   "volume": 4001151,
+   "closes": [
+    8.79,
+    8.52,
+    8.63,
+    8.96,
+    8.68,
+    8.72,
+    8.74,
+    8.93,
+    9.39,
+    9.32,
+    9.27,
+    9.51,
+    9.44,
+    9.67,
+    9.41,
+    9.24,
+    8.98,
+    8.94,
+    9.22,
+    9.22,
+    9.44
    ]
   },
   "TSLA": {
    "name": "Tesla, Inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 399.81,
-   "open": 393.22,
-   "prevClose": 403.3,
-   "change": -3.49,
-   "changePct": -0.87,
-   "dayHigh": 404.2,
-   "dayLow": 387.52,
+   "price": 403.82,
+   "open": 404.66,
+   "prevClose": 399.81,
+   "change": 4.01,
+   "changePct": 1,
+   "dayHigh": 414.23,
+   "dayLow": 397.61,
    "high52": 498.83,
    "low52": 297.38,
-   "volume": 41737178,
+   "volume": 43129424,
    "closes": [
-    354.81,
-    354.11,
-    370.59,
     378.73,
     380.68,
     377.81,
@@ -40905,27 +60699,139 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     407.46,
     404.22,
     403.3,
-    399.81
+    399.81,
+    403.82
+   ]
+  },
+  "TTD": {
+   "name": "The Trade Desk, Inc.",
+   "exchange": "NASDAQ",
+   "type": "EQUITY",
+   "price": 12.55,
+   "open": 12.38,
+   "prevClose": 12.29,
+   "change": 0.26,
+   "changePct": 2.12,
+   "dayHigh": 12.84,
+   "dayLow": 12.38,
+   "high52": 50.06,
+   "low52": 11.62,
+   "volume": 11576523,
+   "closes": [
+    11.98,
+    11.92,
+    12.09,
+    12.34,
+    12.08,
+    11.94,
+    12.17,
+    12.18,
+    13.13,
+    12.23,
+    12.26,
+    12.65,
+    12.59,
+    13.16,
+    13,
+    12.77,
+    12.7,
+    12.76,
+    13.06,
+    12.29,
+    12.55
+   ]
+  },
+  "U": {
+   "name": "Unity Software Inc.",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 38.87,
+   "open": 38.37,
+   "prevClose": 37.7,
+   "change": 1.17,
+   "changePct": 3.1,
+   "dayHigh": 40.76,
+   "dayLow": 38.32,
+   "high52": 52.15,
+   "low52": 16.78,
+   "volume": 12147609,
+   "closes": [
+    45.68,
+    44.95,
+    45.44,
+    45.89,
+    46.88,
+    46.68,
+    46.63,
+    41.4,
+    43.34,
+    40.4,
+    40.58,
+    40.16,
+    41.21,
+    40.27,
+    40.79,
+    40.33,
+    40.1,
+    39.5,
+    39.27,
+    37.7,
+    38.87
+   ]
+  },
+  "UAL": {
+   "name": "United Airlines Holdings, Inc.",
+   "exchange": "NASDAQ",
+   "type": "EQUITY",
+   "price": 109.24,
+   "open": 108.96,
+   "prevClose": 104.24,
+   "change": 5,
+   "changePct": 4.8,
+   "dayHigh": 112.01,
+   "dayLow": 108.12,
+   "high52": 138.77,
+   "low52": 84.64,
+   "volume": 6632130,
+   "closes": [
+    110,
+    111.87,
+    110.17,
+    107.44,
+    107.46,
+    104.44,
+    103.23,
+    98.96,
+    101.31,
+    96.1,
+    95.6,
+    97.77,
+    101.67,
+    102,
+    97.93,
+    100.69,
+    104.71,
+    103.43,
+    105.21,
+    104.24,
+    109.24
    ]
   },
   "UBER": {
    "name": "Uber Technologies, Inc.",
    "exchange": "NYSE",
    "type": "EQUITY",
-   "price": 65.25,
-   "open": 65.61,
-   "prevClose": 65.74,
-   "change": -0.49,
-   "changePct": -0.75,
-   "dayHigh": 65.8,
-   "dayLow": 64.67,
+   "price": 66.71,
+   "open": 66.12,
+   "prevClose": 65.25,
+   "change": 1.46,
+   "changePct": 2.24,
+   "dayHigh": 67.47,
+   "dayLow": 65.55,
    "high52": 100.35,
    "low52": 64.04,
-   "volume": 17111001,
+   "volume": 17740543,
    "closes": [
-    68.51,
-    67.88,
-    68.11,
     69.48,
     69.08,
     68.45,
@@ -40945,27 +60851,25 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     65.78,
     65.27,
     65.74,
-    65.25
+    65.25,
+    66.71
    ]
   },
   "UFO": {
    "name": "Procure Space ETF",
    "exchange": "NASDAQ",
    "type": "ETF",
-   "price": 40.24,
-   "open": 40.69,
-   "prevClose": 41.72,
-   "change": -1.48,
-   "changePct": -3.55,
-   "dayHigh": 41.13,
-   "dayLow": 39.82,
+   "price": 39.89,
+   "open": 40.63,
+   "prevClose": 40.24,
+   "change": -0.35,
+   "changePct": -0.87,
+   "dayHigh": 40.95,
+   "dayLow": 39.76,
    "high52": 68.21,
    "low52": 30.89,
-   "volume": 368012,
+   "volume": 289149,
    "closes": [
-    42.31,
-    41.95,
-    43.13,
     43.56,
     44.33,
     43.04,
@@ -40985,27 +60889,25 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     41.13,
     41.28,
     41.72,
-    40.24
+    40.24,
+    39.89
    ]
   },
   "UNH": {
    "name": "UnitedHealth Group Incorporated",
    "exchange": "NYSE",
    "type": "EQUITY",
-   "price": 406.97,
-   "open": 415,
-   "prevClose": 410.91,
-   "change": -3.94,
-   "changePct": -0.96,
-   "dayHigh": 416.11,
-   "dayLow": 405.91,
+   "price": 400.44,
+   "open": 406,
+   "prevClose": 406.97,
+   "change": -6.53,
+   "changePct": -1.6,
+   "dayHigh": 408.88,
+   "dayLow": 394.11,
    "high52": 461.62,
    "low52": 255.97,
-   "volume": 4296307,
+   "volume": 5899348,
    "closes": [
-    367.08,
-    365.2,
-    371.9,
     378.58,
     376.32,
     375.98,
@@ -41025,27 +60927,63 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     410.39,
     407.1,
     410.91,
-    406.97
+    406.97,
+    400.44
+   ]
+  },
+  "URBN": {
+   "name": "Urban Outfitters, Inc.",
+   "exchange": "NASDAQ",
+   "type": "EQUITY",
+   "price": 88.94,
+   "open": 91.16,
+   "prevClose": 90.72,
+   "change": -1.78,
+   "changePct": -1.96,
+   "dayHigh": 92.35,
+   "dayLow": 88.8,
+   "high52": 93.64,
+   "low52": 59.54,
+   "volume": 1251455,
+   "closes": [
+    81.6,
+    80.25,
+    79.75,
+    80.96,
+    82.18,
+    82.69,
+    84.85,
+    84.68,
+    87.4,
+    86.57,
+    86.83,
+    87.32,
+    86.96,
+    88.29,
+    86.55,
+    90.59,
+    90.73,
+    89.35,
+    92.19,
+    90.72,
+    88.94
    ]
   },
   "V": {
    "name": "Visa Inc.",
    "exchange": "NYSE",
    "type": "EQUITY",
-   "price": 413.59,
-   "open": 415.25,
-   "prevClose": 410.54,
-   "change": 3.05,
-   "changePct": 0.74,
-   "dayHigh": 416.99,
-   "dayLow": 411.82,
-   "high52": 417,
+   "price": 425.51,
+   "open": 415.51,
+   "prevClose": 413.59,
+   "change": 11.92,
+   "changePct": 2.88,
+   "dayHigh": 426.78,
+   "dayLow": 414.37,
+   "high52": 426.78,
    "low52": 293.89,
-   "volume": 7073982,
+   "volume": 7425819,
    "closes": [
-    359.33,
-    359.85,
-    360.66,
     369.71,
     370.64,
     372.1,
@@ -41065,27 +61003,63 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     401.86,
     400.6,
     410.54,
-    413.59
+    413.59,
+    425.51
+   ]
+  },
+  "VFC": {
+   "name": "V.F. Corporation",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 19.39,
+   "open": 18.58,
+   "prevClose": 18.3,
+   "change": 1.09,
+   "changePct": 5.96,
+   "dayHigh": 19.48,
+   "dayLow": 18.47,
+   "high52": 22.27,
+   "low52": 12.46,
+   "volume": 11541162,
+   "closes": [
+    14.27,
+    14.45,
+    14.38,
+    14.53,
+    15,
+    15.79,
+    16.07,
+    16.48,
+    17,
+    16.85,
+    17.14,
+    17.46,
+    17.15,
+    17.48,
+    17.26,
+    16.95,
+    17.03,
+    17.23,
+    18.33,
+    18.3,
+    19.39
    ]
   },
   "VGK": {
    "name": "Vanguard FTSE Europe ETF",
    "exchange": "NYSE ARCA",
    "type": "ETF",
-   "price": 87.54,
-   "open": 87.73,
-   "prevClose": 88.14,
-   "change": -0.6,
-   "changePct": -0.68,
-   "dayHigh": 87.88,
-   "dayLow": 87.07,
+   "price": 88.06,
+   "open": 87.93,
+   "prevClose": 87.54,
+   "change": 0.52,
+   "changePct": 0.59,
+   "dayHigh": 88.49,
+   "dayLow": 87.77,
    "high52": 93.29,
    "low52": 77.87,
-   "volume": 1750002,
+   "volume": 2006619,
    "closes": [
-    86.8,
-    85.49,
-    86.38,
     86.28,
     86.58,
     85.56,
@@ -41105,27 +61079,25 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     87.04,
     87.31,
     88.14,
-    87.54
+    87.54,
+    88.06
    ]
   },
   "VTI": {
    "name": "Vanguard Morningstar Total Stock Market ETF",
    "exchange": "NYSE ARCA",
    "type": "ETF",
-   "price": 371.57,
-   "open": 374.25,
-   "prevClose": 378.24,
-   "change": -6.67,
-   "changePct": -1.76,
-   "dayHigh": 374.49,
-   "dayLow": 368.89,
+   "price": 370,
+   "open": 373.52,
+   "prevClose": 371.57,
+   "change": -1.57,
+   "changePct": -0.42,
+   "dayHigh": 375.64,
+   "dayLow": 369.75,
    "high52": 385.12,
    "low52": 310.4,
-   "volume": 4673257,
+   "volume": 6578469,
    "closes": [
-    374.24,
-    375.18,
-    377.99,
     380.6,
     382.54,
     381.03,
@@ -41145,27 +61117,139 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     377.92,
     379.17,
     378.24,
-    371.57
+    371.57,
+    370
+   ]
+  },
+  "WEN": {
+   "name": "The Wendy's Company",
+   "exchange": "NASDAQ",
+   "type": "EQUITY",
+   "price": 7.26,
+   "open": 7.22,
+   "prevClose": 7.21,
+   "change": 0.05,
+   "changePct": 0.69,
+   "dayHigh": 7.35,
+   "dayLow": 7.17,
+   "high52": 10.12,
+   "low52": 5.94,
+   "volume": 6008759,
+   "closes": [
+    6.1,
+    6.16,
+    6.11,
+    6.22,
+    6.23,
+    6.31,
+    6.35,
+    6.44,
+    6.7,
+    6.7,
+    6.68,
+    6.52,
+    6.28,
+    6.57,
+    6.22,
+    6.19,
+    6.14,
+    7.07,
+    7.17,
+    7.21,
+    7.26
+   ]
+  },
+  "WFC": {
+   "name": "Wells Fargo & Company",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 85.89,
+   "open": 84.4,
+   "prevClose": 83.4,
+   "change": 2.49,
+   "changePct": 2.99,
+   "dayHigh": 86.03,
+   "dayLow": 84.1,
+   "high52": 97.76,
+   "low52": 72.78,
+   "volume": 18923647,
+   "closes": [
+    81.44,
+    81.51,
+    80.26,
+    82.03,
+    83.55,
+    83.32,
+    80.74,
+    80.9,
+    82.75,
+    83.87,
+    81.8,
+    82.2,
+    82.42,
+    83.01,
+    82.39,
+    82.65,
+    82.66,
+    83.67,
+    84.81,
+    83.4,
+    85.89
+   ]
+  },
+  "WING": {
+   "name": "Wingstop Inc.",
+   "exchange": "NASDAQ",
+   "type": "EQUITY",
+   "price": 163.04,
+   "open": 153.46,
+   "prevClose": 149.73,
+   "change": 13.31,
+   "changePct": 8.89,
+   "dayHigh": 170.37,
+   "dayLow": 152.89,
+   "high52": 302.8,
+   "low52": 95.82,
+   "volume": 2973137,
+   "closes": [
+    106.84,
+    112.2,
+    116.68,
+    118.5,
+    122.26,
+    126.02,
+    125.76,
+    122.9,
+    131.03,
+    131.72,
+    132.75,
+    130.31,
+    119.95,
+    120.87,
+    119.54,
+    122.88,
+    123.52,
+    138.57,
+    145.39,
+    149.73,
+    163.04
    ]
   },
   "WMT": {
    "name": "Walmart Inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 123.51,
-   "open": 123.14,
-   "prevClose": 121.25,
-   "change": 2.26,
-   "changePct": 1.86,
-   "dayHigh": 124.5,
-   "dayLow": 122.75,
+   "price": 127.69,
+   "open": 124.1,
+   "prevClose": 123.51,
+   "change": 4.18,
+   "changePct": 3.38,
+   "dayHigh": 127.94,
+   "dayLow": 124.12,
    "high52": 135.16,
    "low52": 98.88,
-   "volume": 29777249,
+   "volume": 27680627,
    "closes": [
-    103.92,
-    104.26,
-    104.26,
     105.07,
     107.2,
     108.16,
@@ -41185,27 +61269,63 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     119.32,
     118.77,
     121.25,
-    123.51
+    123.51,
+    127.69
+   ]
+  },
+  "WOOF": {
+   "name": "Petco Health and Wellness Company, Inc.",
+   "exchange": "NASDAQ",
+   "type": "EQUITY",
+   "price": 2.74,
+   "open": 2.63,
+   "prevClose": 2.61,
+   "change": 0.13,
+   "changePct": 4.98,
+   "dayHigh": 2.77,
+   "dayLow": 2.62,
+   "high52": 3.78,
+   "low52": 2.14,
+   "volume": 4727059,
+   "closes": [
+    2.18,
+    2.22,
+    2.22,
+    2.24,
+    2.23,
+    2.33,
+    2.41,
+    2.37,
+    2.38,
+    2.33,
+    2.34,
+    2.33,
+    2.31,
+    2.53,
+    2.45,
+    2.49,
+    2.48,
+    2.51,
+    2.59,
+    2.61,
+    2.74
    ]
   },
   "XLE": {
    "name": "State Street Energy Select Sector SPDR ETF",
    "exchange": "NYSE ARCA",
    "type": "ETF",
-   "price": 70.02,
-   "open": 69.52,
-   "prevClose": 68.71,
-   "change": 1.31,
-   "changePct": 1.91,
-   "dayHigh": 70.15,
-   "dayLow": 69.28,
+   "price": 67.25,
+   "open": 68.85,
+   "prevClose": 70.02,
+   "change": -2.77,
+   "changePct": -3.96,
+   "dayHigh": 69.14,
+   "dayLow": 67.23,
    "high52": 70.15,
    "low52": 43.19,
-   "volume": 31087568,
+   "volume": 50873640,
    "closes": [
-    61.5,
-    62.7,
-    62.82,
     63.45,
     63.75,
     63.36,
@@ -41225,27 +61345,101 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     68.21,
     68.45,
     68.71,
-    70.02
+    70.02,
+    67.25
+   ]
+  },
+  "XLF": {
+   "name": "State Street Financial Select Sector SPDR ETF",
+   "exchange": "NYSE ARCA",
+   "type": "ETF",
+   "price": 57.56,
+   "open": 56.96,
+   "prevClose": 56.51,
+   "change": 1.05,
+   "changePct": 1.86,
+   "dayHigh": 57.7,
+   "dayLow": 56.88,
+   "high52": 58.6,
+   "low52": 47.67,
+   "volume": 41200451,
+   "closes": [
+    53.88,
+    54.01,
+    53.75,
+    54.23,
+    54.73,
+    55.05,
+    54.82,
+    54.52,
+    55.27,
+    55.52,
+    55.06,
+    55.72,
+    56.04,
+    56.65,
+    55.9,
+    56.02,
+    55.88,
+    56.13,
+    56.94,
+    56.51,
+    57.56
+   ]
+  },
+  "XLV": {
+   "name": "State Street Health Care Select Sector SPDR ETF",
+   "exchange": "NYSE ARCA",
+   "type": "ETF",
+   "price": 184.6,
+   "open": 184.69,
+   "prevClose": 184.87,
+   "change": -0.27,
+   "changePct": -0.15,
+   "dayHigh": 185.54,
+   "dayLow": 183.38,
+   "high52": 187.99,
+   "low52": 141.97,
+   "volume": 14062650,
+   "closes": [
+    167.37,
+    167.09,
+    168.81,
+    168.16,
+    170.81,
+    171.99,
+    169.66,
+    173.96,
+    177.19,
+    176.71,
+    175.65,
+    179.82,
+    178.94,
+    181.3,
+    179.28,
+    179.28,
+    179.18,
+    179.72,
+    184.04,
+    184.87,
+    184.6
    ]
   },
   "XOM": {
    "name": "ExxonMobil Holdings Corporation",
    "exchange": "NYSE",
    "type": "EQUITY",
-   "price": 187.25,
-   "open": 185.98,
-   "prevClose": 183.29,
-   "change": 3.96,
-   "changePct": 2.16,
-   "dayHigh": 188.5,
-   "dayLow": 184.68,
+   "price": 179.67,
+   "open": 183.98,
+   "prevClose": 187.25,
+   "change": -7.58,
+   "changePct": -4.05,
+   "dayHigh": 184.59,
+   "dayLow": 179.67,
    "high52": 188.5,
    "low52": 112.51,
-   "volume": 21162779,
+   "volume": 16459189,
    "closes": [
-    162.75,
-    163.82,
-    164.01,
     164,
     164.48,
     164.05,
@@ -41265,44 +61459,121 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
     179.91,
     182.02,
     183.29,
-    187.25
+    187.25,
+    179.67
+   ]
+  },
+  "YETI": {
+   "name": "YETI Holdings, Inc.",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 45.42,
+   "open": 44.87,
+   "prevClose": 43.66,
+   "change": 1.76,
+   "changePct": 4.03,
+   "dayHigh": 45.77,
+   "dayLow": 44.65,
+   "high52": 53.99,
+   "low52": 32.26,
+   "volume": 1322526,
+   "closes": [
+    40.52,
+    40.25,
+    39.47,
+    39.6,
+    39.79,
+    39.01,
+    39.34,
+    40.51,
+    42.02,
+    43.07,
+    42.12,
+    42.55,
+    42.77,
+    44.03,
+    42.79,
+    43.57,
+    42.25,
+    42.91,
+    44.19,
+    43.66,
+    45.42
+   ]
+  },
+  "ZM": {
+   "name": "Zoom Communications, Inc.",
+   "exchange": "NASDAQ",
+   "type": "EQUITY",
+   "price": 91.98,
+   "open": 95.69,
+   "prevClose": 95.5,
+   "change": -3.52,
+   "changePct": -3.69,
+   "dayHigh": 95.85,
+   "dayLow": 91.39,
+   "high52": 114.74,
+   "low52": 70.7,
+   "volume": 2525733,
+   "closes": [
+    93.62,
+    94.2,
+    94.77,
+    94.67,
+    97.74,
+    97.94,
+    98.16,
+    94.47,
+    98.51,
+    94.19,
+    97.59,
+    97.46,
+    99.44,
+    96.2,
+    95.77,
+    98.04,
+    97.4,
+    100.26,
+    97.66,
+    95.5,
+    91.98
    ]
   }
  },
  "indices": {
   "sp-500": {
    "symbol": "^GSPC",
-   "price": 7580.07,
-   "open": 7631.07,
-   "prevClose": 7720.39,
-   "change": -140.32,
-   "changePct": -1.82,
-   "dayHigh": 7637.48,
-   "dayLow": 7527.56,
+   "price": 7541.4,
+   "open": 7610.83,
+   "prevClose": 7580.07,
+   "change": -38.67,
+   "changePct": -0.51,
+   "dayHigh": 7662.23,
+   "dayLow": 7539.38,
    "high52": 7844.52,
    "low52": 6316.91
   },
   "nasdaq": {
    "symbol": "^IXIC",
-   "price": 25437,
-   "open": 25592.49,
-   "prevClose": 26184.72,
-   "change": -747.72,
-   "changePct": -2.86,
-   "dayHigh": 25673,
-   "dayLow": 25177.33,
+   "price": 25164.36,
+   "open": 25600.17,
+   "prevClose": 25437,
+   "change": -272.64,
+   "changePct": -1.07,
+   "dayHigh": 25799.46,
+   "dayLow": 25145.95,
    "high52": 27722.75,
    "low52": 20690.25
   },
   "dow-jones": {
    "symbol": "^DJI",
-   "price": 51770.31,
-   "open": 52383.9,
-   "prevClose": 52342.56,
-   "change": -572.25,
-   "changePct": -1.09,
-   "dayHigh": 52383.9,
-   "dayLow": 51563.76,
+   "price": 51983.98,
+   "open": 52008.23,
+   "prevClose": 51770.31,
+   "change": 213.67,
+   "changePct": 0.41,
+   "dayHigh": 52424.91,
+   "dayLow": 51981.66,
    "high52": 54744.33,
    "low52": 45057.28
   }
@@ -41310,15 +61581,15 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
  "fx": {
   "usdInr": {
    "symbol": "USDINR=X",
-   "price": 94.87,
-   "open": null,
-   "prevClose": 95.19,
-   "change": -0.32,
-   "changePct": -0.34,
-   "dayHigh": null,
-   "dayLow": null,
-   "high52": null,
-   "low52": null
+   "price": 94.74,
+   "open": 94.89,
+   "prevClose": 94.9,
+   "change": -0.16,
+   "changePct": -0.17,
+   "dayHigh": 94.89,
+   "dayLow": 94.6,
+   "high52": 97.05,
+   "low52": 85.86
   }
  }
 }
@@ -41330,8 +61601,13 @@ export function useLiveQuote(key: string, price: number, changePct: number): Liv
 // US stocks — data more than one flow uses (the US Stocks flow, the Stocks home's US tab, the Market tab's US list).
 // Prices are real: us-market-snapshot.json, from Yahoo Finance by `npm run us:snapshot` (scripts/us-market-snapshot.mjs),
 // overrides the catalogue's numbers below and adds every other stock / ETF the app shows. `live.ts` makes them tick.
-// Logos are PNGs in src/shared/assets/us-logos (L3 has company logos for Indian stocks only).
-import snapshot from './us-market-snapshot.json'
+// Near-live, not live: the bundled copy is used at first, then the app re-reads ./us-market-snapshot.json (published by
+// the build, refreshed every 15 minutes in US market hours by the site repo's Action, scripts/site-workflow-us.yml) on
+// load and every 5 minutes, and updates the numbers below in place.
+// Logos are in src/shared/assets/us-logos: full-colour SVGs (scripts/us-logos.mjs), PNGs for the few without one (L3 has company logos for Indian stocks only).
+import { useSyncExternalStore } from 'react'
+import bundled from './us-market-snapshot.json'
+import { nudgeLive } from './live'
 
 export type UsStock = {
   sym: string
@@ -41374,34 +61650,92 @@ export const catalogue: Record<string, Omit<UsStock, 'sym'>> = {
 }
 
 type SnapshotQuote = { name: string | null; exchange: string | null; price: number; changePct: number; open?: number | null; prevClose: number; dayHigh: number | null; dayLow: number | null; high52: number | null; low52: number | null; volume: number | null; closes: number[] }
-const quotes = snapshot.quotes as unknown as Record<string, SnapshotQuote>
+type IndexQuote = { price: number; changePct: number }
+type Snapshot = { source: string; fetchedAt: string; quotes: Record<string, SnapshotQuote>; indices: Record<string, IndexQuote>; fx?: { usdInr?: { price: number } } }
+
+// The numbers in use now — the bundled snapshot's, replaced in place when a fresher one is read (see the runtime refresh).
+const quotes: Record<string, SnapshotQuote> = { ...(bundled.quotes as unknown as Record<string, SnapshotQuote>) }
+const indices: Record<string, IndexQuote> = { ...(bundled.indices as Record<string, IndexQuote>) }
+const current = { fetchedAt: bundled.fetchedAt, source: bundled.source, usdInr: (bundled as unknown as Snapshot).fx?.usdInr?.price }
 
 /** "Apple Inc." → "Apple Inc", "Airbnb, Inc." → "Airbnb Inc": the snapshot's legal names, as the app writes them. */
 const tidyName = (name: string) => name.replace(/,? (Inc|Corp|Corporation|Co|Ltd|Plc|N\.V|S\.A)\.?$/i, (m) => ' ' + m.replace(/[,.]/g, '').trim()).replace(/\s+/g, ' ').trim()
 
 // The snapshot's real price, day change and exchange for every symbol in it; the catalogue's own names stay.
-for (const [sym, q] of Object.entries(quotes)) {
-  if (q.price == null) continue
-  const known = catalogue[sym]
-  catalogue[sym] = { name: known?.name ?? tidyName(q.name ?? sym), price: q.price, change: q.changePct, exchange: q.exchange ?? known?.exchange ?? 'NASDAQ' }
+function applyQuotes() {
+  for (const [sym, q] of Object.entries(quotes)) {
+    if (q.price == null) continue
+    const known = catalogue[sym]
+    catalogue[sym] = { name: known?.name ?? tidyName(q.name ?? sym), price: q.price, change: q.changePct, exchange: q.exchange ?? known?.exchange ?? 'NASDAQ' }
+  }
 }
+applyQuotes()
 
 /** When the US prices were taken (ISO time). */
-export const usSnapshotAt: string = snapshot.fetchedAt
+export const usSnapshotAt = (): string => current.fetchedAt
 
 /** The snapshot's full quote of a symbol (day range, 52-week range, volume, a month of closes), if it has one. */
 export const usQuote = (symbol: string): SnapshotQuote | undefined => quotes[symbol]
 
 /** Today's value of a US index (`sp-500`, `nasdaq`, `dow-jones`) from the snapshot. */
-export const usIndexQuote = (id: string): { price: number; changePct: number } | undefined => (snapshot.indices as Record<string, { price: number; changePct: number }>)[id]
+export const usIndexQuote = (id: string): IndexQuote | undefined => indices[id]
 
-const logoFiles = import.meta.glob('../assets/us-logos/*.png', { eager: true, query: '?url', import: 'default' }) as Record<string, string>
-const logoBySymbol = new Map(Object.entries(logoFiles).map(([path, url]) => [path.slice(path.lastIndexOf('/') + 1, -'.png'.length), url]))
+/** ₹ per $ in the snapshot (USDINR=X), or undefined if it has none. */
+export const usdInrSnapshot = (): number | undefined => current.usdInr
+
+// ── Runtime refresh ──────────────────────────────────────────────────────────────────────────────────────────────
+const listeners = new Set<() => void>()
+
+function apply(next: Snapshot) {
+  if (!(next.fetchedAt > current.fetchedAt)) return // ISO strings sort by time; never go back to older data
+  // A symbol the published file doesn't have yet (added to the app after the site's copy) keeps the numbers we have.
+  Object.assign(quotes, next.quotes)
+  Object.assign(indices, next.indices)
+  Object.assign(current, { fetchedAt: next.fetchedAt, source: next.source, usdInr: next.fx?.usdInr?.price ?? current.usdInr })
+  applyQuotes()
+  listeners.forEach((l) => l())
+  nudgeLive() // every ticking price re-renders now, not at the next tick
+}
+
+/** Re-read the published US snapshot (same origin — no API call). Fails quietly: the numbers we have stay. */
+export async function refreshUsMarket() {
+  try {
+    const res = await fetch('us-market-snapshot.json', { cache: 'no-cache' })
+    if (res.ok) apply(await res.json())
+  } catch { /* offline, or the file isn't there — keep what we have */ }
+}
+
+const REFRESH_MS = 5 * 60 * 1000
+if (typeof window !== 'undefined') {
+  refreshUsMarket()
+  setInterval(() => { if (document.visibilityState === 'visible') refreshUsMarket() }, REFRESH_MS)
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') refreshUsMarket() })
+}
+
+function subscribe(listener: () => void) {
+  listeners.add(listener)
+  return () => { listeners.delete(listener) }
+}
+
+/** Re-renders the calling component when fresher US data arrives; returns its `fetchedAt`. */
+export function useUsMarketSnapshot(): string {
+  return useSyncExternalStore(subscribe, () => current.fetchedAt)
+}
+
+// A full-colour SVG (the mark on its brand colour, edge to edge — scripts/us-logos.mjs) wins over the older PNG (a mark on
+// transparent, which shows on the L3 Avatar's grey); the PNG stays for the few symbols that have no SVG.
+const logoFiles = import.meta.glob('../assets/us-logos/*.{png,svg}', { eager: true, query: '?url', import: 'default' }) as Record<string, string>
+const symbolOf = (path: string) => path.slice(path.lastIndexOf('/') + 1, path.lastIndexOf('.'))
+const logoBySymbol = new Map(
+  Object.entries(logoFiles)
+    .sort(([a], [b]) => Number(a.endsWith('.svg')) - Number(b.endsWith('.svg')))
+    .map(([path, url]) => [symbolOf(path), url]),
+)
 
 /** Symbols that have a logo file in src/shared/assets/us-logos. */
 export const usLogoSymbols: string[] = [...logoBySymbol.keys()].sort()
 
-/** The logo of a US company (PNG URL), or undefined (show initials). */
+/** The logo of a US company (SVG or PNG URL), or undefined (show initials). */
 export const usLogo = (symbol: string): string | undefined => logoBySymbol.get(symbol)
 
 // Logos from financialmodelingprep.com (2 Nov, ETF holdings) are transparent marks drawn for a white page: they sit on
@@ -41421,6 +61755,52 @@ export const viewUsStock = (symbol: string) => { viewed = symbol }
 
 /** The symbol set by the last `viewUsStock`, or undefined if none yet. */
 export const viewedUsStock = () => viewed
+```
+
+### `src/shared/data/user.ts`
+
+```ts
+// The sample user every flow uses. FICTIONAL — the live screenshots contain a real customer's details; never copy them.
+export type User = {
+  name: string
+  fatherName: string
+  mobile: string
+  email: string
+  pan: string
+  dob: string
+  occupation: string
+  maritalStatus: string
+}
+
+export const user: User = {
+  name: 'Rohan Mehta',
+  fatherName: 'Suresh Mehta',
+  mobile: '9876543210',
+  email: 'rohan.mehta@gmail.com',
+  pan: 'ABCPM1234K',
+  dob: '14 Aug 1996',
+  occupation: 'Private sector',
+  maritalStatus: 'Single',
+}
+
+export type BankAccount = { bank: string; accountNumber: string; ifsc: string; type: 'Savings' | 'Current'; branch: string }
+
+export const bankAccount: BankAccount = {
+  bank: 'HDFC Bank',
+  accountNumber: '50100234567821',
+  ifsc: 'HDFC0001234',
+  type: 'Savings',
+  branch: 'Andheri West, Mumbai',
+}
+
+/** A linked bank account as the money screens show it: the bank's logo symbol (companies.ts) and the last 4 digits. */
+export type LinkedBank = BankAccount & { id: string; logoSymbol: string; last4: string; primary?: boolean }
+
+/** The user's linked bank accounts, primary first. "User status → Bank accounts" picks how many the prototype shows. */
+export const linkedBanks: LinkedBank[] = [
+  { ...bankAccount, id: 'hdfc', logoSymbol: 'HDFCBANK', last4: '7821', primary: true },
+  { id: 'icici', bank: 'ICICI Bank', accountNumber: '002101554410', ifsc: 'ICIC0000021', type: 'Savings', branch: 'Powai, Mumbai', logoSymbol: 'ICICIBANK', last4: '4410' },
+]
 ```
 
 ### `src/shared/money.module.css`
@@ -41452,7 +61832,7 @@ export const viewedUsStock = () => viewed
 // US Stocks money — every value inside US Stocks is in US dollars (the news, prices and filings users read are in $),
 // with its rupee equivalent at the live USD → INR rate available everywhere. How the ₹ shows is a prototype setting
 // ("₹ equivalent" in the User status panel), so the same screens try each idea:
-//   off    — $ only
+//   off    — $ only (the default; the stock and ETF pages still show ≈ ₹ under the price)
 //   below  — $ with a small "≈ ₹1,23,456" line under it — only in the order pad since 3 Nov (`layout="stack"`)
 //   switch — a $ / ₹ switch (<CurrencySwitch />); picking ₹ turns every US value into rupees, across every screen
 // Screens never format a US amount themselves: <Usd value={188.42} /> (or useUsd() where only a string fits).
@@ -41461,7 +61841,7 @@ export const viewedUsStock = () => viewed
 import { useSyncExternalStore, type ReactNode } from 'react'
 import { Tabs } from '@l3/components/Tabs'
 import type { FlowOption } from '../flows/types'
-import snapshot from './data/us-market-snapshot.json'
+import { usdInrSnapshot } from './data/usStocks'
 import { liveDrift, useLiveTick } from './data/live'
 import { useFlowOption } from './prototype'
 import { USER_STATUS } from './userStatus'
@@ -41469,13 +61849,13 @@ import styles from './money.module.css'
 
 // ── The rate ────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-/** ₹ per $ in the snapshot (the fallback is the 2 Nov 2026 close, should the snapshot lose it). */
-export const USD_INR_SNAPSHOT: number = (snapshot as { fx?: { usdInr?: { price: number } } }).fx?.usdInr?.price ?? 94.87
+/** ₹ per $ in the snapshot (the fallback is the 2 Nov 2026 close, should the snapshot lose it). Re-read with the prices. */
+const usdInrNow = (): number => usdInrSnapshot() ?? 94.87
 
 /** The USD → INR rate right now: the snapshot's, moving a little every 2 s like a live quote. */
 export function useUsdInrRate(): number {
   const at = useLiveTick()
-  return Math.round(USD_INR_SNAPSHOT * (1 + liveDrift('USDINR', at) / 4) * 100) / 100
+  return Math.round(usdInrNow() * (1 + liveDrift('USDINR', at) / 4) * 100) / 100
 }
 
 // ── Formatting ──────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -41538,8 +61918,11 @@ export const moneyOptions: FlowOption[] = [
     group: 'US Stocks money',
     label: '₹ equivalent',
     values: [{ value: 'off', label: '$ only' }, { value: 'below', label: '₹ below' }, { value: 'switch', label: '$ / ₹ switch' }],
-    default: 'below',
-    floatOn: ['stocks-01', 'us-stocks-13', 'us-stocks-54'],
+    // $ only by default (3 Nov): the ₹ shows when picked here. The stock and ETF pages are the exception — their price
+    // always has its ≈ ₹ under it.
+    default: 'off',
+    // The Home and its US tab screens (the US tab's fixed states show $ amounts too), a US stock page, the wallet's US tab.
+    floatOn: ['stocks-01', 'stocks-09', 'stocks-10', 'stocks-13', 'stocks-14', 'stocks-15', 'stocks-16', 'stocks-17', 'stocks-19', 'stocks-20', 'stocks-21', 'us-stocks-13', 'us-stocks-54'],
   },
 ]
 
@@ -41783,6 +62166,397 @@ export function useSystemKeyboard() {
 }
 ```
 
+### `src/shared/support.ts`
+
+```ts
+/**
+ * Contact support = an email to Lemonn support, opened in the phone's mail app (no in-app support screen). Every
+ * "Contact support" button calls `emailSupport`, with a subject saying what it's about.
+ */
+export const SUPPORT_EMAIL = 'support@lemonn.co'
+
+export function emailSupport(subject: string) {
+  window.location.href = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(subject)}`
+}
+```
+
+### `src/shared/ui/AmountEntry.module.css`
+
+```css
+/*
+ * Add-money amount entry (AmountEntry.tsx). FLAG: L3 has no big amount input and no in-app keypad — drawn here on L3
+ * tokens. The amount is Heading 36, centred, with a brand caret (the field is always being typed into: L3's Typing
+ * state has no big-number version).
+ */
+.entry {
+  align-items: center;
+  padding: var(--l3-spacing-48) var(--l3-spacing-16) var(--l3-spacing-24);
+  text-align: center;
+}
+
+.amount {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  color: var(--l3-content-primary);
+  font: var(--l3-text-heading-36);
+  font-variant-numeric: tabular-nums;
+}
+
+.amount[data-empty] {
+  color: var(--l3-content-tertiary);
+}
+
+.currency {
+  margin-right: var(--l3-spacing-02);
+}
+
+.amount[data-empty] .currency {
+  color: var(--l3-content-primary);
+}
+
+.caret {
+  width: 2px; /* the text caret */
+  height: var(--l3-size-40);
+  margin-left: var(--l3-spacing-04);
+  background: var(--l3-content-accent-brand-default);
+  animation: blink 1s steps(1) infinite;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .caret {
+    animation: none;
+  }
+}
+
+.below {
+  color: var(--l3-content-secondary);
+  font: var(--l3-text-description-12);
+}
+
+.below[data-error] {
+  color: var(--l3-content-accent-indicator-down-default);
+}
+
+/* The bottom: method row on a hairline, the keypad, the button dock. */
+.dock {
+  display: flex;
+  flex-direction: column;
+  background: var(--l3-surface-default);
+}
+
+.method {
+  padding: var(--l3-spacing-08) 0; /* the ListCell brings its own 16 sides */
+  border-top: 1px solid var(--l3-border-light); /* 1px hairline */
+  border-bottom: 1px solid var(--l3-border-light); /* 1px hairline */
+}
+
+/* FLAG: the app's own keypad — big digits straight on the page, as in Groww. */
+.keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  padding: var(--l3-spacing-08) var(--l3-spacing-16);
+}
+
+.key {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--l3-size-56);
+  border: 0;
+  border-radius: var(--l3-radius-12);
+  background: none;
+  color: var(--l3-content-primary);
+  font: var(--l3-text-heading-24);
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.key:active {
+  background: var(--l3-surface-secondary);
+}
+```
+
+### `src/shared/ui/AmountEntry.tsx`
+
+```tsx
+import type { PointerEvent, ReactNode } from 'react'
+import { Icon } from '@l3/components/Icon'
+import { Stack } from '@l3/components/Stack'
+import { msBackspace } from '@l3/icons/material'
+import styles from './AmountEntry.module.css'
+
+/**
+ * The add-money amount screen's body, shared by the Indian (₹) and the US ($) wallet — a clean, Groww-like entry:
+ * one big amount with a caret, a line under it (the limits, an error, or the ≈ conversion), optional quick-add chips,
+ * then, pinned at the bottom, the payment method row, the app's own number keypad and the dock button.
+ *
+ * Put the body in `<Screen>`'s children and the dock in its `bottom` (see `AmountDock`). The available balance goes in
+ * the Actionbar's description, not here.
+ *
+ * L3 gap: L3 has no big amount input and no in-app number keypad — both are drawn here (FLAG), on L3 tokens only.
+ */
+export function AmountEntry({ amount, currency, error = false, below, chips }: {
+  /** What's typed so far, as typed: digits and, for $, one "." with up to 2 decimals ("50", "50.", "50.5"). Empty → "0" in grey. */
+  amount: string
+  /** "₹" or "$". */
+  currency: '₹' | '$'
+  /** The amount is outside the limits: the line under it turns red. */
+  error?: boolean
+  /** The line under the amount: limits, the error, or the ≈ conversion (a button opening the breakdown, say). */
+  below?: ReactNode
+  /** Quick-add chips under the amount (L3 Button tertiary small, or Tabs pill actions). */
+  chips?: ReactNode
+}) {
+  const empty = amount === ''
+  return (
+    <Stack gap="24" className={styles.entry}>
+      <Stack gap="08">
+        <p className={styles.amount} data-empty={empty || undefined} aria-live="polite">
+          <span className={styles.currency}>{currency}</span>
+          {empty ? '0' : groupDigits(amount, currency)}
+          <span className={styles.caret} aria-hidden="true" />
+        </p>
+        {below && <div className={styles.below} data-error={error || undefined}>{below}</div>}
+      </Stack>
+      {chips}
+    </Stack>
+  )
+}
+
+/**
+ * The bottom of the amount screen: the payment method row (a ListCell), the keypad and the button (a ButtonGroup).
+ * `data-surface="primary"` so the OS navigation bar under it takes the same colour.
+ */
+export function AmountDock({ method, decimal = false, onKey, action }: {
+  method?: ReactNode
+  /** Show the "." key ($ amounts). */
+  decimal?: boolean
+  onKey: (key: string) => void
+  action: ReactNode
+}) {
+  return (
+    <div className={styles.dock} data-surface="primary">
+      {method && <div className={styles.method}>{method}</div>}
+      <AmountKeypad decimal={decimal} onKey={onKey} />
+      {action}
+    </div>
+  )
+}
+
+const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '0', 'Backspace']
+
+/** The app's own number keypad (FLAG: L3 has none): big digits on the page, no key boxes, as in Groww. */
+export function AmountKeypad({ decimal = false, onKey }: { decimal?: boolean; onKey: (key: string) => void }) {
+  return (
+    <div className={styles.keypad} role="group" aria-label="Number keypad">
+      {KEYS.map((k) =>
+        k === '.' && !decimal ? <span key="blank" /> : (
+          <button key={k} type="button" className={styles.key} aria-label={k === 'Backspace' ? 'Delete' : k === '.' ? 'Decimal point' : undefined} onPointerDown={keepFocus} onClick={() => onKey(k)}>
+            {k === 'Backspace' ? <Icon icon={msBackspace} /> : k}
+          </button>
+        ),
+      )}
+    </div>
+  )
+}
+
+const keepFocus = (e: PointerEvent) => e.preventDefault()
+
+/**
+ * Apply a keypad key to the typed amount. `decimals` 0 for ₹ (whole rupees), 2 for $. `maxDigits` caps the whole part.
+ * No leading zeros ("0" then "5" → "5"); "." on an empty amount → "0.".
+ */
+export function typeAmount(value: string, key: string, { decimals = 0, maxDigits = 9 }: { decimals?: number; maxDigits?: number } = {}) {
+  if (key === 'Backspace') return value.slice(0, -1)
+  const [whole, fraction] = value.split('.')
+  if (key === '.') return decimals > 0 && fraction === undefined ? (value === '' ? '0.' : value + '.') : value
+  if (!/^\d$/.test(key)) return value
+  if (fraction !== undefined) return fraction.length < decimals ? value + key : value
+  if (whole === '0') return key
+  return whole.length < maxDigits ? value + key : value
+}
+
+/** The typed amount as a number (NaN-safe). */
+export const amountValue = (value: string) => Number(value) || 0
+
+/** Group the whole part as typed: Indian grouping for ₹ (1,00,000), thousands for $ (100,000). Keeps a trailing "." / decimals. */
+function groupDigits(value: string, currency: '₹' | '$') {
+  const [whole, fraction] = value.split('.')
+  const grouped = Number(whole || 0).toLocaleString(currency === '₹' ? 'en-IN' : 'en-US')
+  return fraction === undefined ? grouped : `${grouped}.${fraction}`
+}
+```
+
+### `src/shared/ui/BankPicker.tsx`
+
+```tsx
+import { useId } from 'react'
+import { Avatar } from '@l3/components/Avatar'
+import { BottomSheetHeader } from '@l3/components/BottomSheet'
+import { Button } from '@l3/components/Button'
+import { ButtonGroup } from '@l3/components/ButtonGroup'
+import { Radio } from '@l3/components/Checkbox'
+import { Icon } from '@l3/components/Icon'
+import { ListCell } from '@l3/components/ListCell'
+import { Stack } from '@l3/components/Stack'
+import { msAccountBalance, msAdd, msChevronRight } from '@l3/icons/material'
+import { getCompany } from '../data/companies'
+import type { LinkedBank } from '../data/user'
+import { Sheet } from './Sheet'
+
+export type BankPickerCopy = {
+  /** The payment method, the row's label: “UPI”, “Net Banking (Remittance)”. */
+  method: string
+  /** No bank linked: the row's label, “Add a bank account”. */
+  addTitle: string
+  /** …and its description, “Money can only come from your own bank account”. */
+  addDescription: string
+  /** The sheet's heading, “Pay from”. */
+  sheetTitle: string
+  /** The sheet's button, “Add another bank account”. */
+  addAnother: string
+}
+
+const bankLogo = (bank: LinkedBank) => getCompany(bank.logoSymbol)?.logoUrl
+export const bankLine = (bank: LinkedBank) => `${bank.bank} ••${bank.last4}`
+
+/**
+ * The bank row of the add-money screens (₹ and US), sitting on the dock above the keypad: the method over the bank,
+ * a chevron — tapping it opens `BankSheet` to change the bank. With no bank linked it asks to add one instead.
+ * Each flow passes its own words (its copy.json).
+ */
+export function BankRow({ bank, copy, note, onChange, onAdd }: {
+  /** The bank money comes from; undefined = none linked. */
+  bank?: LinkedBank
+  copy: BankPickerCopy
+  /** Extra after the bank, e.g. “lands by Thu 8 PM”. */
+  note?: string
+  onChange?: () => void
+  onAdd?: () => void
+}) {
+  if (!bank) {
+    return (
+      <ListCell
+        as="button"
+        iconLeft={<Avatar icon={<Icon icon={msAccountBalance} />} size={32} label={copy.addTitle} />}
+        label={copy.addTitle}
+        description={copy.addDescription}
+        iconRight={<Icon icon={msChevronRight} />}
+        onClick={onAdd}
+      />
+    )
+  }
+  return (
+    <ListCell
+      as="button"
+      iconLeft={<Avatar src={bankLogo(bank)} initials={bank.bank.slice(0, 2)} shape="rounded" size={32} label={bank.bank} />}
+      label={copy.method}
+      description={note ? `${bankLine(bank)} · ${note}` : bankLine(bank)}
+      iconRight={<Icon icon={msChevronRight} />}
+      onClick={onChange}
+    />
+  )
+}
+
+/** “Pay from”: the linked banks as radio rows (picking one closes the sheet), then “Add another bank account”. */
+export function BankSheet({ banks, selected, copy, onSelect, onAdd, onClose }: {
+  banks: LinkedBank[]
+  selected: string
+  copy: BankPickerCopy
+  onSelect: (id: string) => void
+  onAdd: () => void
+  onClose: () => void
+}) {
+  const id = useId()
+  return (
+    <Sheet
+      labelledBy={id}
+      onClose={onClose}
+      header={<BottomSheetHeader heading={copy.sheetTitle} headingId={id} />}
+      footer={
+        <ButtonGroup aria-label={copy.sheetTitle}>
+          <Button variant="tertiary" size="lg" fullWidth iconLeft={<Icon icon={msAdd} />} onClick={onAdd}>{copy.addAnother}</Button>
+        </ButtonGroup>
+      }
+    >
+      <BankOptions banks={banks} selected={selected} name={id} onPick={(bankId) => { onSelect(bankId); onClose() }} />
+    </Sheet>
+  )
+}
+
+/**
+ * The sheet's body alone — the linked banks as radio rows — for a screen that hosts its own L3 BottomSheet (US Stocks).
+ * `card`: each bank a bordered card row, 8 apart (the chosen one gets border-dark); `plain` (default): flat rows.
+ */
+export function BankOptions({ banks, selected, name, onPick, variant = 'plain' }: {
+  banks: LinkedBank[]
+  selected: string
+  name: string
+  onPick: (id: string) => void
+  variant?: 'plain' | 'card'
+}) {
+  return (
+    <Stack gap={variant === 'card' ? '08' : '00'}>
+      {banks.map((bank) => (
+        <ListCell
+          key={bank.id}
+          as="label"
+          variant={variant}
+          selected={bank.id === selected}
+          iconLeft={<Avatar src={bankLogo(bank)} initials={bank.bank.slice(0, 2)} shape="rounded" size={32} label={bank.bank} />}
+          label={bankLine(bank)}
+          description={`${bank.type} · ${bank.branch}`}
+          trailing={<Radio name={name} checked={bank.id === selected} onChange={() => onPick(bank.id)} />}
+        />
+      ))}
+    </Stack>
+  )
+}
+```
+
+### `src/shared/ui/Flag.module.css`
+
+```css
+.flag {
+  display: block;
+  flex: none;
+  width: var(--l3-icon-size-16);
+  height: var(--l3-icon-size-16);
+}
+```
+
+### `src/shared/ui/Flag.tsx`
+
+```tsx
+import flagChina from '../assets/flags/china.svg'
+import flagEurope from '../assets/flags/europe.svg'
+import flagIndia from '../assets/flags/india.svg'
+import flagJapan from '../assets/flags/japan.svg'
+import flagKorea from '../assets/flags/korea.svg'
+import flagUs from '../assets/flags/us.svg'
+import styles from './Flag.module.css'
+
+export type FlagCode = 'us' | 'in' | 'cn' | 'jp' | 'eu' | 'kr'
+
+const files: Record<FlagCode, string> = { us: flagUs, in: flagIndia, cn: flagChina, jp: flagJapan, eu: flagEurope, kr: flagKorea }
+
+/**
+ * A round flag, 16 like the icons in small buttons and tabs (use as an `iconLeft`).
+ * L3 gap: no flag icons in L3 — round flag SVGs of our own (shared/assets/flags), not emoji, so they look the same and
+ * sit centred on every device.
+ */
+export const Flag = ({ code }: { code: FlagCode }) => <img className={styles.flag} src={files[code]} alt="" aria-hidden="true" />
+```
+
 ### `src/shared/ui/MainNav.tsx`
 
 ```tsx
@@ -41848,6 +62622,215 @@ export const goToTab = (go: (id: string) => void, section: Section) => {
 }
 ```
 
+### `src/shared/ui/Sheet.module.css`
+
+```css
+/* Board only: the static sheet sits on the bottom edge of the screen, over the L3 Overlay — shown at rest, no fade-in. */
+.scrim {
+  z-index: var(--app-layer-scrim);
+  transition: none;
+}
+
+.dock {
+  position: absolute;
+  inset: auto 0 0;
+  z-index: var(--app-layer-sheet);
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100% - var(--l3-size-48));
+}
+
+/* A top sheet (placement="top") hangs from the top edge instead. */
+.dock[data-placement='top'] {
+  inset: 0 0 auto;
+}
+```
+
+### `src/shared/ui/Sheet.tsx`
+
+```tsx
+import { createContext, useCallback, useContext, useId, useLayoutEffect, useState, type ReactNode } from 'react'
+import { BottomSheet, BottomSheetSurface } from '@l3/components/BottomSheet'
+import { Overlay } from '@l3/components/Overlay'
+import { usePreview } from '../prototype'
+import styles from './Sheet.module.css'
+
+/** Lets the L3 sheet play its exit before the next screen replaces it (≈ motion/duration-medium). */
+const SHEET_EXIT_MS = 240
+
+type SheetProps = {
+  header?: ReactNode
+  children?: ReactNode
+  /** The button dock — a <ButtonGroup>. */
+  footer?: ReactNode
+  /** Id of the header's heading (BottomSheetHeader `headingId`). */
+  labelledBy?: string
+  /** Accessible name when there's no header (loaders). */
+  label?: string
+  /** Prototype: where a backdrop tap, drag down or Esc goes. Leave out for sheets that can't be dismissed (loaders). */
+  onClose?: () => void
+  /** A screen's own styling hook on the sheet surface (e.g. a sheet that brings its own layout and no padding). */
+  className?: string
+  /** 'top' (L3 isBottom=False): drops from the top of the screen, for menus tied to the top (a market or sort picker). */
+  placement?: 'bottom' | 'top'
+}
+
+type Publish = (id: string, sheet: SheetProps | null) => void
+const SheetHostContext = createContext<Publish | null>(null)
+
+/**
+ * An L3 bottom sheet over the screen.
+ * Prototype: the real modal <BottomSheet> (focus trap, drag to close, scrim tap), drawn by the screen's SheetHost —
+ * so when one sheet leads to another over the same page, the scrim stays and only the sheet's content changes.
+ * Board: the same surface drawn statically with the L3 Overlay — dozens of open modals on one page would fight
+ * over focus, so the board shows <BottomSheetSurface>, which is what the modal renders inside.
+ */
+export function Sheet(props: SheetProps) {
+  const { interactive } = usePreview()
+  const publish = useContext(SheetHostContext)
+  const id = useId()
+  const hosted = interactive && publish !== null
+
+  // Hand the latest content to the host on every render; take it back when this sheet goes away.
+  useLayoutEffect(() => { if (hosted) publish(id, props) })
+  useLayoutEffect(() => (hosted ? () => publish(id, null) : undefined), [hosted, publish, id])
+
+  if (hosted) return null
+  const { header, children, footer, labelledBy, label, className, placement = 'bottom' } = props
+  return (
+    <>
+      <Overlay open className={styles.scrim} />
+      <div className={styles.dock} data-placement={placement} role="dialog" aria-labelledby={labelledBy} aria-label={label}>
+        <BottomSheetSurface header={header} footer={footer} className={className} placement={placement}>{children}</BottomSheetSurface>
+      </div>
+    </>
+  )
+}
+
+/**
+ * Prototype: one modal L3 BottomSheet per screen, kept open while the screen's sheet changes (sheet → sheet swaps
+ * the content in place, no scrim flash or slide). It closes with its exit animation when the screen has no sheet.
+ */
+export function SheetHost({ container, children }: { container: HTMLElement | null; children: ReactNode }) {
+  const [shown, setShown] = useState<{ id: string; sheet: SheetProps; open: boolean } | null>(null)
+  const publish = useCallback<Publish>((id, sheet) => {
+    setShown((s) => (sheet ? { id, sheet, open: true } : s && s.id === id ? { ...s, open: false } : s))
+  }, [])
+
+  const close = () => {
+    const onClose = shown?.sheet.onClose
+    if (!onClose) return
+    setShown((s) => s && { ...s, open: false })
+    window.setTimeout(onClose, SHEET_EXIT_MS)
+  }
+
+  return (
+    <SheetHostContext.Provider value={publish}>
+      {children}
+      {container && shown && (
+        <BottomSheet
+          open={shown.open}
+          onClose={close}
+          container={container}
+          header={shown.sheet.header}
+          footer={shown.sheet.footer}
+          aria-labelledby={shown.sheet.labelledBy}
+          aria-label={shown.sheet.label}
+          className={shown.sheet.className}
+          placement={shown.sheet.placement}
+        >
+          {shown.sheet.children}
+        </BottomSheet>
+      )}
+    </SheetHostContext.Provider>
+  )
+}
+```
+
+### `src/shared/ui/StockListCard.module.css`
+
+```css
+/* Price (Label 14, matching the symbol) over the day's change, right-aligned (numbers are Label, never Description). */
+.price {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--l3-spacing-02);
+  white-space: nowrap;
+}
+
+.value {
+  font: var(--l3-text-label-14);
+}
+```
+
+### `src/shared/ui/StockListCard.tsx`
+
+```tsx
+import type { ReactNode } from 'react'
+import { Avatar } from '@l3/components/Avatar'
+import { ListCell } from '@l3/components/ListCell'
+import { PriceChange } from '@l3/components/PriceChange'
+import styles from './StockListCard.module.css'
+
+type StockListCardProps = {
+  /** Ticker, e.g. "RELIANCE" or "QQQ" (L3 Label 14, one line). */
+  symbol: string
+  /** Company or fund name (L3 Description 12, one line with "…"). */
+  name: string
+  /** Logo image URL (a square image; ETFs pass their issuer logo on its plate). Without one the Avatar shows `initials`. Always the L3 Avatar at 40, so every list looks the same. */
+  logoUrl?: string
+  initials?: string
+  /**
+   * The logo itself, for a list that marks it (e.g. a Boosted ETF's "3x" pill on the logo's foot). Build it around the
+   * same L3 Avatar at 40; without it the card draws that Avatar from `logoUrl` / `initials`.
+   */
+  logo?: ReactNode
+  /** A small Tag after the symbol, e.g. "3x Long" (an L3 Tag, keeping its own colour; ListCell's label suffix). */
+  tag?: ReactNode
+  /** The price, already formatted by the caller: `<Usd value>` for US, `inr()` for India. */
+  price: ReactNode
+  /**
+   * The day's change in %, shown with its sign in green / red — never an arrow too (the user's rule, 3 Nov). Leave it
+   * out when the right side is one number that isn't a price, e.g. a holding's weight in an ETF's Top holdings.
+   */
+  changePct?: number
+  /** Opens the stock / ETF page. Without it the card is static (no fill, no press). */
+  onOpen?: () => void
+  'aria-label'?: string
+}
+
+/**
+ * The one stock row of the app, as a card — the Market list's style, used wherever stocks or ETFs are listed:
+ * logo · symbol over name · price over the day's change. Long lists show it flat (border only, no shadow).
+ *
+ * Flat = L3 ListCell `raised={false}`, symbol in Label 14 = `labelSize="14"` (list-cell 1.9.0).
+ */
+export function StockListCard({ symbol, name, logoUrl, initials, logo, tag, price, changePct, onOpen, ...rest }: StockListCardProps) {
+  return (
+    <ListCell
+      variant="card"
+      as={onOpen ? 'button' : undefined}
+      raised={false}
+      iconLeft={logo ?? <Avatar initials={initials ?? symbol.slice(0, 2)} src={logoUrl} size={40} label={name} />}
+      labelSuffix={tag || undefined}
+      labelSuffixTone="neutral"
+      labelSize="14"
+      label={symbol}
+      description={name}
+      trailing={
+        <span className={styles.price}>
+          <span className={styles.value}>{price}</span>
+          {changePct !== undefined && <PriceChange value={changePct} size="sm" />}
+        </span>
+      }
+      onClick={onOpen}
+      aria-label={rest['aria-label']}
+    />
+  )
+}
+```
+
 ### `src/shared/userStatus.ts`
 
 ```ts
@@ -41857,22 +62840,27 @@ export const goToTab = (go: (id: string) => void, section: Section) => {
 // show that state. Picking never moves on by itself; taps in the prototype don't change it.
 // In a real app these come from the user's account (KYC status, US Stocks activation, wallet, holdings).
 import type { FlowOption } from '../flows/types'
-import { useFlowOption } from './prototype'
+import { setFlowOption, useFlowOption } from './prototype'
+import { linkedBanks, type LinkedBank } from './data/user'
 
 /** The settings' owner in the preview (as a flow id: where the picks are remembered). */
 export const USER_STATUS = 'app'
 
 export type KycStatus = 'done' | 'pending'
-/** `ftux`: KYC done, not activated, first launch after release — the Home opens with the US Stocks intro sheet. */
-export type UsActivation = 'kyc' | 'off' | 'ftux' | 'review' | 'support' | 'failed' | 'active'
+export type UsActivation = 'kyc' | 'off' | 'review' | 'support' | 'failed' | 'active'
 export type UsWallet = 'empty' | 'onTheWay' | 'funded'
 export type UsHoldings = 'none' | 'some'
+export type BankLinks = 'none' | 'one' | 'two'
 
 /**
  * Screens that change with the user status: the settings float beside the phone on these (desktop preview). The Home,
- * a US stock page and the wallet's US tab.
+ * its US tab screens (each one sets the status to its own state on arrival, then follows a pick), a US stock page and
+ * the wallet's US tab.
  */
-const STATUS_SCREENS = ['stocks-01', 'us-stocks-13', 'us-stocks-54']
+/** The add-money screens and the wallet: the bank row and its sheet change with the user's linked banks. */
+const BANK_SCREENS = ['deposit-01', 'deposit-06', 'deposit-07', 'deposit-08', 'deposit-09', 'us-stocks-21', 'us-stocks-22', 'us-stocks-23', 'us-stocks-24', 'us-stocks-53', 'us-stocks-54']
+
+const STATUS_SCREENS = ['stocks-01', 'stocks-09', 'stocks-10', 'stocks-13', 'stocks-14', 'stocks-15', 'stocks-16', 'stocks-17', 'stocks-19', 'stocks-20', 'stocks-21', 'us-stocks-13', 'us-stocks-54']
 
 /** The settings, parent first: each one below only matters (and shows) while the one above has the listed values. */
 export const userStatusOptions: FlowOption[] = [
@@ -41886,22 +62874,21 @@ export const userStatusOptions: FlowOption[] = [
     values: [
       { value: 'kyc', label: 'Lemonn KYC pending' },
       { value: 'off', label: 'KYC done · not activated' },
-      { value: 'ftux', label: 'FTUX bottom sheet' },
       { value: 'review', label: 'Activation under review' },
       { value: 'support', label: 'Under review · contact support' },
       { value: 'failed', label: 'Activation failed' },
       { value: 'active', label: 'Activated' },
     ],
-    default: 'off',
+    // The prototype opens on a user who's all set: activated, money in the wallet, holding US stocks.
+    default: 'active',
     floatOn: STATUS_SCREENS,
   },
   {
     id: 'usWallet',
     group: 'User status',
     label: 'USD wallet',
-    // "Money on the way" removed from the picker (2 Nov); the type keeps it so older saved settings still parse.
-    values: [{ value: 'empty', label: '$0' }, { value: 'funded', label: 'Has money' }],
-    default: 'empty',
+    values: [{ value: 'empty', label: '$0' }, { value: 'onTheWay', label: 'Money on the way' }, { value: 'funded', label: 'Has money' }],
+    default: 'funded',
     showIf: { us: ['active'] },
     floatOn: STATUS_SCREENS,
   },
@@ -41911,16 +62898,25 @@ export const userStatusOptions: FlowOption[] = [
     label: 'US holdings',
     picker: 'toggle',
     values: [{ value: 'none', label: 'None' }, { value: 'some', label: 'Holds NVDA' }],
-    default: 'none',
+    default: 'some',
     showIf: { usWallet: ['funded'] },
     floatOn: STATUS_SCREENS,
+  },
+  {
+    // Bank accounts linked to Lemonn (KYC adds the first). None = the add-money screens ask for one first.
+    id: 'banks',
+    group: 'User status',
+    label: 'Bank accounts',
+    values: [{ value: 'none', label: 'None' }, { value: 'one', label: 'One' }, { value: 'two', label: 'Two' }],
+    default: 'two',
+    floatOn: BANK_SCREENS,
   },
 ]
 
 const option = (id: string) => userStatusOptions.find((o) => o.id === id)!
 const useStatus = (id: string) => useFlowOption(USER_STATUS, id, option(id).default)
 
-export type UserStatus = { kyc: KycStatus; us: UsActivation; usWallet: UsWallet; usHoldings: UsHoldings }
+export type UserStatus = { kyc: KycStatus; us: UsActivation; usWallet: UsWallet; usHoldings: UsHoldings; banks: BankLinks }
 
 /** The user status as picked (settings under one that's off keep their last pick). KYC comes from the activation list. */
 export function useUserStatus(): UserStatus {
@@ -41930,7 +62926,22 @@ export function useUserStatus(): UserStatus {
     us,
     usWallet: useStatus('usWallet') as UsWallet,
     usHoldings: useStatus('usHoldings') as UsHoldings,
+    banks: useStatus('banks') as BankLinks,
   }
+}
+
+/**
+ * The bank accounts the user has linked, as picked in "User status → Bank accounts" (primary first). Money in the USD
+ * wallet (on the way or landed) came from a bank, so then "None" counts as one — as in the real app, a user with money
+ * moving always has a bank.
+ */
+export function useLinkedBanks(): LinkedBank[] {
+  const picked = useStatus('banks') as BankLinks
+  const us = useStatus('us') as UsActivation
+  const usWallet = useStatus('usWallet') as UsWallet
+  const moneyMoved = us === 'active' && usWallet !== 'empty'
+  const banks = picked === 'none' && moneyMoved ? 'one' : picked
+  return banks === 'none' ? [] : banks === 'one' ? linkedBanks.slice(0, 1) : linkedBanks
 }
 
 /**
@@ -41942,13 +62953,22 @@ export type UsJourney = 'kyc' | 'activate' | 'review' | 'support' | 'failed' | '
 
 export function usJourney({ kyc, us, usWallet, usHoldings }: UserStatus): UsJourney {
   if (kyc === 'pending' || us === 'kyc') return 'kyc'
-  // The FTUX state is "not activated" everywhere; only the Home adds the intro sheet over it.
-  if (us === 'off' || us === 'ftux') return 'activate'
+  if (us === 'off') return 'activate'
   if (us !== 'active') return us
-  // A saved "Money on the way" (no longer offered) reads as $0.
-  if (usWallet === 'empty' || usWallet === 'onTheWay') return 'activated'
+  if (usWallet === 'empty') return 'activated'
+  if (usWallet === 'onTheWay') return 'onTheWay'
   return usHoldings === 'some' ? 'holding' : 'ready'
 }
 
 export const useUsJourney = () => usJourney(useUserStatus())
+
+/** Sets the user status to one US Stocks step (a US tab screen showing its own state sets it on arrival). */
+export function setUsJourney(step: UsJourney) {
+  const us: UsActivation = step === 'activate' ? 'off' : ['kyc', 'review', 'support', 'failed'].includes(step) ? (step as UsActivation) : 'active'
+  const set = (id: string, value: string) => setFlowOption(USER_STATUS, id, option(id).default, value)
+  set('us', us)
+  if (us !== 'active') return
+  set('usWallet', step === 'activated' ? 'empty' : step === 'onTheWay' ? 'onTheWay' : 'funded')
+  if (step === 'ready' || step === 'holding') set('usHoldings', step === 'holding' ? 'some' : 'none')
+}
 ```

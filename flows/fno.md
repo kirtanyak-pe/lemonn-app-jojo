@@ -1,6 +1,6 @@
 # Flow: F&O (`fno`)
 
-> One self-contained file for converting this flow to another platform. Read https://kirtanyak-pe.github.io/lemonn-app-prototype/CONVERT.md first. Design system: Lemonnade V3 @ `e34cfaf` (components, tokens and rules: https://kirtanyak-pe.github.io/lemonnade-v3-docs/llms.txt).
+> One self-contained file for converting this flow to another platform. Read https://kirtanyak-pe.github.io/lemonn-app-prototype/CONVERT.md first. Design system: Lemonnade V3 @ `4afbde2` (components, tokens and rules: https://kirtanyak-pe.github.io/lemonnade-v3-docs/llms.txt).
 
 Equity F&O home: P&L, indices, chart metrics, watchlists, Smart Options, Futures Heatmap and Smart Futures.
 
@@ -1353,8 +1353,8 @@ export function PopularCommodities({ onChoose, onContract, onViewAll }: { onChoo
       <Stack direction="horizontal" gap="08" justify="between" align="center">
         <Stack gap="04" className={parts.grow}><p className={parts.heading}>{contract.name}</p><p className={parts.description}>{contract.description}</p></Stack>
         {contract.margin
-          ? <Stack gap="04" align="end"><Stack direction="horizontal" gap="04" align="center"><p className={parts.heading}>{volume ? contract.volume.toLocaleString('en-IN') : inr(contract.price, 2)}</p><PriceChange value={contract.change} unit="percent" size="md" arrow /></Stack><p className={styles.meta}>{t('commodities.margin', { margin: contract.margin })}</p></Stack>
-          : <Stack gap="04" align="end"><p className={parts.heading}>{volume ? contract.volume.toLocaleString('en-IN') : inr(contract.price, 2)}</p><PriceChange value={contract.change} unit="percent" size="sm" arrow /></Stack>}
+          ? <Stack gap="04" align="end"><Stack direction="horizontal" gap="04" align="center"><p className={parts.heading}>{volume ? contract.volume.toLocaleString('en-IN') : inr(contract.price, 2)}</p><PriceChange value={contract.change} unit="percent" size="md" /></Stack><p className={styles.meta}>{t('commodities.margin', { margin: contract.margin })}</p></Stack>
+          : <Stack gap="04" align="end"><p className={parts.heading}>{volume ? contract.volume.toLocaleString('en-IN') : inr(contract.price, 2)}</p><PriceChange value={contract.change} unit="percent" size="sm" /></Stack>}
       </Stack>
     </Card>)}</Stack>
   </section>
@@ -1668,8 +1668,8 @@ export function AssetPage({ asset, onBack, onChain, onScalper, onOrder }: Props)
   const dock = <ButtonGroup aria-label={`${asset.name} ${asset.contract}`} direction={asset.illiquid ? 'vertical' : 'horizontal'}>
     {asset.illiquid && <button type="button" className={styles.illiquidNote} onClick={() => setExplain(true)}>{t('asset.illiquidNote')}<Icon icon={msInfo} size={16} /></button>}
     {asset.illiquid
-      ? <div className={styles.pair}><Button variant="brand" disabled>{t('asset.buy')}</Button><Button variant="secondary" disabled>{t('asset.sell')}</Button></div>
-      : <><Button variant="brand" onClick={() => onOrder('buy')}>{t('asset.buy')}</Button><Button variant="secondary" onClick={() => onOrder('sell')}>{t('asset.sell')}</Button></>}
+      ? <div className={styles.pair}><Button variant="buy" disabled>{t('asset.buy')}</Button><Button variant="sell" disabled>{t('asset.sell')}</Button></div>
+      : <><Button variant="buy" onClick={() => onOrder('buy')}>{t('asset.buy')}</Button><Button variant="sell" onClick={() => onOrder('sell')}>{t('asset.sell')}</Button></>}
   </ButtonGroup>
 
   return <Screen
@@ -1681,7 +1681,7 @@ export function AssetPage({ asset, onBack, onChain, onScalper, onOrder }: Props)
         <div className={styles.head}>
           <Stack gap="04" className={styles.grow}>
             <Stack direction="horizontal" gap="08" align="center"><h1 className={styles.name}>{asset.name}</h1><span className={styles.contract}>{asset.contract}</span>{asset.illiquid && <button type="button" className={styles.tagButton} aria-label={t('illiquid.open')} onClick={() => setExplain(true)}><Tag color="error" variant="secondary" size="sm" iconLeft={<Icon icon={msBlock} size={12} />}>{t('asset.illiquid')}</Tag></button>}</Stack>
-            <Stack direction="horizontal" gap="04" align="center"><p className={styles.price}>{inr(asset.price, 2)}</p><PriceChange value={asset.change} unit="percent" size="sm" arrow /></Stack>
+            <Stack direction="horizontal" gap="04" align="center"><p className={styles.price}>{inr(asset.price, 2)}</p><PriceChange value={asset.change} unit="percent" size="sm" /></Stack>
           </Stack>
           {asset.image && <img className={styles.art} src={asset.image} alt="" />}
         </div>
@@ -1829,7 +1829,7 @@ export function LotSummary({ sort: initialSort = 'price', initialSheet, onBack, 
       <section className={parts.contractSection} aria-label={t('lot.futures')}>
         <SectionHeader title={t('lot.futures')} action={{ type: 'view-all', label: t('viewAll'), onClick: () => setModal({ kind: 'detail', title: `${lotName} ${t('lot.futures')}` }) }} />
         <Stack gap="12">{lotFutures.map((future) => <Card key={future.id} onClick={() => open(future)}>
-          <Stack direction="horizontal" gap="08" justify="between" align="center"><Stack gap="04" className={parts.grow}><p className={parts.heading}>{future.name}</p><p className={parts.description}>{future.description}</p></Stack><Stack gap="04" align="end"><p className={parts.heading}>{inr(future.price, 2)}</p><PriceChange value={future.change} unit="percent" size="sm" arrow /></Stack></Stack>
+          <Stack direction="horizontal" gap="08" justify="between" align="center"><Stack gap="04" className={parts.grow}><p className={parts.heading}>{future.name}</p><p className={parts.description}>{future.description}</p></Stack><Stack gap="04" align="end"><p className={parts.heading}>{inr(future.price, 2)}</p><PriceChange value={future.change} unit="percent" size="sm" /></Stack></Stack>
         </Card>)}</Stack>
       </section>
       <section className={parts.contractSection} aria-label={t('lot.options')}>
@@ -1845,7 +1845,7 @@ export function LotSummary({ sort: initialSort = 'price', initialSheet, onBack, 
         </Stack>
         <Stack gap="12">{options.length === 0 && <EmptyState title={t('empty')} description={t('empty.description')} />}{options.map((option) => <Card key={option.id} onClick={() => open(option)}>
           <Stack direction="horizontal" gap="08" justify="between" align="center"><Stack gap="04" className={parts.grow}><Stack direction="horizontal" gap="08" align="center"><p className={parts.heading}>{option.name}</p>{/* The card is a button, so the tag is a tappable span inside it (stops the card's own tap). */}{option.illiquid && <span className={styles.tagTap} onClick={(e) => { e.stopPropagation(); setModal({ kind: 'illiquid', contract: option.name }) }}><Tag color="error" variant="secondary" size="sm" iconLeft={<Icon icon={msBlock} size={12} />}>{t('asset.illiquid')}</Tag></span>}</Stack><p className={parts.description}>{option.description}</p></Stack>
-            {sort === 'price' ? <Stack gap="04" align="end"><p className={parts.heading}>{value(option)}</p><PriceChange value={option.change} unit="percent" size="sm" arrow /></Stack> : <p className={parts.heading}>{value(option)}</p>}</Stack>
+            {sort === 'price' ? <Stack gap="04" align="end"><p className={parts.heading}>{value(option)}</p><PriceChange value={option.change} unit="percent" size="sm" /></Stack> : <p className={parts.heading}>{value(option)}</p>}</Stack>
         </Card>)}</Stack>
       </section>
     </Stack>
@@ -1946,8 +1946,8 @@ export function ContractSheet({ contract, onAsset, onIlliquid, onBuy, onSell, on
     footer={<ButtonGroup aria-label={t('contractSheet.label', { name: contract.name })} direction={contract.illiquid ? 'vertical' : 'horizontal'}>
       {contract.illiquid && <button type="button" className={styles.note} onClick={onIlliquid}>{t('asset.illiquidNote')}<Icon icon={msInfo} size={16} /></button>}
       {contract.illiquid
-        ? <div className={styles.pair}><Button variant="brand" disabled onClick={onBuy}>{t('asset.buy')}</Button><Button variant="secondary" disabled onClick={onSell}>{t('asset.sell')}</Button></div>
-        : <><Button variant="brand" onClick={onBuy}>{t('asset.buy')}</Button><Button variant="secondary" onClick={onSell}>{t('asset.sell')}</Button></>}
+        ? <div className={styles.pair}><Button variant="buy" disabled onClick={onBuy}>{t('asset.buy')}</Button><Button variant="sell" disabled onClick={onSell}>{t('asset.sell')}</Button></div>
+        : <><Button variant="buy" onClick={onBuy}>{t('asset.buy')}</Button><Button variant="sell" onClick={onSell}>{t('asset.sell')}</Button></>}
     </ButtonGroup>}>
     <div className={styles.body}>
       <div className={styles.row}>
@@ -1958,7 +1958,7 @@ export function ContractSheet({ contract, onAsset, onIlliquid, onBuy, onSell, on
       </div>
       <div className={styles.row}>
         <span className={styles.expiry}>{contract.description.replace('|', '·')}{contract.illiquid && <button type="button" className={styles.tagButton} aria-label={t('illiquid.open')} onClick={onIlliquid}><Tag color="error" variant="secondary" size="sm" iconLeft={<Icon icon={msBlock} size={12} />}>{t('asset.illiquid')}</Tag></button>}</span>
-        <PriceChange value={contract.change} unit="percent" size="md" arrow />
+        <PriceChange value={contract.change} unit="percent" size="md" />
       </div>
     </div>
   </Sheet>
@@ -2017,7 +2017,7 @@ export function ContractSection({ kind, contracts, onChoose, onContract, onViewA
       <Select size="sm" aria-label={t('sort.label')} onClick={() => setVolume(!volume)}>{t(volume ? 'sort.volume' : 'sort.price')}</Select>
     </Stack>
     <Stack gap="12">{rows.map((contract) => <Card key={contract.id} onClick={() => onContract(contract)}>
-      <Stack direction="horizontal" gap="08" justify="between" align="center"><Stack gap="04" className={styles.grow}><p className={styles.heading}>{contract.name}</p><p className={styles.description}>{contract.description}</p></Stack><Stack gap="04" align="end"><p className={styles.heading}>{volume ? contract.volume.toLocaleString('en-IN') : inr(contract.price, 2)}</p><PriceChange value={contract.change} unit="percent" size="sm" arrow /></Stack></Stack>
+      <Stack direction="horizontal" gap="08" justify="between" align="center"><Stack gap="04" className={styles.grow}><p className={styles.heading}>{contract.name}</p><p className={styles.description}>{contract.description}</p></Stack><Stack gap="04" align="end"><p className={styles.heading}>{volume ? contract.volume.toLocaleString('en-IN') : inr(contract.price, 2)}</p><PriceChange value={contract.change} unit="percent" size="sm" /></Stack></Stack>
     </Card>)}{rows.length === 0 && <EmptyState title={t('empty')} description={t('empty.description')} />}</Stack>
   </section>
 }
@@ -2242,7 +2242,7 @@ export function Overview({ onDestination }: { onDestination: (name: string) => v
     <Stack direction="horizontal" align="center" justify="between" className={styles.inset}>
       <Stack gap="08">
         <Select size="sm" onClick={() => setDay(!day)}>{t(day ? 'pnl.day' : 'pnl.total')}</Select>
-        <Stack direction="horizontal" gap="08" align="center"><p className={styles.amount}>{day ? '₹520.75' : '₹1,500.25'}</p><PriceChange value={day ? 4.2 : 12.4} unit="percent" size="md" arrow decimals={1} /></Stack>
+        <Stack direction="horizontal" gap="08" align="center"><p className={styles.amount}>{day ? '₹520.75' : '₹1,500.25'}</p><PriceChange value={day ? 4.2 : 12.4} unit="percent" size="md" decimals={1} /></Stack>
       </Stack>
       <Button variant="tertiary" size="sm" aria-label={t('pnl.open')} iconLeft={<Icon icon={msArrowForward} size={20} />} onClick={() => onDestination(t('nav.positions'))} />
     </Stack>
@@ -2251,7 +2251,7 @@ export function Overview({ onDestination }: { onDestination: (name: string) => v
       <div className={styles.indexRail}>
         {indices.map((index) => <Card key={index.name} onClick={() => onDestination(index.name)} className={styles.indexCard}>
           <Stack direction="horizontal" gap="04" align="center" justify="between"><p className={styles.secondaryLabel}>{index.name}</p><Tag color="discover" variant="secondary" size="sm">{index.expiry}</Tag></Stack>
-          <Stack direction="horizontal" gap="04" align="center"><span className={styles.label}>{index.price}</span><PriceChange value={index.change} unit="number" size="sm" arrow={false} /><span className={styles.up}>({index.percent})</span></Stack>
+          <Stack direction="horizontal" gap="04" align="center"><span className={styles.label}>{index.price}</span><PriceChange value={index.change} unit="number" size="sm" /><span className={styles.up}>({index.percent})</span></Stack>
         </Card>)}
       </div>
     </div>
@@ -3753,7 +3753,7 @@ export function OrderPad({ side, product: initialProduct = 'delivery', type: ini
   const top = <Actionbar onBack={onBack} backLabel={t('order.back')}
     title={<button type="button" className={styles.contract} aria-label={t('order.switch')} onClick={() => setModal({ kind: 'detail', title: t('order.switch') })}>
       <span className={styles.contractName}>{c.name}<Icon icon={lmSwitchArrowVertical} size={16} /><span className={styles.expiry}>{c.contract}</span></span>
-      <span className={styles.contractPrice}>{inr(c.ltp, 2)}<PriceChange value={c.change} unit="percent" size="sm" arrow /></span>
+      <span className={styles.contractPrice}>{inr(c.ltp, 2)}<PriceChange value={c.change} unit="percent" size="sm" /></span>
     </button>}
     actions={<span className={styles.headEnd}>{illiquid && <button type="button" className={styles.tagButton} aria-label={t('illiquid.open')} onClick={() => setModal({ kind: 'illiquid' })}><Tag color="error" variant="secondary" size="sm" iconLeft={<Icon icon={msBlock} size={12} />}>{t('asset.illiquid')}</Tag></button>}<span className={styles.exchange}>{c.exchange}</span></span>}
     bottom={<Tabs aria-label={t('order.product')} value={product} onChange={setProduct} items={[{ value: 'delivery', label: t('order.delivery') }, { value: 'intraday', label: t('order.intraday') }]} />} />
@@ -4247,8 +4247,7 @@ import { Icon } from '@l3/components/Icon'
 import { Stack } from '@l3/components/Stack'
 import { Stepper } from '@l3/components/Stepper'
 import { Tabs } from '@l3/components/Tabs'
-import { msAdd, msArrowBack, msArrowDropUp, msJoin, msLink, msMonitoring, msPlaylistAdd, msReceiptLong, msKeyboardArrowDown, msRefresh, msSwapHoriz } from '@l3/icons/material'
-import { lmSwitchArrowVertical } from '@l3/icons/lemonnade'
+import { msAdd, msArrowBack, msJoin, msLink, msMonitoring, msPlaylistAdd, msReceiptLong, msKeyboardArrowDown, msRefresh, msSwapHoriz, msUnfoldMore } from '@l3/icons/material'
 import { Screen } from '../../../shared/ui/Screen'
 import { Sheet } from '../../../shared/ui/Sheet'
 import { TradingPane, type PaneLine } from '../components/TradingPane'
@@ -4330,7 +4329,7 @@ export function Scalper({ onBack, createdIndicator, openIndicators, initialIndic
           />
           <div className={styles.order}>
             <div className={styles.side}>
-              <Button variant="brand" size="md" fullWidth className={styles.buy}>{t('scalper.buy')}</Button>
+              <Button variant="buy" size="md" fullWidth className={styles.buy}>{t('scalper.buy')}</Button>
               <span className={styles.req}>{t('scalper.required', { amount: '₹7,059.75' })}</span>
             </div>
             <div className={styles.qty}>
@@ -4338,7 +4337,7 @@ export function Scalper({ onBack, createdIndicator, openIndicators, initialIndic
               <span className={styles.funds}>{t('scalper.funds', { amount: '₹-39.96' })}</span>
             </div>
             <div className={styles.side}>
-              <Button variant="secondary" size="md" fullWidth className={styles.sell}>{t('scalper.sell')}</Button>
+              <Button variant="sell" size="md" fullWidth className={styles.sell}>{t('scalper.sell')}</Button>
               <span className={styles.req}>{t('scalper.required', { amount: '₹1,57,436.49' })}</span>
             </div>
           </div>
@@ -4383,12 +4382,12 @@ function ChartPanel({ instrument, lines, applied = 0, refresh, onTools }: { inst
             <button type="button" className={styles.picker} aria-label={t('scalper.pickInstrument')}>
               <span className={styles.name}>{name}</span>
               {side && <span className={styles.segment}>{side}</span>}
-              <Icon icon={lmSwitchArrowVertical} size={16} />
+              <Icon icon={msUnfoldMore} size={16} />
             </button>
             {segment && (
               <button type="button" className={styles.picker} aria-label={t('scalper.pickSegment')}>
                 <span className={styles.segment}>{segment}</span>
-                <Icon icon={lmSwitchArrowVertical} size={16} />
+                <Icon icon={msUnfoldMore} size={16} />
               </button>
             )}
             <Button variant="ghost" size="sm" iconLeft={<Icon icon={msJoin} />} aria-label={t('scalper.link')} className={styles.link} />
@@ -4397,7 +4396,7 @@ function ChartPanel({ instrument, lines, applied = 0, refresh, onTools }: { inst
             <span className={styles.price}>{inr(price)}</span>
             <span className={styles.up}>{inr(change)}</span>
             <span className={styles.up}>
-              <Icon icon={msArrowDropUp} size={16} />({percent.toFixed(2)}%)
+              ({percent >= 0 ? '+' : '−'}{Math.abs(percent).toFixed(2)}%)
             </span>
           </div>
         </div>
@@ -5317,6 +5316,15 @@ export const bankAccount: BankAccount = {
   type: 'Savings',
   branch: 'Andheri West, Mumbai',
 }
+
+/** A linked bank account as the money screens show it: the bank's logo symbol (companies.ts) and the last 4 digits. */
+export type LinkedBank = BankAccount & { id: string; logoSymbol: string; last4: string; primary?: boolean }
+
+/** The user's linked bank accounts, primary first. "User status → Bank accounts" picks how many the prototype shows. */
+export const linkedBanks: LinkedBank[] = [
+  { ...bankAccount, id: 'hdfc', logoSymbol: 'HDFCBANK', last4: '7821', primary: true },
+  { id: 'icici', bank: 'ICICI Bank', accountNumber: '002101554410', ifsc: 'ICIC0000021', type: 'Savings', branch: 'Powai, Mumbai', logoSymbol: 'ICICIBANK', last4: '4410' },
+]
 ```
 
 ### `src/shared/prototype.ts`
@@ -5586,6 +5594,15 @@ export function Rail({ children, label, visible, rows = 1, snap = 'start', class
   overflow: clip; /* clip, not hidden: a sheet taking focus while it slides in can't scroll the screen */
   background: var(--l3-surface-default);
   color: var(--l3-content-primary);
+  /* An app, not a page: swiping and long-pressing never select text (fields still do — see below). */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.screen :is(input, textarea, [contenteditable='true']) {
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 .page {

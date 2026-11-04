@@ -1,6 +1,6 @@
 # Flow: Stocks (`stocks`)
 
-> One self-contained file for converting this flow to another platform. Read https://kirtanyak-pe.github.io/lemonn-app-prototype/CONVERT.md first. Design system: Lemonnade V3 @ `e34cfaf` (components, tokens and rules: https://kirtanyak-pe.github.io/lemonnade-v3-docs/llms.txt).
+> One self-contained file for converting this flow to another platform. Read https://kirtanyak-pe.github.io/lemonn-app-prototype/CONVERT.md first. Design system: Lemonnade V3 @ `4afbde2` (components, tokens and rules: https://kirtanyak-pe.github.io/lemonnade-v3-docs/llms.txt).
 
 The Stocks tab — the home after login: indices, holdings, products, movers, watchlists, ideas.
 
@@ -12,13 +12,13 @@ Prototype: https://kirtanyak-pe.github.io/lemonn-app-prototype/#/stocks · machi
 |---|---|---|---|---|
 | `stocks-01` | Home | [5714:64982]() | — | The Stocks home in the user status picked in the prototype settings (User status: US Stocks activation — Lemonn KYC pending → … → Activated —, USD wallet, US holdings — the same settings the US stock page and the wallet follow). Picking a status shows its US tab. Each state is also a screen of its own (hidden in the list), which the activation and add-money taps go to. |
 | `stocks-02` | Home · top movers & watchlists | — | `profile-01` | Same page, scrolled. |
-| `stocks-03` | Home · 52W Low | — | `profile-01` | The "52W Low" chip picked. |
+| `stocks-03` | Home · top losers | — | `profile-01` | The "Top losers" chip picked. |
 | `stocks-04` | Home · Smart Invest | — | `profile-01` | Same page, scrolled: managed strategies, then the announcement. |
 | `stocks-05` | Home · sectors & highlights | — | `profile-01` | Same page, scrolled. |
 | `stocks-06` | Home · highlights & idea baskets | — | `profile-01` | Same page, scrolled. (The live app no longer has Trade ideas here — removed 2026-10-22.) |
 | `stocks-07` | Home · idea baskets & disclosure | — | `profile-01` | The end of the page: the disclosure, four lines and Read More. |
 | `stocks-21` | Home · US tab · KYC not done | [9001:20]() | `kyc-01`, `us-stocks-74` | The US tab for a user who hasn\ |
-| `stocks-09` | Home · US Stocks tab | [5756:74756]() | — | The US Stocks tab for a user who has not activated US Stocks: US indices, the Activate US Stocks card (→ risk disclosure sheet, stocks-12), shortcuts, Top Movers, Trillion Dollar Titans, Brands, Heatmap, themes. A US stock opens its page (not activated). Designed in the US Stocks flow (Figma Home · US tab · Activate US Stocks card); here it is the tab on the app\ |
+| `stocks-09` | Home · US Stocks tab | [5756:74756]() | — | The US Stocks tab for a user who has not activated US Stocks: US indices, the Activate US Stocks card (→ risk disclosure sheet, stocks-12), shortcuts, Top Movers (a swipeable row of cards), Brands, Heatmap, themes. A US stock opens its page (not activated). Designed in the US Stocks flow (Figma Home · US tab · Activate US Stocks card); here it is the tab on the app\ |
 | `stocks-10` | Home · US Stocks tab · scrolled | — | — | Same tab, scrolled past the tabs: the compact IND / US tabs are pinned under the top bar. |
 | `stocks-11` | Home · US Stocks intro (FTUX) sheet | [5756:68986]() | `stocks-12`, `stocks-01` | First launch after release: the IND tab with the US Stocks intro (FTUX) sheet — animated flag, five company logos, three benefits. Activate US Stocks → the risk disclosure (stocks-12); ✕ → Home (stocks-01). |
 | `stocks-12` | Home · US tab · risk disclosure sheet | [5756:71475]() | `stocks-13`, `stocks-09` | The Risk disclosure (For US Stocks) sheet over the US tab. Agree and Continue submits the activation → under review (stocks-13); closing it → the tab (stocks-09). |
@@ -28,9 +28,11 @@ Prototype: https://kirtanyak-pe.github.io/lemonn-app-prototype/#/stocks · machi
 | `stocks-15` | Home · US tab · activated · add money | [5776:81870]() | `us-stocks-20` | US tab, activation successful: green card with the unlocked benefits, Add Money to US wallet → the $0 USD wallet (us-stocks-20). The wallet icon goes there too. |
 | `stocks-16` | Home · US tab · money ready | [5796:87332]() | `stocks-17` | Money reached the US wallet: a "Your money is ready" toast above the navbar (times out after 6 s; no card, as in his design); tapping the toast → the activated page (stocks-17). Wallet → the funded USD wallet (us-stocks-59). |
 | `stocks-17` | Home · US tab · activated · holding | [5826:92885]() | — | US tab for an activated user who holds US stocks: no card, the summary shows US holdings ($). A US stock opens its stock page — NVDA (held) with Buy / Sell, others Buy only. Wallet → the funded USD wallet. |
-| `stocks-19` | Home · US tab · under review · Contact Support | [5776:80202]() | — | Activation still under review after a working day: the honey card gains a Contact Support button. Figma has no support screen, so the button goes nowhere yet (L3 gap / missing screen). The wallet opens the wallet\ |
+| `stocks-19` | Home · US tab · under review · Contact Support | [5776:80202]() | — | Activation still under review after a working day: the honey card gains a Contact Support button. Contact Support opens an email to Lemonn support (mail app), no in-app screen. The wallet opens the wallet\ |
 | `stocks-20` | Home · US tab · money on the way | [5796:86490]() | `us-stocks-28` | After paying on the bank page: the honey "Money on the way" card (trade from Thu 8 PM) with what happens next (debited, converted, credited). Track Transfer and the wallet open the wallet\ |
 | `stocks-18` | Home · activation submitted sheet | [5756:73797]() | `stocks-13` | The under-review US tab with the "US Stocks activation under review" sheet (we\ |
+| `stocks-29` | Top analyst picks · Stocks | — | `us-stocks-13` | The US tab\ |
+| `stocks-30` | Top analyst picks · History | — | `us-stocks-13` | The same page on History: the track record (picks closed, how many reached their target, the average return), then each closed pick — dates, its return (green / red) and a Target hit / Exited early tag. A row opens its US stock page. |
 
 ## Spec (README.md)
 
@@ -59,7 +61,7 @@ One long, scrolling L1 page. The board shows it as frames scrolled to each part,
 | `stocks-05` | Home · sectors & highlights | Sectors · Highlights (Mutual funds, F&O) |
 | `stocks-06` | Home · highlights & idea baskets | Highlights (Mutual Funds, F&O) · Invest in Ideas |
 | `stocks-07` | Home · idea baskets & disclosure | Invest in ideas (baskets) · the broker's regulatory line |
-| `stocks-09` | Home · US Stocks tab | The **US Stocks** tab (user has not activated US Stocks): US indices · Activate US Stocks card · shortcuts · Top Movers · Trillion Dollar Titans · Brands You Know · Heatmap · Explore by themes |
+| `stocks-09` | Home · US Stocks tab | The **US Stocks** tab (user has not activated US Stocks): US indices · Activate US Stocks card · shortcuts · Top Movers · Trillion Dollar Titans · Brands You Know · Explore by themes |
 | `stocks-10` | Home · US Stocks tab · scrolled | Same tab scrolled past the tabs: the compact IND / US tabs are pinned under the top bar |
 | `stocks-11` | Home · US Stocks intro (FTUX) sheet | IND tab + the **US Stocks intro (FTUX) sheet**, first launch after release (Figma 5756:68986). Activate US Stocks → `stocks-12`; ✕ → `stocks-01` |
 | `stocks-12` | Home · US tab · risk disclosure sheet | US tab + the **Risk disclosure** sheet (5756:71475). Agree and Continue → `stocks-13`; close → `stocks-09` |
@@ -71,6 +73,8 @@ One long, scrolling L1 page. The board shows it as frames scrolled to each part,
 | `stocks-18` | Home · activation submitted sheet | Under-review US tab + the **"US Stocks activation under review"** sheet (5756:73797). Okay / close → `stocks-13` |
 | `stocks-21` | Home · US tab · KYC not done | **Not in Figma.** The user's Lemonn (Indian) KYC isn't complete, so US Stocks can't be activated: blue card "Complete your KYC first", Complete KYC → `kyc-01`; a US stock → `us-stocks-74` (Complete KYC); wallet → `us-stocks-53` |
 | `stocks-22` | Home · US tab · activation approved sheet | **Not in Figma.** Activated US tab + the **"US Stocks is active"** sheet (success spot), the moment the review is approved. Add Money to US wallet → `us-stocks-20`; Later / close → `stocks-15` |
+| `stocks-23` … `28` | Themes page (one screen per opening theme; 24–28 hidden) | **Not in Figma.** Every theme of Explore by themes on one page, like the ETFs page: Actionbar (back + "Themes") with the themes as pill tabs in its bottom slot · description + disclaimer · Returns card (1M · 1Y · 3Y, what $100 from 3 years ago is worth) · the theme's stocks. Opens on: 23 AI & chips (also View all) · 24 Big Tech · 25 Dividend payers · 26 EV & clean energy · 27 Healthcare leaders · 28 Dollar parking |
+| `stocks-29` · `30` | Top analyst picks · Stocks / History | **Not in Figma**: built from the live app's Trade Ideas page (phone screenshots, 3 Nov) without its F&O tab. The US tab's Top analyst picks View all (header and under the list) opens it. Actionbar: back + title, flat (underline) tabs **Stocks · History** in its bottom slot (the live app has pills). Stocks: a card per pick — logo, name over LTP, the average target over the rating tag (Strong Buy green / Buy grey); under a hairline, Expected profit +x% and "94% of 66 recommend" (live app: entry range + Not in range, Potential profit, TP · SL). History: closed picks grouped by closing day (Today, Yesterday, then "30 Oct 2026") — logo, name over entry → exit price, the return (green / red) over "Target hit in 24 days" / "Exited in 9 days". Signed % with no ▲ / ▼ (L3 PriceChange). A card or row → `us-stocks-13`; back → the US tab |
 
 `stocks-01 … 08` are the **IN Stocks** tab. Screens 09–18 are the **US Stocks** tab in each state of the user's US Stocks activation; they come from the US Stocks flow's Home (designed by a teammate, Figma file `8HEY699cTPiWiQeAVX3122`), which now uses this page — his frames map here through `FIGMA_IN_OTHER_FLOWS` in `src/flows/us-stocks/nav.tsx`. `stocks-09` Activate US Stocks → `stocks-12` (was `us-stocks-14`); a US stock on a not-activated state → `us-stocks-13` (stock page, Activate).
 
@@ -121,28 +125,36 @@ One long, scrolling L1 page. The board shows it as frames scrolled to each part,
      rows (logo, name, symbol, price, change); a row opens the US stock page (`us-stocks-13`).
    - **Trillion Dollar Titans:** eight 170-wide cards (logo, name, sparkline, market cap, change); View all → Market,
      mega caps, biggest first.
-   - **Brands You Know:** two rows of brand cards (logo, name, market cap).
-   - **Heatmap:** an "Index" switcher, index pills (S&P 500 / Nasdaq 100 / Dow Jones) and nine tiles whose colour
-     strength follows the day change; prices drift every 1.2 s (made up).
-   - **Explore by themes:** four theme cards (overlapping logos + "+n"); tapping one opens Market's US list.
+   - **Brands You Know:** two rows of brand cards, as Top Movers' cards on the India tab (logo, name, today's price, today's move).
+   - **Explore by themes:** a sideways rail (about 1.4 cards across, the next one peeks in) of six big theme cards. Each is an
+     L3 Card: a 3 × 2 collage of real logos (Avatar 40), the name (Label 16), a two-line description (Description 12) and
+     its 1Y return, "N stocks" with a chevron. Tapping one opens the Themes page on that theme (`stocks-23` … `28`, below); the section's View all opens it on the first. Leveraged ETFs is not a theme for now.
+   - **Themes page** (`screens/ThemePage.tsx`), laid out like the ETFs page: the Actionbar holds back and "Themes" with
+     every theme as a pill tab in its bottom slot (sticky, scrolls sideways), so switching theme never leaves the page.
+     Under the tabs, for the picked theme: its description and the disclaimer in a flat Aerobar, the Returns card, then
+     its 6 to 8 stocks as `StockListCard`s, 12 apart (live price, day change); a stock → its US stock page (`us-stocks-13`,
+     `viewUsStock` first). Back returns to the screen before.
+     Themes: AI & chips, Big Tech, Dividend payers, EV & clean energy, Healthcare leaders, Dollar parking (steady large
+     caps, since ETFs have no logos in the shared assets yet). Symbols are in `themes` (`components/us/data.ts`); name and
+     description are copy `us.theme.<id>` / `.desc`. The opening theme is chosen by the screen id (`themeScreenId(id)`); the tabs switch in place.
 6. **Main navbar:** Stocks (selected) · Market · Portfolio · Mutual Fund · F&O.
 
 ### Homepage versions (prototype option)
 
 Jojo's US Stocks design has nine versions of the home (`designs/lemonn-us-stocks-design.html`, its "Homepage version"
-switch). Here they are the flow option **Homepage version** (`homeVersion`, default V7, a floating card beside every
+switch). Here they are the flow option **Homepage version** (`homeVersion`, default V12, a floating card beside every
 Home screen); `components/homeVersions.ts` lists them and `screens/Home.tsx` reads the choice. Only the top of the page
 changes — the feeds are the same. (V1, the current homepage with no switch, is no longer in the list. V2–V6 and V9, archived
 for a while, are back in the picker.)
 
 | Version | Figma | IND / US switch | Tiles | Other |
 |---|---|---|---|---|
-| V2 · Existing folder | 6118:254 | notched folder tabs, between summary and feed | Mutual funds · Equity F&O · Commodities | |
-| V3 · Pill | 6128:29822 | L3 pill group at the top of the feed sheet, flags | MF · F&O · Commodity | |
-| V4 · CoinSwitch style | 6128:30124 | L3 underline tabs at the top of the feed sheet, flags | MF · F&O · Commodity | |
-| V5 · Card-level segmented control | 6128:30436 | small L3 pill group "IND / US" in the top bar | MF · F&O · Commodity | |
-| V6 · Pill on top | 6128:30747 | L3 pill group under the top bar, flags | F&O · Commodities · US Stocks (opens the US tab) | |
-| V7 · Lit folder on top | 6128:31013 | folder tabs under the top bar, flags, US "New" | Mutual funds · Equity F&O · Commodities | |
+| ~~V2 · Existing folder~~ (archived) | 6118:254 | notched folder tabs, between summary and feed | Mutual funds · Equity F&O · Commodities | |
+| ~~V3 · Pill~~ (archived) | 6128:29822 | L3 pill group at the top of the feed sheet, flags | MF · F&O · Commodity | |
+| ~~V4 · CoinSwitch style~~ (archived) | 6128:30124 | L3 underline tabs at the top of the feed sheet, flags | MF · F&O · Commodity | |
+| ~~V5 · Card-level segmented control~~ (archived) | 6128:30436 | small L3 pill group "IND / US" in the top bar | MF · F&O · Commodity | |
+| ~~V6 · Pill on top~~ (archived) | 6128:30747 | L3 pill group under the top bar, flags | F&O · Commodities · US Stocks (opens the US tab) | |
+| ~~V7 · Lit folder on top~~ (archived) | 6128:31013 | folder tabs under the top bar, flags, US "New" | Mutual funds · Equity F&O · Commodities | |
 | V8 · Lit folder · US tiles | 6128:31431 | folder tabs "IN Stocks / US Stocks" under the top bar (Figma's "INDIA / USA" dropped: labels are IN Stocks / US Stocks where they fit, IND / US where they don't), flags, US "New" | F&O · Commodities · US Stocks | "Do More With Lemonn" title |
 | ~~V9 · Graphite segmented~~ (archived) | 6128:31986 | L3 pill group "IN Stocks / US Stocks" under the top bar, flags, US "New" | Mutual funds · Equity F&O · Commodities | no index ticker; "Do More With Lemonn" title |
 
@@ -204,7 +216,7 @@ section of the Indian home. The business wants the two markets kept apart, so V1
 |---|---|---|
 | Top bar | Actionbar | `search` (placeholder "Search stocks") + 2 `ActionbarAction`s (Wallet, Profile) |
 | Index strip, holdings, shortcuts | Card | `variant="flat"`, `padding="none"`, `onClick` (tap targets with no card look) |
-| Changes (indices, holdings, stocks, sectors, ideas) | PriceChange | `sm` in cards, `lg` + `arrow` next to big numbers |
+| Changes (indices, holdings, stocks, sectors, ideas) | PriceChange | `sm` in cards, `lg` next to big numbers; sign only, never an arrow |
 | Products, movers, sectors, baskets, highlights, ideas, strategies | Card | clickable (`onClick`); strategies `padding="none"` + `footerFilled`; highlights / ideas `footer` |
 | Section titles | SectionHeader | View all / New watchlist = `action: view-all`; Smart Invest / Trade ideas = `tag` |
 | Movers chips | Tabs | `appearance="pill"` (filter: hug + scroll), icon left |
@@ -257,52 +269,111 @@ lower on the page is scrolled into view first). `components/MarketSwitchGuide.ts
 
 ### L3 gaps
 
+- **Neutral Aerobar:** the theme page's description bar is an inline Aerobar on surface-default with border-light, set through its own variables (L3 has no neutral surface-default look).
+
 - **Select hover underline** — L3 Select underlines its label on hover; the holdings switcher (Home V2–V4) wants
   none, so `.holdingsSelect` in components/Home.module.css turns it off (FLAG). Needs a Select option upstream.
 - **Notched market tabs** (IND / US strip with an SVG outline and a flipping label) — no L3 component; hand-made in
   `components/MarketTabs.tsx` (the pinned compact version is a plain L3 Tabs).
-- **Homepage versions** — no flag icons in L3 (round flag SVGs of our own in `assets/flags`, not emoji, so they look the same on every device); V9's "Graphite segmented" has no L3 style of
+- **Homepage versions** — no flag icons in L3 (round flag SVGs of our own in `shared/assets/flags`, not emoji, so they look the same on every device); V9's "Graphite segmented" has no L3 style of
   its own (it is the L3 pill group); V7 / V8's lit folder on top reuses the notched tabs, without Jojo's lit panel. V10's white and V12's surface/primary pill-group
   tracks (V12 also 38 tall, its unselected pill unfilled) are local overrides: L3 Tabs `pill-group` has no option for its track surface or height.
 - **Market switch guide** — no L3 coach mark / spotlight: the dim with a hole, the pulsing ring and the story card are
   hand-made (as DASH's Pine Script tip), with local tokens `--app-stocks-guide-*` (card 320, stage 172, the tiny
   switch 128, motion). The tiny Buy on the stage is artwork using the L3 buy-button colours.
 - **Swipe between pages** — no L3 behaviour; `components/useSwipeBetween.ts` is a hand-made pointer gesture.
+- **Activation card blue** — Figma surface/accent/blue #dee9fe has no L3 semantic surface (us-stock light is #eff4fe): local token `--app-surface-kyc-card`, mixed from the us-stock accent.
+- **Market cards carousel** — no L3 carousel: `components/MarketCards.tsx` is a hand-made scroll-snap track (IND and US top cards, full width, 16 apart), with a mouse drag for the desktop preview.
 - **US tab hand-made bits** (marked `FLAG` in `components/us/`): activation card + carousel dots, cap chip, Titan / brand
-  card insides and logo stacks, heatmap tiles; a few raw px kept from the US Stocks prototype (card widths, sparkline).
+  card insides and logo stacks; a few raw px kept from the US Stocks prototype (card widths, sparkline).
 - **US company logos** are PNGs in `src/shared/assets/us-logos` (L3 has Indian logos only); the sparkline, benefit and
   tab icons are SVG illustrations in `assets/us/` with their own colours.
+- **Logo stack / group** — L3 has no overlapping Avatar group: the theme page's stack and "+n" disc are hand-made (`components/us/ThemeCard.module.css`, FLAG). The theme cards' sideways row is `Rail` (below).
 - **Rail / carousel:** no sideways-scrolling row in L3 — `Rail` (src/shared/ui) stands in.
 - **Actionbar leading avatar** (profile on the left of the search field).
 - **Illustrations** for shortcuts, highlights and campaigns — `Spot` slots stand in.
 
 ### Changelog
 
-- 2026-11-03 — **US tab, money ready: no "Your money is ready" card**. The Aerobar already says it; the summary shows US holdings at $0.00 until the first buy.
-- 2026-11-03 — **Discover ETFs cards are the Market page's card**: L3 ListCell (40 logo, Label 16 heading, 12
-  description, $ Label 16 over the change), 66 tall with 16 between cards, as on the Market page and the ETF list. The
-  change reads ▲ / ▼ and the size, with no sign. Top Movers' second line is back to secondary.
-- 2026-11-03 — **Discover ETFs rows match the ETF list card**: the fund's own logo (SPDR, Invesco, Vanguard…), the plain
-  name as the heading ("Top 500 US stocks") and "SPY · SPDR S&P 500 ETF" under it, with the price and change on the
-  right. The 2×2 holding-logo square is gone. Logos come from src/shared/data/etfIssuers.ts.
-- 2026-11-03 — Discover ETFs rows: the fund's own name ("SPDR S&P 500 ETF") over "SPY · Top 500 US companies" — the
-  companies line ("Apple, Microsoft, NVIDIA") is gone.
+- 2026-11-03 — Home's holdings card says which market it is, in every version: "IN Stocks holdings" (was "Current holdings", and "IN holdings" in the switcher) and "US Stocks holdings" (was "US holdings"). "Overall holdings" stays.
+- 2026-11-03 — Watchlists (Indian and US tabs): the section's link is “View all” instead of “Add Watchlist”. It's meant to open an all-watchlists page, which isn't built yet, so it does nothing for now.
+- 2026-11-03 — The US tab gets the IN tab's Watchlist rail (shared `Watchlists`, now with a `lists` prop) between Top analyst picks and Brands You Know, with the user's US lists (`usWatchlists` in us/data.ts: US tech, Dividend payers, To research).
+- 2026-11-03 — The holdings card on Home is tappable edge to edge: the space above and below the holdings is inside its own card now, not padding around it.
+- 2026-11-03 — The prototype now opens on an all-set user: User status defaults to Activated, USD wallet Has money, US holdings on (Holds NVDA), so the home shows the funded, holding US tab.
+- 2026-11-03 — The US tab's holdings card (US holdings $ … ›) opens Portfolio on Holdings with the US Stocks P&L card upfront and the US Stocks tab picked (us-stocks-77).
+- 2026-11-03 — Discover ETFs gets the ETF list's filter, in Top movers' small chips (Home always uses the small ones): a switcher chip (Country ⇄ Sector, ↕), a divider, then the countries (flags per the ETF region flags setting) or the sectors — Broad market, Technology, Industrials, Financials, Healthcare, Energy (up to four funds each, all in the US snapshot).
+- 2026-11-03 — Themes overview card simplified: no chart and no $100 line — the theme's name over its one-line description, and on the right its return under an L3 Select switcher (↕, Small, subtle) that steps 1Y → 3Y → 1M on each tap.
+- 2026-11-03 — Prototype setting **ETF region flags** (Home, on by default): turns off the round flags in Discover ETFs' region pills, to test whether they're too much.
+- 2026-11-03 — 32 between home sections on both tabs (the US tab's 28 override removed).
+- 2026-11-03 — No View all button under a home section's list (Top analyst picks, Discover ETFs): the section header's View all is the one way to the full list.
+- 2026-11-03 — Default homepage version is now V8 (Lit folder · US tiles; `DEFAULT_HOME_VERSION`).
+- 2026-11-03 — Themes overview card: the period switcher's tap area covers the whole right part of the card (period and return, out to the card's edges).
+- 2026-11-03 — Market tabs (IN Stocks / US Stocks, notched): two equal tabs between 16 in from each edge that never move or resize; switching only slides the notched outline (the selected look) from one to the other. Before, the IN tab shrank and the US tab slid, so the labels shifted.
+- 2026-11-03 — US home: “Discover ETFs” between Brands You Know and the Heatmap — SectionHeader (a one-line description that explains an ETF by Nifty 50: “A basket of stocks in one buy, like Nifty 50”; a fuller explainer comes later; View all → the ETF list us-stocks-71), region chips with round flags (L3 pill Tabs + shared `Flag`: US · China · Japan · Europe · Korea), then four of that region's funds as StockListCards (Korea has two: EWY, FLKR) and a tertiary “View all” under them, as Top analyst picks: the fund in plain words (“Top 500 US stocks”) over “SPY · SPDR S&P 500 ETF”, real price and day change, issuer logo. A row → the ETF page (us-stocks-72) on that fund (remembered with the shared `viewUsStock`, which the ETF page now reads too).
+- 2026-11-03 — Themes page: a carousel. The theme before and after are laid just off either side of the current one, so a swipe drags the next theme into view with the finger (not a blank side); a tap on the tab next door makes the same slide, a tap further away slides straight in.
+- 2026-11-03 — Themes page: flat (underline) tabs with icons instead of pills; switching theme slides the body sideways (a tap slides the new theme in from its side), and a left / right swipe on the body drags it and moves to the next / previous theme (the flow's `useSwipeBetween`, rubber-band at the ends). The overview card starts with the theme's name instead of logos.
+- 2026-11-03 — Themes (stocks-23 … 28): each theme pill has an icon (AI memory chip, Big Tech devices, Dividend paid, EV car, Health cross, Dollar parking savings). The top is one overview card instead of the text bar + returns card: logos and stock count, a one-line description, “$100 put in 3 years ago” → today’s value with an L3 area Chart (sample monthly path), then 1M · 1Y · 3Y. The stocks sit under an “All stocks” SectionHeader; the returns note and disclaimer moved to one footnote at the end. Analyst pick cards: no 8 gap between head and footer.
+- 2026-11-03 — Themes page (stocks-23…28): pills have icons (AI chip, devices, paid, electric car, health cross, savings). The top is one overview card — the theme's name + stock count, a one-line description, “$100 put in 3 years ago” → today in big type with an L3 area Chart from $100 to now, then 1M · 1Y · 3Y. The Aerobar description, the Returns title and the $100 sentence are gone. Stocks sit under an “All stocks” SectionHeader; the returns note and disclaimer are one footnote at the end. Content starts 24 below the tabs.
+- 2026-11-03 — Top analyst picks (stocks-29 / 30): pick cards have no shadow (border only), content starts 24 below the tabs. **L3 gap:** a clickable Card always has elevation-low — no prop to turn it off, so the page overrides it.
+- 2026-11-03 — US tab shortcuts are Analysis · ETFs · Watchlist · Referral again, as on the IND tab (Fractional and Market hours removed; their icons stay in assets/shortcuts, unused).
+- 2026-11-03 — Top analyst picks page (`stocks-29` / `30`): View all on the US tab's picks opens it instead of Market. Flat tabs Stocks (full breakdown per pick) and History (track record + closed picks). Sample data in `components/us/data.ts` (`analystPicks` ratings / picked on, `closedPicks`).
+- 2026-11-03 — Top analyst picks page rebuilt from the live Trade Ideas screenshots: Stocks cards (LTP, average target + rating, expected profit · % recommend under a hairline) and History grouped by day (Today / Yesterday / date) with entry → exit and "Target hit in N days". Track record card, intros and progress bars removed. `closedPicks` now has an ISO `closedOn` + `days` held; `PICKS_TODAY` is the sample's today.
+- 2026-11-03 — US tab, Brands You Know: cards laid out like the India tab's Top Movers cards — logo 48, name, today's price (live, `<Usd>`), today's move (PriceChange). Market cap dropped from the card and from `brandRows`.
+- 2026-11-03 — US tab, money on the way (`stocks-20`): the top is the holdings card as when holding, at $0.00, with a small "Money on the way" card under it (L3 ListCell card: clock, title, "Expected ready to trade by Thu 8 PM", chevron → the transfer, `us-stocks-28`). The tinted card with the Paid → Sent to US → Ready stepper is no longer used there (`TransferStatusCard` in `components/us/TransferProgress.tsx`).
+- 2026-11-03 — Home setting **Header** archived: "Holdings on page" is the only header. The card variant stays in code (`HEADER_CARD` in `screens/Home.tsx`) but isn't offered in the panel or the phone's settings pills.
+- 2026-11-03 — US tab heatmap uses F&O's Futures Heatmap tiles, so it looks the same everywhere: edge to edge, square flat Cards 1px apart, solid up / down colour, inverted text (Heading 12 symbol, Heading 16 %, Label 14 price at 60%). The tinted, strength-scaled tiles and `heatStrength` are gone.
+- 2026-11-03 — US tab cards (Top Movers, analyst picks, Brands You Know, Explore by themes) sit on surface-primary instead of surface-default, so they lift off the page in dark mode.
+- 2026-11-03 — Themes page: one page for every theme, like ETFs — "Themes" in the Actionbar with the themes as pill tabs below it; a theme card opens it on that theme, Explore by themes' View all on the first. The More themes rail is gone.
+- 2026-11-03 — Explore by themes shows returns: each theme card has its 1Y return (green / red) above "N stocks ›"; the theme page (`stocks-23` …) has a Returns card under the description — 1M (real, equal-weight from the snapshot's month of closes, `themeMonthReturn`), 1Y and 3Y (sample, `themes[].returns`), "$100 put in these stocks 3 years ago would be $X today" and a past-returns note.
+- 2026-11-03 — US tab: Top analyst picks is a list by default — four rows (logo · the company name over "94% of analysts recommend" (sample share rating it Buy / Strong Buy); on the right the expected profit — the analysts' 12-month target over today's price, sample, always positive — bold green over "Expected profit"); View all → Market, in the header and as a tertiary Small button (flat, chevron) under the four rows. The cards with the 7-day line stay as the "Analyst picks: Cards" option.
+- 2026-11-03 — US tab: the heatmap section is titled "Heatmap" (was "Sectors"). Pill tabs at least 48 wide now come from L3 (tabs 1.14.0, pin 4afbde2).
+- 2026-11-03 — US tab: Top analyst picks (after Top Movers) and the Sectors heatmap (after Brands You Know) are back, from jojo. A pick card is the Top Movers card: its line and "7D" are the real last 7 days (snapshot closes to the ticking price), the recommendation is a sample. Sectors: S&P 500 / Nasdaq 100 / Dow Jones switcher, cap chip, sector pills, nine live tiles, biggest rise top left.
+- 2026-11-03 — Home states are one page: moving between them (activation submitted → under review → approved sheet, money on the way, ready) no longer slides; only the card or sheet changes. Contact Support (under review after a day) opens an email to support@lemonn.co, no longer the risk disclosure (that shows once, when activating).
+- 2026-11-03 — Theme page: no logo stack or big title (the Actionbar's name is the title); the description and disclaimer sit in a flat, rounded Aerobar on surface-default with a light border, then the stocks. Theme cards are compact (about 2.2 across): 3 overlapping 32 logos + "+n", name in Label 14, two-line description, "N stocks ›".
+- 2026-11-03 — Explore by themes is a rail of big theme cards (logo collage, name, description, "N stocks ›") instead of a 2-column grid of small ones, and each opens a new theme page (`stocks-23` … `28`): back + name in the Actionbar, the explanation (logo stack, description, disclaimer) in its own section, the stocks as StockListCards, then More themes. Six themes, with real US tickers (leveraged ETFs stays out). Reworked from the old app's "Invest in Ideas" (references/2026-11-03/home): its dark header with back, title, description and disclaimer all in the bar area is split so the bar stays light; the stock list leads straight after the intro; the idea cards at the end are the More themes rail. Differences: no dark hero, cards show their logos as a collage, not a 3 × 2 tile grid of a fixed size, themes are static samples.
 
-- 2026-11-03 — **Discover ETFs**: "Discover ETFs" and View all on one line, a one-line pitch under it ("Buy a whole
-  market in one go. An ETF is a basket of stocks that trades like a single share, starting from just $1." — 12,
-  written to fill about two lines: 85% of the second line at 375, 89% at 360. Plain facts only: not "hundreds of
-  companies" (not true of every ETF) nor "your money is spread out" (reads as advice)), then the region
-  chips (removed and brought back, 3 Nov). Rows show the ETF list's
-  logo square (two holding logos and an L3 Tag "+501", or up to four logos; plates from `usLogoPlate` in
-  shared/data/usStocks). No "≈ ₹" on home cards (shared `<Usd>` is inline by default now).
-- 2026-11-03 — The hidden compact tabs fold 4 past their clip edge: their active underline sat on the edge and showed
-  as a white line under the index strip (NASDAQ side) when the mockup is scaled.
-
-- 2026-11-02 — Homepage version **V14 · Tabs under top bar** (CoinSwitch's home structure): full-width L3 underline tabs with flags right under the top bar; the page below is the picked market's (V11's structure, offered again under its own name).
-- 2026-11-02 — Home ported from the US Stocks design HTML (Lemonn US Stocks Design.html):
-  - **US tab:** tiles ETFs 500+ funds · Fractional $1 to start · Themes 12+ curated (every version); shortcut badges Analysis 3 New · ETFs 5 New · Watchlist 1 · Referral New; Watchlist after Top Movers; **Top analyst picks** (titan card: Recommendation · 7D); **Discover ETFs** (country pills US / China / Japan / Europe / Korea, rows open the ETF list — the ETF page is another flow's); the heatmap is now **Sectors** (index switcher S&P 500 → Nasdaq 100 → Dow Jones, cap chip, sector pills); **Explore by themes** is the Invest in Ideas card with eight US themes; Trillion Dollar Titans removed; holding state's mover rows read "Category • SYM".
-  - **IND tab:** shortcuts Analysis 3 New · IPO 5 New · Watchlist 1 · Referral New; Top Movers chips Under ₹100 · Under ₹500 · 52W High · 52W Low (from the catalogue's price / 52-week high and low); the "top losers" board state is now "52W Low".
-  - User status: "FTUX bottom sheet" (Home opens with the US Stocks intro sheet); "Money on the way" removed from the USD wallet picker.
+- 2026-11-03 — US logos are full-colour (the mark on its brand colour, edge to edge: Uber and Netflix on black, Visa on blue), fetched from TradingView's public logos by `npm run us:logos` into `src/shared/assets/us-logos/*.svg`; `usLogo` prefers them over the old PNGs (white marks on transparent). They fill the L3 Avatar, so its grey fill no longer shows — only its border. Still PNG (no TradingView logo): EB, IRBT, SNBR. New logos for RIVN, LAZR, PLUG, OPEN (were initials). ETFs unchanged.
+- 2026-11-03 — US Top Movers: cards 150 wide (graph 126) with a 12 gap, so a third card peeks in and the row reads as swipeable. The cap chip (Mega / Large / Mid / Small Cap) uses the app's switch icon (`lmSwitchArrowVertical`, as on the market picker).
+- 2026-11-03 — Homepage version: V12 · Two homes · switch in top bar is the default (was V8).
+- 2026-11-03 — US tab: Top Movers use the Trillion Dollar Titans card (logo, name, symbol, arrow, sparkline; price and day change at the foot, as movers have no market cap), up to eight in one row that scrolls sideways. Each card's graph is the stock's real last month of daily closes (snapshot) plus today's ticking price — a line over a fill fading from full at the top to clear at the bottom (hand-made SVG: L3 Sparkline is fixed at 64×24). A new cap or filter brings its cards in from the right, one after another. The Trillion Dollar Titans section is removed (Mega Cap movers already cover it).
+- 2026-11-03 — Prototype only, on a phone (the app mode): a floating, draggable settings pill over every Home screen (`components/HomeSwitcher`, copied from the nudges flow's SheetSwitcher) — US Stocks activation · USD wallet · US holdings · Homepage version · Header, each a dropdown with the full names. Hidden on a laptop, where these settings already float beside the phone mockup.
+- 2026-11-03 — One IND ↔ US switch in every version: the two top cards are one carousel track (IND left, US right, the
+  other card just off screen). A swipe on the card drags the track, so the other market's card slides into view beside
+  it; a tap on the tabs or V13's market button slides the track across the same way — so the card shows it can be
+  swiped. The rest of the page doesn't move: it dissolves into the other market's (100 ms out, 200 ms in). Swiping only
+  once US Stocks holds stocks, and only on the card. Replaces V13's vertical swap (`swapVertically`, removed) and the
+  old scroll-snap carousel (`MarketCards`, removed). (`useSwipeBetween`: `slides` / `fades` / `area`, `go`.)
+- 2026-11-03 — US activation card: when the inner panel would hold only the button (Your money is ready), there's no
+  white panel — the button sits straight on the tinted card.
+- 2026-11-03 — Shortcuts (Trade Ideas · IPO · Watchlist · Referral) are the same in every home version: one component,
+  no "Do More With Lemonn" title anywhere (the `doMore` version flag is gone). IPO shows its count of new IPOs (5) as
+  an L3 Badge on the icon's top-right corner; Referral has no "New" tag.
+- 2026-11-03 — Home setting **Header** ("Holdings on page" default · "Holdings in card"): with the card, the holdings sit
+  inside the top card the US tab uses for activation — on IND always (neutral card), on US once activated (US holdings on
+  top, the state's next step such as Add money below). Lemonn KYC pending now shows a "Complete your KYC" card on the
+  IND tab too (nothing is verified, so Indian stocks can't be traded either); its copy (`in.kyc.*`) is a placeholder
+  until the IND card's content comes in.
+- 2026-11-03 — Lemonn KYC pending: the product tiles under the top card (IND and US) are hidden.
+- 2026-11-03 — IND KYC card filled from Figma "IND KYC Not started" (5552:54983), content only, in our card design: "Start your KYC" · "This will take only 2 minutes." · "Start KYC →", rotating DASH / Brokerage waiver / MTF benefits, each with its own icon (`assets/in/`). Figma's "Start to unlock exclusive benefits" lock line is left out (not in our card). Benefits now carry their own copy keys (`us.benefit.*`, `in.benefit.*`).
+- 2026-11-03 — The IND and US top cards are one carousel (`MarketCards`) on every version with an IND / US switch, for the positions cards once the Lemonn KYC is done: each card is full width inside the 16 insets (nothing peeks); swiping it switches the whole page to that market as soon as it passes halfway, and the tabs slide the carousel along. Every slide is a card, so with "Holdings on page" the holdings go into the plain card in the carousel (as with "Holdings in card"). Lemonn KYC pending has no carousel: one "Start your KYC" card on both tabs, unchanged when the tab switches (US Stocks can't be activated before the Lemonn KYC).
+- 2026-11-03 — IND ↔ US switch without the flicker: the grey summary and the white feed sheet stay put; only their content (`data-market-part`) swaps, moving together. The top-card carousel sits outside the swapped parts, so it never remounts.
+- 2026-11-03 — IND KYC card now follows Figma 5552:54843 (spec `lockLine`): blue card, title + subtitle, a white panel inset 4 with the lock line "Start to unlock exclusive benefits" and the dots, one bordered benefit tile (40 icon, green secondary L3 Tag, text) and the button. Figma's button is 40 tall; the app's Large (48) rule wins.
+- 2026-11-03 — The activation card's benefits are swipeable (touch and mouse) as well as auto-rotating: the strip follows the finger, past 32 it steps (back from the first goes to the last) and the 3 s timer restarts. The strip keeps its swipe (`data-own-swipe`): swiping it never switches IND ↔ US.
+- 2026-11-03 — Every US activation state's card has the IND KYC card's layout (Figma 5552:54843): a flat tinted card (blue: KYC / activate · honey: review, money on the way · red: failed · green: activated, ready), title + subtitle on the tint, then a white panel inset 4 with the lock line + dots, one bordered benefit tile (green L3 Tag) and the button. Lock lines: "Complete your KYC to unlock these benefits" · "Activate to unlock these benefits" (activate, failed) · "Benefits activating soon" (review) · "Benefits unlocked" with an open lock (activated); none on money on the way.
+- 2026-11-03 — US tab, every version (V8, V12, V13): no product tiles in the grey summary; the US quick access is the shortcuts in the white body: Analysis · ETFs · Fractional · Market hours (Watchlist and Referral removed). Fractional and Market hours open the US market; their icons (`assets/shortcuts/fractional.svg`, `hours.svg`) are drawn in the same two-tone style. `productsUs` is gone.
+- 2026-11-03 — Summary layout fix (V8, V12, V13): the US tab no longer leaves an empty tiles box in the summary (its 24 gap made 48 of grey under the card instead of 24), and the top-card carousel is as tall as the card on show (it measures it), not the tallest card — the IND holdings card no longer sits on ~150 of empty grey. Both tabs now end 24 above the white sheet.
+- 2026-11-03 — The top-card carousel (swipe between IND and US) only once both markets have a holdings card: US Stocks in "holding" (activated, funded, with holdings). Before that — Lemonn KYC pending, any US activation state, activated with $0 — each tab shows its own card, swapped with the page (the US activation / Add money card is much taller than the IND holdings card), and swiping sideways anywhere on the page does nothing (no rubber-band either): IND ↔ US only by the tabs.
+- 2026-11-03 — The activation card's state icon follows Figma 2397:13753 ("KYC State card"): a 40 disc in L3 surface-primary with a filled glyph in the status colour — warning (under review: hourglass · money on the way: clock), error (failed: error), success (money ready: check circle; replaces the hand-made tick badge). Figma's glyph is ~26; L3 Icon stops at 24, so it's 24. Figma's disc is the status colour at 20%; per the brief it's surface-primary here.
+- 2026-11-03 — Money on the way: the card keeps its outer layout (honey tint, "Money on the way" · "Expected ready to trade by Thu 8 PM" — the time is an estimate, never a promise, clock disc) but the white panel shows the transfer instead of benefits, compact: a 3-step horizontal stepper across the panel's full width — Paid ($1,035.37) ✓ → Sent to US (1–2 days, a live dot with a soft 2 s pulse; still when motion is reduced) → Ready (Expected Thu 8 PM); first step flush left, last flush right; 16 above the markers. Then a Secondary Small "View details" (was "Track Transfer", primary Large) with a centred green-shield line "Your money is safe with Lemonn" under it. Sample data in `usTransfer` (data.ts); `at` says which step it's on. L3 gap: no horizontal Steps (L3 Steps is vertical; this one is hand-made with Steps' markers).
+- 2026-11-03 — Text follows L3's three roles. Section titles are the L3 SectionHeader's Heading 14 again (the screen's 16 Label one-off is gone). Numbers are Label, never Description: movers' % change (up and down now match, Label 12), brands' market cap, heatmap symbol / % / price (Label 12 / 14 / 10), the theme stack's +N, counts ("12 Stocks"), and the transfer step's amount. Names in cards are Labels, not Headings: movers' name Label 14 over the symbol in Description 12 (as in ListCell), theme name Label 14, the activation card's lock line Label 12. Logos: L3 Avatar 1.1.0, one 1px edge and no grey fill.
+- 2026-11-03 — Top Movers has a bigger universe: 24–36 real stocks per cap (was 10), so a filter shows up to 15 cards (was 8). Gainers / losers only list stocks that really rose / fell today, so a one-sided day can leave fewer (today: 8 mid-cap losers). New symbols are in the US snapshot and have TradingView logos. Movers cards show only the name, on one line, cut with an ellipsis (no symbol), so every card is the same height. The phone pill can be slid into the left or right edge, where it tucks away as a small tab; a tap brings it out next to the tab and a tap elsewhere tucks it back. The app's second floating button (the flow's settings gear) is gone; those settings are in the prototype settings sheet.
+- 2026-11-03 — Tapping IND / US switches at once (it used to slide the page out first, which read as a ~1 s lag on phones); a swipe still slides. The phone pill starts tucked into the right edge. Price changes show their +/− sign only, never an arrow too.
+- 2026-11-03 — Once the page scrolls, the top bar turns surface/default (was surface/primary). The card that holds the holdings is surface/primary (the holdings row inside has no fill). For now the Stocks home (stocks-01) opens on the US tab. The status bar, top bar and marquee band change colour in the same frame (no fades). The US tab's Heatmap section is archived (archive/us-home-heatmap).
+- 2026-11-02 — The US tab screens (stocks-09, 10, 13–17, 19–21) float the "US Stocks activation" switcher beside the
+  phone: arriving sets the user status to the screen's own state, and a pick shows that state in place.
+- 2026-11-02 — Homepage versions **V2, V3, V4, V5, V6 and V7 archived** (`archived: true` in
+  components/homeVersions.ts): the picker now offers V8, V12 and V13. The default is **V8 · Lit folder · US tiles**; a
+  saved pick of an archived version falls back to it.
 - 2026-11-02 — Shortcuts V1: 8 more space above the circles (every home version), so the "New" tags clear the tabs above.
 - 2026-11-02 — Shortcut icons are Jojo's custom two-tone set (`assets/shortcuts/*.svg`: analysis, IPO, watchlist, referral, ETF; success green + its light surface, drawn inline by `components/ShortcutArt`), not L3 system icons. "Market switch guide" is off by default.
 - 2026-11-02 — Shortcut "New" tags: the slide animation is reverted; the tag (red L3 Tag) sits over the icon's top edge again, like the count.
@@ -376,7 +447,7 @@ lower on the page is scrolled into view first). `components/MarketSwitchGuide.ts
 - 2026-11-02 — Two homes: search is a round icon button in V10–V13; V10's pill track gets a white background over the
   summary. V12's switch moves next to the profile, big pills on surface/primary at the search / wallet height. V13's
   switch is one round button that switches market in one tap (the "Choose market" sheet is gone; the shared `Sheet`
-  keeps its `placement` prop for top sheets). Flags are round SVG icons (`assets/flags`) instead of emoji.
+  keeps its `placement` prop for top sheets). Flags are round SVG icons (`shared/assets/flags`) instead of emoji.
 - 2026-11-02 — Homepage versions V10–V13, "Two homes": the IND / US switch sits at the top and the whole page under it
   is the market's own (ticker, summary, tiles, feed, search). See Homepage versions → Two homes.
 - 2026-11-02 — Two US-tab states from Jojo's Figma that weren't built: `stocks-19` under review · Contact Support
@@ -685,49 +756,135 @@ D�W�k��&�� �?��DQ�y�� !i� ���n]�G��FS�
 ���6�� ��W(����8(�� ��
 ```
 
-### `src/flows/stocks/assets/flags/india.svg`
+### `src/flows/stocks/assets/in/benefit-brokerage.svg`
 
 ```tsx
-<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-  <!-- India, round: saffron / white / green with the navy Ashoka Chakra. Flag artwork keeps its own colours. -->
-  <defs><clipPath id="c"><circle cx="12" cy="12" r="12"/></clipPath></defs>
-  <g clip-path="url(#c)">
-    <rect width="24" height="8" fill="#FF9933"/>
-    <rect y="8" width="24" height="8" fill="#FFFFFF"/>
-    <rect y="16" width="24" height="8" fill="#138808"/>
-    <circle cx="12" cy="12" r="3" fill="none" stroke="#000080" stroke-width="0.8"/>
-    <circle cx="12" cy="12" r="0.8" fill="#000080"/>
-    <g stroke="#000080" stroke-width="0.4">
-      <path d="M12 9v6M9 12h6M9.88 9.88l4.24 4.24M14.12 9.88l-4.24 4.24"/>
-    </g>
-  </g>
-  <circle cx="12" cy="12" r="11.75" fill="none" stroke="#000000" stroke-opacity="0.12" stroke-width="0.5"/>
+<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg x="0.3" y="0.3" overflow="visible" width="39.3929" height="39.6577" viewBox="0 0 39.3929 39.6577" fill="none">
+<path id="l1_&#60;Path&#62;" d="M39.3929 19.8288C39.3929 30.7803 30.5748 39.6577 19.6965 39.6577C8.81808 39.6577 0 30.7803 0 19.8288C0 8.87735 8.81808 0 19.6965 0C30.5748 0 39.3929 8.87735 39.3929 19.8288Z" fill="url(#l1_paint0_linear_0_193)"/>
+<defs>
+<linearGradient id="l1_paint0_linear_0_193" x1="4.19511" y1="-0.555362" x2="22.0833" y2="38.5663" gradientUnits="userSpaceOnUse">
+<stop stop-color="#D4FC79" style="stop-color:#D4FC79;stop-color:color(display-p3 0.8314 0.9882 0.4745);stop-opacity:1;"/>
+<stop offset="1" stop-color="#96E6A1" style="stop-color:#96E6A1;stop-color:color(display-p3 0.5882 0.9020 0.6314);stop-opacity:1;"/>
+</linearGradient>
+</defs>
+</svg>
+<svg x="0.3" y="0.3" overflow="visible" width="39.3929" height="39.6577" viewBox="0 0 39.3929 39.6577" fill="none">
+<path id="l2_&#60;Path&#62;" d="M39.3929 19.8288C39.3929 30.7803 30.5748 39.6577 19.6965 39.6577C8.81808 39.6577 0 30.7803 0 19.8288C0 8.87735 8.81808 0 19.6965 0C30.5748 0 39.3929 8.87735 39.3929 19.8288Z" fill="url(#l2_paint0_linear_0_151)"/>
+<defs>
+<linearGradient id="l2_paint0_linear_0_151" x1="-0.300782" y1="-14.8047" x2="28.3262" y2="36.4488" gradientUnits="userSpaceOnUse">
+<stop stop-color="#5ECA52" style="stop-color:#5ECA52;stop-color:color(display-p3 0.3684 0.7922 0.3213);stop-opacity:1;"/>
+<stop offset="1" stop-color="#D9FF5D" style="stop-color:#D9FF5D;stop-color:color(display-p3 0.8513 1.0000 0.3628);stop-opacity:1;"/>
+</linearGradient>
+</defs>
+</svg>
+<svg x="5.27" y="5.31" overflow="visible" width="29.4485" height="29.6465" viewBox="0 0 29.4485 29.6465" fill="none">
+<path id="l3_&#60;Compound Path&#62;" d="M14.7243 29.6465C6.60669 29.6465 0 22.9954 0 14.8232C0 6.6511 6.60669 0 14.7243 0C22.8418 0 29.4485 6.6511 29.4485 14.8232C29.4485 22.9954 22.8418 29.6465 14.7243 29.6465Z" fill="white" style="fill:white;fill-opacity:1;"/>
+</svg>
+<svg x="15.36" y="11.18" overflow="visible" width="11.5514" height="19.3172" viewBox="0 0 11.5514 19.3172" fill="none">
+<g id="l4_&#60;Group&#62;" style="mix-blend-mode:multiply" opacity="0.4">
+<path id="l4_&#60;Compound Path&#62;" d="M11.2355 2.43367H8.03516C8.88675 3.11122 8.94169 3.58136 9.03784 4.35571H11.1668C11.3866 4.35571 11.5514 4.52164 11.5514 4.74288V6.12565C11.5514 6.33306 11.3866 6.51282 11.1668 6.51282H9.07905C8.77688 9.52725 6.6891 10.91 3.80469 11.1313C5.9886 13.4128 7.54069 15.9986 9.88943 18.8886C10.0268 19.0683 9.91691 19.3172 9.69714 19.3172H7.23852C7.14237 19.3172 7.04622 19.2757 6.99128 19.2066C4.73869 16.4687 2.71959 13.9383 0 11.0206V9.41663C0 9.1539 0.219765 8.94649 0.480736 8.94649H1.85427C4.14807 9.04328 5.90619 8.54549 6.11222 6.51282H0.604358C0.412063 6.51282 0.233502 6.34689 0.233502 6.13948V4.72905C0.233502 4.52164 0.412063 4.35571 0.604358 4.35571H6.07101C5.65895 2.64108 4.87604 2.65491 2.32127 2.65491H0.796651C0.480739 2.65491 0.233502 2.40601 0.233502 2.1018V0.553106C0.233502 0.248898 0.480739 0 0.796651 0H11.2355C11.4141 0 11.5514 0.138277 11.5514 0.318036V2.11563C11.5514 2.29539 11.4141 2.43367 11.2355 2.43367Z" fill="#86CF76" style="fill:#86CF76;fill:color(display-p3 0.5256 0.8103 0.4616);fill-opacity:1;"/>
+</g>
+</svg>
+<svg x="14" y="11" overflow="visible" width="11.5514" height="19.3172" viewBox="0 0 11.5514 19.3172" fill="none">
+<g id="l5_&#60;Group&#62;">
+<path id="l5_&#60;Compound Path&#62;" d="M11.2355 2.43367H8.03517C8.88676 3.11122 8.94169 3.58136 9.05158 4.35571H11.1668C11.3866 4.35571 11.5514 4.52164 11.5514 4.74288V6.12565C11.5514 6.33306 11.3866 6.51282 11.1668 6.51282H9.07905C8.77687 9.52725 6.6891 10.91 3.80468 11.1313C5.9886 13.4128 7.54069 15.9986 9.88944 18.8886C10.0405 19.0683 9.9169 19.3172 9.69714 19.3172H7.23852C7.14237 19.3172 7.04622 19.2757 6.99128 19.2066C4.73868 16.4687 2.71959 13.9383 0 11.0206V9.41663C0 9.1539 0.219765 8.94649 0.480736 8.94649H1.85427C4.14807 9.04328 5.90619 8.54548 6.11222 6.51282H0.61809C0.41206 6.51282 0.247234 6.34689 0.247234 6.13948V4.72906C0.247234 4.52164 0.41206 4.35571 0.61809 4.35571H6.07101C5.67269 2.64108 4.87604 2.65491 2.32127 2.65491H0.796647C0.49447 2.65491 0.247234 2.40601 0.247234 2.1018V0.553106C0.247234 0.248898 0.49447 0 0.796647 0H11.2355C11.4141 0 11.5514 0.138277 11.5514 0.318036V2.11563C11.5514 2.29539 11.4141 2.43367 11.2355 2.43367Z" fill="#129E5B" style="fill:#129E5B;fill:color(display-p3 0.0714 0.6180 0.3556);fill-opacity:1;"/>
+</g>
+</svg>
+<svg x="9.55" y="10.51" overflow="visible" width="30.4512" height="29.7571" viewBox="0 0 30.4512 29.7571" fill="none">
+<g id="l6_&#60;Group&#62;" style="mix-blend-mode:soft-light" opacity="0.6">
+<path id="l6_&#60;Path&#62;" d="M0 26.7841C3.04924 28.6647 6.62042 29.7571 10.4526 29.7571C21.482 29.7571 30.4512 20.7276 30.4512 9.62404C30.4512 6.13947 29.5721 2.86232 28.0063 0C18.6938 8.94649 9.39496 17.9206 0 26.7841Z" fill="#EDFBBF" style="fill:#EDFBBF;fill:color(display-p3 0.9294 0.9843 0.7490);fill-opacity:1;"/>
+</g>
+</svg>
+<svg x="0" y="0" overflow="visible" width="39.9973" height="40.2661" viewBox="0 0 39.9973 40.2661" fill="none">
+<path id="l7_&#60;Compound Path&#62;" d="M19.9986 40.2661C8.96916 40.2661 0 31.2367 0 20.1331C0 9.02945 8.96916 0 19.9986 0C31.0281 0 39.9973 9.02945 39.9973 20.1331C39.9973 31.2367 31.0281 40.2661 19.9986 40.2661ZM19.9986 0.608415C9.29881 0.608415 0.604353 9.36132 0.604353 20.1331C0.604353 30.9048 9.29881 39.6577 19.9986 39.6577C30.6984 39.6577 39.3929 30.9048 39.3929 20.1331C39.3929 9.36132 30.6984 0.608415 19.9986 0.608415Z" fill-rule="evenodd" clip-rule="evenodd" fill="url(#l7_paint0_linear_0_152)"/>
+<defs>
+<linearGradient id="l7_paint0_linear_0_152" x1="31.5" y1="35.5" x2="21.3229" y2="-24.5547" gradientUnits="userSpaceOnUse">
+<stop stop-color="#72E780" style="stop-color:#72E780;stop-color:color(display-p3 0.4476 0.9047 0.5009);stop-opacity:1;"/>
+<stop offset="1" stop-color="#FDFFB5" style="stop-color:#FDFFB5;stop-color:color(display-p3 0.9903 1.0000 0.7091);stop-opacity:1;"/>
+</linearGradient>
+</defs>
+</svg>
 </svg>
 ```
 
-### `src/flows/stocks/assets/flags/us.svg`
+### `src/flows/stocks/assets/in/benefit-dash.svg`
 
 ```tsx
-<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-  <!-- United States, round: red and white stripes with the blue canton. Flag artwork keeps its own colours. -->
-  <defs><clipPath id="c"><circle cx="12" cy="12" r="12"/></clipPath></defs>
-  <g clip-path="url(#c)">
-    <rect width="24" height="24" fill="#FFFFFF"/>
-    <g fill="#B22234">
-      <rect y="0" width="24" height="2.4"/>
-      <rect y="4.8" width="24" height="2.4"/>
-      <rect y="9.6" width="24" height="2.4"/>
-      <rect y="14.4" width="24" height="2.4"/>
-      <rect y="19.2" width="24" height="2.4"/>
-    </g>
-    <rect width="12" height="12" fill="#3C3B6E"/>
-    <g fill="#FFFFFF">
-      <circle cx="3.5" cy="3" r="0.8"/><circle cx="7" cy="3" r="0.8"/><circle cx="10.5" cy="3" r="0.8"/>
-      <circle cx="5.25" cy="6" r="0.8"/><circle cx="8.75" cy="6" r="0.8"/>
-      <circle cx="3.5" cy="9" r="0.8"/><circle cx="7" cy="9" r="0.8"/><circle cx="10.5" cy="9" r="0.8"/>
-    </g>
-  </g>
-  <circle cx="12" cy="12" r="11.75" fill="none" stroke="#000000" stroke-opacity="0.12" stroke-width="0.5"/>
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="BotIcon" clip-path="url(#clip0_0_131)">
+<g id="Group 1000006113" filter="url(#filter0_f_0_131)">
+<path id="Big_leaf_00000052817416241482779350000003325489541389591972_" d="M37.3635 12.3705L36.8303 12.9671C35.1592 14.8557 33.0218 16.1178 30.7846 16.6904C27.021 17.6456 22.8779 16.7074 19.7953 13.8519L20.3285 13.2554C22.4189 10.8486 25.2382 9.51611 28.1333 9.20874C31.3549 8.92596 34.7423 9.92557 37.3635 12.3705Z" fill="#8EF087" style="fill:#8EF087;fill:color(display-p3 0.5578 0.9428 0.5275);fill-opacity:1;"/>
+<path id="Small_leaf_00000086657169406454258550000009755690847739837326_" d="M20.1034 1.35878C18.5663 3.12529 17.8172 5.32687 17.8775 7.51984C17.9202 9.86456 18.9088 12.1866 20.7033 13.8839C22.2404 12.1174 22.9783 9.8836 22.918 7.69063C22.8865 5.37807 21.9292 3.0445 20.1034 1.35878Z" fill="#8EF087" style="fill:#8EF087;fill:color(display-p3 0.5578 0.9428 0.5275);fill-opacity:1;"/>
+</g>
+<g id="Group 1000006112">
+<path id="Small_leaf_00000086657169406454258550000009755690847739837326__2" d="M20.7427 3.10683C19.4121 4.63605 18.7636 6.5419 18.8158 8.44029C18.8528 10.4701 19.7085 12.4802 21.262 13.9495C22.5926 12.4202 23.2314 10.4865 23.1792 8.58815C23.1519 6.58622 22.3232 4.56612 20.7427 3.10683Z" fill="url(#paint0_linear_0_131)"/>
+<path id="Big_leaf_00000052817416241482779350000003325489541389591972__2" d="M36.5227 12.6402L36.0611 13.1565C34.6146 14.7912 32.7643 15.8834 30.8275 16.3789C27.5692 17.2054 23.9823 16.3929 21.3133 13.921L21.7749 13.4046C23.5844 11.3215 26.025 10.1684 28.5314 9.90257C31.3205 9.65808 34.2533 10.5236 36.5227 12.6402Z" fill="url(#paint1_linear_0_131)"/>
+</g>
+<mask id="stroke0_0_131" fill="white">
+<path d="M27.2173 24.1944C27.2173 30.7425 22.0541 36.0508 15.6848 36.0508C9.31562 36.0508 4.15234 30.7425 4.15234 24.1944C4.15234 17.6462 9.31562 12.3379 15.6848 12.3379C22.0541 12.3379 27.2173 17.6462 27.2173 24.1944Z"/>
+</mask>
+<path id="Ellipse 8" d="M27.2173 24.1944C27.2173 30.7425 22.0541 36.0508 15.6848 36.0508C9.31562 36.0508 4.15234 30.7425 4.15234 24.1944C4.15234 17.6462 9.31562 12.3379 15.6848 12.3379C22.0541 12.3379 27.2173 17.6462 27.2173 24.1944Z" stroke-width="6.74684" stroke="url(#paint2_linear_0_131)" mask="url(#stroke0_0_131)"/>
+<g id="circleGroup">
+<g id="Ellipse 9" filter="url(#filter1_f_0_131)">
+<mask id="stroke1_0_131" fill="white">
+<path d="M28.1408 24.0739C28.1408 31.2114 22.5129 36.9975 15.5704 36.9975C8.62797 36.9975 3 31.2114 3 24.0739C3 16.9365 8.62797 11.1504 15.5704 11.1504C22.5129 11.1504 28.1408 16.9365 28.1408 24.0739Z"/>
+</mask>
+<mask id="stroke2_0_131">
+<path d="M28.1408 24.0739C28.1408 31.2114 22.5129 36.9975 15.5704 36.9975C8.62797 36.9975 3 31.2114 3 24.0739C3 16.9365 8.62797 11.1504 15.5704 11.1504C22.5129 11.1504 28.1408 16.9365 28.1408 24.0739Z" stroke-width="7.35406" stroke="white" mask="url(#stroke1_0_131)"/>
+</mask>
+<g clip-path="url(#paint3_angular_0_131_clip_path)" data-figma-skip-parse="true" mask="url(#stroke2_0_131)"><g transform="matrix(0.0065 -0.0095 0.00922569 0.00665894 16 23.9971)"><foreignObject x="-3827.82" y="-3827.82" width="7655.64" height="7655.64"><div xmlns="http://www.w3.org/1999/xhtml" style="background:conic-gradient(from 90deg,rgba(121, 234, 105, 1) 0deg,rgba(246, 253, 38, 1) 124.615deg,rgba(52, 177, 33, 1) 238.846deg,rgba(122, 235, 105, 1) 360deg);height:100%;width:100%;opacity:1"></div></foreignObject></g></g><path d="M28.1408 24.0739C28.1408 31.2114 22.5129 36.9975 15.5704 36.9975C8.62797 36.9975 3 31.2114 3 24.0739C3 16.9365 8.62797 11.1504 15.5704 11.1504C22.5129 11.1504 28.1408 16.9365 28.1408 24.0739Z" stroke-width="7.35406" stroke="black" stroke-opacity="0" data-figma-gradient-stroke="{&#34;type&#34;:&#34;GRADIENT_ANGULAR&#34;,&#34;stops&#34;:[{&#34;color&#34;:{&#34;r&#34;:0.47711750864982605,&#34;g&#34;:0.92151820659637451,&#34;b&#34;:0.41342675685882568,&#34;a&#34;:1.0},&#34;position&#34;:0.0},{&#34;color&#34;:{&#34;r&#34;:0.96524602174758911,&#34;g&#34;:0.99325793981552124,&#34;b&#34;:0.15290218591690063,&#34;a&#34;:1.0},&#34;position&#34;:0.34615385532379150},{&#34;color&#34;:{&#34;r&#34;:0.20681096613407135,&#34;g&#34;:0.69540637731552124,&#34;b&#34;:0.13164243102073669,&#34;a&#34;:1.0},&#34;position&#34;:0.66346156597137451},{&#34;color&#34;:{&#34;r&#34;:0.47843137383460999,&#34;g&#34;:0.92156863212585449,&#34;b&#34;:0.41176471114158630,&#34;a&#34;:1.0},&#34;position&#34;:1.0}],&#34;transform&#34;:{&#34;m00&#34;:13.000001907348633,&#34;m01&#34;:18.451383590698242,&#34;m02&#34;:0.27430820465087891,&#34;m10&#34;:-19.000001907348633,&#34;m11&#34;:13.317880630493164,&#34;m12&#34;:26.838130950927734},&#34;opacity&#34;:1.0,&#34;blendMode&#34;:&#34;NORMAL&#34;,&#34;stopsVar&#34;:[{&#34;color&#34;:{&#34;r&#34;:0.47711750864982605,&#34;g&#34;:0.92151820659637451,&#34;b&#34;:0.41342675685882568,&#34;a&#34;:1.0},&#34;position&#34;:0.0},{&#34;color&#34;:{&#34;r&#34;:0.96524602174758911,&#34;g&#34;:0.99325793981552124,&#34;b&#34;:0.15290218591690063,&#34;a&#34;:1.0},&#34;position&#34;:0.34615385532379150},{&#34;color&#34;:{&#34;r&#34;:0.20681096613407135,&#34;g&#34;:0.69540637731552124,&#34;b&#34;:0.13164243102073669,&#34;a&#34;:1.0},&#34;position&#34;:0.66346156597137451},{&#34;color&#34;:{&#34;r&#34;:0.47843137383460999,&#34;g&#34;:0.92156863212585449,&#34;b&#34;:0.41176471114158630,&#34;a&#34;:1.0},&#34;position&#34;:1.0}],&#34;visible&#34;:true}" mask="url(#stroke1_0_131)"/>
+</g>
+</g>
+</g>
+<defs>
+<filter id="filter0_f_0_131" x="15.2762" y="-1.23914" width="24.6852" height="20.8885" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feGaussianBlur stdDeviation="1.29896" result="effect1_foregroundBlur_0_131"/>
+</filter>
+<filter id="filter1_f_0_131" x="1.16149" y="9.31188" width="28.8179" height="29.5241" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feGaussianBlur stdDeviation="0.919257" result="effect1_foregroundBlur_0_131"/>
+</filter>
+<clipPath id="paint3_angular_0_131_clip_path"><rect x="-15.3851" y="-7.23475" width="61.9111" height="62.6174"/></clipPath><linearGradient id="paint0_linear_0_131" x1="23.2478" y1="10.1362" x2="19.476" y2="11.1654" gradientUnits="userSpaceOnUse">
+<stop stop-color="#7CE883" style="stop-color:#7CE883;stop-color:color(display-p3 0.4863 0.9098 0.5137);stop-opacity:1;"/>
+<stop offset="1" stop-color="#3EBF47" style="stop-color:#3EBF47;stop-color:color(display-p3 0.2433 0.7503 0.2802);stop-opacity:1;"/>
+</linearGradient>
+<linearGradient id="paint1_linear_0_131" x1="33.9791" y1="13.115" x2="22.6009" y2="13.5871" gradientUnits="userSpaceOnUse">
+<stop stop-color="#7CE883" style="stop-color:#7CE883;stop-color:color(display-p3 0.4863 0.9098 0.5137);stop-opacity:1;"/>
+<stop offset="1" stop-color="#3EBF47" style="stop-color:#3EBF47;stop-color:color(display-p3 0.2433 0.7503 0.2802);stop-opacity:1;"/>
+</linearGradient>
+<linearGradient id="paint2_linear_0_131" x1="10.9565" y1="34.8217" x2="21.5614" y2="14.3087" gradientUnits="userSpaceOnUse">
+<stop stop-color="#72E780" style="stop-color:#72E780;stop-color:color(display-p3 0.4476 0.9047 0.5009);stop-opacity:1;"/>
+<stop offset="1" stop-color="#FDFFB5" style="stop-color:#FDFFB5;stop-color:color(display-p3 0.9903 1.0000 0.7091);stop-opacity:1;"/>
+</linearGradient>
+<clipPath id="clip0_0_131">
+<rect width="40" height="40" fill="white" style="fill:white;fill-opacity:1;"/>
+</clipPath>
+</defs>
+</svg>
+```
+
+### `src/flows/stocks/assets/in/benefit-mtf.svg`
+
+```tsx
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="material-symbols--bolt 2">
+<path id="Vector" d="M18.1972 39.1673C16.9462 39.1673 15.9851 38.0592 16.1621 36.8207L17.0858 30.3542C17.301 28.8481 16.1323 27.5007 14.611 27.5007H13.9316C11.9149 27.5007 10.7282 25.2357 11.8761 23.5776L23.5601 6.70073C23.9359 6.1579 24.5541 5.83398 25.2143 5.83398C26.4246 5.83398 27.3609 6.89467 27.2108 8.09553L26.1781 16.3572C25.9916 17.8494 27.155 19.1673 28.6588 19.1673H30.4892C32.6088 19.1673 33.7667 21.6395 32.4098 23.2678L19.7766 38.4276C19.386 38.8963 18.8074 39.1673 18.1972 39.1673Z" fill="#048245" style="fill:#048245;fill:color(display-p3 0.0148 0.5083 0.2714);fill-opacity:1;"/>
+<g id="Vector_2">
+<use xlink:href="#stroke0_0_153" fill="#B1E50E" style="fill:#B1E50E;fill:color(display-p3 0.6941 0.8980 0.0549);fill-opacity:1;"/>
+<use xlink:href="#stroke0_0_153" fill="url(#paint0_linear_0_153)"/>
+</g>
+</g>
+<defs>
+<linearGradient id="paint0_linear_0_153" x1="-1.00651" y1="3.33398" x2="25.9928" y2="30.7618" gradientUnits="userSpaceOnUse">
+<stop stop-color="#D4FC79" style="stop-color:#D4FC79;stop-color:color(display-p3 0.8314 0.9882 0.4745);stop-opacity:1;"/>
+<stop offset="1" stop-color="#96E6A1" style="stop-color:#96E6A1;stop-color:color(display-p3 0.5882 0.9020 0.6314);stop-opacity:1;"/>
+</linearGradient>
+<path id="stroke0_0_153" d="M15.6972 36.6673C14.4462 36.6673 13.4851 35.5592 13.6621 34.3207L14.5858 27.8542C14.801 26.3481 13.6323 25.0007 12.111 25.0007H11.4316C9.41492 25.0007 8.2282 22.7357 9.3761 21.0776L21.0601 4.20073C21.4359 3.6579 22.0541 3.33398 22.7143 3.33398C23.9246 3.33398 24.8609 4.39467 24.7108 5.59553L23.6781 13.8572C23.4916 15.3494 24.655 16.6673 26.1588 16.6673H27.9892C30.1088 16.6673 31.2667 19.1395 29.9098 20.7678L17.2766 35.9276C16.886 36.3963 16.3074 36.6673 15.6972 36.6673Z"/>
+</defs>
 </svg>
 ```
 
@@ -754,6 +911,26 @@ D�W�k��&�� �?��DQ�y�� !i� ���n]�G��FS�
 <path style="fill:var(--l3-surface-accent-success-light);stroke:var(--l3-content-accent-success-default)" d="M9 11V3.5A7.5 7.5 0 1 0 16.5 11Z" stroke-width="1.4" stroke-linejoin="round"/>
 <path style="stroke:var(--l3-content-accent-success-default)" d="M9 11L3.7 16.3" stroke-width="1.4" stroke-linecap="round"/>
 <path style="fill:var(--l3-content-accent-success-default)" d="M11 9V1.5A7.5 7.5 0 0 1 18.5 9Z"/>
+</svg>
+```
+
+### `src/flows/stocks/assets/shortcuts/fractional.svg`
+
+```tsx
+<svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect style="fill:var(--l3-surface-accent-success-light);stroke:var(--l3-content-accent-success-default)" x="1.5" y="4.5" width="17" height="11" rx="2" stroke-width="1.4"/>
+<path style="fill:var(--l3-content-accent-success-default)" d="M3.5 4.5H7.5V15.5H3.5A2 2 0 0 1 1.5 13.5V6.5A2 2 0 0 1 3.5 4.5Z"/>
+<path style="stroke:var(--l3-content-accent-success-default)" d="M13 4.5V15.5" stroke-width="1.4" stroke-dasharray="1.6 1.6"/>
+</svg>
+```
+
+### `src/flows/stocks/assets/shortcuts/hours.svg`
+
+```tsx
+<svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<circle style="fill:var(--l3-surface-accent-success-light);stroke:var(--l3-content-accent-success-default)" cx="10" cy="10" r="8.3" stroke-width="1.4"/>
+<path style="fill:var(--l3-content-accent-success-default)" d="M10 10V4.2A5.8 5.8 0 0 1 15.8 10Z"/>
+<path style="stroke:var(--l3-content-accent-success-default)" d="M10 10V5.5M10 10L13 12" stroke-width="1.4" stroke-linecap="round"/>
 </svg>
 ```
 
@@ -807,6 +984,54 @@ D�W�k��&�� �?��DQ�y�� !i� ���n]�G��FS�
 </linearGradient>
 </defs>
 </svg>
+```
+
+### `src/flows/stocks/assets/us/etf/globalx.svg`
+
+```tsx
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#FFFFFF"/><image href="data:image/png;base64,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" x="14" y="14" width="72" height="72" preserveAspectRatio="xMidYMid meet"/></svg>
+```
+
+### `src/flows/stocks/assets/us/etf/invesco.svg`
+
+```tsx
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#000000"/><image href="data:image/png;base64,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" x="14" y="14" width="72" height="72" preserveAspectRatio="xMidYMid meet"/></svg>
+```
+
+### `src/flows/stocks/assets/us/etf/ishares.svg`
+
+```tsx
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#000000"/><image href="data:image/png;base64,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" x="0" y="0" width="100" height="100" preserveAspectRatio="xMidYMid slice"/></svg>
+```
+
+### `src/flows/stocks/assets/us/etf/kraneshares.svg`
+
+```tsx
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#FFFFFF"/><image href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAABmJLR0QA/wD/AP+gvaeTAAADn0lEQVR4nO3dTUgUcRzG8Wd2V9fN0tqtdC3NIC1IU6tbgdAb9EZCECJZ17DoEHSKDhF0CIIOUUFhh7CI6lj0gkSHSg29WB4i0i1i7WC+RC+6rtuh3NhetIadmWeb53Ncduf/gy/zn3Fld42hD2MJCA2P0wNIKgUhoyBkFISMgpBREDIKQkZByCgIGQUhoyBkFISMgpBREDIKQkZByCgIGQUhoyBkFISMz8qDt1y+h/7ogJVL2C5cNBcNuzdadnxLg7Te70TP814rl7Dd8orFlgbRlkVGQcgoCBlLryG/EwrloTAcsntZU6LRAbwfGLF1TduDrN+4GocO19u9rCmnTl7F9WsPbF1TWxYZBSGjIGQUhIyCkLH9Lmsq4/EEPo7F/+q5M/1eeD0GACCRAEa+jJtaMzfbC5/XMPVaK1AFedI7iP1Xuqd93uaK+ThRtwzAtxjHb73Aja6oqTXPNVRizZKgqddaIeO2rG0rCnCiblny7Dh596XpGIyozpDp7KguxLHt5fAY32Kcbn2Flo63Dk+VXhkTZOfKMI5uLUvGOP8wguZHbxyeKv0yIsiuVUU4sqUM31vg0uM3OPuwz9mhLEIfxOcxUmLE4hMom5+Lsw2V/3Scj6NxHL7ZY8GE6UUfBAaSMQAgy+vBWhN3RUOfYmkcyjoZd5f1v1MQMgpCRkHIKAgZBSGjIGRcHSSYm4XSuTOcHiOFa4PMm5WN5j3VWDA7x+lRUvD/pW6Bwnw/LjZWoSQYcHqUX7guyMI5ObjQWEV3ZkxyVZDSUAAXGqtQkOcHAHS9HoZhADXF+Q5P9oNrriGBbC+a91YnY3RGhtF0pRufRv/uf/h2cc0Z4vd54J+ZDQB42jeEA1ef4XOMKwbgojNkUkcvbwzARWcIALS9GsTBa8/wJTbh9Ch/RB8kHk9g25mOtByrf3gUY3HeGEAGBEkAeP3+s9Nj2MZ11xB2CkJGQchQXUMWBQNoqi21dc1isvezqIKUBAPYV7vI6TEcpS2LjIKQURAyCkJGQcjYfpcV6evHndvtdi9rSiTyzvY1bQ/S3taD9jb+jwU4RVsWGQUhoyBkHHnrxOD5nP6UEg78BqrtQXbVr9P3ZU1BWxYZBSFj6Za1YdNqVFQuTnmsZmW5lUumVc2qpTB+uuCFi6z9vkhDP9/NRVsWGQUhoyBkFISMgpBREDIKQkZByCgIGQUhoyBkFISMgpBREDIKQkZByCgIGQUhoyBkFITMV6PHr8zQbVMmAAAAAElFTkSuQmCC" x="0" y="0" width="100" height="100" preserveAspectRatio="xMidYMid slice"/></svg>
+```
+
+### `src/flows/stocks/assets/us/etf/spdr.svg`
+
+```tsx
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#FFFFFF"/><image href="data:image/png;base64,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" x="14" y="14" width="72" height="72" preserveAspectRatio="xMidYMid meet"/></svg>
+```
+
+### `src/flows/stocks/assets/us/etf/vaneck.svg`
+
+```tsx
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#000000"/><image href="data:image/png;base64,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" x="14" y="14" width="72" height="72" preserveAspectRatio="xMidYMid meet"/></svg>
+```
+
+### `src/flows/stocks/assets/us/etf/vanguard.svg`
+
+```tsx
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#FFFFFF"/><image href="data:image/png;base64,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" x="14" y="14" width="72" height="72" preserveAspectRatio="xMidYMid meet"/></svg>
+```
+
+### `src/flows/stocks/assets/us/etf/wisdomtree.svg`
+
+```tsx
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#FFFFFF"/><image href="data:image/png;base64,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" x="14" y="14" width="72" height="72" preserveAspectRatio="xMidYMid meet"/></svg>
 ```
 
 ### `src/flows/stocks/assets/us/ftux/bloom-blue.svg`
@@ -19483,40 +19708,6 @@ h��ha�E�  @����=O������S��m���㡦8�
 </svg>
 ```
 
-### `src/flows/stocks/assets/us/spark-down.svg`
-
-```tsx
-<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="146.748" height="36.68" viewBox="0 0 146.748 36.68" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g id="Group 2147226374">
-<path id="Vector 2362" d="M2.91557 28.1688L1.00506 30.1861C0.359684 30.8676 0 31.7705 0 32.7091C0 34.8496 1.82474 36.5356 3.95855 36.3667L141.601 25.4738C144.085 25.2773 146 23.2046 146 20.7134V13.4372C146 11.5888 143.715 10.7205 142.488 12.1022C141.889 12.7761 140.915 12.9689 140.105 12.5741L134.679 9.9302C133.708 9.45697 132.56 9.52753 131.654 10.1161C131.24 10.3852 130.768 10.5506 130.276 10.5985L121.344 11.4691C120.841 11.5182 120.333 11.4268 119.878 11.205C119.013 10.7835 117.99 10.8463 117.183 11.3706L116.695 11.6881C115.28 12.6074 113.427 12.4752 112.157 11.3644L102.722 3.11092C101.43 1.98095 99.7719 1.35815 98.0556 1.35815C94.7279 1.35815 90.6709 3.21218 87.3645 3.58765C86.544 3.68082 85.6007 3.7349 84.5196 3.7349C82.94 3.7349 74.9815 7.04117 74.506 8.54741L73.4482 11.8981C73.1957 12.6981 72.4537 13.2419 71.6148 13.2419H63.5777C62.5812 13.2419 61.6062 13.5309 60.7706 14.0739C58.7655 15.3768 56.1274 15.1287 54.4003 13.4749L50.4409 9.68333C48.5444 7.86727 45.8898 7.07485 43.3081 7.55416L41.1011 7.96392C40.4615 8.08267 39.8007 7.95124 39.2552 7.59679C38.4886 7.09865 37.5133 7.05139 36.7021 7.47307L36.4648 7.59644C35.7826 7.95109 34.9901 8.02989 34.2514 7.81655L33.8655 7.70511C32.0265 7.174 30.0689 8.01979 29.1953 9.72293L25.4742 16.9768L19.5647 27.2241C19.3582 27.5821 18.8109 27.4356 18.8109 27.0223C18.8109 26.9026 18.7578 26.7891 18.666 26.7124L17.0521 25.364C15.8579 24.3664 14.261 23.995 12.7493 24.3634L12.2785 24.4781C11.4272 24.6856 10.6559 25.1396 10.0615 25.7834L7.53421 28.5205C6.88725 29.2211 5.75688 29.1386 5.21849 28.3515C4.68444 27.5707 3.56604 27.4819 2.91557 28.1688Z" fill="url(#paint0_linear_0_4)"/>
-<path id="Vector 2361" d="M1.04688 31.291L3.9911 28.1738C4.6477 27.4786 5.77872 27.5683 6.31758 28.3582C6.86082 29.1546 8.00394 29.238 8.65697 28.5288L11.21 25.7564C11.8098 25.1052 12.5885 24.6456 13.4485 24.4355L13.9166 24.3211C15.4476 23.9471 17.0652 24.3239 18.2734 25.3359L19.9438 26.7353C20.0086 26.7895 20.046 26.8697 20.046 26.9541C20.046 27.2724 20.4881 27.352 20.5991 27.0537L24.268 17.1929L28.0297 9.84021C28.9098 8.11986 30.8864 7.26542 32.7426 7.80292L33.1328 7.91591C33.879 8.132 34.6798 8.05221 35.3687 7.69312L35.608 7.56838C36.4272 7.14136 37.4131 7.1892 38.1871 7.69353C38.7379 8.05238 39.4057 8.18546 40.0519 8.06516L42.2809 7.65021C44.8875 7.16498 47.5681 7.96642 49.4806 9.80275L53.4848 13.6474C55.2275 15.3207 57.8938 15.5716 59.9181 14.2527C60.7617 13.7031 61.7468 13.4104 62.7537 13.4104H70.8691C71.717 13.4104 72.4668 12.8604 72.7214 12.0517L73.7951 8.64137C74.2735 7.12188 82.3112 3.78243 83.9042 3.78243C84.9987 3.78243 85.9533 3.72741 86.7833 3.63265C90.1206 3.25166 94.2141 1.37543 97.5731 1.37543C99.308 1.37543 100.984 2.00619 102.288 3.15019L111.819 11.5097C113.1 12.6336 114.973 12.7673 116.401 11.8369L116.895 11.5151C117.71 10.9845 118.743 10.9209 119.616 11.3476C120.076 11.5722 120.589 11.6648 121.098 11.615L130.118 10.7334C130.615 10.6849 131.093 10.5174 131.511 10.245C132.425 9.64904 133.586 9.57762 134.567 10.0569L136.593 11.0472C139.451 12.4437 142.89 11.7625 144.999 9.38179L146 8.25258" stroke-width="2" stroke="#E5505F" style="stroke:#E5505F;stroke:color(display-p3 0.8980 0.3137 0.3725);stroke-opacity:1;"/>
-</g>
-<defs>
-<linearGradient id="paint0_linear_0_4" x1="69.2598" y1="-21.5436" x2="76.5787" y2="25.9461" gradientUnits="userSpaceOnUse">
-<stop stop-color="#E5505F" style="stop-color:#E5505F;stop-color:color(display-p3 0.8980 0.3137 0.3725);stop-opacity:1;"/>
-<stop offset="1" stop-color="#E5505F" stop-opacity="0" style="stop-color:none;stop-opacity:0;"/>
-</linearGradient>
-</defs>
-</svg>
-```
-
-### `src/flows/stocks/assets/us/spark-up.svg`
-
-```tsx
-<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="146.733" height="36.6842" viewBox="0 0 146.733 36.6842" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g id="Group 2147226374">
-<path id="Vector 2363" d="M3.32818 27.7363L0.273888 30.9618C0.0980158 31.1475 0 31.3936 0 31.6493V35.6019C0 36.1853 0.49733 36.6448 1.0789 36.5988L145.079 25.2015C145.599 25.1603 146 24.7263 146 24.2046V10.7812C146 9.86152 144.863 9.42949 144.252 10.117L141.979 12.6763C141.681 13.0116 141.196 13.1076 140.793 12.9111L133.623 9.41643C133.307 9.26263 132.934 9.28556 132.64 9.47686L131.229 10.3937C131.095 10.4812 130.941 10.535 130.781 10.5505L120.855 11.5182C120.671 11.5361 120.486 11.5027 120.32 11.4218L118.992 10.7747C118.677 10.6209 118.304 10.6439 118.009 10.8352L114.938 12.8313C114.562 13.0751 114.071 13.0401 113.734 12.7455L101.001 1.60566C100.818 1.4462 100.584 1.3583 100.342 1.3583H93.1615C92.6919 1.3583 92.2662 1.69874 91.9264 2.02285C91.0989 2.81224 88.9861 3.73533 84.5196 3.73533C83.5912 3.73533 82.7732 3.67266 82.0541 3.56223C80.9237 3.38866 75.5948 5.09875 75.2506 6.18934L73.2446 12.5444C73.1133 12.9605 72.7273 13.2434 72.291 13.2434H62.3473C62.1538 13.2434 61.9646 13.2995 61.8024 13.405L58.0125 15.8679C57.6233 16.1208 57.1112 16.0727 56.7759 15.7516L47.7904 7.14607C47.558 6.92347 47.2326 6.82634 46.9162 6.88509L40.4975 8.07691C40.2454 8.12371 39.985 8.07191 39.77 7.93221L38.5036 7.10922C38.2015 6.91288 37.8171 6.89425 37.4974 7.06046L35.7568 7.9654C35.5291 8.08379 35.2646 8.11009 35.018 8.03888L31.4908 7.02008C31.0311 6.88732 30.5418 7.09872 30.3235 7.52442L25.4742 16.9788L19.5647 27.2271C19.3582 27.5852 18.8109 27.4387 18.8109 27.0254C18.8109 26.9057 18.7578 26.7922 18.666 26.7154L15.5407 24.1041C15.297 23.9005 14.9712 23.8247 14.6627 23.8999L11.2663 24.7276C11.075 24.7742 10.9018 24.8762 10.7683 25.0208L7.12184 28.9704C6.68598 29.4425 5.92438 29.3869 5.56167 28.8565L4.87972 27.8594C4.51993 27.3333 3.7664 27.2735 3.32818 27.7363Z" fill="url(#paint0_linear_0_9)"/>
-<path id="Vector 2361" d="M2.9396 29.5263L6.27129 26.1537C6.70746 25.7122 7.43628 25.7705 7.79674 26.2757L8.49078 27.2485C8.85423 27.7579 9.59096 27.8121 10.0251 27.3614L13.6727 23.5743C13.8065 23.4354 13.9777 23.3381 14.1655 23.2943L17.5714 22.4986C17.8702 22.4288 18.1845 22.5001 18.424 22.6919L21.5859 25.2244C21.6521 25.2774 21.6907 25.3576 21.6907 25.4424C21.6907 25.7515 22.1183 25.8318 22.2304 25.5438L25.8576 16.2232L30.6887 7.19472C30.9094 6.78231 31.3865 6.57797 31.8373 6.70278L35.3844 7.68483C35.6223 7.75071 35.8762 7.72623 36.0972 7.6161L37.858 6.73863C38.1689 6.58369 38.5379 6.60119 38.8328 6.78486L40.1158 7.58413C40.3256 7.71483 40.5764 7.76319 40.8198 7.71987L47.2468 6.57599C47.5537 6.52136 47.8686 6.61301 48.0983 6.82386L57.0703 15.0603C57.4012 15.3641 57.8941 15.41 58.2753 15.1725L62.0753 12.8054C62.2339 12.7065 62.4171 12.6541 62.604 12.6541H72.5326C72.9644 12.6541 73.3474 12.377 73.4824 11.9669L75.4732 5.92128C75.8287 4.8418 80.9985 3.20554 82.1211 3.38292C82.8705 3.50133 83.7305 3.56912 84.7151 3.56912C89.1435 3.56912 91.2508 2.69657 92.085 1.94503C92.4313 1.633 92.8585 1.29786 93.3247 1.29786H100.498C100.733 1.29786 100.961 1.38062 101.141 1.53162L113.849 12.1881C114.18 12.4661 114.653 12.4994 115.02 12.2707L118.111 10.3453C118.398 10.1664 118.756 10.1448 119.063 10.2881L120.409 10.9169C120.57 10.9921 120.748 11.0231 120.925 11.0065L130.837 10.0804C130.991 10.0659 131.141 10.0157 131.272 9.93351L132.695 9.04741C132.982 8.86849 133.34 8.84696 133.647 8.9902L140.828 12.3454C141.222 12.5293 141.69 12.4379 141.985 12.1191L146 7.78716" stroke-width="2" stroke="#37AD75" style="stroke:#37AD75;stroke:color(display-p3 0.2157 0.6784 0.4588);stroke-opacity:1;"/>
-</g>
-<defs>
-<linearGradient id="paint0_linear_0_9" x1="61.6596" y1="-22.1358" x2="68.3382" y2="27.9359" gradientUnits="userSpaceOnUse">
-<stop stop-color="#0F9958" style="stop-color:#0F9958;stop-color:color(display-p3 0.0588 0.6000 0.3451);stop-opacity:1;"/>
-<stop offset="1" stop-color="#0F9958" stop-opacity="0" style="stop-color:#0F9958;stop-opacity:0;"/>
-</linearGradient>
-</defs>
-</svg>
-```
-
 ### `src/flows/stocks/assets/us/us-icon-off.svg`
 
 ```tsx
@@ -19540,7 +19731,7 @@ h��ha�E�  @����=O������S��m���㡦8�
 ### `src/flows/stocks/components/Discover.tsx`
 
 ```tsx
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Avatar } from '@l3/components/Avatar'
 import { Badge } from '@l3/components/Badge'
 import { Card } from '@l3/components/Card'
@@ -19552,10 +19743,9 @@ import { PriceChange } from '@l3/components/PriceChange'
 import { SectionHeader } from '@l3/components/SectionHeader'
 import { Stack } from '@l3/components/Stack'
 import { Tabs } from '@l3/components/Tabs'
-import { Tag } from '@l3/components/Tag'
 import { msChevronRight, msCurrencyRupee, msTrendingDown, msTrendingUp } from '@l3/icons/material'
 import { inr } from '../../../shared/data/format'
-import { watchlists } from '../../../shared/data/portfolio'
+import { watchlists, type Watchlist } from '../../../shared/data/portfolio'
 import { Rail } from '../../../shared/ui/Rail'
 import { useMarketSnapshot } from '../../../shared/data/companies'
 import { useFlowOption } from '../../../shared/prototype'
@@ -19578,20 +19768,18 @@ export function Shortcuts(props: ShortcutsProps) {
   return version === 'v1' ? <ShortcutsCircles {...props} /> : <ShortcutsCard {...props} />
 }
 
-type ShortcutsProps = { onOpen?: (id: string) => void; /** The US tab swaps IPO for ETFs (data.ts usShortcuts). */ items?: Shortcut[]; /** Home versions V8, V9: the "Do More With Lemonn" title shows (components/homeVersions.ts). */ titled?: boolean }
+type ShortcutsProps = { onOpen?: (id: string) => void; /** The US tab swaps IPO for ETFs (data.ts usShortcuts). */ items?: Shortcut[]; }
 
-/** The count or the "New" tag ("5 New", "New") over the shortcut icon's top edge. */
-function ShortcutBadge({ s }: { s: Shortcut }) {
-  if (s.badge?.count !== undefined) return <span className={styles.overIcon}><Badge count={s.badge.count} color="neutral" label={t('shortcuts.watchlistBadge', { count: s.badge.count })} /></span>
-  if (s.badge?.text) return <span className={styles.overIcon}><Tag color="error" variant="primary" size="sm">{s.badge.text}</Tag></span>
-  return null
+/** The shortcut's icon, with its count of new things (IPO: 5) as an L3 Badge on the icon's top-right corner. */
+function ShortcutIconWithBadge({ s, children }: { s: Shortcut; children: ReactNode }) {
+  if (!s.badge) return <>{children}</>
+  return <Badge count={s.badge.count} color="error" label={t('shortcuts.newBadge')}>{children}</Badge>
 }
 
 /** V2: one outlined card, four columns split by hairlines. */
-function ShortcutsCard({ onOpen, items = shortcuts, titled = false }: ShortcutsProps) {
+function ShortcutsCard({ onOpen, items = shortcuts }: ShortcutsProps) {
   return (
     <Stack as="section" gap="16" aria-label={t('shortcuts.title')}>
-      {titled && <Inset paddingInline="16" paddingBlock="00"><SectionHeader title={t('shortcuts.title')} /></Inset>}
       <Inset paddingInline="16" paddingBlock="00">
         <Card padding="none" className={styles.shortcutsPanel}>
           <Grid columns={4} gap="00">
@@ -19599,8 +19787,7 @@ function ShortcutsCard({ onOpen, items = shortcuts, titled = false }: ShortcutsP
               <Card key={s.id} variant="flat" padding="none" className={styles.shortcutCard} onClick={() => onOpen?.(s.id)}>
                 <span className={`${styles.shortcut} ${styles.shortcutPlain}`}>
                   <span className={styles.shortcutIcon}>
-                    <span className={styles.shortcutGlyph} aria-hidden="true"><ShortcutArt art={s.art} /></span>
-                    <ShortcutBadge s={s} />
+                    <ShortcutIconWithBadge s={s}><span className={styles.shortcutGlyph} aria-hidden="true"><ShortcutArt art={s.art} /></span></ShortcutIconWithBadge>
                   </span>
                   <span className={styles.shortcutPlainLabel}>{s.label}</span>
                 </span>
@@ -19614,18 +19801,16 @@ function ShortcutsCard({ onOpen, items = shortcuts, titled = false }: ShortcutsP
 }
 
 /** V1: a 40 outlined circle per shortcut. */
-function ShortcutsCircles({ onOpen, items = shortcuts, titled = false }: ShortcutsProps) {
+function ShortcutsCircles({ onOpen, items = shortcuts }: ShortcutsProps) {
   return (
     <Stack as="section" gap="16" aria-label={t('shortcuts.title')}>
-      {titled && <Inset paddingInline="16" paddingBlock="00"><SectionHeader title={t('shortcuts.title')} /></Inset>}
       <Inset paddingInline="16" paddingBlock="00">
         <Grid columns={4} gap="00">
           {items.map((s) => (
             <Card key={s.id} variant="flat" padding="none" className={styles.shortcutCard} onClick={() => onOpen?.(s.id)}>
               <span className={styles.shortcut}>
                 <span className={styles.shortcutIcon}>
-                  <span className={styles.shortcutCircle} aria-hidden="true"><ShortcutArt art={s.art} /></span>
-                  <ShortcutBadge s={s} />
+                  <ShortcutIconWithBadge s={s}><span className={styles.shortcutCircle} aria-hidden="true"><ShortcutArt art={s.art} /></span></ShortcutIconWithBadge>
                 </span>
                 <span className={styles.shortcutLabel}>{s.label}</span>
               </span>
@@ -19637,15 +19822,14 @@ function ShortcutsCircles({ onOpen, items = shortcuts, titled = false }: Shortcu
   )
 }
 
-const moverTabs: { value: MoverList; label: 'movers.under100' | 'movers.under500' | 'movers.high52' | 'movers.low52'; icon: string }[] = [
+const moverTabs: { value: MoverList; label: 'movers.gainers' | 'movers.losers' | 'movers.under100'; icon: string }[] = [
+  { value: 'gainers', label: 'movers.gainers', icon: msTrendingUp },
+  { value: 'losers', label: 'movers.losers', icon: msTrendingDown },
   { value: 'under-100', label: 'movers.under100', icon: msCurrencyRupee },
-  { value: 'under-500', label: 'movers.under500', icon: msCurrencyRupee },
-  { value: 'high-52', label: 'movers.high52', icon: msTrendingUp },
-  { value: 'low-52', label: 'movers.low52', icon: msTrendingDown },
 ]
 
 /** Top movers: gainers / losers / under ₹100 (chips), as two rows of stock cards that scroll together. Prices update with the market snapshot. */
-export function TopMovers({ initial = 'under-100', onStock, onViewAll }: { initial?: MoverList; onStock?: (symbol: string) => void; onViewAll?: () => void }) {
+export function TopMovers({ initial = 'gainers', onStock, onViewAll }: { initial?: MoverList; onStock?: (symbol: string) => void; onViewAll?: () => void }) {
   const [list, setList] = useState<MoverList>(initial)
   useMarketSnapshot() // re-render when fresher prices arrive
   return (
@@ -19667,7 +19851,7 @@ export function TopMovers({ initial = 'under-100', onStock, onViewAll }: { initi
               <Avatar initials={stock.initials} src={stock.logoUrl} size={48} label={stock.name} />
               <span className={styles.cardSymbol}>{stock.symbol}</span>
               <span className={styles.cardPrice}>{inr(stock.price)}</span>
-              <PriceChange value={stock.changePct} size="sm" arrow />
+              <PriceChange value={stock.changePct} size="sm" />
             </span>
           </Card>
         ))}
@@ -19676,31 +19860,25 @@ export function TopMovers({ initial = 'under-100', onStock, onViewAll }: { initi
   )
 }
 
-/** The user's watchlists, each opening its list. "New watchlist" creates one. */
-export function Watchlists({ onOpen, onCreate, lists = watchlists }: { onOpen?: (id: string) => void; onCreate?: () => void; /** The US tab shows its own (one "Watchlist · 1 stock"). */ lists?: { id: string; name: string; count: number }[] }) {
-  const cell = (w: { id: string; name: string; count: number }) => (
-    <ListCell
-      key={w.id}
-      variant="card"
-      as="button"
-      iconLeft={<Avatar initials={w.name.slice(0, 1)} size={40} />}
-      label={w.name}
-      description={t(w.count === 1 ? 'watchlists.one' : 'watchlists.many', { count: w.count })}
-      iconRight={<Icon icon={msChevronRight} />}
-      onClick={() => onOpen?.(w.id)}
-    />
-  )
+/** The user's watchlists, each opening its list. "View all" will open the all-watchlists page (not built yet). `lists`: the US tab passes its own. */
+export function Watchlists({ lists = watchlists, onOpen, onViewAll }: { lists?: Watchlist[]; onOpen?: (id: string) => void; onViewAll?: () => void }) {
   return (
     <Stack as="section" gap="16" aria-label={t('watchlists.title')}>
-      <Inset paddingInline="16" paddingBlock="00"><SectionHeader title={t('watchlists.title')} action={{ type: 'view-all', label: t('watchlists.new'), onClick: () => onCreate?.() }} /></Inset>
-      {/* One list runs the full width (16 in at both sides); several scroll sideways. */}
-      {lists.length === 1 ? (
-        <Inset paddingInline="16" paddingBlock="00">{cell(lists[0])}</Inset>
-      ) : (
-        <Rail label={t('watchlists.railLabel')} visible={1.6}>
-          {lists.map(cell)}
-        </Rail>
-      )}
+      <Inset paddingInline="16" paddingBlock="00"><SectionHeader title={t('watchlists.title')} action={{ type: 'view-all', onClick: () => onViewAll?.() }} /></Inset>
+      <Rail label={t('watchlists.railLabel')} visible={1.6}>
+        {lists.map((w) => (
+          <ListCell
+            key={w.id}
+            variant="card"
+            as="button"
+            iconLeft={<Avatar initials={w.name.slice(0, 1)} size={40} />}
+            label={w.name}
+            description={t(w.count === 1 ? 'watchlists.one' : 'watchlists.many', { count: w.count })}
+            iconRight={<Icon icon={msChevronRight} />}
+            onClick={() => onOpen?.(w.id)}
+          />
+        ))}
+      </Rail>
     </Stack>
   )
 }
@@ -19785,13 +19963,6 @@ export function Watchlists({ onOpen, onCreate, lists = watchlists }: { onOpen?: 
   font: var(--l3-text-heading-28);
 }
 
-/* The % change on the amount's bottom line: L3 PriceChange is a flex box led by its arrow, so "baseline" lined up the
-   arrow, not the figure (6 too high). Sat on the row's bottom and lifted 2, its text baseline meets the amount's. */
-.holdingsChange {
-  align-self: flex-end;
-  margin-bottom: var(--l3-spacing-02);
-}
-
 /* V2–V4: the holdings' IN / US switch, at the page margin. */
 .holdingsSwitch {
   padding-inline: var(--l3-spacing-16);
@@ -19805,16 +19976,11 @@ export function Watchlists({ onOpen, onCreate, lists = watchlists }: { onOpen?: 
   }
 }
 
-/* The round "→" that says the whole block opens Portfolio. */
-.roundArrow {
-  display: grid;
+/* The caret (no container) that says the whole block opens Portfolio. */
+.caret {
+  display: inline-flex;
   flex: none;
-  place-items: center;
-  width: var(--l3-size-40);
-  height: var(--l3-size-40);
-  border-radius: var(--l3-radius-full);
-  background: var(--l3-surface-primary);
-  box-shadow: inset 0 0 0 1px var(--l3-border-light), var(--l3-shadow-elevation-low);
+  color: var(--l3-content-primary);
 }
 
 /* ---- Small cards (products, movers, sectors) ---- */
@@ -19861,6 +20027,12 @@ export function Watchlists({ onOpen, onCreate, lists = watchlists }: { onOpen?: 
 
 .cardMeta {
   font: var(--l3-text-description-12);
+  color: var(--l3-content-secondary);
+}
+
+/* A count under a card's name ("12 Stocks"): a number, so Label, not Description (L3 typography roles). */
+.cardCount {
+  font: var(--l3-text-label-12);
   color: var(--l3-content-secondary);
 }
 
@@ -20078,7 +20250,7 @@ export function Watchlists({ onOpen, onCreate, lists = watchlists }: { onOpen?: 
 
 .was {
   font: var(--l3-text-label-12);
-  color: var(--l3-content-tertiary);
+  color: var(--l3-content-secondary);
   text-decoration: line-through;
 }
 
@@ -20117,7 +20289,7 @@ export function Watchlists({ onOpen, onCreate, lists = watchlists }: { onOpen?: 
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 4; /* live app: four lines, then … Read More */
   font: var(--l3-text-description-12);
-  color: var(--l3-content-tertiary);
+  color: var(--l3-content-secondary);
 }
 
 .disclosureText[data-open] {
@@ -20173,6 +20345,394 @@ export function Watchlists({ onOpen, onCreate, lists = watchlists }: { onOpen?: 
 }
 ```
 
+### `src/flows/stocks/components/HomeSwitcher.module.css`
+
+```css
+/* PROTOTYPE ONLY: the floating User status · Version · Header pill over the Home (phone app mode). Copied from the nudges flow's SheetSwitcher. Tokens only. */
+
+/* Starts top-left, under the floating settings button and above the sheet; once dragged, left / top come from the
+   component. */
+.pill {
+  position: absolute;
+  z-index: var(--app-layer-fab);
+  left: var(--l3-spacing-12);
+  top: var(--l3-size-64);
+  width: max-content;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--l3-spacing-04);
+  max-width: calc(100% - var(--l3-spacing-24));
+  padding: var(--l3-spacing-04);
+  border-radius: var(--l3-radius-24);
+  background: var(--l3-surface-primary);
+  box-shadow: var(--l3-shadow-elevation-high);
+  touch-action: none;
+}
+
+/* Out of its edge: next to the side it's tucked into, sliding out of it. */
+.pill[data-side='left'] {
+  left: var(--l3-spacing-12);
+  animation: outOfLeft var(--l3-motion-duration-medium) var(--l3-motion-easing-decelerate) both;
+}
+.pill[data-side='right'] {
+  left: auto;
+  right: var(--l3-spacing-12);
+  animation: outOfRight var(--l3-motion-duration-medium) var(--l3-motion-easing-decelerate) both;
+}
+@keyframes outOfLeft { from { transform: translateX(-100%); opacity: 0; } }
+@keyframes outOfRight { from { transform: translateX(100%); opacity: 0; } }
+
+/* Tucked away: a small tab on the edge (drag it up or down; a tap brings the pill out). */
+.tab {
+  position: absolute;
+  z-index: var(--app-layer-fab);
+  display: grid;
+  place-items: center;
+  width: var(--l3-size-20);
+  height: var(--l3-size-48);
+  padding: 0;
+  border: 0;
+  background: var(--l3-surface-primary);
+  color: var(--l3-content-secondary);
+  box-shadow: var(--l3-shadow-elevation-high);
+  cursor: pointer;
+  touch-action: none;
+}
+.tab[data-side='left'] { left: 0; border-radius: 0 var(--l3-radius-12) var(--l3-radius-12) 0; }
+.tab[data-side='right'] { right: 0; border-radius: var(--l3-radius-12) 0 0 var(--l3-radius-12); }
+
+.grip {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: var(--l3-size-32);
+  height: var(--l3-size-32);
+  padding: 0;
+  border: 0;
+  border-radius: var(--l3-radius-full);
+  background: none;
+  color: var(--l3-content-secondary);
+  cursor: grab;
+  touch-action: none;
+}
+.grip:active { cursor: grabbing; }
+
+.chip {
+  flex: 0 1 auto;
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--l3-spacing-02);
+  height: var(--l3-size-32);
+  padding: 0 var(--l3-spacing-04) 0 var(--l3-spacing-08);
+  border: 0;
+  border-radius: var(--l3-radius-full);
+  background: var(--l3-surface-secondary);
+  color: var(--l3-content-primary);
+  font: var(--l3-text-label-12);
+  white-space: nowrap;
+  cursor: pointer;
+}
+.chip > svg { flex: none; transition: transform var(--l3-motion-duration-short) var(--l3-motion-easing-standard); }
+.chip[data-open] { box-shadow: inset 0 0 0 1px var(--l3-border-dark); }
+.chip[data-open] > svg { transform: rotate(180deg); }
+/* Every pill keeps its size; one too long for the row is cut with an ellipsis (the menu shows it whole). */
+.value { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+
+/* The dropdown: a floating card with the full names. */
+.menu {
+  position: absolute;
+  z-index: var(--app-layer-fab);
+  box-sizing: border-box;
+  min-width: calc(var(--l3-size-96) * 2);
+  max-width: calc(100% - var(--l3-spacing-16));
+  overflow-y: auto;
+  padding: var(--l3-spacing-04);
+  border-radius: var(--l3-radius-16);
+  background: var(--l3-surface-primary);
+  box-shadow: var(--l3-shadow-elevation-high), inset 0 0 0 1px var(--l3-border-light);
+  animation: drop var(--l3-motion-duration-short) var(--l3-motion-easing-decelerate) both;
+}
+.menuTitle {
+  padding: var(--l3-spacing-08) var(--l3-spacing-12) var(--l3-spacing-04);
+  color: var(--l3-content-secondary);
+  font: var(--l3-text-label-12);
+}
+.item {
+  display: flex;
+  align-items: center;
+  gap: var(--l3-spacing-08);
+  width: 100%;
+  min-height: var(--l3-size-40);
+  padding: 0 var(--l3-spacing-12);
+  border: 0;
+  border-radius: var(--l3-radius-12);
+  background: none;
+  color: var(--l3-content-primary);
+  font: var(--l3-text-label-14);
+  text-align: left;
+  cursor: pointer;
+}
+.item:hover { background: var(--l3-surface-secondary); }
+.item[data-picked] { background: var(--l3-surface-secondary); }
+.itemLabel { flex: 1; }
+.item > svg { flex: none; color: var(--l3-content-accent-success-default); }
+
+@keyframes drop { from { opacity: 0; transform: translateY(calc(var(--l3-spacing-04) * -1)); } }
+@media (prefers-reduced-motion: reduce) { .menu, .pill, .chip > svg { animation: none; transition: none; } }
+```
+
+### `src/flows/stocks/components/HomeSwitcher.tsx`
+
+```tsx
+import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type PointerEvent } from 'react'
+import { createPortal } from 'react-dom'
+import { Icon } from '@l3/components/Icon'
+import { msCheck, msChevronLeft, msChevronRight, msDragIndicator, msKeyboardArrowDown } from '@l3/icons/material'
+import type { FlowOption } from '../../types'
+import { setFlowOption, useFlowOption, usePreview } from '../../../shared/prototype'
+import { USER_STATUS, userStatusOptions, type UsActivation, type UsHoldings, type UsWallet } from '../../../shared/userStatus'
+import { activeHomeVersions, DEFAULT_HOME_VERSION } from './homeVersions'
+import { t } from '../copy'
+import styles from './HomeSwitcher.module.css'
+
+/** Where the pill is: a free spot, or tucked into the left / right edge at height `y` (then `x` isn't used). */
+type Spot = { x: number; y: number; dock?: 'left' | 'right' }
+/** One pill: the option, whose settings it is (a flow id, or the app's user status) and its short text. */
+type Item = { owner: string; option: FlowOption; short: (value: string, label: string) => string }
+
+const SPOT_KEY = 'stocks-home-switcher-spot'
+// First visit: tucked into the right edge (only the tab shows) until it's tapped out or dragged somewhere.
+const DEFAULT_SPOT: Spot = { x: 0, y: 160, dock: 'right' }
+const readSpot = (): Spot => {
+  try { return JSON.parse(localStorage.getItem(SPOT_KEY) ?? 'null') ?? DEFAULT_SPOT } catch { return DEFAULT_SPOT }
+}
+const saveSpot = (spot: Spot) => {
+  try { localStorage.setItem(SPOT_KEY, JSON.stringify(spot)) } catch { /* storage off: it stays for this visit */ }
+}
+// Dropped with its edge this close to the screen's side (or past it), the pill tucks into that side.
+const TUCK_AT = 24
+const EDGE_GAP = 12
+
+// The same test the preview uses to run as the app itself (preview/Preview.tsx phoneQuery): a phone, or the app
+// installed on one. On a laptop these settings already float beside the phone mockup (an option's `floatOn`).
+const phoneQuery = '(max-width: 767px), ((display-mode: standalone) and (pointer: coarse)), ((display-mode: fullscreen) and (pointer: coarse))'
+const usePhone = () =>
+  useSyncExternalStore(
+    (onChange) => { const m = window.matchMedia(phoneQuery); m.addEventListener('change', onChange); return () => m.removeEventListener('change', onChange) },
+    () => window.matchMedia(phoneQuery).matches,
+  )
+
+const userStatus = (id: string) => userStatusOptions.find((o) => o.id === id)!
+const homeVersionOption: FlowOption = {
+  id: 'homeVersion', label: 'Homepage version', default: DEFAULT_HOME_VERSION,
+  values: activeHomeVersions.map((v) => ({ value: v.id, label: `${v.id.toUpperCase()} · ${v.name}` })),
+}
+
+// The pills, in order. User status first (each one only while the one before has the listed values, as in the panel),
+// then the Home's own settings.
+const items: Item[] = [
+  { owner: USER_STATUS, option: userStatus('us'), short: (v) => t(`switcher.us.${v as UsActivation}`) },
+  { owner: USER_STATUS, option: userStatus('usWallet'), short: (v) => t(`switcher.wallet.${v as UsWallet}`) },
+  { owner: USER_STATUS, option: userStatus('usHoldings'), short: (v) => t(`switcher.holdings.${v as UsHoldings}`) },
+  { owner: 'stocks', option: homeVersionOption, short: (v) => v.toUpperCase() },
+]
+
+/**
+ * PROTOTYPE ONLY — not part of the design. On a phone (the prototype running as the app), a small floating pill over
+ * the Home: US Stocks activation · USD wallet · US holdings · Homepage version · Header, each a dropdown pill (its own
+ * menu, with the full names), so states and versions can be switched without opening the settings. Drag it by the
+ * grip; it remembers where it was left (this browser). Copied from the nudges flow's SheetSwitcher.
+ *
+ * It starts tucked into the right edge (the user's call, 3 Nov).
+ * Slide it into the left or right edge and it tucks away: only a small tab stays on that edge (drag it up or down).
+ * A tap on the tab brings the pill out next to it; a tap anywhere else tucks it back.
+ *
+ * A sheet makes everything inside the screen inert, so the pill is drawn just outside the screen (in the layer that
+ * holds it), over any sheet.
+ */
+export function HomeSwitcher() {
+  const { interactive } = usePreview()
+  const phone = usePhone()
+  const anchor = useRef<HTMLSpanElement>(null)
+  const [host, setHost] = useState<HTMLElement | null>(null)
+  useLayoutEffect(() => {
+    const screen = anchor.current?.closest('[data-part="page"]')?.parentElement
+    setHost(screen?.parentElement ?? null)
+  }, [])
+
+  return <>
+    <span ref={anchor} hidden />
+    {interactive && phone && host && createPortal(<Pill host={host} />, host)}
+  </>
+}
+
+type MenuState = { item: Item; chip: HTMLElement } | null
+
+function Pill({ host }: { host: HTMLElement }) {
+  const pill = useRef<HTMLDivElement>(null)
+  const [spot, setSpot] = useState<Spot | null>(readSpot)
+  // Tucked into an edge: is the pill out (tapped open) or only the tab showing?
+  const [out, setOut] = useState(false)
+  const [menu, setMenu] = useState<MenuState>(null)
+  const [drag, setDrag] = useState<Spot | null>(null)
+  const grab = useRef<{ id: number; dx: number; dy: number; startX: number; startY: number; moved: boolean } | null>(null)
+  // A drag of the tab ends with a click too; that one mustn't open the pill.
+  const dragged = useRef(false)
+  const us = useFlowOption(USER_STATUS, 'us', userStatus('us').default)
+  const wallet = useFlowOption(USER_STATUS, 'usWallet', userStatus('usWallet').default)
+  const status: Record<string, string> = { us, usWallet: wallet }
+  const shown = items.filter(({ option }) => !option.showIf || Object.entries(option.showIf).every(([id, values]) => values.includes(status[id])))
+  const dock = spot?.dock
+  const tucked = !!dock && !out && !drag
+
+  // Pointer position in the screen's own pixels (the mockup may be scaled).
+  const local = (e: PointerEvent<HTMLElement>) => {
+    const origin = host.getBoundingClientRect()
+    const scale = origin.width / host.clientWidth || 1
+    return { x: (e.clientX - origin.left) / scale, y: (e.clientY - origin.top) / scale }
+  }
+  const keepY = (y: number, h: number) => Math.min(Math.max(EDGE_GAP, y), host.clientHeight - h - EDGE_GAP)
+
+  // Out of its edge, a tap anywhere else (not in the pill or its open menu) tucks it back.
+  useEffect(() => {
+    if (!dock || !out) return
+    const away = (e: Event) => {
+      const target = e.target as Element
+      if (pill.current?.contains(target) || target.closest?.('[role="listbox"]')) return
+      setMenu(null)
+      setOut(false)
+    }
+    document.addEventListener('pointerdown', away)
+    return () => document.removeEventListener('pointerdown', away)
+  }, [dock, out])
+
+  const down = (e: PointerEvent<HTMLButtonElement>) => {
+    const box = (tucked ? e.currentTarget : pill.current!).getBoundingClientRect()
+    const origin = host.getBoundingClientRect()
+    const scale = origin.width / host.clientWidth || 1
+    setMenu(null)
+    dragged.current = false
+    grab.current = { id: e.pointerId, dx: (e.clientX - box.left) / scale, dy: (e.clientY - box.top) / scale, startX: e.clientX, startY: e.clientY, moved: false }
+    try { e.currentTarget.setPointerCapture(e.pointerId) } catch { /* the pointer is already gone */ }
+  }
+  const move = (e: PointerEvent<HTMLButtonElement>) => {
+    const g = grab.current
+    if (!g || g.id !== e.pointerId) return
+    if (!g.moved && Math.hypot(e.clientX - g.startX, e.clientY - g.startY) < 6) return
+    g.moved = true
+    const at = local(e)
+    // The tab slides along its edge; the pill goes anywhere, even half out of the screen (that's how it's tucked away).
+    if (tucked) setSpot({ ...spot!, y: keepY(at.y - g.dy, e.currentTarget.offsetHeight) })
+    else setDrag({ x: at.x - g.dx, y: at.y - g.dy })
+  }
+  const up = (e: PointerEvent<HTMLButtonElement>) => {
+    const g = grab.current
+    grab.current = null
+    if (!g || g.id !== e.pointerId || !g.moved) return
+    dragged.current = true
+    if (tucked) return saveSpot(spot!)
+    const w = pill.current?.offsetWidth ?? 0
+    const h = pill.current?.offsetHeight ?? 0
+    const at = drag ?? { x: 0, y: 0 }
+    setDrag(null)
+    const side = at.x < TUCK_AT ? 'left' : at.x + w > host.clientWidth - TUCK_AT ? 'right' : undefined
+    const next: Spot = side
+      ? { x: 0, y: keepY(at.y, h), dock: side }
+      : { x: Math.min(Math.max(0, at.x), host.clientWidth - w), y: keepY(at.y, h) }
+    if (side) setOut(false)
+    setSpot(next)
+    saveSpot(next)
+  }
+  const drags = { onPointerDown: down, onPointerMove: move, onPointerUp: up, onPointerCancel: () => { grab.current = null; setDrag(null) } }
+
+  if (tucked) {
+    return <button type="button" className={styles.tab} data-side={dock} style={{ top: spot!.y }}
+      aria-label={t('switcher.open')} aria-expanded={false} {...drags}
+      onClick={() => { if (dragged.current) { dragged.current = false; return } setOut(true) }}>
+      <Icon icon={dock === 'left' ? msChevronRight : msChevronLeft} size={16} />
+    </button>
+  }
+
+  const place = drag ? { left: drag.x, top: drag.y }
+    : dock ? { top: Math.min(spot!.y, host.clientHeight - (pill.current?.offsetHeight ?? 0) - EDGE_GAP) }
+    : spot ? { left: spot.x, top: spot.y } : undefined
+  return <div ref={pill} className={styles.pill} role="group" aria-label={t('switcher.label')}
+    data-side={!drag ? dock : undefined} style={place}>
+    <button type="button" className={styles.grip} aria-label={t('switcher.drag')} {...drags}>
+      <Icon icon={msDragIndicator} size={20} />
+    </button>
+    {shown.map((item) => <Pick key={item.option.id} item={item} menu={menu} setMenu={setMenu} />)}
+    {menu && <Menu item={menu.item} chip={menu.chip} host={host} onClose={() => setMenu(null)} />}
+  </div>
+}
+
+/** A dropdown pill: the short value (cut with an ellipsis when it doesn't fit) and a chevron; a tap opens the menu. */
+function Pick({ item, menu, setMenu }: { item: Item; menu: MenuState; setMenu: (menu: MenuState) => void }) {
+  const { owner, option, short } = item
+  const value = useFlowOption(owner, option.id, option.default)
+  const label = option.values.find((o) => o.value === value)?.label ?? value
+  const open = menu?.item.option.id === option.id
+  return <button type="button" className={styles.chip} data-open={open ? '' : undefined}
+    aria-haspopup="listbox" aria-expanded={open} aria-label={`${option.label}: ${label}`}
+    onClick={(e) => setMenu(open ? null : { item, chip: e.currentTarget })}>
+    <span className={styles.value}>{short(value, label)}</span>
+    <Icon icon={msKeyboardArrowDown} size={16} />
+  </button>
+}
+
+/** The open dropdown: every value by its full name, the picked one ticked. Under its pill (above it when there's no
+ *  room), kept inside the screen; a tap outside or Escape closes it. */
+function Menu({ item, chip, host, onClose }: { item: Item; chip: HTMLElement; host: HTMLElement; onClose: () => void }) {
+  const { owner, option } = item
+  const box = useRef<HTMLDivElement>(null)
+  const value = useFlowOption(owner, option.id, option.default)
+  const [spot, setSpot] = useState<{ left: number; top: number; maxHeight: number } | null>(null)
+
+  useLayoutEffect(() => {
+    const origin = host.getBoundingClientRect()
+    const scale = origin.width / host.clientWidth || 1
+    const at = chip.getBoundingClientRect()
+    const gap = 8
+    const width = box.current?.offsetWidth ?? 0
+    const left = Math.min(Math.max(gap, (at.left - origin.left) / scale), host.clientWidth - width - gap)
+    const below = (at.bottom - origin.top) / scale + gap
+    const above = (at.top - origin.top) / scale - gap
+    const roomBelow = host.clientHeight - below - gap
+    const height = box.current?.scrollHeight ?? 0
+    setSpot(height <= roomBelow || roomBelow >= above
+      ? { left, top: below, maxHeight: roomBelow }
+      : { left, top: Math.max(gap, above - height), maxHeight: above - gap })
+  }, [chip, host])
+
+  useEffect(() => {
+    const away = (e: Event) => {
+      const target = e.target as Node
+      if (!box.current?.contains(target) && !chip.contains(target)) onClose()
+    }
+    const key = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    document.addEventListener('pointerdown', away)
+    document.addEventListener('keydown', key)
+    return () => { document.removeEventListener('pointerdown', away); document.removeEventListener('keydown', key) }
+  }, [chip, onClose])
+
+  return createPortal(<div ref={box} className={styles.menu} role="listbox" aria-label={option.label}
+    style={spot ?? { visibility: 'hidden' }}>
+    <div className={styles.menuTitle}>{option.label}</div>
+    {option.values.map((o) => {
+      const picked = o.value === value
+      return <button key={o.value} type="button" role="option" aria-selected={picked} className={styles.item}
+        data-picked={picked ? '' : undefined}
+        onClick={() => { setFlowOption(owner, option.id, option.default, o.value); onClose() }}>
+        <span className={styles.itemLabel}>{o.label}</span>
+        {picked && <Icon icon={msCheck} size={16} />}
+      </button>
+    })}
+  </div>, host)
+}
+```
+
 ### `src/flows/stocks/components/Ideas.tsx`
 
 ```tsx
@@ -20204,7 +20764,7 @@ export function IdeaBaskets({ onOpen }: { onOpen?: (id: string) => void }) {
               </span>
               <span className={styles.basketName}>{b.name}</span>
               <span className={styles.cardRow}>
-                <span className={styles.cardMeta}>{t('baskets.count', { count: b.stocks.length })}</span>
+                <span className={styles.cardCount}>{t('baskets.count', { count: b.stocks.length })}</span>
                 <span className={styles.chevron}><Icon icon={msChevronRight} /></span>
               </span>
             </span>
@@ -20353,8 +20913,8 @@ export function Sectors({ onOpen, onViewAll }: { onOpen?: (id: string) => void; 
                 <span className={styles.chevron}><Icon icon={msChevronRight} size={16} /></span>
               </span>
               <span className={styles.cardRow}>
-                <span className={styles.cardMeta}>{t('sectors.count', { count: s.count })}</span>
-                <PriceChange value={s.changePct} size="sm" arrow />
+                <span className={styles.cardCount}>{t('sectors.count', { count: s.count })}</span>
+                <PriceChange value={s.changePct} size="sm" />
               </span>
             </span>
           </Card>
@@ -20375,7 +20935,7 @@ export function Highlights({ onExplore }: { onExplore?: (id: string) => void }) 
             <span className={styles.highlightCard}>
               <span className={styles.highlightTitle}>{h.title}</span>
               <span className={styles.cardMeta}>{h.description}</span>
-              {h.id === 'mutual-funds' ? <span className={styles.highlightValue}>{h.value}</span> : <PriceChange value={h.changePct} size="lg" arrow />}
+              {h.id === 'mutual-funds' ? <span className={styles.highlightValue}>{h.value}</span> : <PriceChange value={h.changePct} size="lg" />}
               <span className={styles.cardMeta}>{h.caption}</span>
             </span>
           </Card>
@@ -20675,9 +21235,12 @@ function findSwitch(from: HTMLElement): HTMLElement | null {
 .marketTabs {
   position: relative;
   display: flex;
+  box-sizing: border-box;
   height: var(--l3-size-40);
+  /* The tabs sit between 16 in from each edge, each half of that: equal, and they never move (only the notch does). */
+  padding-inline: var(--l3-spacing-16);
   margin-top: calc(-1 * var(--l3-spacing-24));
-  background: var(--l3-surface-primary);
+  background: var(--l3-surface-secondary);
 }
 
 /* Home versions V7, V8: under the top bar, above the index ticker — no pull-up, and 12 under the strip for the sticky
@@ -20687,17 +21250,9 @@ function findSwitch(from: HTMLElement): HTMLElement | null {
   margin-bottom: var(--l3-spacing-12);
 }
 
-/* A flag (system emoji) in place of the tab icon: 16, like the icons. */
-.flag {
-  display: block;
-  flex: none;
-  width: var(--l3-icon-size-16);
-  height: var(--l3-icon-size-16);
-}
-
 /* ---- The IND / US switch as L3 Tabs (MarketSwitch) ---- */
 .switch {
-  background: var(--l3-surface-primary);
+  background: var(--l3-surface-secondary);
 }
 
 .switch:not([data-compact], [data-bare]) {
@@ -20800,18 +21355,17 @@ function findSwitch(from: HTMLElement): HTMLElement | null {
 
 /* V7, V8: on top the selected tab sits on the summary's grey (not the feed sheet), so its wash fades into that grey. */
 .marketTabs[data-place='top'] .washBottom {
-  stop-color: var(--l3-surface-primary);
+  stop-color: var(--l3-surface-secondary);
 }
 
 .marketTab {
   position: relative;
   display: flex;
-  flex: none;
+  flex: 1 1 0;
   align-items: center;
   justify-content: center;
   gap: var(--l3-spacing-04);
   box-sizing: border-box;
-  width: 50%;
   min-width: 0;
   padding: 0;
   border: 0;
@@ -20822,7 +21376,7 @@ function findSwitch(from: HTMLElement): HTMLElement | null {
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
-  transition: width 0.32s var(--l3-motion-easing-standard), margin 0.32s var(--l3-motion-easing-standard), color 0.32s var(--l3-motion-easing-standard);
+  transition: color 0.32s var(--l3-motion-easing-standard);
 }
 
 .marketTab:focus-visible {
@@ -20837,17 +21391,6 @@ function findSwitch(from: HTMLElement): HTMLElement | null {
 .marketTab[aria-selected='true'] {
   z-index: 1;
   color: var(--l3-content-primary);
-}
-
-/* The notch is the selected tab: 16 in from the edge, so IND shrinks and US slides over. */
-.marketTabs[data-on='in'] .marketTab[data-value='in'] {
-  width: calc(50% - var(--l3-spacing-16));
-  margin-left: var(--l3-spacing-16);
-}
-
-.marketTabs[data-on='us'] .marketTab[data-value='in'] {
-  width: 50%;
-  margin-left: calc(-1 * var(--l3-spacing-16));
 }
 
 .flip {
@@ -20953,9 +21496,8 @@ import { MaskIcon } from '@l3/components/MaskIcon'
 import { Tabs } from '@l3/components/Tabs'
 import { Tag } from '@l3/components/Tag'
 import { t } from '../copy'
+import { Flag as CountryFlag } from '../../../shared/ui/Flag'
 import indOff from '../assets/us/ind-icon-off.svg'
-import flagIndia from '../assets/flags/india.svg'
-import flagUs from '../assets/flags/us.svg'
 import indOn from '../assets/us/ind-icon-on.svg'
 import usOff from '../assets/us/us-icon-off.svg'
 import usOn from '../assets/us/us-icon-on.svg'
@@ -20973,10 +21515,8 @@ const labelKeys = {
   short: { in: 'us.tabs.inShort', us: 'us.tabs.usShort' },
 } as const
 
-// L3 gap: no flag icons in L3 — round flag SVGs of our own (assets/flags), not emoji, so they look the same and sit
-// centred on every device. 16, like the icons in small buttons and tabs.
-const flagIcon: Record<Market, string> = { in: flagIndia, us: flagUs }
-export const Flag = ({ market }: { market: Market }) => <img className={styles.flag} src={flagIcon[market]} alt="" aria-hidden="true" />
+// Round flags come from the shared Flag (shared/ui/Flag.tsx, shared/assets/flags).
+export const Flag = ({ market }: { market: Market }) => <CountryFlag code={market === 'in' ? 'in' : 'us'} />
 const NewTag = () => <Tag color="success" size="sm">{t('us.tabs.new')}</Tag>
 
 /**
@@ -21064,7 +21604,7 @@ function FlipLabel({ icon, label, isNew, paused }: { icon: ReactNode; label: str
 
 /** The outline drawn around the selected tab (a rounded notch in a full-width × 40 strip). `on` picks which tab is notched. */
 function TabOutline({ on }: { on: Market }) {
-  // The strip is as wide as the screen: measure it so the geometry (and the tabs' 50 % widths) line up at any width.
+  // The strip is as wide as the screen: measure it so the geometry lines up with the tabs at any width.
   const ref = useRef<SVGSVGElement>(null)
   const id = useId()
   const [width, setWidth] = useState(360)
@@ -21078,8 +21618,9 @@ function TabOutline({ on }: { on: Market }) {
     return () => observer.disconnect()
   }, [])
 
+  // Two equal tabs between 16 in from each edge; only the notch moves from one to the other, the labels stay put.
   const half = width / 2
-  const [left, right] = on === 'in' ? [16, half] : [half - 16, width - 16]
+  const [left, right] = on === 'in' ? [16, half] : [half, width - 16]
   const l = left + 0.5
   const r = right - 0.5
   const top = `L ${l} 12.5 A 12 12 0 0 1 ${l + 12} 0.5 L ${r - 12} 0.5 A 12 12 0 0 1 ${r} 12.5 L ${r} 27`
@@ -21174,7 +21715,7 @@ import { PriceChange } from '@l3/components/PriceChange'
 import { Stack } from '@l3/components/Stack'
 import { Select } from '@l3/components/Select'
 import { Tag } from '@l3/components/Tag'
-import { msArrowForward, msChevronRight } from '@l3/icons/material'
+import { msChevronRight } from '@l3/icons/material'
 import { liveQuote, useLiveTick } from '../../../shared/data/live'
 import { indices, type MarketIndex } from '../../../shared/data/market'
 import { holdings } from '../../../shared/data/portfolio'
@@ -21182,7 +21723,7 @@ import { inr } from '../../../shared/data/format'
 import { Rail } from '../../../shared/ui/Rail'
 import { products, type Product } from '../data'
 import { usHoldings } from './us/data'
-import { useUsd, useUsdInrRate } from '../../../shared/money'
+import { InrEquivalent, useUsd, useUsdInrRate } from '../../../shared/money'
 import { t } from '../copy'
 import styles from './Home.module.css'
 
@@ -21214,7 +21755,7 @@ export function IndexStrip({ onIndex, items = indices, label = t('indices.label'
 }
 
 /** Current value of the holdings and the overall return — the page's headline number. The block opens Portfolio. */
-export function HoldingsSummary({ onOpen, us = false, overall = false, label: labelOverride, usEmpty = false }: { onOpen?: () => void; /** The US tab of a user who holds US stocks: the US holdings in dollars. */ us?: boolean; /** Indian + US together, in ₹ (the US part at today's USD/INR rate). */ overall?: boolean; /** The label above the number (default: "Current holdings" / "US holdings"); null: none (HoldingsSwitcher draws its own). */ label?: string | null; /** Nothing bought in the US yet: $0.00 and no return (and nothing US in the overall). */ usEmpty?: boolean }) {
+export function HoldingsSummary({ onOpen, us = false, overall = false, label: labelOverride, usEmpty = false }: { onOpen?: () => void; /** The US tab of a user who holds US stocks: the US holdings in dollars. */ us?: boolean; /** Indian + US together, in ₹ (the US part at today's USD/INR rate). */ overall?: boolean; /** The label above the number (default: "IN Stocks holdings" / "US Stocks holdings"); null: none (HoldingsSwitcher draws its own). */ label?: string | null; /** Nothing bought in the US yet: $0.00 and no return (and nothing US in the overall). */ usEmpty?: boolean }) {
   const label = labelOverride === undefined ? (us ? t('us.holdings.label') : t('holdings.label')) : labelOverride
   const usd = useUsd()
   const rate = useUsdInrRate()
@@ -21242,10 +21783,11 @@ export function HoldingsSummary({ onOpen, us = false, overall = false, label: la
           {label && <span className={styles.holdingsLabel}>{label}</span>}
           <span className={styles.holdingsValue}>
             {value}
-            {returnPct !== undefined && <PriceChange value={returnPct} size="lg" arrow className={styles.holdingsChange} />}
+            {returnPct !== undefined && <PriceChange value={returnPct} size="lg" />}
           </span>
+          {us && !overall && <InrEquivalent usd={usValue} />}
         </span>
-        <span className={styles.roundArrow} aria-hidden="true"><Icon icon={msArrowForward} /></span>
+        <span className={styles.caret} aria-hidden="true"><Icon icon={msChevronRight} /></span>
       </span>
     </Card>
   )
@@ -21257,9 +21799,9 @@ const nextView: Record<HoldingsView, HoldingsView> = { overall: 'in', in: 'us', 
 const viewLabel = { overall: 'holdings.overallLabel', in: 'holdings.inLabel', us: 'us.holdings.label' } as const
 
 /**
- * Home V2–V4: the holdings' label is the switch — an L3 Select (switcher, ↕): "Overall holdings" → "INR holdings" →
- * "USD holdings", each tap the next. It sits over the number, outside the holdings block (both are buttons). The
- * page's market tabs (over the feed) set it too: INR Stocks → INR holdings, USD Stocks → USD holdings (2 Nov).
+ * Home V2–V4: the holdings' label is the switch — an L3 Select (switcher, ↕): "Overall holdings" → "IN holdings" →
+ * "US holdings", each tap the next. It sits over the number, outside the holdings block (both are buttons). It is
+ * not the page's market tabs: those sit lower, over the feed, and never change it.
  */
 export function HoldingsSwitcher({ view, onView, usEmpty, onOpen }: { view: HoldingsView; onView: (view: HoldingsView) => void; /** Nothing bought in the US yet: US $0.00, overall = Indian. */ usEmpty?: boolean; onOpen?: () => void }) {
   return (
@@ -21328,20 +21870,15 @@ export function ShortcutArt({ art }: { art: Art }) {
   gap: var(--l3-spacing-12);
   padding-right: var(--l3-spacing-16);
   padding-left: var(--l3-spacing-16);
-  background: var(--l3-surface-primary);
+  background: var(--l3-surface-secondary);
   position: sticky;
   height: var(--l3-size-64);
-  transition: background-color var(--l3-motion-duration-short) var(--l3-motion-easing-standard);
 }
 
-/* Scrolled: the bar leaves the summary's grey for the pinned header's black (surface/default), matching the ticker's
-   band and the tabs under it; the search pill lifts to surface/primary so it still reads on the black. */
+/* Scrolled: the bar leaves the summary's grey for surface/default (the page under it) — at once, with no fade, so the
+ * status bar, the bar and the marquee band change together. */
 .bar[data-scrolled] {
   background: var(--l3-surface-default);
-}
-
-.bar[data-scrolled] .search {
-  background: var(--l3-surface-primary);
 }
 
 .bar > :is(.profile, .search, .wallet, .market) {
@@ -22111,7 +22648,7 @@ export function UsIntroStory({ onView, onClose }: { onView: () => void; onClose:
 // V10–V13 ("two homes", no Figma yet) split the page at the top: the market is picked first and everything below is its own.
 // The prototype picks one with the flow option `homeVersion` (index.tsx), default V7 (V2 is the default in Jojo’s file).
 
-export type HomeVersionId = 'v2' | 'v3' | 'v4' | 'v5' | 'v6' | 'v7' | 'v8' | 'v9' | 'v10' | 'v11' | 'v12' | 'v13' | 'v14'
+export type HomeVersionId = 'v2' | 'v3' | 'v4' | 'v5' | 'v6' | 'v7' | 'v8' | 'v9' | 'v10' | 'v11' | 'v12' | 'v13'
 
 export type HomeVersion = {
   id: HomeVersionId
@@ -22140,37 +22677,31 @@ export type HomeVersion = {
   tiles: 'classic' | 'today' | 'withUs'
   /** The index ticker under the top bar. */
   ticker: boolean
-  /** The shortcuts get a "Do more with Lemonn" title. */
-  doMore: boolean
   /** Archived: kept in code, but no longer offered in the "Homepage version" picker. */
   archived?: boolean
 }
 
 export const homeVersions: HomeVersion[] = [
   // V1 "Current homepage" (Figma 6118:9, no IND / US switch) was taken out of the list on 2026-11-02.
-  { id: 'v2', name: 'Existing folder', figma: '6118:254', place: 'mid', scope: 'feed', look: 'folder', labels: 'stocks', flags: false, usNew: false, tiles: 'today', ticker: true, doMore: false },
-  { id: 'v3', name: 'Pill', figma: '6128:29822', place: 'mid', scope: 'feed', look: 'pill', labels: 'stocks', flags: true, usNew: false, tiles: 'classic', ticker: true, doMore: false },
-  { id: 'v4', name: 'CoinSwitch style', figma: '6128:30124', place: 'mid', scope: 'feed', look: 'underline', labels: 'stocks', flags: true, usNew: false, tiles: 'classic', ticker: true, doMore: false },
-  { id: 'v5', name: 'Card-level segmented control', figma: '6128:30436', place: 'header', scope: 'feed', look: 'pill', labels: 'short', flags: false, usNew: false, tiles: 'classic', ticker: true, doMore: false },
-  { id: 'v6', name: 'Pill on top', figma: '6128:30747', place: 'top', scope: 'feed', look: 'pill', labels: 'stocks', flags: true, usNew: false, tiles: 'withUs', ticker: true, doMore: false },
-  { id: 'v7', name: 'Lit folder on top', figma: '6128:31013', place: 'top', scope: 'feed', look: 'folder', labels: 'stocks', flags: true, usNew: true, tiles: 'today', ticker: true, doMore: false },
-  { id: 'v8', name: 'Lit folder · US tiles', figma: '6128:31431', place: 'top', scope: 'feed', look: 'folder', labels: 'stocks', flags: true, usNew: true, tiles: 'withUs', ticker: true, doMore: true },
-  { id: 'v9', name: 'Graphite segmented', figma: '6128:31986', place: 'top', scope: 'feed', look: 'pill', labels: 'stocks', flags: true, usNew: true, tiles: 'today', ticker: false, doMore: true , archived: true },
+  { id: 'v2', name: 'Existing folder', figma: '6118:254', place: 'mid', scope: 'feed', look: 'folder', labels: 'stocks', flags: false, usNew: false, tiles: 'today', ticker: true, archived: true },
+  { id: 'v3', name: 'Pill', figma: '6128:29822', place: 'mid', scope: 'feed', look: 'pill', labels: 'stocks', flags: true, usNew: false, tiles: 'classic', ticker: true, archived: true },
+  { id: 'v4', name: 'CoinSwitch style', figma: '6128:30124', place: 'mid', scope: 'feed', look: 'underline', labels: 'stocks', flags: true, usNew: false, tiles: 'classic', ticker: true, archived: true },
+  { id: 'v5', name: 'Card-level segmented control', figma: '6128:30436', place: 'header', scope: 'feed', look: 'pill', labels: 'short', flags: false, usNew: false, tiles: 'classic', ticker: true, archived: true },
+  { id: 'v6', name: 'Pill on top', figma: '6128:30747', place: 'top', scope: 'feed', look: 'pill', labels: 'stocks', flags: true, usNew: false, tiles: 'withUs', ticker: true, archived: true },
+  { id: 'v7', name: 'Lit folder on top', figma: '6128:31013', place: 'top', scope: 'feed', look: 'folder', labels: 'stocks', flags: true, usNew: true, tiles: 'today', ticker: true, archived: true },
+  { id: 'v8', name: 'Lit folder · US tiles', figma: '6128:31431', place: 'top', scope: 'feed', look: 'folder', labels: 'stocks', flags: true, usNew: true, tiles: 'withUs', ticker: true },
+  { id: 'v9', name: 'Graphite segmented', figma: '6128:31986', place: 'top', scope: 'feed', look: 'pill', labels: 'stocks', flags: true, usNew: true, tiles: 'today', ticker: false , archived: true },
   // Two homes (2026-11-02): top-level segregation — the market is picked first, and the whole page is that market's.
-  { id: 'v10', name: 'Two homes · segmented on top', figma: '', place: 'top', scope: 'page', look: 'pill', labels: 'stocks', flags: true, usNew: true, tiles: 'today', ticker: true, doMore: false , archived: true },
-  { id: 'v11', name: 'Two homes · tabs on top', figma: '', place: 'top', scope: 'page', look: 'underline', labels: 'stocks', flags: true, usNew: true, tiles: 'today', ticker: true, doMore: false , archived: true },
-  { id: 'v12', name: 'Two homes · switch in top bar', figma: '', place: 'header', scope: 'page', look: 'pill', labels: 'short', flags: true, usNew: false, tiles: 'today', ticker: true, doMore: false },
-  // V14 (2026-11-02, Jojo: "one more tab structure like this", from CoinSwitch's home — Crypto / US Stocks): full-width
-  // L3 underline tabs right under the top bar, with icons, and the whole page below is the market picked (V11's
-  // structure, offered again under its own name).
-  { id: 'v14', name: 'Tabs under top bar', figma: '', place: 'top', scope: 'page', look: 'underline', labels: 'stocks', flags: true, usNew: false, tiles: 'today', ticker: true, doMore: false },
-  { id: 'v13', name: 'Two homes · market picker', figma: '', place: 'picker', scope: 'page', look: 'pill', labels: 'stocks', flags: true, usNew: false, tiles: 'today', ticker: true, doMore: false },
+  { id: 'v10', name: 'Two homes · segmented on top', figma: '', place: 'top', scope: 'page', look: 'pill', labels: 'stocks', flags: true, usNew: true, tiles: 'today', ticker: true , archived: true },
+  { id: 'v11', name: 'Two homes · tabs on top', figma: '', place: 'top', scope: 'page', look: 'underline', labels: 'stocks', flags: true, usNew: true, tiles: 'today', ticker: true , archived: true },
+  { id: 'v12', name: 'Two homes · switch in top bar', figma: '', place: 'header', scope: 'page', look: 'pill', labels: 'short', flags: true, usNew: false, tiles: 'today', ticker: true },
+  { id: 'v13', name: 'Two homes · market picker', figma: '', place: 'picker', scope: 'page', look: 'pill', labels: 'stocks', flags: true, usNew: false, tiles: 'today', ticker: true },
 ]
 
-// Archived 2026-11-02 (V2, V3, V4, V5, V6, V9), back in the picker the same day. V9, V10 and V11 archived again later that day.
+// Archived 2026-11-02 (V2, V3, V4, V5, V6, V9), back in the picker the same day. V9, V10 and V11 archived again later that day. V2–V7 archived too (playground), leaving V8, V12 and V13.
 
 /** The version shown until one is picked (and in place of an archived pick). */
-export const DEFAULT_HOME_VERSION: HomeVersionId = 'v7'
+export const DEFAULT_HOME_VERSION: HomeVersionId = 'v8'
 
 /** The versions the "Homepage version" picker offers. */
 export const activeHomeVersions = homeVersions.filter((v) => !v.archived)
@@ -22180,6 +22711,230 @@ export const homeVersion = (id: string) =>
   activeHomeVersions.find((v) => v.id === id) ?? activeHomeVersions.find((v) => v.id === DEFAULT_HOME_VERSION)!
 ```
 
+### `src/flows/stocks/components/us/ThemeCard.module.css`
+
+```css
+/* Theme cards and the logo stack (FLAG: hand-made, L3 has no logo group). */
+.card {
+  height: 100%;
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--l3-spacing-04);
+}
+
+.name {
+  color: var(--l3-content-primary);
+  font: var(--l3-text-label-14);
+}
+
+.desc {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--l3-content-secondary);
+  font: var(--l3-text-description-12);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.return {
+  display: flex;
+  align-items: baseline;
+  gap: var(--l3-spacing-04);
+}
+
+.returnLabel {
+  color: var(--l3-content-secondary);
+  font: var(--l3-text-description-12);
+}
+
+.foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--l3-content-primary);
+  font: var(--l3-text-label-12);
+}
+
+.stack {
+  display: flex;
+  align-items: center;
+}
+
+.stackLogo {
+  display: inline-flex;
+  flex: none;
+  margin-right: calc(-1 * var(--l3-spacing-08));
+  border-radius: var(--l3-radius-full);
+  box-shadow: 0 0 0 2px var(--l3-surface-default); /* ring that separates the overlapping logos */
+}
+
+.stackMore {
+  position: relative;
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: var(--l3-size-32);
+  height: var(--l3-size-32);
+  box-shadow: 0 0 0 2px var(--l3-surface-default); /* same ring as the logos: it overlaps the last one like they do */
+  border: 1px solid var(--l3-border-intense);
+  border-radius: var(--l3-radius-full);
+  background: var(--l3-surface-tertiary);
+  color: var(--l3-content-primary);
+  font: var(--l3-text-label-12);
+}
+```
+
+### `src/flows/stocks/components/us/ThemeCard.tsx`
+
+```tsx
+// A theme's card (Explore by themes on the US tab): a compact card, about 2 across —
+// overlapping logos (LogoStack), the theme's name, a two-line description, then its 1-year return and "N stocks ›".
+// FLAG: L3 has no logo stack / group: the overlap and the "+n" disc are hand-made (ThemeCard.module.css).
+import { Avatar } from '@l3/components/Avatar'
+import { Card } from '@l3/components/Card'
+import { Icon } from '@l3/components/Icon'
+import { PriceChange } from '@l3/components/PriceChange'
+import { Stack } from '@l3/components/Stack'
+import { msChevronRight } from '@l3/icons/material'
+import { Rail } from '../../../../shared/ui/Rail'
+import { usLogo } from '../../../../shared/data/usStocks'
+import { t } from '../../copy'
+import { themes, type ThemeId } from './data'
+import styles from './ThemeCard.module.css'
+
+type Theme = (typeof themes)[number]
+
+export function ThemeCard({ theme, onOpen }: { theme: Theme; onOpen: (id: ThemeId) => void }) {
+  const name = t(`us.theme.${theme.id}`)
+  return (
+    <Card onClick={() => onOpen(theme.id)} surface="primary" className={styles.card} aria-label={t('us.themes.cardLabel', { name, pct: theme.returns['1y'].toFixed(1), count: theme.symbols.length })}>
+      <Stack gap="12">
+        <LogoStack symbols={theme.symbols} max={3} />
+        <span className={styles.text}>
+          <span className={styles.name}>{name}</span>
+          <span className={styles.desc}>{t(`us.theme.${theme.id}.desc`)}</span>
+        </span>
+        <span className={styles.return}>
+          <span className={styles.returnLabel}>{t('us.themes.return1y')}</span>
+          <PriceChange value={theme.returns['1y']} size="md" />
+        </span>
+        <span className={styles.foot}>
+          <span>{t('us.themes.stocks', { count: theme.symbols.length })}</span>
+          <Icon icon={msChevronRight} size={16} />
+        </span>
+      </Stack>
+    </Card>
+  )
+}
+
+/** The rail of theme cards (about 2.2 across so the third one peeks in). */
+export function ThemeRail({ onOpen }: { onOpen: (id: ThemeId) => void }) {
+  return (
+    <Rail label={t('us.themes.railLabel')} visible={2.2}>
+      {themes.map((theme) => <ThemeCard key={theme.id} theme={theme} onOpen={onOpen} />)}
+    </Rail>
+  )
+}
+
+/** Overlapping logos (32, up to `max`) and a "+n" disc for the rest. */
+export function LogoStack({ symbols, max = 3 }: { symbols: string[]; max?: number }) {
+  const rest = symbols.length - max
+  return (
+    <span className={styles.stack} aria-hidden="true">
+      {symbols.slice(0, max).map((sym) => (
+        <span key={sym} className={styles.stackLogo}><Avatar src={usLogo(sym)} initials={sym} size={32} /></span>
+      ))}
+      {rest > 0 && <span className={styles.stackMore}>+{rest}</span>}
+    </span>
+  )
+}
+```
+
+### `src/flows/stocks/components/us/TransferProgress.tsx`
+
+```tsx
+// Money on the way: the add-money transfer's journey, inside the activation card's white panel (in place of the benefits).
+// A compact horizontal stepper across the panel's full width (Paid → Sent to US → Ready, each with its amount
+// or time), and under the button a "your money is safe" line — the transfer takes 1–2 working days, so the card shows
+// it's moving and when it's ready.
+// FLAG: hand-made horizontal stepper — L3 Steps is vertical only (and StageBar is for flows across screens). Markers follow
+// L3 Steps' (done: success disc + check · to do: outline ring); the running step is a live dot with a soft pulse.
+import { Fragment, type ReactNode } from 'react'
+import { Icon } from '@l3/components/Icon'
+import { ListCell } from '@l3/components/ListCell'
+import { msCheck, msChevronRight, msScheduleFill, msShieldLockFill } from '@l3/icons/material'
+import { Usd } from '../../../../shared/money'
+import { usTransfer, type TransferStep } from './data'
+import { t } from '../../copy'
+import styles from './UsHome.module.css'
+
+const order: TransferStep[] = ['paid', 'sent', 'ready']
+type State = 'done' | 'live' | 'todo'
+const stateText: Record<State, string> = { done: 'done', live: 'in progress', todo: 'to do' }
+
+export function TransferProgress({ transfer = usTransfer }: { transfer?: typeof usTransfer }) {
+  const now = order.indexOf(transfer.at)
+  const detail: Record<TransferStep, ReactNode> = {
+    paid: <Usd value={transfer.usd} layout="inline" />,
+    sent: t('us.transfer.days'),
+    ready: t('us.transfer.eta', { eta: transfer.eta }),
+  }
+  // One track across the panel: marker · line · marker · line · marker (the lines share what's left equally), the text
+  // under it — the first step's flush left, the middle one's centred, the last one's flush right.
+  return (
+    <div className={styles.transfer} role="list" aria-label={t('us.transfer.label')}>
+      {order.map((step, i) => {
+        const state: State = i < now ? 'done' : i === now ? 'live' : 'todo'
+        return (
+          <Fragment key={step}>
+            {i > 0 && <span className={styles.transferLine} data-done={i <= now || undefined} aria-hidden="true" />}
+            <div className={styles.transferStep} role="listitem" data-state={state} aria-current={state === 'live' ? 'step' : undefined}>
+              <span className={styles.transferMarker} aria-hidden="true">
+                <span className={styles.transferDot}>{state === 'done' && <Icon icon={msCheck} size={14} />}</span>
+              </span>
+              <span className={styles.transferText}>
+                <span className={styles.transferLabel}>{t(`us.transfer.${step}`)}<span className={styles.srOnly}> — {stateText[state]}</span></span>
+                <span className={styles.transferDetail}>{detail[step]}</span>
+              </span>
+            </div>
+          </Fragment>
+        )
+      })}
+    </div>
+  )
+}
+
+export function TransferSafeLine() {
+  return (
+    <p className={styles.safeLine}>
+      <Icon icon={msShieldLockFill} size={16} />
+      <span>{t('us.transfer.safe')}</span>
+    </p>
+  )
+}
+
+/** Money on the way, as a small card under the US holdings ($0.00 until the money lands): the clock, "Money on the way",
+ *  when it's ready to trade, and a chevron to the transfer's details. */
+export function TransferStatusCard({ onOpen }: { onOpen?: () => void }) {
+  return (
+    <ListCell
+      variant="card"
+      as="button"
+      iconLeft={<span className={styles.transferStatusIcon}><Icon icon={msScheduleFill} /></span>}
+      label={t('us.onTheWay.title')}
+      description={t('us.onTheWay.subtitle')}
+      iconRight={<Icon icon={msChevronRight} />}
+      onClick={onOpen}
+    />
+  )
+}
+```
+
 ### `src/flows/stocks/components/us/UsActivationCard.tsx`
 
 ```tsx
@@ -22187,54 +22942,117 @@ export const homeVersion = (id: string) =>
 // activated (Add money) / money on the way (Track Transfer) / money ready.
 // Title, subtitle, a rotating benefits strip (not on the plain messages) and a Large button where the state has one.
 // FLAG: hand-made card (tinted by state), carousel and dots instead of L3 Card / Aerobar / Steps — see UsHome.module.css.
-import type { CSSProperties } from 'react'
+// Every state has the Figma 5552:54843 layout (the IND KYC card): title + subtitle on the tinted card, then a white panel
+// with the lock line and dots, one bordered benefit tile (green L3 Tag) and the button.
+// The same card is the Home's header card (Home setting "Header" → card): once US Stocks is activated it holds the
+// holdings on top (`holdings`), with the state's next step below; the IND tab uses it for its holdings, and for "Complete
+// your KYC" while the Lemonn KYC is pending (`spec`).
+import { useId, useRef, useState, type CSSProperties, type PointerEvent, type ReactNode } from 'react'
 import { Button } from '@l3/components/Button'
 import { Icon } from '@l3/components/Icon'
-import { msArrowForward, msCheck, msError, msHourglassTop, msSchedule } from '@l3/icons/material'
+import { Stack } from '@l3/components/Stack'
+import { Tag } from '@l3/components/Tag'
+import { msArrowForward, msCheckCircleFill, msErrorFill, msHourglassFill, msLock, msLockOpen, msScheduleFill } from '@l3/icons/material'
 import { useAutoSlide } from './useAutoSlide'
-import { cardSpecs, type UsState } from './data'
+import { TransferProgress, TransferSafeLine } from './TransferProgress'
+import { cardSpecs, type CardSpec, type UsState } from './data'
 import { t } from '../../copy'
 import styles from './UsHome.module.css'
 
-const stateIcons = { hourglass: msHourglassTop, error: msError, clock: msSchedule }
+/** Holdings with nothing to do next (title / subtitle unused: the holdings take their place). */
+const holdingsOnly: CardSpec = { tone: 'neutral', title: 'holdings.label', subtitle: 'holdings.label' }
 
-export function UsActivationCard({ state, onCta }: { state: Exclude<UsState, 'holding'>; onCta?: () => void }) {
-  const spec = cardSpecs[state]
+// State icons (Figma 2397:13753 "KYC State card"): a filled glyph in the status colour on a 40 surface-primary disc.
+const stateIcons = {
+  hourglass: { icon: msHourglassFill, status: 'warning' },
+  clock: { icon: msScheduleFill, status: 'warning' },
+  error: { icon: msErrorFill, status: 'error' },
+  check: { icon: msCheckCircleFill, status: 'success' },
+} as const
+
+export function UsActivationCard({ state, spec: specOverride, holdings, onCta }: {
+  /** The US Stocks state ('holding': the holdings only, no next step). */
+  state?: UsState
+  /** A card that isn't a US state (the IND tab's KYC card, or holdings only). */
+  spec?: CardSpec
+  /** Holdings in place of the title (the header card once US Stocks is activated, or on the IND tab). */
+  holdings?: ReactNode
+  onCta?: () => void
+}) {
+  const spec: CardSpec = specOverride ?? (state && state !== 'holding' ? cardSpecs[state] : holdingsOnly)
+  const titleId = useId()
   const slides = spec.slides ?? []
-  const slider = useAutoSlide(slides.length, { every: 3000, slideMs: 500 })
+  // The benefits auto-advance and can be swiped (touch or mouse): the track follows the finger, a swipe past 32 steps
+  // to the next / previous one and restarts the timer; while held, the strip stands still.
+  const [dragX, setDragX] = useState<number | null>(null)
+  const dragStart = useRef(0)
+  const slider = useAutoSlide(slides.length, { every: 3000, slideMs: 500, still: dragX !== null })
   const active = slider.index
+  const onDown = (e: PointerEvent<HTMLDivElement>) => {
+    if (slides.length < 2 || (e.pointerType === 'mouse' && e.button !== 0)) return
+    dragStart.current = e.clientX
+    e.currentTarget.setPointerCapture(e.pointerId)
+    setDragX(0)
+  }
+  const onMove = (e: PointerEvent<HTMLDivElement>) => {
+    if (dragX !== null) setDragX(e.clientX - dragStart.current)
+  }
+  const onUp = () => {
+    if (dragX === null) return
+    if (Math.abs(dragX) > 32) slider.go(dragX < 0 ? 1 : -1)
+    setDragX(null)
+  }
   // One extra copy of the first slide at the end lets the track slide "forward" into a loop.
   const track = slides.length > 1 ? [...slides, slides[0]] : slides
 
   return (
-    <section className={styles.card} data-tone={spec.tone} aria-labelledby="us-activate-title">
+    <section className={styles.card} data-tone={spec.tone} data-holdings={holdings ? true : undefined} aria-labelledby={holdings ? undefined : titleId}>
+      {holdings ? <div className={styles.cardHoldings}>{holdings}</div> : (
       <div className={styles.info}>
         <span className={styles.infoText}>
-          <h2 id="us-activate-title" className={styles.cardTitle}>{t(spec.title)}</h2>
+          <h2 id={titleId} className={styles.cardTitle}>{t(spec.title)}</h2>
           <p className={styles.cardSub}>{t(spec.subtitle)}</p>
         </span>
-        {spec.icon === 'check' ? (
-          // FLAG: hand-made tick badge instead of L3 Badge
-          <span className={styles.badge} aria-hidden="true">
-            <span className={styles.badgeDisc}><Icon icon={msCheck} size={18} /></span>
+        {spec.icon && (
+          // FLAG: hand-made status disc — L3 has no icon-in-circle (Badge / Avatar don't take a status glyph)
+          <span className={styles.stateIcon} data-status={stateIcons[spec.icon].status} aria-hidden="true">
+            <Icon icon={stateIcons[spec.icon].icon} size={24} />
           </span>
-        ) : (
-          spec.icon && <span className={styles.stateIcon}><Icon icon={stateIcons[spec.icon]} size={24} /></span>
         )}
       </div>
-      {(slides.length > 0 || spec.cta) && (
-        <div className={styles.panelWrap}>
+      )}
+      {(slides.length > 0 || spec.transfer || spec.cta) && (
+        // Just the button (Ready): it sits straight on the tinted card, with no white panel around it.
+        <div className={styles.panelWrap} data-bare={(slides.length === 0 && !spec.transfer) || undefined}>
           <div className={styles.panel}>
             {slides.length > 0 && (
               <div className={styles.benefitRow}>
-                <div className={styles.benefits} aria-live="polite">
-                  <div className={styles.track} data-snap={slider.snap || undefined} style={{ '--i': slider.pos } as CSSProperties}>
+                {spec.lockLine && (
+                  <span className={styles.lockLine}>
+                    <Icon icon={spec.unlocked ? msLockOpen : msLock} size={12} />
+                    <span>{t(spec.lockLine)}</span>
+                  </span>
+                )}
+                <div
+                  className={styles.benefits}
+                  aria-live="polite"
+                  data-own-swipe
+                  onPointerDown={onDown}
+                  onPointerMove={onMove}
+                  onPointerUp={onUp}
+                  onPointerCancel={onUp}
+                >
+                  <div
+                    className={styles.track}
+                    data-snap={slider.snap || dragX !== null || undefined}
+                    style={{ '--i': slider.pos, '--dx': `${dragX ?? 0}px` } as CSSProperties}
+                  >
                     {track.map((slide, i) => (
                       <div key={i} className={styles.slide} aria-hidden={i !== active || undefined}>
-                        <img className={styles.slideIcon} src={slide.icon} alt="" width={32} height={32} />
+                        <img className={styles.slideIcon} src={slide.icon} alt="" width={40} height={40} draggable={false} />
                         <span className={styles.slideText}>
-                          <span className={styles.kicker}>{t(`us.benefit.${slide.id}.tag`)}</span>
-                          <span>{t(`us.benefit.${slide.id}.text`)}</span>
+                          <Tag variant="secondary" color="success" size="sm">{t(slide.tag)}</Tag>
+                          <span>{t(slide.text)}</span>
                         </span>
                       </div>
                     ))}
@@ -22247,8 +23065,16 @@ export function UsActivationCard({ state, onCta }: { state: Exclude<UsState, 'ho
                 </span>
               </div>
             )}
-            {spec.cta && (
-              <Button variant="primary" size="lg" fullWidth iconRight={spec.arrow ? <Icon icon={msArrowForward} size={20} /> : undefined} onClick={onCta}>
+            {spec.transfer && <TransferProgress />}
+            {spec.cta && spec.transfer ? (
+              // Money on the way: nothing to do but wait, so a quiet Secondary Small "View details" (the transfer screen),
+              // with "your money is safe" under it.
+              <Stack gap="12">
+                <Button variant="secondary" size="sm" fullWidth onClick={onCta}>{t(spec.cta)}</Button>
+                <TransferSafeLine />
+              </Stack>
+            ) : spec.cta && (
+              <Button variant={spec.money ? 'brand' : 'primary'} size="lg" fullWidth iconRight={spec.arrow ? <Icon icon={msArrowForward} size={20} /> : undefined} onClick={onCta}>
                 {t(spec.cta)}
               </Button>
             )}
@@ -22264,44 +23090,63 @@ export function UsActivationCard({ state, onCta }: { state: Exclude<UsState, 'ho
 
 ```css
 /*
- * Stocks home, US Stocks tab: activation card, Top Movers, Titans, Brands, Heatmap, Themes. Ported from the US Stocks
+ * Stocks home, US Stocks tab: activation card, Top Movers, Titans, Brands, Themes. Ported from the US Stocks
  * prototype's UsHome.module.css. The page layout is the L3 blocks (Stack / Inset / Grid) in UsHome.tsx; what's here is
  * the hand-made insides. Tokens only; the raw px that remain are marked FLAG (his, kept as they were).
  */
 
 /* ---- Activation card (US-stock accent tint) ---- */
-/* FLAG: hand-made activation card instead of L3 Card / Aerobar */
+/* FLAG: hand-made activation card instead of L3 Card / Aerobar. Figma 5552:54843 (the IND KYC card) for every state:
+   a flat tinted card, its title on the tint, then a white panel inset 4 with the lock line, dots, a bordered benefit tile
+   and the button. */
 .card {
-  --tint: var(--l3-border-accent-us-stock-light);
+  --card-bg: var(--app-surface-kyc-card);
+  --card-border: var(--l3-border-accent-us-stock-light);
   display: flex;
   flex-direction: column;
   overflow: hidden;
   border-radius: var(--l3-radius-16);
-  background: linear-gradient(180deg, color-mix(in srgb, var(--tint) 45%, transparent), transparent 60%), var(--l3-surface-default);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tint) 40%, var(--l3-border-light));
+  background: var(--card-bg);
+  box-shadow: inset 0 0 0 1px var(--card-border);
 }
 
 .card[data-tone='honey'] {
-  --tint: var(--l3-border-accent-warning-light);
+  --card-bg: var(--l3-surface-accent-warning-light);
+  --card-border: var(--l3-border-accent-warning-light);
 }
 
 .card[data-tone='red'] {
-  --tint: var(--l3-border-accent-error-light);
+  --card-bg: var(--l3-surface-accent-error-light);
+  --card-border: var(--l3-border-accent-error-light);
 }
 
 .card[data-tone='green'] {
-  --tint: var(--l3-border-accent-success-light);
+  --card-bg: var(--l3-surface-accent-success-light);
+  --card-border: var(--l3-border-accent-success-light);
+}
+
+.card[data-tone='neutral'] {
+  --card-bg: var(--l3-surface-default);
+  --card-border: var(--l3-border-light);
+}
+
+/* A card that shows the holdings (Stocks home, both tabs) is surface/primary; the holdings row inside has no fill. */
+.card[data-holdings] {
+  --card-bg: var(--l3-surface-primary);
+}
+
+/* The header card's holdings (they bring their own 16 inline). The space above and below is inside the holdings' own
+   card, so the whole card is its tap area (not just the line of text). */
+.cardHoldings.cardHoldings > [data-variant] {
+  padding-block: var(--l3-spacing-16) var(--l3-spacing-12);
+  border-radius: 0;
+}
+
+.cardHoldings.cardHoldings:last-child > [data-variant] {
+  padding-block-end: var(--l3-spacing-16);
 }
 
 .stateIcon {
-  display: flex;
-  flex: none;
-  color: var(--l3-content-primary);
-}
-
-/* FLAG: hand-made tick badge (success ring + disc) instead of L3 Badge */
-.badge {
-  --ring: color-mix(in srgb, var(--l3-surface-accent-success-default) 14%, var(--l3-surface-default));
   display: flex;
   flex: none;
   align-items: center;
@@ -22309,25 +23154,169 @@ export function UsActivationCard({ state, onCta }: { state: Exclude<UsState, 'ho
   width: var(--l3-size-40);
   height: var(--l3-size-40);
   border-radius: var(--l3-radius-full);
-  background: var(--ring);
+  background: var(--l3-surface-primary);
 }
 
-.badgeDisc {
+.stateIcon[data-status='warning'] { color: var(--l3-content-accent-warning-default); }
+.stateIcon[data-status='error'] { color: var(--l3-content-accent-error-default); }
+.transferStatusIcon { display: flex; color: var(--l3-content-accent-warning-default); }
+.stateIcon[data-status='success'] { color: var(--l3-content-accent-success-default); }
+
+/* FLAG: hand-made horizontal stepper (L3 Steps is vertical only). Row 1, the track across the panel's full width:
+   marker · line · marker · line · marker (the lines share the rest equally, so the middle marker is centred). Row 2, each
+   step's text under its marker: first flush left, middle centred, last flush right (spanning into the line columns).
+   4 more on top than the panel's 12 (16 above the markers). Lines sit at the markers' centre, 4 clear of each: 2 success
+   after a done step, a hairline otherwise. */
+.transfer {
+  display: grid;
+  grid-template-columns: auto 1fr auto 1fr auto;
+  row-gap: var(--l3-spacing-08);
+  padding-top: var(--l3-spacing-04);
+}
+
+.transferLine {
+  grid-row: 1;
+  align-self: center;
+  height: 1px;
+  margin-inline: var(--l3-spacing-04);
+  background: var(--l3-border-light);
+}
+
+.transferLine[data-done] {
+  height: var(--l3-spacing-02);
+  border-radius: var(--l3-radius-full);
+  background: var(--l3-border-accent-success-default);
+}
+
+.transferStep {
+  display: contents;
+}
+
+.transferText {
+  grid-row: 2;
+  display: flex;
+  flex-direction: column;
+  gap: var(--l3-spacing-02);
+}
+
+.transferStep:nth-child(1) .transferText {
+  grid-column: 1 / 3;
+  justify-self: start;
+}
+
+.transferStep:nth-child(3) .transferText {
+  grid-column: 2 / 5;
+  justify-self: center;
+  text-align: center;
+}
+
+.transferStep:nth-child(5) .transferText {
+  grid-column: 4 / 6;
+  justify-self: end;
+  text-align: end;
+}
+
+.transferMarker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--l3-size-20);
+  height: var(--l3-size-20);
+  grid-row: 1;
+}
+
+.transferDot {
+  position: relative;
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+  width: var(--l3-size-16);
+  height: var(--l3-size-16);
+  border: 1px solid var(--l3-border-intense);
+  border-radius: var(--l3-radius-full);
+}
+
+.transferStep[data-state='done'] .transferDot {
+  width: var(--l3-size-20);
+  height: var(--l3-size-20);
+  border: 0;
+  background: var(--l3-surface-accent-success-default);
+  color: var(--l3-static-white);
+}
+
+/* The running step: a 12 success dot, "live" — a soft halo grows out of it and fades (2 s), like a live indicator.
+   Still (a fixed light halo, as L3 Steps' current) when motion is reduced. */
+.transferStep[data-state='live'] .transferDot {
+  width: var(--l3-size-12);
+  height: var(--l3-size-12);
+  border: 0;
+  background: var(--l3-border-accent-success-default);
+  box-shadow: 0 0 0 var(--l3-spacing-04) var(--l3-surface-accent-success-light);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .transferStep[data-state='live'] .transferDot {
+    box-shadow: none;
+  }
+
+  .transferStep[data-state='live'] .transferDot::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: var(--l3-surface-accent-success-default);
+    animation: live-pulse 2s cubic-bezier(0.2, 0, 0, 1) infinite;
+  }
+}
+
+@keyframes live-pulse {
+  from { scale: 1; opacity: 0.35; }
+  to { scale: 2.4; opacity: 0; }
+}
+
+.transferLabel {
+  font: var(--l3-text-label-12);
+  color: var(--l3-content-primary);
+}
+
+.transferStep[data-state='todo'] .transferLabel {
+  color: var(--l3-content-secondary);
+}
+
+.transferDetail {
+  font: var(--l3-text-label-12);
+  color: var(--l3-content-secondary);
+  white-space: nowrap;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.safeLine {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: var(--l3-size-28);
-  height: var(--l3-size-28);
-  border-radius: var(--l3-radius-full);
-  background: var(--l3-surface-accent-success-default);
-  color: var(--ring);
+  gap: var(--l3-spacing-08);
+  margin: 0;
+  font: var(--l3-text-description-12);
+  color: var(--l3-content-secondary);
+}
+
+.safeLine > :first-child {
+  color: var(--l3-content-accent-success-default);
 }
 
 .info {
   display: flex;
   align-items: center;
   gap: var(--l3-spacing-12);
-  padding: var(--l3-spacing-16) var(--l3-spacing-16) var(--l3-spacing-12);
+  padding: var(--l3-spacing-12);
 }
 
 .infoText {
@@ -22346,39 +23335,55 @@ export function UsActivationCard({ state, onCta }: { state: Exclude<UsState, 'ho
 
 .cardSub {
   margin: 0;
-  color: var(--l3-content-tertiary);
-  font: var(--l3-text-label-12);
+  color: var(--l3-content-secondary);
+  font: var(--l3-text-description-12);
 }
 
 .panelWrap {
-  padding: 0 var(--l3-spacing-16) var(--l3-spacing-16);
+  padding: 0 var(--l3-spacing-04) var(--l3-spacing-04);
+}
+
+.panelWrap[data-bare] {
+  padding: 0 var(--l3-spacing-12) var(--l3-spacing-12);
+}
+
+.panelWrap[data-bare] .panel {
+  padding: 0;
+  background: none;
 }
 
 .panel {
   display: flex;
   flex-direction: column;
   gap: var(--l3-spacing-16);
+  padding: var(--l3-spacing-12);
+  border-radius: var(--l3-radius-12);
+  background: var(--l3-surface-default);
 }
 
+/* Lock line + dots on top, the benefit tile under them. */
 .benefitRow {
-  position: relative;
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto;
   align-items: center;
-  gap: var(--l3-spacing-12);
-  padding-top: var(--l3-spacing-12);
+  row-gap: var(--l3-spacing-12);
 }
 
-.benefitRow::before {
-  content: '';
-  position: absolute;
-  inset: 0 0 auto;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--l3-border-light) 30%, var(--l3-border-light) 70%, transparent);
+.lockLine {
+  display: flex;
+  grid-row: 1;
+  align-items: center;
+  gap: var(--l3-spacing-04);
+  min-width: 0;
+  color: var(--l3-content-primary);
+  font: var(--l3-text-label-12);
 }
 
 /* FLAG: hand-made carousel dots */
 .dots {
   display: flex;
+  grid-row: 1;
+  grid-column: 2;
   gap: 3px; /* FLAG: raw px */
 }
 
@@ -22391,22 +23396,25 @@ export function UsActivationCard({ state, onCta }: { state: Exclude<UsState, 'ho
 }
 
 .dots > span[data-on] {
-  width: var(--l3-size-12);
+  width: var(--l3-size-16);
   background: var(--l3-content-secondary);
 }
 
 .benefits {
-  flex: 1;
+  grid-column: 1 / -1;
   min-width: 0;
-  height: var(--l3-size-40);
+  height: var(--l3-size-64);
   overflow: hidden;
+  touch-action: pan-y;
+  cursor: grab;
+  user-select: none;
 }
 
 .track {
   display: flex;
-  gap: var(--l3-spacing-40);
+  gap: var(--l3-spacing-16);
   height: 100%;
-  translate: calc(var(--i) * (-100% - var(--l3-spacing-40))) 0;
+  translate: calc(var(--i) * (-100% - var(--l3-spacing-16)) + var(--dx, 0px)) 0;
   transition: translate 0.5s var(--l3-motion-easing-standard);
 }
 
@@ -22420,12 +23428,15 @@ export function UsActivationCard({ state, onCta }: { state: Exclude<UsState, 'ho
   align-items: center;
   gap: var(--l3-spacing-12);
   box-sizing: border-box;
+  padding-inline: var(--l3-spacing-12);
+  border: 1px solid var(--l3-border-light);
+  border-radius: var(--l3-radius-12);
 }
 
 .slideIcon {
   flex: none;
-  width: var(--l3-size-32);
-  height: var(--l3-size-32);
+  width: var(--l3-size-40);
+  height: var(--l3-size-40);
 }
 
 .slideText {
@@ -22436,13 +23447,6 @@ export function UsActivationCard({ state, onCta }: { state: Exclude<UsState, 'ho
   min-width: 0;
   color: var(--l3-content-secondary);
   font: var(--l3-text-label-12);
-}
-
-.kicker {
-  color: var(--l3-content-accent-success-default);
-  font: var(--l3-text-label-10);
-  letter-spacing: 0.8px; /* FLAG: raw px */
-  text-transform: uppercase;
 }
 
 .slideText > span:last-child {
@@ -22551,181 +23555,29 @@ export function UsActivationCard({ state, onCta }: { state: Exclude<UsState, 'ho
   }
 }
 
-.rowCard[data-interactive] {
-  flex-direction: row;
-  align-items: center;
-  gap: var(--l3-spacing-10);
-  border-radius: var(--l3-radius-12); /* the L3 card radius */
-}
-
-.rowText {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: var(--l3-spacing-02);
-  min-width: 0;
-}
-
-.rowName {
-  color: var(--l3-content-primary);
-  font: var(--l3-text-heading-12);
-}
-
-.rowSub {
-  overflow: hidden;
-  color: var(--l3-content-secondary);
-  font: var(--l3-text-label-12);
-  text-overflow: ellipsis;
-  white-space: nowrap; /* one line */
-}
-
-.rowPrice {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: var(--l3-spacing-02);
-}
-
-.rowValue {
-  color: var(--l3-content-primary);
-  font: var(--l3-text-label-12);
-}
-
-.rowChange {
-  color: var(--l3-content-accent-indicator-down-default);
-  font: var(--l3-text-heading-12);
-}
-
-.rowChange[data-up] {
-  color: var(--l3-content-accent-indicator-up-default);
-}
-
-/* Discover ETFs (3 Nov): the pitch under the title line, and the ETF list's logo square (us-stocks Etf.module.css). */
-.sectionPitch {
-  margin: calc(-1 * var(--l3-spacing-08)) 0 0;
-  font: var(--l3-text-label-12);
-  color: var(--l3-content-secondary);
-}
-
-/* Discover ETFs card (3 Nov): the Market page's ListCell card. ListCell's icon slot is a 24 box that stretches any span
-   in it; this slot keeps the 40 logo's own size. */
-span:has(> .fundLogoSlot) {
-  width: auto;
-  height: auto;
-}
-
-.fundLogoSlot.fundLogoSlot.fundLogoSlot {
-  display: flex;
-  width: auto;
-  height: auto;
-}
-
-/* "SPY · SPDR S&P 500 ETF": the ticker secondary, the name tertiary. */
-.etfSub {
-  color: var(--l3-content-tertiary);
-}
-
-.etfSym {
-  color: var(--l3-content-secondary);
-}
-
-.etfPrice {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: var(--l3-spacing-02);
-  max-width: var(--l3-size-96);
-  white-space: nowrap;
-}
-
-.etfValue {
-  color: var(--l3-content-primary);
-  font: var(--l3-text-label-16);
-  font-variant-numeric: tabular-nums;
-}
-
-/* The change as on the ETF list: ▲ / ▼ then the size, no sign. */
-.etfMove {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--l3-spacing-04);
-  color: var(--l3-content-accent-error-default);
-  font: var(--l3-text-label-12);
-  font-variant-numeric: tabular-nums;
-}
-
-.etfMove[data-up] {
-  color: var(--l3-content-accent-success-default);
-}
-
-.etfTri {
-  width: 0;
-  height: 0;
-  border-top: var(--l3-spacing-04) solid currentColor;
-  border-right: var(--l3-spacing-04) solid transparent;
-  border-left: var(--l3-spacing-04) solid transparent;
-}
-
-.etfMove[data-up] .etfTri {
-  border-top: 0;
-  border-bottom: var(--l3-spacing-04) solid currentColor;
-}
-
-/* The fund's own logo (3 Nov), as on the ETF list: a 40 circle on the logo's plate; `fill` logos cover it. */
-.fundLogo {
-  display: grid;
-  flex: none;
-  place-items: center;
-  width: var(--l3-size-40);
-  height: var(--l3-size-40);
-  overflow: hidden;
-  border-radius: var(--l3-radius-full);
-}
-
-.fundLogo > img {
-  width: 72%;
-  height: 72%;
-  object-fit: contain;
-}
-
-.fundLogo[data-fill] > img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-/* ---- Trillion Dollar Titans ---- */
-/* FLAG: raw px sizing of a Card */
 .titan[data-interactive] {
   flex: none;
   gap: var(--l3-spacing-10);
-  width: 170px; /* FLAG: raw px */
-  padding: var(--l3-spacing-12) 3px var(--l3-spacing-12) var(--l3-spacing-12); /* FLAG: raw px */
+  /* 150 wide with a 12 gap, so on a 392 phone the third card peeks in (~50) and the row reads as swipeable. */
+  width: 150px; /* FLAG: raw px */
+  padding: var(--l3-spacing-12);
 }
 
 .titanHead {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: var(--l3-spacing-08);
-  width: 146px; /* FLAG: raw px */
-}
-
-.titanHead > :first-child {
-  margin-top: 3px; /* FLAG: raw px */
+  width: 126px; /* FLAG: raw px */
 }
 
 .titanName {
-  display: flex;
   flex: 1;
-  flex-direction: column;
-  gap: var(--l3-spacing-02);
-  color: var(--l3-content-secondary);
-  font: var(--l3-text-description-10);
-}
-
-.titanName b {
+  min-width: 0;
+  overflow: hidden;
   color: var(--l3-content-primary);
-  font: var(--l3-text-heading-12);
+  font: var(--l3-text-label-14);
+  text-overflow: ellipsis;
+  white-space: nowrap; /* one line, so every card is the same height */
 }
 
 .titanArrow {
@@ -22735,20 +23587,60 @@ span:has(> .fundLogoSlot) {
 
 .spark {
   display: block;
-  width: 146px; /* FLAG: raw px */
-  height: 36.684px; /* FLAG: raw px */
+  width: 126px; /* FLAG: raw px */
+  height: 36px; /* FLAG: raw px */
   margin-top: var(--l3-spacing-02);
+  overflow: visible;
+  --line: var(--l3-border-accent-indicator-down-default);
+  --fill: var(--l3-surface-accent-indicator-down-light);
 }
 
-.spark[data-flip] {
-  scale: -1 1;
+.spark[data-up] {
+  --line: var(--l3-border-accent-indicator-up-default);
+  --fill: var(--l3-surface-accent-indicator-up-light);
+}
+
+.sparkLine {
+  fill: none;
+  stroke: var(--line);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.sparkFadeTop {
+  stop-color: var(--fill);
+  stop-opacity: 1;
+}
+
+.sparkFadeBottom {
+  stop-color: var(--fill);
+  stop-opacity: 0;
+}
+
+/* Top Movers: a new cap or filter brings its cards in from the right, one after another. */
+.row > .titan[data-interactive] {
+  animation: moverIn var(--l3-motion-duration-medium) var(--l3-motion-easing-decelerate) both;
+}
+/* One after another (FLAG: raw 40 ms stagger step; L3 Card takes no style, so no --i). */
+.row > .titan[data-interactive]:nth-child(2) { animation-delay: 40ms; }
+.row > .titan[data-interactive]:nth-child(3) { animation-delay: 80ms; }
+.row > .titan[data-interactive]:nth-child(4) { animation-delay: 120ms; }
+.row > .titan[data-interactive]:nth-child(n + 5) { animation-delay: 160ms; }
+
+@keyframes moverIn {
+  from { opacity: 0; translate: var(--l3-spacing-24) 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .row > .titan[data-interactive] { animation: none; }
 }
 
 .titanFoot {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: 146px; /* FLAG: raw px */
+  width: 126px; /* FLAG: raw px */
   color: var(--l3-content-primary);
   font: var(--l3-text-label-12);
 }
@@ -22759,36 +23651,7 @@ span:has(> .fundLogoSlot) {
 
 .titanChange[data-up] {
   color: var(--l3-content-accent-success-default);
-  font: var(--l3-text-heading-12);
-}
-
-/* ---- Top analyst picks: the titan card's foot as two labelled figures, Recommendation (left) and 7D (right) ---- */
-.pickFoot {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  width: 146px; /* FLAG: raw px — the titan card's inner width */
-  font: var(--l3-text-label-10);
-  color: var(--l3-content-tertiary);
-}
-
-.pickFoot > span {
-  display: flex;
-  flex-direction: column;
-  gap: var(--l3-spacing-02);
-}
-
-.pickFoot > span[data-end] {
-  align-items: flex-end;
-}
-
-.pickFoot b {
-  font: var(--l3-text-heading-12);
-  color: var(--l3-content-accent-success-default);
-}
-
-.pickFoot b[data-tone='down'] {
-  color: var(--l3-content-accent-error-default);
+  font: var(--l3-text-label-12);
 }
 
 /* ---- Brands You Know: two rows scrolling together ---- */
@@ -22799,93 +23662,29 @@ span:has(> .fundLogoSlot) {
   gap: var(--l3-spacing-12);
 }
 
+/* A brand card: as Top Movers' cards on the India tab (Home.module.css .cardStack) — logo 48, name, price, move. */
 .brand[data-interactive] {
   flex: none;
-  gap: var(--l3-spacing-16);
   width: 132px; /* FLAG: raw px */
 }
 
-.brandText {
+.brandStack {
   display: flex;
   flex-direction: column;
   gap: var(--l3-spacing-08);
 }
 
 .brandName {
-  color: var(--l3-content-secondary);
-  font: var(--l3-text-description-12);
-}
-
-.brandCap {
-  color: var(--l3-content-primary);
-  font: var(--l3-text-heading-12);
-}
-
-/* ---- Heatmap ---- */
-.heatTabs > [role='tab'][data-appearance][aria-selected='false'] {
-  --tab-surface: var(--l3-surface-default);
-  box-shadow: inset 0 0 0 1px var(--tab-border);
-}
-
-.heatmap {
   overflow: hidden;
-  border-radius: var(--l3-radius-12);
+  font: var(--l3-text-label-12);
+  color: var(--l3-content-secondary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-/* FLAG: hand-made heatmap tile (button) instead of L3 Card */
-.tile {
-  position: relative;
-  isolation: isolate;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--l3-spacing-02);
-  height: 72px; /* FLAG: raw px */
-  padding: var(--l3-spacing-10) 0 0;
-  border: 0;
-  background: var(--l3-surface-primary);
+.brandPrice {
+  font: var(--l3-text-label-12);
   color: var(--l3-content-primary);
-  cursor: pointer;
-}
-
-.tile::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background: var(--l3-surface-accent-indicator-down-default);
-  opacity: var(--heat);
-  transition: opacity 0.9s var(--l3-motion-easing-standard), background-color 0.9s var(--l3-motion-easing-standard);
-}
-
-.tile::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  box-shadow: inset 0 0 0 0.5px var(--l3-border-light); /* hairline */
-  pointer-events: none;
-}
-
-.tile[data-up]::before {
-  background: var(--l3-surface-accent-indicator-up-default);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .tile::before {
-    transition: none;
-  }
-}
-
-.tileSym {
-  font: var(--l3-text-heading-12);
-}
-
-.tileChange {
-  font: var(--l3-text-heading-14);
-}
-
-.tilePrice {
-  font: var(--l3-text-description-10);
 }
 
 /* ---- Explore by themes ---- */
@@ -22900,7 +23699,7 @@ span:has(> .fundLogoSlot) {
   justify-content: space-between;
   padding: 0 var(--l3-spacing-12);
   color: var(--l3-content-primary);
-  font: var(--l3-text-heading-12);
+  font: var(--l3-text-label-14);
 }
 
 .stack {
@@ -22931,19 +23730,83 @@ span:has(> .fundLogoSlot) {
   border-radius: var(--l3-radius-full);
   background: var(--l3-surface-tertiary);
   color: var(--l3-content-primary);
-  font: var(--l3-text-heading-10);
+  font: var(--l3-text-label-10);
 }
+
+/* ---- Top analyst picks: the Top Movers card's foot as two labelled figures, Recommendation (left) and 7D (right) ---- */
+.pickFoot {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  width: 126px; /* FLAG: raw px — the titan card's inner width */
+  font: var(--l3-text-label-10);
+  color: var(--l3-content-secondary);
+}
+
+.pickFoot > span {
+  display: flex;
+  flex-direction: column;
+  gap: var(--l3-spacing-02);
+}
+
+.pickFoot > span[data-end] {
+  align-items: flex-end;
+}
+
+.pickFoot b {
+  font: var(--l3-text-heading-12);
+  color: var(--l3-content-accent-success-default);
+}
+
+.pickFoot b[data-tone='down'] {
+  color: var(--l3-content-accent-error-default);
+}
+
+/* Top analyst picks, list view: the expected profit on the right in Label 14 (bold, green: always positive) over
+   "Expected profit". */
+.pickMove {
+  font: var(--l3-text-label-14);
+  color: var(--l3-content-accent-success-default);
+}
+
+/* ---- Sectors heatmap ---- */
+/* Heatmap: the same tiles as F&O's Futures Heatmap (fno/components/HomeParts.module.css). */
+.heatmap {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px; /* hairline gaps between tiles */
+}
+
+.heatCell {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--l3-spacing-24);
+  min-width: 0;
+  aspect-ratio: 1;
+  padding: var(--l3-spacing-16) var(--l3-spacing-12);
+  border: 0;
+  color: var(--l3-content-inverted);
+  text-align: center;
+  cursor: pointer;
+}
+
+.heatCell.heatCell.heatUp { background: var(--l3-surface-accent-indicator-up-default); }
+.heatCell.heatCell.heatDown { background: var(--l3-surface-accent-indicator-down-default); }
+.heatName { font: var(--l3-text-heading-12); }
+.heatCell strong { display: block; font: var(--l3-text-heading-16); }
+.heatPrice { display: block; margin-top: var(--l3-spacing-04); font: var(--l3-text-label-14); opacity: var(--l3-opacity-60, 0.6); }
 ```
 
 ### `src/flows/stocks/components/us/UsHome.tsx`
 
 ```tsx
 // The US Stocks tab's feed: the activation card for the user's state (activate / under review / failed / activated /
-// money ready; none once they hold US stocks), shortcuts, Top Movers, Watchlist, Top analyst picks, Brands You Know,
-// Discover ETFs, the Sectors heatmap and themes — as the US Stocks design (2 Nov; Trillion Dollar Titans removed). Ported from the
+// money ready; none once they hold US stocks), shortcuts, Top Movers, Top analyst picks, Brands You Know, Discover ETFs
+// (region chips over four fund cards), the Sectors heatmap and themes. Ported from the
 // US Stocks prototype's Home (src/flows/us-stocks/screens/home/UsHome.tsx), rebuilt with L3 layout blocks.
 // FLAG: hand-made chips, titan / brand cards' insides, heatmap tiles and logo stacks — see UsHome.module.css.
-import { useState, type CSSProperties } from 'react'
+import { useId, useState, type CSSProperties } from 'react'
 import { Avatar } from '@l3/components/Avatar'
 import { Card } from '@l3/components/Card'
 import { Grid } from '@l3/components/Grid'
@@ -22953,42 +23816,49 @@ import { ListCell } from '@l3/components/ListCell'
 import { SectionHeader } from '@l3/components/SectionHeader'
 import { Stack } from '@l3/components/Stack'
 import { Tabs } from '@l3/components/Tabs'
+import { PriceChange } from '@l3/components/PriceChange'
 import { msChevronRight } from '@l3/icons/material'
 import { lmSwitchArrowVertical } from '@l3/icons/lemonnade'
 import { handToMarket } from '../../../../shared/data/marketHandoff'
 import { useLiveQuote } from '../../../../shared/data/live'
-import { etfIssuerLogo } from '../../../../shared/data/etfIssuers'
-import { usLogo, viewUsStock } from '../../../../shared/data/usStocks'
+import { usLogo, usQuote, viewUsStock } from '../../../../shared/data/usStocks'
 import { Usd, useUsd } from '../../../../shared/money'
-import { Rail } from '../../../../shared/ui/Rail'
+import { useFlowOption } from '../../../../shared/prototype'
 import { usShortcuts } from '../../data'
 import { t } from '../../copy'
 import { Shortcuts, Watchlists } from '../Discover'
-import homeStyles from '../Home.module.css'
+import { Flag, type FlagCode } from '../../../../shared/ui/Flag'
+import { StockListCard } from '../../../../shared/ui/StockListCard'
 import {
   analystPicks,
+  type AnalystPick,
   brandRows,
+  type Brand,
+  discoverEtfs,
+  discoverEtfsBySector,
+  etfRegions,
+  etfSectors,
+  type DiscoverEtf,
+  type EtfRegion,
+  type EtfSector,
   capBuckets,
   formatPct,
   heatSectors,
-  heatStrength,
   heatmapIndices,
+  sectorSymbols,
+  themes,
+  type HeatSector,
   moverFilters,
   moversFor,
-  sectorSymbols,
-  sparkDown,
-  sparkUp,
-  usEtfs,
-  etfCountries,
-  type EtfCountry,
   usStock,
-  usThemes,
   type CapValue,
-  type HeatSector,
+  type ThemeId,
   type UsState,
   type MoverFilter,
   type MoverToday,
+  usWatchlists,
 } from './data'
+import { ThemeRail } from './ThemeCard'
 import { UsActivationCard } from './UsActivationCard'
 import { useLiveHeatmap } from './useLiveHeatmap'
 import styles from './UsHome.module.css'
@@ -23002,18 +23872,25 @@ type UsHomeProps = {
   onStock?: (sym: string) => void
   /** "View all" / a theme was tapped (Market has been handed what to open on) → the Market page. */
   onMarket?: () => void
-  /** The ETFs shortcut → the ETF list (Regular / Leveraged). */
+  /** A theme card was tapped → that theme's page. */
+  onTheme?: (id: ThemeId) => void
+  /** The ETFs shortcut and Discover ETFs' View all → the ETF list (Regular / Leveraged). */
   onEtfs?: () => void
+  /** A Discover ETFs row (the symbol is already remembered with `viewUsStock`) → the ETF page. */
+  onEtf?: (sym: string) => void
+  /** Top analyst picks' View all (in the header) → the Top analyst picks page (Stocks / History). */
+  onPicks?: () => void
   /** The activation card on top (default). The two-homes versions show it in the summary instead (screens/Home). */
   card?: boolean
 }
 
 const sign = (up: boolean) => (up ? '+' : '-')
 
-export function UsHome({ usState = 'activate', onActivate, onStock, onMarket, onEtfs, card = true }: UsHomeProps) {
+export function UsHome({ usState = 'activate', onActivate, onStock, onMarket, onTheme, onEtfs, onEtf, onPicks, card = true }: UsHomeProps) {
   const [filter, setFilter] = useState<MoverFilter>('gainers')
-  const [etfCountry, setEtfCountry] = useState<EtfCountry>('US')
   const [cap, setCap] = useState<CapValue>('mega')
+  // Top analyst picks: a list (default, so it doesn't read as a second Top Movers rail) or the cards (prototype option).
+  const picksView = useFlowOption('stocks', 'picksView', 'list')
   const [index, setIndex] = useState<(typeof heatmapIndices)[number]>('sp')
   const [heatCap, setHeatCap] = useState<CapValue>('mega')
   const [sector, setSector] = useState<HeatSector>('all')
@@ -23022,7 +23899,6 @@ export function UsHome({ usState = 'activate', onActivate, onStock, onMarket, on
   const cycleHeatCap = () => setHeatCap(capBuckets[(capBuckets.indexOf(heatCap) + 1) % capBuckets.length])
   const heatCapName = t(`us.cap.${heatCap}`)
   const nextIndex = () => setIndex(heatmapIndices[(heatmapIndices.indexOf(index) + 1) % heatmapIndices.length])
-  const holding = usState === 'holding'
 
   const cycleCap = () => setCap(capBuckets[(capBuckets.indexOf(cap) + 1) % capBuckets.length])
   const capName = t(`us.cap.${cap}`)
@@ -23032,13 +23908,12 @@ export function UsHome({ usState = 'activate', onActivate, onStock, onMarket, on
     onStock?.(sym)
   }
   // "View all" opens the app's Market page on the US list with this rail's choice: Top Movers → its list (gainers /
-  // losers; the other movers have no Market list, so All) and the cap picked here; Trillion Dollar Titans → mega caps,
-  // biggest first; a theme → the US list (Market has no theme filter yet).
+  // losers; the other movers have no Market list, so All) and the cap picked here.
   const openMarketForMovers = () => {
     handToMarket({ market: 'us', tab: filter === 'gainers' || filter === 'losers' ? filter : 'all', filters: { cap: [`us-${cap}`] } })
     onMarket?.()
   }
-  const openMarketForThemes = () => {
+  const openMarket = () => {
     handToMarket({ market: 'us', tab: 'all' })
     onMarket?.()
   }
@@ -23067,54 +23942,34 @@ export function UsHome({ usState = 'activate', onActivate, onStock, onMarket, on
               className={styles.chipTabs}
             />
           </Stack>
-          <Inset paddingInline="16" paddingBlock="00">
-            <Stack gap="08">
-              {moversFor(cap, filter).map((m) => <MoverRow key={m.sym} mover={m} onOpen={open} holding={holding} />)}
-            </Stack>
-          </Inset>
+          {/* FLAG: hand-made sideways scroller of fixed-width cards (L3 has no carousel; src/shared/ui Rail sizes by count, not by width).
+              Keyed by the cap and filter: a new pick starts the rail at its first card and the cards slide in one after another. */}
+          <div key={`${cap}-${filter}`} className={styles.scroller} role="region" aria-label={t('us.movers.railLabel')}>
+            <div className={styles.row}>
+              {moversFor(cap, filter).map((m) => <MoverCard key={m.sym} mover={m} onOpen={open} />)}
+            </div>
+          </div>
         </Stack>
       </div>
 
-      {/* Watchlist, the IND tab's section with the US list (one "Watchlist · 1 stock"). */}
-      <Watchlists lists={[{ id: 'us-watchlist', name: t('us.watchlist.name'), count: 1 }]} />
-
-      <Stack as="section" gap="12" aria-label={t('us.picks.title')}>
-        <Inset paddingInline="16" paddingBlock="00"><SectionHeader title={t('us.picks.title')} action={{ type: 'view-all', onClick: openMarketForThemes }} /></Inset>
-        {/* FLAG: the titan card's insides (logo · name · sparkline), now as a recommendation: Recommendation · 7D. */}
-        <div className={styles.scroller} role="region" aria-label={t('us.picks.railLabel')}>
-          <div className={styles.row} data-gap="16">
-            {analystPicks.map((pick) => (
-              <Card
-                key={pick.sym}
-                onClick={() => open(pick.sym)}
-                surface="default"
-                className={styles.titan}
-                aria-label={t('us.picks.label', { name: pick.name, sym: pick.sym, rating: pick.rating, direction: pick.week >= 0 ? 'up' : 'down', pct: Math.abs(pick.week).toFixed(2) })}
-              >
-                <span className={styles.titanHead}>
-                  <Avatar src={usLogo(pick.sym)} initials={pick.sym} size={24} />
-                  <span className={styles.titanName}>
-                    <b>{pick.name}</b>
-                    <span>{pick.sym}</span>
-                  </span>
-                  <span className={styles.titanArrow}><Icon icon={msChevronRight} size={16} /></span>
-                </span>
-                <img src={pick.week >= 0 ? sparkUp : sparkDown} alt="" className={styles.spark} data-flip={pick.week < 0 || undefined} />
-                <span className={styles.pickFoot}>
-                  <span>
-                    {t('us.picks.recommendation')}
-                    <b data-tone={pick.rating === 'Sell' ? 'down' : 'up'}>{pick.rating}</b>
-                  </span>
-                  <span data-end="">
-                    {t('us.picks.week')}
-                    <b data-tone={pick.week < 0 ? 'down' : 'up'}>{formatPct(pick.week)}</b>
-                  </span>
-                </span>
-              </Card>
-            ))}
+      <Stack as="section" gap="16" aria-label={t('us.picks.title')}>
+        <Inset paddingInline="16" paddingBlock="00"><SectionHeader title={t('us.picks.title')} action={{ type: 'view-all', onClick: () => onPicks?.() }} /></Inset>
+        {picksView === 'list' ? (
+          <Inset paddingInline="16" paddingBlock="00">
+            <Stack gap="12">
+              {analystPicks.slice(0, PICKS_IN_LIST).map((pick) => <PickRow key={pick.sym} pick={pick} onOpen={open} />)}
+            </Stack>
+          </Inset>
+        ) : (
+          <div className={styles.scroller} role="region" aria-label={t('us.picks.railLabel')}>
+            <div className={styles.row}>
+              {analystPicks.map((pick) => <PickCard key={pick.sym} pick={pick} onOpen={open} />)}
+            </div>
           </div>
-        </div>
+        )}
       </Stack>
+
+      <Watchlists lists={usWatchlists} />
 
       <Stack as="section" gap="16" aria-label={t('us.brands.title')}>
         <Inset paddingInline="16" paddingBlock="00"><SectionHeader title={t('us.brands.title')} action={{ type: 'view-all', onClick: () => {} }} /></Inset>
@@ -23123,13 +23978,7 @@ export function UsHome({ usState = 'activate', onActivate, onStock, onMarket, on
             {brandRows.map((row, r) => (
               <div key={r} className={styles.row} data-gap="12">
                 {row.map((brand) => (
-                  <Card key={brand.sym} onClick={() => open(brand.sym)} surface="default" className={styles.brand}>
-                    <Avatar src={usLogo(brand.sym)} initials={brand.sym} size={40} />
-                    <span className={styles.brandText}>
-                      <span className={styles.brandName}>{brand.name}</span>
-                      <span className={styles.brandCap}><Usd text={brand.cap} layout="inline" /></span>
-                    </span>
-                  </Card>
+                  <BrandCard key={brand.sym} brand={brand} onOpen={open} />
                 ))}
               </div>
             ))}
@@ -23137,26 +23986,10 @@ export function UsHome({ usState = 'activate', onActivate, onStock, onMarket, on
         </div>
       </Stack>
 
-      {/* Discover ETFs (3 Nov): a pitch of what an ETF is under the title (12, written to fill about two lines), then the region chips
-          and four ETFs of that region. */}
-      <Stack as="section" gap="16" aria-label={t('us.etfs.title')}>
-        <Inset paddingInline="16" paddingBlock="00"><SectionHeader title={t('us.etfs.title')} action={{ type: 'view-all', onClick: () => onEtfs?.() }} /></Inset>
-        {/* The pitch runs full width under the title line (3 Nov), not squeezed beside "View all". */}
-        <Inset paddingInline="16" paddingBlock="00"><p className={styles.sectionPitch}>{t('us.etfs.description')}</p></Inset>
-        <Stack direction="horizontal" align="center" gap="12" className={styles.chips}>
-          <Tabs appearance="pill" aria-label={t('us.etfs.tabsLabel')} items={etfCountries.map((value) => ({ value, label: value }))} value={etfCountry} onChange={(v) => setEtfCountry(v as EtfCountry)} className={styles.chipTabs} />
-        </Stack>
-        <Inset paddingInline="16" paddingBlock="00">
-          {/* 16 between the cards, as on the Market page. */}
-          <Stack gap="16">
-            {/* An ETF row opens the ETF list (the ETF page is another flow's; it can't be handed one ETF from here). */}
-            {usEtfs.filter((e) => e.country === etfCountry).slice(0, 4).map((e) => <EtfRow key={e.sym} etf={e} onOpen={() => onEtfs?.()} />)}
-          </Stack>
-        </Inset>
-      </Stack>
+      <DiscoverEtfs onOpen={(sym) => { viewUsStock(sym); onEtf?.(sym) }} onViewAll={() => onEtfs?.()} />
 
-      <Stack as="section" gap="16" aria-label={t('us.sectors.title')}>
-        <Inset paddingInline="16" paddingBlock="00"><SectionHeader title={t('us.sectors.title')} action={{ type: 'switcher', label: t(`us.heatmap.${index}`), onClick: nextIndex, 'aria-label': t('us.heatmap.indexLabel') }} /></Inset>
+      <Stack as="section" gap="16" aria-label={t('us.heatmap.title')}>
+        <Inset paddingInline="16" paddingBlock="00"><SectionHeader title={t('us.heatmap.title')} action={{ type: 'switcher', label: t(`us.heatmap.${index}`), onClick: nextIndex, 'aria-label': t('us.heatmap.indexLabel') }} /></Inset>
         <Stack direction="horizontal" align="center" gap="12" className={styles.chips}>
           {/* FLAG: hand-made cap chip, as Top Movers' */}
           <button type="button" className={styles.capChip} aria-label={t('us.cap.switch', { cap: heatCapName })} onClick={cycleHeatCap}>
@@ -23173,46 +24006,59 @@ export function UsHome({ usState = 'activate', onActivate, onStock, onMarket, on
             className={styles.chipTabs}
           />
         </Stack>
-        {/* FLAG: heatmap tiles are hand-made buttons with computed colour strength; real prices, ticking with live.ts */}
-        <Inset paddingInline="16" paddingBlock="00">
-          <Grid columns={3} gap="00" className={styles.heatmap}>
-            {heat.map((tile) => (
-              <button key={tile.sym} type="button" className={styles.tile} data-up={tile.pct >= 0 || undefined} style={{ '--heat': heatStrength(tile.pct) } as CSSProperties} onClick={() => open(tile.sym)}>
-                <span className={styles.tileSym}>{tile.sym}</span>
-                <span className={styles.tileChange}>{formatPct(tile.pct)}</span>
-                <span className={styles.tilePrice}><Usd value={tile.price} layout="inline" /></span>
-              </button>
-            ))}
-          </Grid>
-        </Inset>
-      </Stack>
-
-      {/* Explore by themes: the IND tab's "Invest in Ideas" card with US themes. A tap opens Market's US list. */}
-      <Stack as="section" gap="16" aria-label={t('us.themes.title')}>
-        <Inset paddingInline="16" paddingBlock="00"><SectionHeader title={t('us.themes.title')} description={t('us.themes.description')} /></Inset>
-        <Rail label={t('us.themes.railLabel')} visible={1.19}>
-          {usThemes.map((theme) => (
-            <Card key={theme.id} onClick={openMarketForThemes}>
-              <span className={homeStyles.cardStack}>
-                <span className={homeStyles.logos} aria-hidden="true">
-                  {theme.logos.map((sym) => <Avatar key={sym} initials={sym} src={usLogo(sym)} size={48} shape="rounded" />)}
-                </span>
-                <span className={homeStyles.basketName}>{theme.name}</span>
-                <span className={homeStyles.cardRow}>
-                  <span className={homeStyles.cardMeta}>{t(theme.unit === 'etfs' ? 'us.themes.etfs' : 'us.themes.stocks', { count: theme.count })}</span>
-                  <span className={homeStyles.chevron}><Icon icon={msChevronRight} /></span>
-                </span>
+        {/* The F&O heatmap's tiles (fno/components/Heatmap): edge to edge, square flat cards 1px apart, solid green / red with
+            inverted text. Real prices, ticking with live.ts. */}
+        <div className={styles.heatmap}>
+          {heat.map((tile) => (
+            <Card variant="flat" key={tile.sym} className={[styles.heatCell, tile.pct >= 0 ? styles.heatUp : styles.heatDown].join(' ')} onClick={() => open(tile.sym)}>
+              <span className={styles.heatName}>{tile.sym}</span>
+              <span>
+                <strong>{formatPct(tile.pct)}</strong>
+                <span className={styles.heatPrice}><Usd value={tile.price} layout="inline" /></span>
               </span>
             </Card>
           ))}
-        </Rail>
+        </div>
+      </Stack>
+
+      <Stack as="section" gap="16" aria-label={t('us.themes.title')}>
+        <Inset paddingInline="16" paddingBlock="00"><SectionHeader title={t('us.themes.title')} action={{ type: 'view-all', onClick: () => onTheme?.(themes[0].id) }} /></Inset>
+        <ThemeRail onOpen={(id) => onTheme?.(id)} />
       </Stack>
     </>
   )
 }
 
-/** A Top Movers row: the stock's real price and day change, ticking (live.ts). */
-function MoverRow({ mover, onOpen, holding = false }: { mover: MoverToday; onOpen: (sym: string) => void; /** Holding US stocks: the second line reads "Category • TSLA". */ holding?: boolean }) {
+/**
+ * The card's graph: the stock's real daily closes over the last month (snapshot) and today's ticking price, as a line
+ * over a soft fill that fades from full at the top to nothing at the bottom; green for a gainer, red for a loser.
+ * FLAG: hand-made SVG — L3 Sparkline is fixed at 64×24 (no width / height); same maths and colours, card-wide (126×36).
+ */
+function MonthLine({ closes, up }: { closes: number[]; up: boolean }) {
+  const w = 126
+  const h = 36
+  const hi = Math.max(...closes)
+  const lo = Math.min(...closes)
+  const points = closes.map((v, i) => `${((i * w) / Math.max(1, closes.length - 1)).toFixed(1)} ${(2 + ((hi - v) / (hi - lo || 1)) * (h - 4)).toFixed(1)}`)
+  const line = `M${points.join(' L')}`
+  const fade = useId()
+  return (
+    <svg viewBox={`0 0 ${w} ${h}`} className={styles.spark} data-up={up || undefined} aria-hidden="true">
+      <defs>
+        <linearGradient id={fade} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" className={styles.sparkFadeTop} />
+          <stop offset="1" className={styles.sparkFadeBottom} />
+        </linearGradient>
+      </defs>
+      <path d={`${line} L${w} ${h} L0 ${h} Z`} fill={`url(#${fade})`} />
+      <path d={line} className={styles.sparkLine} />
+    </svg>
+  )
+}
+
+/** A Top Movers card (the old Trillion Dollar Titans card): logo, name and symbol, a sparkline, then the stock's real
+ *  price and day change, ticking (live.ts). */
+function MoverCard({ mover, onOpen }: { mover: MoverToday; onOpen: (sym: string) => void }) {
   const stock = usStock(mover.sym, mover.name)
   const live = useLiveQuote(mover.sym, stock.price, stock.change)
   // A gainer stays a gainer (and a loser a loser) while it ticks: the list was picked by today's direction.
@@ -23220,59 +24066,180 @@ function MoverRow({ mover, onOpen, holding = false }: { mover: MoverToday; onOpe
   const pct = Math.max(0.01, up ? live.changePct : -live.changePct)
   const usd = useUsd()
   return (
-    <Card onClick={() => onOpen(mover.sym)} className={styles.rowCard} aria-label={`${mover.name}, ${usd(live.price)}, ${sign(up)}${pct.toFixed(2)}%`}>
-      <Avatar src={usLogo(mover.sym)} initials={mover.sym} size={24} />
-      <span className={styles.rowText}>
-        <span className={styles.rowName}>{mover.name}</span>
-        <span className={styles.rowSub}>{holding ? t('us.movers.holdingSub', { sym: mover.sym }) : mover.sym}</span>
+    <Card onClick={() => onOpen(mover.sym)} surface="primary" className={styles.titan} aria-label={`${mover.name}, ${usd(live.price)}, ${sign(up)}${pct.toFixed(2)}%`}>
+      <span className={styles.titanHead}>
+        <Avatar src={usLogo(mover.sym)} initials={mover.sym} size={24} />
+        <span className={styles.titanName}>{mover.name}</span>
+        <span className={styles.titanArrow}><Icon icon={msChevronRight} size={16} /></span>
       </span>
-      <span className={styles.rowPrice}>
-        <span className={styles.rowValue}><Usd value={live.price} align="end" /></span>
-        <span className={styles.rowChange} data-up={up || undefined}>{sign(up)}{pct.toFixed(2)}%</span>
+      <MonthLine closes={[...(usQuote(mover.sym)?.closes ?? []), live.price]} up={up} />
+      <span className={styles.titanFoot}>
+        <Usd value={live.price} layout="inline" />
+        <span className={styles.titanChange} data-up={up || undefined}>{sign(up)}{pct.toFixed(2)}%</span>
       </span>
     </Card>
   )
 }
 
-/** The fund's own logo (its issuer: SPDR, Invesco, Vanguard…) in a 40 circle on its plate; the ticker when none. */
-function EtfFundLogo({ sym }: { sym: string }) {
-  const logo = etfIssuerLogo(sym)
-  if (!logo) return <Avatar initials={sym} size={40} />
+/** A Brands You Know card, laid out like Top Movers' cards on the India tab: logo, name, today's price, today's move. */
+// Each fund house's logo on its plate, one square SVG (the L3 Avatar shows it).
+const etfLogos = import.meta.glob('../../assets/us/etf/*.svg', { eager: true, query: '?url', import: 'default' }) as Record<string, string>
+
+/** Each region chip's flag. */
+const REGION_FLAGS: Record<EtfRegion, FlagCode> = { us: 'us', china: 'cn', japan: 'jp', europe: 'eu', korea: 'kr' }
+
+/**
+ * Discover ETFs: what an ETF is in one line, compared with the index Indian users know (Nifty 50), region chips with flags (L3 pill Tabs), then that region's funds as list cards — the
+ * fund in plain words ("Top 500 US stocks") over its ticker and real name, price and the day's change on the right.
+ */
+/** Discover ETFs shows up to four funds per country or sector; the rest are on the ETF list (View all). */
+const ETFS_IN_LIST = 4
+
+function DiscoverEtfs({ onOpen, onViewAll }: { onOpen: (sym: string) => void; onViewAll: () => void }) {
+  // The switcher chip picks what the chips filter by (Country ⇄ Sector), as on the ETF list; each keeps its own pick.
+  const [by, setBy] = useState<'country' | 'sector'>('country')
+  const [region, setRegion] = useState<EtfRegion>('us')
+  const [sector, setSector] = useState<EtfSector>('broad')
+  // Prototype setting "ETF region flags": the country chips with or without their round flags.
+  const flags = useFlowOption('stocks', 'etfFlags', 'on') === 'on'
+  const byName = t(`us.etfs.by.${by}`)
+  const funds = by === 'country' ? discoverEtfs[region] : discoverEtfsBySector[sector]
   return (
-    <span className={styles.fundLogo} data-fill={logo.fill || undefined} style={{ background: logo.plate }} aria-hidden="true">
-      <img src={logo.src} alt="" />
-    </span>
+    <Stack as="section" gap="16" aria-label={t('us.etfs.title')}>
+      <Inset paddingInline="16" paddingBlock="00">
+        <SectionHeader title={t('us.etfs.title')} description={t('us.etfs.description')} action={{ type: 'view-all', onClick: onViewAll }} />
+      </Inset>
+      {/* The small chips of Top movers: switcher chip, divider, chips (Home always uses the small ones). */}
+      <Stack direction="horizontal" align="center" gap="12" className={styles.chips}>
+        <button type="button" className={styles.capChip} aria-label={t('us.etfs.by.switch', { by: byName })} onClick={() => setBy(by === 'country' ? 'sector' : 'country')}>
+          <span className={styles.capName} key={by}>{byName}</span>
+          <Icon icon={lmSwitchArrowVertical} size={16} />
+        </button>
+        <span className={styles.chipDivider} aria-hidden="true" />
+        {by === 'country' ? (
+          <Tabs
+            key="country"
+            appearance="pill"
+            aria-label={t('us.etfs.regionsLabel')}
+            items={etfRegions.map((value) => ({ value, label: t(`us.etfs.region.${value}`), iconLeft: flags ? <Flag code={REGION_FLAGS[value]} /> : undefined }))}
+            value={region}
+            onChange={(v) => setRegion(v as EtfRegion)}
+            className={styles.chipTabs}
+          />
+        ) : (
+          <Tabs
+            key="sector"
+            appearance="pill"
+            aria-label={t('us.etfs.sectorsLabel')}
+            items={etfSectors.map((value) => ({ value, label: t(`us.etfs.sector.${value}`) }))}
+            value={sector}
+            onChange={(v) => setSector(v as EtfSector)}
+            className={styles.chipTabs}
+          />
+        )}
+      </Stack>
+      <Inset paddingInline="16" paddingBlock="00">
+        <Stack gap="12">
+          {funds.slice(0, ETFS_IN_LIST).map((etf) => <EtfRow key={etf.sym} etf={etf} onOpen={onOpen} />)}
+        </Stack>
+      </Inset>
+    </Stack>
   )
 }
 
-/**
- * A Discover ETFs row (3 Nov): the Market page's card (L3 ListCell, the same as the ETF list): the fund's logo (40), the
- * plain name as the label ("Top 500 US stocks", Label 16), "SPY · SPDR S&P 500 ETF" under it (the name ends in "…"),
- * then the ticking price (Label 16) over the change (▼ and the size, no sign).
- */
-function EtfRow({ etf, onOpen }: { etf: { sym: string; name: string; plain: string }; onOpen: () => void }) {
-  const stock = usStock(etf.sym, etf.name)
-  const live = useLiveQuote(etf.sym, stock.price, stock.change)
-  const up = live.changePct >= 0
+function EtfRow({ etf, onOpen }: { etf: DiscoverEtf; onOpen: (sym: string) => void }) {
+  const quote = usQuote(etf.sym)
+  const live = useLiveQuote(etf.sym, quote?.price ?? 0, quote?.changePct ?? 0)
+  return (
+    <StockListCard
+      symbol={etf.headline}
+      name={t('us.etfs.row', { sym: etf.sym, fund: etf.fund })}
+      logoUrl={etf.issuer && etfLogos[`../../assets/us/etf/${etf.issuer}.svg`]}
+      initials={etf.sym.slice(0, 2)}
+      price={<Usd value={live.price} layout="inline" />}
+      changePct={live.changePct}
+      onOpen={() => onOpen(etf.sym)}
+    />
+  )
+}
+
+function BrandCard({ brand, onOpen }: { brand: Brand; onOpen: (sym: string) => void }) {
+  const stock = usStock(brand.sym, brand.name)
+  const live = useLiveQuote(brand.sym, stock.price, stock.change)
+  return (
+    <Card onClick={() => onOpen(brand.sym)} surface="primary" className={styles.brand}>
+      <span className={styles.brandStack}>
+        <Avatar src={usLogo(brand.sym)} initials={brand.sym.slice(0, 2)} size={48} label={brand.name} />
+        <span className={styles.brandName}>{brand.name}</span>
+        <span className={styles.brandPrice}><Usd value={live.price} layout="inline" /></span>
+        <PriceChange value={live.changePct} size="sm" />
+      </span>
+    </Card>
+  )
+}
+
+/** How many picks the list shows (View all → the rest on Market). */
+const PICKS_IN_LIST = 4
+
+/** A pick's last 7 days: the snapshot's last week of closes to today's ticking price, and the move over them. */
+function usePickWeek(pick: AnalystPick) {
+  const stock = usStock(pick.sym, pick.name)
+  const live = useLiveQuote(pick.sym, stock.price, stock.change)
+  const week = [...(usQuote(pick.sym)?.closes ?? []).slice(-6), live.price]
+  const weekPct = ((live.price - week[0]) / week[0]) * 100
+  return { week, weekPct, up: weekPct >= 0 }
+}
+
+const pickLabel = (pick: AnalystPick, weekPct: number) =>
+  t('us.picks.label', { name: pick.name, sym: pick.sym, rating: pick.rating, direction: weekPct >= 0 ? 'up' : 'down', pct: Math.abs(weekPct).toFixed(2) })
+
+/** A Top analyst picks row (the list view): logo · the company name over "94% of analysts recommend", and on the right
+ *  the expected profit (bold, green — always positive) over "Expected profit". */
+function PickRow({ pick, onOpen }: { pick: AnalystPick; onOpen: (sym: string) => void }) {
   return (
     <ListCell
       variant="card"
-      as="button"
-      iconLeft={<span className={styles.fundLogoSlot}><EtfFundLogo sym={etf.sym} /></span>}
-      label={etf.plain}
-      description={<span className={styles.etfSub}><span className={styles.etfSym}>{etf.sym} ·</span> {etf.name}</span>}
-      trailing={
-        <span className={styles.etfPrice}>
-          {/* No "≈ ₹" line on Discover ETFs (2 Nov), as on the ETF list: inline drops it. */}
-          <span className={styles.etfValue}><Usd value={live.price} layout="inline" /></span>
-          <span className={styles.etfMove} data-up={up || undefined} aria-label={`${up ? 'up' : 'down'} ${Math.abs(live.changePct).toFixed(2)}%`}>
-            <span className={styles.etfTri} aria-hidden="true" />
-            <span aria-hidden="true">{Math.abs(live.changePct).toFixed(2)}%</span>
-          </span>
-        </span>
-      }
-      onClick={onOpen}
+      raised={false}
+      onClick={() => onOpen(pick.sym)}
+      iconLeft={<Avatar src={usLogo(pick.sym)} initials={pick.sym.slice(0, 2)} size={40} label={pick.name} />}
+      labelSize="14"
+      label={pick.name}
+      description={t('us.picks.analysts', { pct: pick.analystsPct })}
+      trailing={<span className={styles.pickMove}>{formatPct(pick.expectedProfit)}</span>}
+      caption={t('us.picks.expectedProfit')}
+      aria-label={t('us.picks.rowLabel', { name: pick.name, sym: pick.sym, analysts: pick.analystsPct, pct: pick.expectedProfit.toFixed(1) })}
     />
+  )
+}
+
+/** A Top analyst picks card (the cards view): the Top Movers card with the analysts' consensus under the line, and the
+ *  real 7-day move, which the line also shows. */
+function PickCard({ pick, onOpen }: { pick: AnalystPick; onOpen: (sym: string) => void }) {
+  const { week, weekPct, up } = usePickWeek(pick)
+  return (
+    <Card
+      onClick={() => onOpen(pick.sym)}
+      surface="primary"
+      className={styles.titan}
+      aria-label={pickLabel(pick, weekPct)}
+    >
+      <span className={styles.titanHead}>
+        <Avatar src={usLogo(pick.sym)} initials={pick.sym} size={24} />
+        <span className={styles.titanName}>{pick.name}</span>
+        <span className={styles.titanArrow}><Icon icon={msChevronRight} size={16} /></span>
+      </span>
+      <MonthLine closes={week} up={up} />
+      <span className={styles.pickFoot}>
+        <span>
+          {t('us.picks.recommendation')}
+          <b data-tone={pick.rating === 'Sell' ? 'down' : 'up'}>{pick.rating}</b>
+        </span>
+        <span data-end="">
+          {t('us.picks.week')}
+          <b data-tone={up ? 'up' : 'down'}>{formatPct(weekPct)}</b>
+        </span>
+      </span>
+    </Card>
   )
 }
 ```
@@ -23285,7 +24252,11 @@ function EtfRow({ etf, onOpen }: { etf: { sym: string; name: string; plain: stri
 // src/shared/data/us-market-snapshot.json) and tick with live.ts; market caps and the user's holdings are samples.
 // The words the app itself says are in copy.json (`us.*`).
 import { catalogue, usIndexQuote, usQuote } from '../../../../shared/data/usStocks'
+import type { Watchlist } from '../../../../shared/data/portfolio'
 import benefitBolt from '../../assets/us/benefit-bolt.svg'
+import benefitDash from '../../assets/in/benefit-dash.svg'
+import benefitBrokerage from '../../assets/in/benefit-brokerage.svg'
+import benefitMtf from '../../assets/in/benefit-mtf.svg'
 import { t } from '../../copy'
 
 /** The US tab's index strip (the IND tab's strip shows NIFTY 50 / SENSEX / NIFTY BANK). Same shape as shared `indices`. */
@@ -23293,7 +24264,12 @@ export const usIndices = [
   { id: 'sp-500', name: 'S&P 500' },
   { id: 'nasdaq', name: 'NASDAQ' },
   { id: 'dow-jones', name: 'DOW JONES' },
-].map((index) => ({ ...index, value: usIndexQuote(index.id)?.price ?? 0, changePct: usIndexQuote(index.id)?.changePct ?? 0 }))
+].map((index) => ({
+  ...index,
+  // Read each time, so the strip follows the runtime refresh of the US snapshot.
+  get value() { return usIndexQuote(index.id)?.price ?? 0 },
+  get changePct() { return usIndexQuote(index.id)?.changePct ?? 0 },
+}))
 
 /** A US stock as a card or row shows it: the catalogue's (real) data, or made-up but stable numbers for a symbol the
  *  snapshot doesn't have. */
@@ -23313,18 +24289,20 @@ export function usStock(sym: string, name?: string) {
 /** Where the user is with US Stocks: the card on top of the US tab (and what the tab shows) follows it. */
 export type UsState = 'kyc' | 'activate' | 'review' | 'support' | 'failed' | 'activated' | 'onTheWay' | 'ready' | 'holding'
 
-export type BenefitId = 'fractional' | 'diversify' | 'kyc' | 'stocks' | 'evening' | 'debit' | 'convert' | 'credit'
-export type Benefit = { id: BenefitId; icon: string }
-/** The benefit strip's slides: `tag` and `text` are copy keys `us.benefit.<id>.tag|text`. */
-const benefit = (id: BenefitId): Benefit => ({ id, icon: benefitBolt })
+export type BenefitId = 'fractional' | 'diversify' | 'kyc' | 'stocks' | 'evening' | 'debit' | 'convert' | 'credit' | 'dash' | 'brokerage' | 'mtf'
+type CopyKey = Parameters<typeof t>[0]
+/** A slide of the benefit strip: `tag` and `text` are copy keys (`us.benefit.<id>.*`, `in.benefit.<id>.*`). */
+export type Benefit = { id: BenefitId; icon: string; tag: CopyKey; text: CopyKey }
+type UsBenefitId = Exclude<BenefitId, 'dash' | 'brokerage' | 'mtf'>
+const benefit = (id: UsBenefitId): Benefit => ({ id, icon: benefitBolt, tag: `us.benefit.${id}.tag`, text: `us.benefit.${id}.text` })
+/** Indian stocks' benefits, each with its own icon (Figma "IND KYC Not started"). */
+const inBenefit = (id: 'dash' | 'brokerage' | 'mtf', icon: string): Benefit => ({ id, icon, tag: `in.benefit.${id}.tag`, text: `in.benefit.${id}.text` })
 /** The three benefits a not-yet-active card rotates through. */
 export const lockedBenefits: Benefit[] = [benefit('fractional'), benefit('diversify'), benefit('kyc')]
 
-type CopyKey = Parameters<typeof t>[0]
-
 export type CardSpec = {
-  /** The card's tint: blue (US-stock accent) · honey (under review, money on the way) · red (failed) · green (activated, ready). */
-  tone: 'blue' | 'honey' | 'red' | 'green'
+  /** The card's tint: blue (US-stock accent) · honey (under review, money on the way) · red (failed) · green (activated, ready) · neutral (holdings only). */
+  tone: 'blue' | 'honey' | 'red' | 'green' | 'neutral'
   /** Copy keys (copy.json) of the card's words. */
   title: CopyKey
   subtitle: CopyKey
@@ -23335,19 +24313,56 @@ export type CardSpec = {
   slides?: Benefit[]
   /** The button ends with an arrow. */
   arrow?: boolean
+  /** The CTA moves money (add money): brand colour, the app's rule for transaction buttons. Not on the activated card's
+   *  "Add Money to US wallet" (3 Nov): an exception, it stays Primary like the card's other CTAs. */
+  money?: boolean
+  /** The line over the benefits, with a lock ("Start to unlock exclusive benefits"); `unlocked`: an open lock. */
+  lockLine?: CopyKey
+  unlocked?: boolean
+  /** In place of the benefits: the money's journey to the US wallet (money on the way). */
+  transfer?: boolean
+}
+
+/**
+ * Money on the way: an add-money transfer from the user's Indian bank to the US wallet (LRS). It takes 1–2 working days:
+ * paid from the bank and converted to $ (same day, before the bank's cut-off — one step on the card) → sent to the US
+ * bank by wire (the slow step) → in the wallet, ready to trade. Sample data — the API sends the amounts, times and which
+ * step it's on.
+ */
+export type TransferStep = 'paid' | 'sent' | 'ready'
+export const usTransfer = {
+  inr: 91_250,
+  usd: 1035.37,
+  rate: 88.13,
+  paidAt: '11:42 AM',
+  eta: 'Thu 8 PM',
+  /** The step it's on now (the ones before it are done). */
+  at: 'sent' as TransferStep,
 }
 
 /** The card on top of the US tab for each state (no card when the user already holds US stocks). */
 export const cardSpecs: Record<Exclude<UsState, 'holding'>, CardSpec> = {
-  kyc: { tone: 'blue', title: 'us.kyc.title', subtitle: 'us.kyc.subtitle', cta: 'us.kyc.cta', slides: lockedBenefits },
-  activate: { tone: 'blue', title: 'us.activate.title', subtitle: 'us.activate.subtitle', cta: 'us.activate.cta', slides: lockedBenefits },
-  review: { tone: 'honey', title: 'us.review.title', subtitle: 'us.review.subtitle', icon: 'hourglass', slides: lockedBenefits },
-  support: { tone: 'honey', title: 'us.review.title', subtitle: 'us.review.subtitle', cta: 'us.support.cta', icon: 'hourglass', slides: lockedBenefits },
-  failed: { tone: 'red', title: 'us.failed.title', subtitle: 'us.failed.subtitle', cta: 'us.failed.cta', icon: 'error', slides: lockedBenefits },
-  activated: { tone: 'green', title: 'us.activated.title', subtitle: 'us.activated.subtitle', cta: 'us.activated.cta', slides: [benefit('stocks'), benefit('fractional'), benefit('evening')] },
-  onTheWay: { tone: 'honey', title: 'us.onTheWay.title', subtitle: 'us.onTheWay.subtitle', cta: 'us.onTheWay.cta', icon: 'clock', slides: [benefit('debit'), benefit('convert'), benefit('credit')] },
+  kyc: { tone: 'blue', title: 'us.kyc.title', subtitle: 'us.kyc.subtitle', cta: 'us.kyc.cta', lockLine: 'us.lock.kyc', slides: lockedBenefits },
+  activate: { tone: 'blue', title: 'us.activate.title', subtitle: 'us.activate.subtitle', cta: 'us.activate.cta', lockLine: 'us.lock.activate', slides: lockedBenefits },
+  review: { tone: 'honey', title: 'us.review.title', subtitle: 'us.review.subtitle', icon: 'hourglass', lockLine: 'us.lock.soon', slides: lockedBenefits },
+  support: { tone: 'honey', title: 'us.review.title', subtitle: 'us.review.subtitle', cta: 'us.support.cta', icon: 'hourglass', lockLine: 'us.lock.soon', slides: lockedBenefits },
+  failed: { tone: 'red', title: 'us.failed.title', subtitle: 'us.failed.subtitle', cta: 'us.failed.cta', icon: 'error', lockLine: 'us.lock.activate', slides: lockedBenefits },
+  activated: { tone: 'green', title: 'us.activated.title', subtitle: 'us.activated.subtitle', cta: 'us.activated.cta', lockLine: 'us.lock.open', unlocked: true, slides: [benefit('stocks'), benefit('fractional'), benefit('evening')] },
+  onTheWay: { tone: 'honey', title: 'us.onTheWay.title', subtitle: 'us.onTheWay.subtitle', cta: 'us.onTheWay.cta', icon: 'clock', transfer: true },
   ready: { tone: 'green', title: 'us.ready.title', subtitle: 'us.ready.subtitle', cta: 'us.ready.cta', icon: 'check', arrow: true },
 }
+
+/**
+ * The IND tab's card while the Lemonn KYC is pending: nothing is verified yet, so Indian stocks can't be traded either.
+ * PLACEHOLDER copy until the IND card's content comes in.
+ */
+export const inKycCard: CardSpec = {
+  tone: 'blue', title: 'in.kyc.title', subtitle: 'in.kyc.subtitle', cta: 'in.kyc.cta', arrow: true, lockLine: 'in.kyc.benefitsHeader',
+  slides: [inBenefit('dash', benefitDash), inBenefit('brokerage', benefitBrokerage), inBenefit('mtf', benefitMtf)],
+}
+
+/** The US states after activation: with the header card on, the card holds the US holdings on top. */
+export const activatedStates: UsState[] = ['activated', 'onTheWay', 'ready', 'holding']
 
 /** What the US Holdings summary shows once the user holds US stocks (made up, as in the prototype). */
 export const usHoldings = { value: 1500.25, returnPct: 12.4 }
@@ -23378,6 +24393,31 @@ const movers: Record<CapValue, Mover[]> = {
     { sym: 'V', name: 'Visa' },
     { sym: 'AMZN', name: 'Amazon' },
     { sym: 'AVGO', name: 'Broadcom' },
+    { sym: 'JPM', name: 'JPMorgan' },
+    { sym: 'WMT', name: 'Walmart' },
+    { sym: 'LLY', name: 'Eli Lilly' },
+    { sym: 'MA', name: 'Mastercard' },
+    { sym: 'ORCL', name: 'Oracle' },
+    { sym: 'XOM', name: 'ExxonMobil' },
+    { sym: 'COST', name: 'Costco' },
+    { sym: 'HD', name: 'Home Depot' },
+    { sym: 'PG', name: 'Procter & Gamble' },
+    { sym: 'JNJ', name: 'Johnson & Johnson' },
+    { sym: 'ABBV', name: 'AbbVie' },
+    { sym: 'BAC', name: 'Bank of America' },
+    { sym: 'UNH', name: 'UnitedHealth' },
+    { sym: 'KO', name: 'Coca-Cola' },
+    { sym: 'PLTR', name: 'Palantir' },
+    { sym: 'AMD', name: 'AMD' },
+    { sym: 'CVX', name: 'Chevron' },
+    { sym: 'CSCO', name: 'Cisco' },
+    { sym: 'CRM', name: 'Salesforce' },
+    { sym: 'IBM', name: 'IBM' },
+    { sym: 'TMUS', name: 'T-Mobile' },
+    { sym: 'MRK', name: 'Merck' },
+    { sym: 'PEP', name: 'PepsiCo' },
+    { sym: 'GE', name: 'GE Aerospace' },
+    { sym: 'WFC', name: 'Wells Fargo' },
   ],
   large: [
     { sym: 'UBER', name: 'Uber' },
@@ -23390,6 +24430,31 @@ const movers: Record<CapValue, Mover[]> = {
     { sym: 'GM', name: 'General Motors' },
     { sym: 'CRWD', name: 'CrowdStrike' },
     { sym: 'TGT', name: 'Target' },
+    { sym: 'ADBE', name: 'Adobe' },
+    { sym: 'INTC', name: 'Intel' },
+    { sym: 'QCOM', name: 'Qualcomm' },
+    { sym: 'BA', name: 'Boeing' },
+    { sym: 'DIS', name: 'Disney' },
+    { sym: 'PFE', name: 'Pfizer' },
+    { sym: 'SHOP', name: 'Shopify' },
+    { sym: 'COIN', name: 'Coinbase' },
+    { sym: 'SLB', name: 'SLB' },
+    { sym: 'MU', name: 'Micron' },
+    { sym: 'LULU', name: 'Lululemon' },
+    { sym: 'DAL', name: 'Delta Air Lines' },
+    { sym: 'UAL', name: 'United Airlines' },
+    { sym: 'MAR', name: 'Marriott' },
+    { sym: 'EBAY', name: 'eBay' },
+    { sym: 'DASH', name: 'DoorDash' },
+    { sym: 'RBLX', name: 'Roblox' },
+    { sym: 'HOOD', name: 'Robinhood' },
+    { sym: 'DELL', name: 'Dell' },
+    { sym: 'CMG', name: 'Chipotle' },
+    { sym: 'TTD', name: 'The Trade Desk' },
+    { sym: 'SPOT', name: 'Spotify' },
+    { sym: 'ZM', name: 'Zoom' },
+    { sym: 'NET', name: 'Cloudflare' },
+    { sym: 'DDOG', name: 'Datadog' },
   ],
   mid: [
     { sym: 'ETSY', name: 'Etsy' },
@@ -23402,6 +24467,34 @@ const movers: Record<CapValue, Mover[]> = {
     { sym: 'AAL', name: 'American Airlines' },
     { sym: 'CAVA', name: 'CAVA Group' },
     { sym: 'HOG', name: 'Harley-Davidson' },
+    { sym: 'GAP', name: 'Gap' },
+    { sym: 'M', name: 'Macy’s' },
+    { sym: 'URBN', name: 'Urban Outfitters' },
+    { sym: 'ELF', name: 'e.l.f. Beauty' },
+    { sym: 'YETI', name: 'YETI' },
+    { sym: 'SHAK', name: 'Shake Shack' },
+    { sym: 'WING', name: 'Wingstop' },
+    { sym: 'FIVE', name: 'Five Below' },
+    { sym: 'PLNT', name: 'Planet Fitness' },
+    { sym: 'VFC', name: 'VF Corp' },
+    { sym: 'RH', name: 'RH' },
+    { sym: 'BROS', name: 'Dutch Bros' },
+    { sym: 'CHWY', name: 'Chewy' },
+    { sym: 'AEO', name: 'American Eagle' },
+    { sym: 'ANF', name: 'Abercrombie & Fitch' },
+    { sym: 'TRIP', name: 'Tripadvisor' },
+    { sym: 'U', name: 'Unity' },
+    { sym: 'LEVI', name: 'Levi Strauss' },
+    { sym: 'COLM', name: 'Columbia Sportswear' },
+    { sym: 'CAR', name: 'Avis Budget' },
+    { sym: 'PENN', name: 'PENN Entertainment' },
+    { sym: 'CZR', name: 'Caesars' },
+    { sym: 'WEN', name: 'Wendy’s' },
+    { sym: 'BIRK', name: 'Birkenstock' },
+    { sym: 'CPRI', name: 'Capri' },
+    { sym: 'BOOT', name: 'Boot Barn' },
+    { sym: 'CAKE', name: 'Cheesecake Factory' },
+    { sym: 'PLAY', name: 'Dave & Buster’s' },
   ],
   small: [
     { sym: 'SONO', name: 'Sonos' },
@@ -23414,108 +24507,124 @@ const movers: Record<CapValue, Mover[]> = {
     { sym: 'LAZR', name: 'Luminar' },
     { sym: 'PLUG', name: 'Plug Power' },
     { sym: 'OPEN', name: 'Opendoor' },
+    { sym: 'LCID', name: 'Lucid' },
+    { sym: 'CHPT', name: 'ChargePoint' },
+    { sym: 'TLRY', name: 'Tilray' },
+    { sym: 'AMC', name: 'AMC Entertainment' },
+    { sym: 'BB', name: 'BlackBerry' },
+    { sym: 'RIG', name: 'Transocean' },
+    { sym: 'JBLU', name: 'JetBlue' },
+    { sym: 'QS', name: 'QuantumScape' },
+    { sym: 'BLNK', name: 'Blink Charging' },
+    { sym: 'WOOF', name: 'Petco' },
+    { sym: 'SNAP', name: 'Snap' },
+    { sym: 'NIO', name: 'NIO' },
+    { sym: 'SOUN', name: 'SoundHound' },
+    { sym: 'SIRI', name: 'SiriusXM' },
   ],
 }
 
-/** The (up to) five movers of a cap bucket for a filter, from their real day change and range: gainers = biggest rises,
+/** The (up to) fifteen movers (one swipeable row of cards) of a cap bucket for a filter, from their real day change and range: gainers = biggest rises,
  *  losers = biggest falls, most active = highest volume, 52W high / low = closest to it. */
 export function moversFor(cap: CapValue, filter: MoverFilter): MoverToday[] {
-  const today = movers[cap].map((m) => ({ ...m, change: usStock(m.sym).change, q: usQuote(m.sym) }))
+  // Only stocks the snapshot has a real price for (a symbol Yahoo didn't answer for is left out).
+  const today = movers[cap].filter((m) => usQuote(m.sym)?.price != null).map((m) => ({ ...m, change: usStock(m.sym).change, q: usQuote(m.sym) }))
   const near = (to: 'high52' | 'low52') => (m: (typeof today)[number]) => (m.q?.[to] ? Math.abs(m.q.price / m.q[to]! - 1) : 9)
   const sorted =
     filter === 'gainers' ? today.filter((m) => m.change > 0).sort((a, b) => b.change - a.change)
     : filter === 'losers' ? today.filter((m) => m.change < 0).sort((a, b) => a.change - b.change)
     : filter === 'active' ? today.sort((a, b) => (b.q?.volume ?? 0) - (a.q?.volume ?? 0))
     : today.sort((a, b) => near(filter)(a) - near(filter)(b))
-  return sorted.slice(0, 5).map(({ sym, name, change }) => ({ sym, name, up: change >= 0 }))
+  return sorted.slice(0, 15).map(({ sym, name, change }) => ({ sym, name, up: change >= 0 }))
 }
-
-// ---- Trillion Dollar Titans ----
-
-/** A titan card: the day change comes from the snapshot (`usStock(sym)`); the market cap is a sample (Yahoo's free
- *  endpoint has no caps). */
-export type Titan = { sym: string; name: string; cap: string }
-
-export const titans: Titan[] = [
-  { sym: 'NVDA', name: 'NVIDIA', cap: '$4.52T' },
-  { sym: 'MSFT', name: 'Microsoft', cap: '$3.89T' },
-  { sym: 'AAPL', name: 'Apple', cap: '$3.81T' },
-  { sym: 'GOOGL', name: 'Alphabet', cap: '$3.04T' },
-  { sym: 'AMZN', name: 'Amazon', cap: '$2.42T' },
-  { sym: 'META', name: 'Meta', cap: '$1.89T' },
-  { sym: 'AVGO', name: 'Broadcom', cap: '$1.62T' },
-  { sym: 'TSLA', name: 'Tesla', cap: '$1.43T' },
-]
 
 // ---- Brands You Know (two rows) ----
 
-export type Brand = { sym: string; name: string; cap: string }
+/** A brand card: the logo, name, today's price and move come from the US snapshot (live-ticking). */
+export type Brand = { sym: string; name: string }
 
 export const brandRows: Brand[][] = [
   [
-    { sym: 'NKE', name: 'Nike', cap: '$95B' },
-    { sym: 'MCD', name: 'McDonald’s', cap: '$215B' },
-    { sym: 'KO', name: 'Coca-Cola', cap: '$300B' },
-    { sym: 'SBUX', name: 'Starbucks', cap: '$98B' },
+    { sym: 'NKE', name: 'Nike' },
+    { sym: 'MCD', name: 'McDonald’s' },
+    { sym: 'KO', name: 'Coca-Cola' },
+    { sym: 'SBUX', name: 'Starbucks' },
   ],
   [
-    { sym: 'NFLX', name: 'Netflix', cap: '$520B' },
-    { sym: 'V', name: 'Visa', cap: '$660B' },
-    { sym: 'UBER', name: 'Uber', cap: '$190B' },
-    { sym: 'PEP', name: 'PepsiCo', cap: '$200B' },
+    { sym: 'NFLX', name: 'Netflix' },
+    { sym: 'V', name: 'Visa' },
+    { sym: 'UBER', name: 'Uber' },
+    { sym: 'PEP', name: 'PepsiCo' },
   ],
 ]
-
-// ---- Heatmap ----
-
-/** The index the heatmap shows. Labels: copy `us.heatmap.<value>`. */
-export const heatmapIndices: ('sp' | 'ndx' | 'dow')[] = ['sp', 'ndx', 'dow']
-
-export type HeatValue = { sym: string; pct: number; price: number }
-/** The nine heatmap tiles. Their change % and price are the snapshot's, ticking with live.ts (useLiveHeatmap). */
-export const heatSymbols = ['NVDA', 'AMD', 'AVGO', 'TSLA', 'MU', 'LULU', 'META', 'SLB', 'UNH']
 
 export const formatPct = (n: number) => `${n >= 0 ? '+' : '−'}${Math.abs(n).toFixed(2)}%`
 export const formatUsd = (n: number) => `$${n.toFixed(2)}`
-/** Tile colour strength: 0.55 at flat up to 1 at ±3%. */
-export const heatStrength = (pct: number) => Math.min(1, 0.55 + (Math.abs(pct) / 3) * 0.45)
 
-// ---- Top analyst picks (US Stocks design, 2 Nov) ----
+// ---- Top analyst picks (US Stocks design, 2 Nov; from jojo) ----
 
-/** The analysts' consensus and the 7-day move (sample). The card reuses the titan card: logo · name · sparkline, then
- *  "Recommendation" and "7D". */
-export type AnalystPick = { sym: string; name: string; rating: 'Strong Buy' | 'Buy' | 'Sell'; week: number }
+/** The analysts' consensus (sample). Home shows four as a list (or all as cards); "View all" opens the Top analyst
+ *  picks page (stocks-29), with the full breakdown and the closed picks. */
+export type AnalystPick = {
+  sym: string
+  name: string
+  rating: 'Strong Buy' | 'Buy' | 'Sell'
+  /** Expected profit, % (sample): the analysts' average 12-month target over today's price. Always positive — a pick. */
+  expectedProfit: number
+  /** Share of the analysts covering it who rate it Buy or Strong Buy, % (= ratings: strong buy + buy over all). */
+  analystsPct: number
+  /** How the analysts covering it rate it (sample counts). */
+  ratings: { strongBuy: number; buy: number; hold: number; sell: number }
+  /** When it became a pick. */
+  pickedOn: string
+}
 export const analystPicks: AnalystPick[] = [
-  { sym: 'AMZN', name: 'Amazon', rating: 'Strong Buy', week: 0.92 },
-  { sym: 'NVDA', name: 'NVIDIA', rating: 'Strong Buy', week: 3.48 },
-  { sym: 'MSFT', name: 'Microsoft', rating: 'Strong Buy', week: -0.61 },
-  { sym: 'AVGO', name: 'Broadcom', rating: 'Strong Buy', week: 2.15 },
-  { sym: 'META', name: 'Meta', rating: 'Buy', week: 1.37 },
-  { sym: 'UBER', name: 'Uber', rating: 'Buy', week: -1.24 },
+  { sym: 'AMZN', name: 'Amazon', rating: 'Strong Buy', expectedProfit: 18.6, analystsPct: 94, ratings: { strongBuy: 46, buy: 16, hold: 4, sell: 0 }, pickedOn: '28 Oct 2026' },
+  { sym: 'NVDA', name: 'NVIDIA', rating: 'Strong Buy', expectedProfit: 24.3, analystsPct: 91, ratings: { strongBuy: 44, buy: 14, hold: 5, sell: 1 }, pickedOn: '21 Oct 2026' },
+  { sym: 'MSFT', name: 'Microsoft', rating: 'Strong Buy', expectedProfit: 15.2, analystsPct: 89, ratings: { strongBuy: 36, buy: 14, hold: 6, sell: 0 }, pickedOn: '14 Oct 2026' },
+  { sym: 'AVGO', name: 'Broadcom', rating: 'Strong Buy', expectedProfit: 21.7, analystsPct: 88, ratings: { strongBuy: 28, buy: 9, hold: 5, sell: 0 }, pickedOn: '7 Oct 2026' },
+  { sym: 'META', name: 'Meta', rating: 'Buy', expectedProfit: 12.4, analystsPct: 82, ratings: { strongBuy: 30, buy: 20, hold: 9, sell: 2 }, pickedOn: '30 Sep 2026' },
+  { sym: 'UBER', name: 'Uber', rating: 'Buy', expectedProfit: 19.8, analystsPct: 79, ratings: { strongBuy: 25, buy: 17, hold: 10, sell: 1 }, pickedOn: '23 Sep 2026' },
 ]
 
-// ---- Discover ETFs (US Stocks design, 2 Nov) ----
+/** How many analysts cover a pick. */
+export const analystCount = (pick: AnalystPick) => pick.ratings.strongBuy + pick.ratings.buy + pick.ratings.hold + pick.ratings.sell
 
-export type EtfCountry = 'US' | 'China' | 'Japan' | 'Europe' | 'Korea'
-export const etfCountries: EtfCountry[] = ['US', 'China', 'Japan', 'Europe', 'Korea']
-/**
- * Regular ETFs by country (prices from the US snapshot via usStock). The row leads with `plain` (what it is, 2 Nov —
- * tickers mean nothing to a new user), then "SYM · companies people know". Same words as the ETF list (us-stocks).
- * `holdings` (biggest first) and `total` feed the logo square, as on the ETF list (sample, same as the us-stocks data).
- */
-export const usEtfs: { sym: string; name: string; plain: string; known: string; country: EtfCountry; holdings: string[]; total: number }[] = [
-  { sym: 'SPY', name: 'SPDR S&P 500 ETF', plain: 'Top 500 US stocks', known: 'Apple, Microsoft, NVIDIA', country: 'US', holdings: ['NVDA', 'MSFT', 'AAPL'], total: 503 },
-  { sym: 'QQQ', name: 'Invesco QQQ Trust', plain: "Nasdaq's top 100", known: 'Apple, Microsoft, Amazon', country: 'US', holdings: ['NVDA', 'MSFT', 'AAPL'], total: 101 },
-  { sym: 'VTI', name: 'Vanguard Total Stock Market', plain: 'The whole US market', known: 'Apple, Microsoft, Amazon', country: 'US', holdings: ['NVDA', 'MSFT', 'AAPL'], total: 3612 },
-  { sym: 'SMH', name: 'VanEck Semiconductor ETF', plain: 'Top 25 chip stocks', known: 'NVIDIA, Broadcom, AMD', country: 'US', holdings: ['NVDA', 'AVGO', 'AMD'], total: 26 },
-  { sym: 'MCHI', name: 'iShares MSCI China ETF', plain: 'Big Chinese stocks', known: 'Alibaba, Tencent, Xiaomi', country: 'China', holdings: ['BABA', 'PDD', 'BIDU'], total: 558 },
-  { sym: 'KWEB', name: 'KraneShares China Internet', plain: 'China internet stocks', known: 'Alibaba, Tencent, Temu (PDD)', country: 'China', holdings: ['BABA', 'PDD', 'BIDU'], total: 3 },
-  { sym: 'EWJ', name: 'iShares MSCI Japan ETF', plain: 'Big Japanese stocks', known: 'Toyota, Sony, Nintendo', country: 'Japan', holdings: ['TM', 'SONY', 'MUFG'], total: 186 },
-  { sym: 'VGK', name: 'Vanguard FTSE Europe ETF', plain: 'Big European stocks', known: 'Nestlé, Louis Vuitton, ASML', country: 'Europe', holdings: ['ASML', 'NVO', 'SAP'], total: 1284 },
-  { sym: 'EWY', name: 'iShares MSCI South Korea', plain: 'Big Korean stocks', known: 'Samsung, SK Hynix, Hyundai', country: 'Korea', holdings: ['SSNLF', 'HXSCL'], total: 2 },
+/** A pick that has closed (sample): bought at `entry`, closed at `exit` on `closedOn` (ISO date) after `days` days — at
+ *  its target, or exited early when the analysts dropped it. The return is (exit − entry) / entry. Newest first. */
+export type ClosedPick = {
+  sym: string
+  name: string
+  closedOn: string
+  days: number
+  entry: number
+  exit: number
+  outcome: 'target' | 'exited'
+}
+export const closedPicks: ClosedPick[] = [
+  { sym: 'V', name: 'Visa', closedOn: '2026-11-03', days: 24, entry: 318.4, exit: 344.1, outcome: 'target' },
+  { sym: 'COST', name: 'Costco', closedOn: '2026-11-03', days: 18, entry: 912.5, exit: 878.3, outcome: 'exited' },
+  { sym: 'CRM', name: 'Salesforce', closedOn: '2026-11-03', days: 41, entry: 268.5, exit: 301.2, outcome: 'target' },
+  { sym: 'JPM', name: 'JPMorgan Chase', closedOn: '2026-11-02', days: 33, entry: 241.1, exit: 268.9, outcome: 'target' },
+  { sym: 'AAPL', name: 'Apple', closedOn: '2026-10-30', days: 52, entry: 228.4, exit: 262.7, outcome: 'target' },
+  { sym: 'TSLA', name: 'Tesla', closedOn: '2026-10-30', days: 9, entry: 248.2, exit: 221.4, outcome: 'exited' },
+  { sym: 'NFLX', name: 'Netflix', closedOn: '2026-10-28', days: 61, entry: 980, exit: 1152, outcome: 'target' },
+  { sym: 'GOOGL', name: 'Alphabet', closedOn: '2026-10-28', days: 45, entry: 171.2, exit: 198.6, outcome: 'target' },
 ]
 
-// ---- Sectors heatmap (US Stocks design, 2 Nov: the heatmap, by sector and cap) ----
+/** The sample's "today", for History's Today / Yesterday headings. */
+export const PICKS_TODAY = '2026-11-03'
+
+/** A closed pick's return, %. */
+export const closedReturn = (pick: ClosedPick) => ((pick.exit - pick.entry) / pick.entry) * 100
+
+// ---- Sectors heatmap (US Stocks design, 2 Nov; from jojo) ----
+
+/** The index the heatmap shows. Labels: copy `us.heatmap.<value>`. */
+export const heatmapIndices: ('sp' | 'ndx' | 'dow')[] = ['sp', 'ndx', 'dow']
+export type HeatValue = { sym: string; pct: number; price: number }
+/** The nine tiles of "All". Their change % and price are the snapshot's, ticking with live.ts (useLiveHeatmap). */
+export const heatSymbols = ['NVDA', 'AMD', 'AVGO', 'TSLA', 'MU', 'LULU', 'META', 'SLB', 'UNH']
 
 export type HeatSector = 'all' | 'tech' | 'fin' | 'health' | 'consumer' | 'energy' | 'industrials'
 /** Pill labels: copy `us.sector.<value>` ('all' → `us.sectors.all`). */
@@ -23534,33 +24643,125 @@ export const sectorSymbols = (sector: HeatSector, capIndex: number) => {
   return list.map((_, i) => list[(i + capIndex * 2) % list.length])
 }
 
-// ---- Explore by themes (US Stocks design, 2 Nov: the IND "Invest in Ideas" card with US themes) ----
+// ---- Discover ETFs ----
 
-/** A theme: its name, up to five member tickers for the logo grid, and how many stocks (or ETFs) it holds. */
-export const usThemes: { id: string; name: string; logos: string[]; count: number; unit: 'stocks' | 'etfs' }[] = [
-  { id: 'ai', name: 'Artificial Intelligence', logos: ['NVDA', 'MSFT', 'GOOGL', 'META', 'PLTR'], count: 27, unit: 'stocks' },
-  { id: 'defense', name: 'Defense', logos: ['LMT', 'RTX', 'NOC', 'GD', 'BA'], count: 15, unit: 'stocks' },
-  { id: 'oil', name: 'Oil Price Dependents', logos: ['XOM', 'CVX', 'COP', 'OXY', 'SLB'], count: 18, unit: 'stocks' },
-  { id: 'consumer', name: 'Consumer Brands', logos: ['NKE', 'SBUX', 'KO', 'MCD', 'COST'], count: 33, unit: 'stocks' },
-  { id: 'space', name: 'Space', logos: ['RKLB', 'ASTS', 'LMT', 'BA', 'SPCE'], count: 11, unit: 'stocks' },
-  { id: 'dividend', name: 'Dividend Stocks', logos: ['KO', 'JNJ', 'PEP', 'PFE', 'XOM'], count: 43, unit: 'stocks' },
-  // Leveraged ETFs theme off for now (2 Nov).
-  { id: 'parking', name: 'Dollar Parking', logos: ['SGOV', 'BIL', 'SHV'], count: 9, unit: 'etfs' },
+export type EtfRegion = 'us' | 'china' | 'japan' | 'europe' | 'korea'
+
+/** The region chips of Discover ETFs, in order (labels are copy: `us.etfs.region.<id>`). */
+export const etfRegions: EtfRegion[] = ['us', 'china', 'japan', 'europe', 'korea']
+
+/** The fund house behind an ETF: its logo file (assets/us/etf/<issuer>.svg, the logo on its plate). None: initials. */
+export type EtfIssuer = 'spdr' | 'invesco' | 'vanguard' | 'vaneck' | 'ishares' | 'kraneshares' | 'wisdomtree' | 'globalx'
+
+/**
+ * A Discover ETFs row: the fund in plain words (what you're buying), its ticker and real name, its fund house.
+ * Every symbol is in the US snapshot (`npm run us:snapshot` picks them up from here), so price and day change are real.
+ * Four per region; Korea has only two plain (not leveraged) US-listed funds.
+ */
+export type DiscoverEtf = { sym: string; headline: string; fund: string; issuer?: EtfIssuer }
+
+export const discoverEtfs: Record<EtfRegion, DiscoverEtf[]> = {
+  us: [
+    { sym: 'SPY', headline: 'Top 500 US stocks', fund: 'SPDR S&P 500 ETF', issuer: 'spdr' },
+    { sym: 'QQQ', headline: 'Nasdaq’s top 100', fund: 'Invesco QQQ Trust', issuer: 'invesco' },
+    { sym: 'VTI', headline: 'The whole US market', fund: 'Vanguard Total Stock Market', issuer: 'vanguard' },
+    { sym: 'SMH', headline: 'Top 25 chip stocks', fund: 'VanEck Semiconductor ETF', issuer: 'vaneck' },
+  ],
+  china: [
+    { sym: 'MCHI', headline: 'China’s biggest companies', fund: 'iShares MSCI China ETF', issuer: 'ishares' },
+    { sym: 'FXI', headline: 'China’s top 50', fund: 'iShares China Large-Cap ETF', issuer: 'ishares' },
+    { sym: 'KWEB', headline: 'China’s internet giants', fund: 'KraneShares CSI China Internet', issuer: 'kraneshares' },
+    { sym: 'CQQQ', headline: 'China’s tech companies', fund: 'Invesco China Technology ETF', issuer: 'invesco' },
+  ],
+  japan: [
+    { sym: 'EWJ', headline: 'Japan’s biggest companies', fund: 'iShares MSCI Japan ETF', issuer: 'ishares' },
+    { sym: 'DXJ', headline: 'Japan’s exporters, yen-proof', fund: 'WisdomTree Japan Hedged Equity', issuer: 'wisdomtree' },
+    { sym: 'HEWJ', headline: 'Japan’s giants, yen-proof', fund: 'iShares Currency Hedged MSCI Japan', issuer: 'ishares' },
+    { sym: 'SCJ', headline: 'Japan’s smaller companies', fund: 'iShares MSCI Japan Small-Cap', issuer: 'ishares' },
+  ],
+  europe: [
+    { sym: 'VGK', headline: 'Europe’s biggest companies', fund: 'Vanguard FTSE Europe ETF', issuer: 'vanguard' },
+    { sym: 'FEZ', headline: 'Eurozone’s top 50', fund: 'SPDR EURO STOXX 50 ETF', issuer: 'spdr' },
+    { sym: 'EZU', headline: 'The whole Eurozone', fund: 'iShares MSCI Eurozone ETF', issuer: 'ishares' },
+    { sym: 'IEUR', headline: 'All of Europe in one', fund: 'iShares Core MSCI Europe ETF', issuer: 'ishares' },
+  ],
+  korea: [
+    { sym: 'EWY', headline: 'South Korea’s top companies', fund: 'iShares MSCI South Korea ETF', issuer: 'ishares' },
+    { sym: 'FLKR', headline: 'The whole Korean market', fund: 'Franklin FTSE South Korea ETF' },
+  ],
+}
+
+/** Discover ETFs can also be picked by sector (the switcher chip before the chips: Country ⇄ Sector). */
+export type EtfSector = 'broad' | 'tech' | 'industrials' | 'financials' | 'healthcare' | 'energy'
+
+/** The sector chips of Discover ETFs, in order (labels are copy: `us.etfs.sector.<id>`). */
+export const etfSectors: EtfSector[] = ['broad', 'tech', 'industrials', 'financials', 'healthcare', 'energy']
+
+/** Discover ETFs by sector: up to four funds each, all in the US snapshot (the snapshot has one fund each for finance, health and energy). */
+export const discoverEtfsBySector: Record<EtfSector, DiscoverEtf[]> = {
+  broad: [
+    discoverEtfs.us[0],
+    discoverEtfs.us[2],
+    discoverEtfs.europe[0],
+    discoverEtfs.japan[0],
+  ],
+  tech: [
+    discoverEtfs.us[1],
+    discoverEtfs.us[3],
+    { sym: 'BOTZ', headline: 'Robots and AI makers', fund: 'Global X Robotics & AI ETF', issuer: 'globalx' },
+    discoverEtfs.china[3],
+  ],
+  industrials: [
+    { sym: 'ITA', headline: 'US aircraft and defence', fund: 'iShares US Aerospace & Defense', issuer: 'ishares' },
+    { sym: 'UFO', headline: 'Space and satellite companies', fund: 'Procure Space ETF' },
+  ],
+  financials: [{ sym: 'XLF', headline: 'US banks and insurers', fund: 'Financial Select Sector SPDR', issuer: 'spdr' }],
+  healthcare: [{ sym: 'XLV', headline: 'US drug makers and hospitals', fund: 'Health Care Select Sector SPDR', issuer: 'spdr' }],
+  energy: [{ sym: 'XLE', headline: 'US oil and gas companies', fund: 'Energy Select Sector SPDR', issuer: 'spdr' }],
+}
+
+// ---- Explore by themes ----
+
+export type ThemeId = 'ai' | 'bigtech' | 'dividend' | 'ev' | 'health' | 'parking'
+
+/** A theme's return, %, over 1 and 3 years: all its stocks in equal amounts (sample — the snapshot has one month of closes). */
+export type ThemeReturns = { '1y': number; '3y': number }
+
+/**
+ * A theme (the old app's "idea"): its stocks, in the order the theme page lists them. Name and description are copy
+ * (`us.theme.<id>`, `us.theme.<id>.desc`); every symbol is in the US snapshot with a logo, so prices and logos are real.
+ * Leveraged ETFs are off for now (no theme), "Dollar parking" is steady large caps to hold dollars in (ETFs have the ETFs shortcut).
+ */
+export const themes: { id: ThemeId; symbols: string[]; returns: ThemeReturns }[] = [
+  { id: 'ai', symbols: ['NVDA', 'AMD', 'AVGO', 'MU', 'QCOM', 'INTC', 'PLTR', 'ORCL'], returns: { '1y': 48.6, '3y': 212.4 } },
+  { id: 'bigtech', symbols: ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'META', 'NFLX', 'ADBE', 'CRM'], returns: { '1y': 27.3, '3y': 96.8 } },
+  { id: 'dividend', symbols: ['KO', 'JNJ', 'XOM', 'PEP', 'PG', 'CVX', 'ABBV', 'MRK'], returns: { '1y': 9.4, '3y': 24.1 } },
+  { id: 'ev', symbols: ['TSLA', 'RIVN', 'NIO', 'LCID', 'F', 'GM', 'PLUG', 'CHPT'], returns: { '1y': -18.2, '3y': -41.5 } },
+  { id: 'health', symbols: ['LLY', 'JNJ', 'UNH', 'ABBV', 'MRK', 'PFE'], returns: { '1y': 6.1, '3y': 38.7 } },
+  { id: 'parking', symbols: ['JPM', 'V', 'MA', 'WMT', 'COST', 'MCD', 'PG', 'HD'], returns: { '1y': 16.8, '3y': 52.3 } },
 ]
 
-// ---- Explore by themes (earlier version) ----
+export const themeById = (id: ThemeId) => themes.find((theme) => theme.id === id)!
 
-/** Each theme shows three company logos overlapping and a "+n" disc. Names: copy `us.theme.<id>`. (The prototype used placeholder thumbnails; these are real US tickers.) */
-export const themes: { id: 'trending' | 'leveraged' | 'dividend' | 'parking'; logos: string[]; more: string }[] = [
-  { id: 'trending', logos: ['NVDA', 'TSLA', 'PLTR'], more: '+4' },
-  { id: 'leveraged', logos: ['AMD', 'MU', 'AVGO'], more: '+4' },
-  { id: 'dividend', logos: ['KO', 'JNJ', 'XOM'], more: '+4' },
-  { id: 'parking', logos: ['JPM', 'V', 'MA'], more: '+24' },
+/** A theme's 1-month return, %: its stocks in equal amounts, from the snapshot's month of closes (real). */
+export const themeMonthReturn = (symbols: string[]) => {
+  const moves = symbols.flatMap((sym) => {
+    const closes = usQuote(sym)?.closes ?? []
+    return closes.length > 1 ? [(closes[closes.length - 1] - closes[0]) / closes[0]] : []
+  })
+  return moves.length ? (moves.reduce((sum, m) => sum + m, 0) / moves.length) * 100 : 0
+}
+
+/** The theme the theme page (stocks-23 …) shows is one screen per theme: `themeScreenId`. */
+export const themeScreenId = (id: ThemeId) => `stocks-${23 + themes.findIndex((theme) => theme.id === id)}`
+
+
+/** The user's US watchlists on the US tab (names are the user's own), in the IN tab's Watchlist rail. */
+export const usWatchlists: Watchlist[] = [
+  { id: 'us-tech', name: 'US tech', count: 9 },
+  { id: 'dividends', name: 'Dividend payers', count: 5 },
+  { id: 'us-research', name: 'To research', count: 0 },
 ]
-
-/** Sparkline artwork under each Titan (up / down). Illustration — keeps its own colours. */
-export { default as sparkUp } from '../../assets/us/spark-up.svg'
-export { default as sparkDown } from '../../assets/us/spark-down.svg'
 ```
 
 ### `src/flows/stocks/components/us/sheets/ActivationApprovedSheet.tsx`
@@ -23589,7 +24790,7 @@ export function ActivationApprovedSheet({ onAddMoney, onLater }: { onAddMoney?: 
       header={<BottomSheetHeader size="lg" headingId={id} icon={<Spot icon={msCheckCircle} tone="success" size="md" />} heading={t('us.approved.title')} description={t('us.approved.description')} />}
       footer={
         <ButtonGroup aria-label={t('us.approved.actions')}>
-          <Button size="lg" onClick={onAddMoney}>{t('us.approved.addMoney')}</Button>
+          <Button variant="brand" size="lg" onClick={onAddMoney}>{t('us.approved.addMoney')}</Button>
           <Button size="lg" variant="secondary" onClick={onLater}>{t('us.approved.later')}</Button>
         </ButtonGroup>
       }
@@ -23876,13 +25077,11 @@ export function RiskDisclosureSheet({ onAgree, onClose }: { onAgree?: () => void
 }
 
 .logo {
-  box-sizing: border-box;
-  overflow: hidden;
-  border: 2px solid var(--l3-surface-primary); /* FLAG: raw px — the ring between overlapping discs */
+  border: 2px solid var(--l3-surface-primary); /* FLAG: raw px */
   border-radius: var(--l3-radius-full);
   background: var(--l3-surface-secondary);
-  width: var(--l3-size-44, 44px); /* 40 avatar + 2 ring each side */
-  height: var(--l3-size-44, 44px);
+  width: 45px; /* FLAG: raw px */
+  height: 45px; /* FLAG: raw px */
   animation: logo-in .48s var(--pop) calc(.38s + var(--i) * 70ms) both;
   justify-content: center;
   align-items: center;
@@ -23895,6 +25094,16 @@ export function RiskDisclosureSheet({ onAgree, onClose }: { onAgree?: () => void
   margin-right: 0;
 }
 
+.logo[data-dark] {
+  background: var(--l3-static-black); /* brand plate for white / dark-designed marks (Apple, NVIDIA): stays dark in light and dark */
+}
+
+.logoImg {
+  border-radius: var(--l3-radius-full);
+  object-fit: cover;
+  width: 27.5px; /* FLAG: raw px */
+  height: 27.5px; /* FLAG: raw px */
+}
 
 .title {
   margin-bottom: var(--l3-spacing-24);
@@ -24007,19 +25216,6 @@ export function RiskDisclosureSheet({ onAgree, onClose }: { onAgree?: () => void
     animation: none!important;
   }
 }
-
-/* Dark grey plates (2 Nov, not white): each mark sits 10 in from the disc's edge, so the circle never crops it. */
-.logo {
-  background: var(--l3-surface-tertiary);
-}
-
-.logoImg {
-  box-sizing: border-box;
-  width: 100%;
-  height: 100%;
-  padding: var(--l3-spacing-10);
-  object-fit: contain;
-}
 ```
 
 ### `src/flows/stocks/components/us/sheets/UsFtuxSheet.tsx`
@@ -24037,7 +25233,6 @@ import { ButtonGroup } from '@l3/components/ButtonGroup'
 import { Icon } from '@l3/components/Icon'
 import { msClose, msHowToReg, msPieChart, msSchedule } from '@l3/icons/material'
 import { t } from '../../../copy'
-import { usLogo } from '../../../../../shared/data/usStocks'
 import bloomBlue from '../../../assets/us/ftux/bloom-blue.svg'
 import bloomRed from '../../../assets/us/ftux/bloom-red.svg'
 import flag from '../../../assets/us/ftux/flag.webp'
@@ -24045,20 +25240,23 @@ import flagGhost from '../../../assets/us/ftux/flag-ghost.png'
 import flagMaskGhost from '../../../assets/us/ftux/flag-mask-ghost.svg'
 import flagMaskMain from '../../../assets/us/ftux/flag-mask-main.svg'
 import markAapl from '../../../assets/us/ftux/mark-aapl.svg'
+import markGoogl from '../../../assets/us/ftux/mark-googl.svg'
+import markMsft from '../../../assets/us/ftux/mark-msft.svg'
+import markNvda from '../../../assets/us/ftux/mark-nvda.svg'
+import tsla from '../../../assets/us/ftux/tsla.png'
 import styles from './UsFtuxSheet.module.css'
 
 /** The width (px) the prototype drew the FTUX artwork on. */
 const ART_FRAME = 360
 
-// The company marks on dark grey plates (2 Nov): the shared US logo PNGs (transparent marks drawn edge to edge) with
-// 10 around them, and Apple's white mark (its shared PNG comes on a white tile). Each disc has a 2px surface ring so
-// the overlapping stack reads as separate discs.
-const logos = [
-  { name: 'Apple', src: markAapl },
-  { name: 'NVIDIA', src: usLogo('NVDA') },
-  { name: 'Tesla', src: usLogo('TSLA') },
-  { name: 'Microsoft', src: usLogo('MSFT') },
-  { name: 'Google', src: usLogo('GOOGL') },
+type CompanyLogo = { name: string; src: string; size?: number; dark?: boolean; round?: boolean }
+
+const logos: CompanyLogo[] = [
+  { name: 'Apple', src: markAapl, size: 21.25, dark: true },
+  { name: 'NVIDIA', src: markNvda, size: 26.25, dark: true },
+  { name: 'Tesla', src: tsla, round: true },
+  { name: 'Microsoft', src: markMsft, size: 20 },
+  { name: 'Google', src: markGoogl, size: 21.25 },
 ]
 
 const benefits = [
@@ -24120,8 +25318,8 @@ export function UsFtuxSheet({ onActivate, onClose }: { onActivate?: () => void; 
         <div className={styles.content}>
           <div className={styles.logos} role="img" aria-label={t('us.ftux.logos')}>
             {logos.map((logo, i) => (
-              <span key={logo.name} className={styles.logo} style={{ '--i': i } as CSSProperties}>
-                <img src={logo.src} alt="" className={styles.logoImg} />
+              <span key={logo.name} className={styles.logo} data-dark={logo.dark || undefined} style={{ '--i': i } as CSSProperties}>
+                {logo.round ? <img src={logo.src} alt="" className={styles.logoImg} /> : <img src={logo.src} alt="" style={{ width: logo.size, height: logo.size }} />}
               </span>
             ))}
           </div>
@@ -24189,21 +25387,23 @@ export function UsFtuxSheet({ onActivate, onClose }: { onActivate?: () => void; 
 ### `src/flows/stocks/components/us/useAutoSlide.ts`
 
 ```ts
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 /**
  * Auto-advancing carousel position. `pos` counts up (the track has one extra copy of slide 0 at the end); when it reaches
  * the copy, `snap` flips on for a frame while `pos` jumps back to 0 without animating. `index` is the visible slide.
+ * `go(1)` / `go(-1)` step by hand (a swipe) and restart the timer, so the next auto step waits a full `every`.
  */
 export function useAutoSlide(count: number, { every = 3000, slideMs = 500, still = false }: { every?: number; slideMs?: number; still?: boolean } = {}) {
   const [pos, setPos] = useState(0)
   const [snap, setSnap] = useState(false)
+  const [restart, setRestart] = useState(0)
 
   useEffect(() => {
     if (still || count < 2 || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
     const timer = window.setInterval(() => setPos((p) => p + 1), every)
     return () => window.clearInterval(timer)
-  }, [count, every, still])
+  }, [count, every, still, restart])
 
   useEffect(() => {
     if (count < 2 || pos < count) return
@@ -24226,7 +25426,14 @@ export function useAutoSlide(count: number, { every = 3000, slideMs = 500, still
     }
   }, [snap])
 
-  return { pos, index: count ? pos % count : 0, snap }
+  const go = useCallback((step: 1 | -1) => {
+    if (count < 2) return
+    // Back from the first slide runs across to the last one.
+    setPos((p) => (step === 1 ? Math.min(p + 1, count) : p % count === 0 ? count - 1 : p - 1))
+    setRestart((r) => r + 1)
+  }, [count])
+
+  return { pos, index: count ? pos % count : 0, snap, go }
 }
 ```
 
@@ -24259,6 +25466,10 @@ import { useCallback, useLayoutEffect, useRef } from 'react'
 const MIN_DISTANCE = 48
 const MIN_VELOCITY = 0.45
 const EASING = 'cubic-bezier(0.2, 0, 0, 1)'
+const SLIDE_MS = 280
+// The rest of the page: a quick dissolve, done while the card is still moving.
+const FADE_OUT_MS = 100
+const FADE_IN_MS = 200
 
 const reducedMotion = () => typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches
 
@@ -24278,7 +25489,7 @@ const insideSideScroller = (from: HTMLElement | null, stop: HTMLElement) => {
 }
 
 /** Pointer-swipe on an element: `onSwipe(±1)` when released far/fast enough, `onDrag(dx)` while dragging (null when it ends). */
-function useSwipe(onSwipe: (direction: 1 | -1) => void, onDrag: (dx: number | null) => void) {
+function useSwipe(onSwipe: (direction: 1 | -1) => void, onDrag: (dx: number | null) => void, area?: string) {
   const swipeRef = useRef(onSwipe)
   swipeRef.current = onSwipe
   const dragRef = useRef(onDrag)
@@ -24296,7 +25507,10 @@ function useSwipe(onSwipe: (direction: 1 | -1) => void, onDrag: (dx: number | nu
 
     const down = (e: PointerEvent) => {
       const target = e.target as HTMLElement
-      if (e.button !== 0 || target.closest('input, textarea, [role="dialog"], [contenteditable]') || insideSideScroller(target, el)) return
+      // `data-own-swipe`: a part with its own swipe (the activation card's benefits strip) keeps the gesture.
+      if (e.button !== 0 || target.closest('input, textarea, [role="dialog"], [contenteditable], [data-own-swipe]') || insideSideScroller(target, el)) return
+      // `area`: the swipe starts only there (the top card), not anywhere on the page.
+      if (area && !target.closest(area)) return
       start = { x: e.clientX, y: e.clientY, t: e.timeStamp, id: e.pointerId }
       swiped = false
       dragging = false
@@ -24358,34 +25572,67 @@ function useSwipe(onSwipe: (direction: 1 | -1) => void, onDrag: (dx: number | nu
 }
 
 /**
- * Swipe between two pages with a little rubber-band drag and a slide-in on arrival.
- * `bind` goes on the scroll container; `contentRef` on the content that moves; call `entered(±1)` just before switching by tap
- * so the new page slides in from the right side.
+ * Swipe between two markets' pages: only the top cards move sideways — a track with both, the other one beside it,
+ * follows the finger and slides across so the other market's card comes into view, as in a carousel — while the rest of the page (`fades()`) just dissolves
+ * into the other market's. A tap on a switcher (`go`) runs the same switch, so a swipe and a tap look alike.
+ * `bind` goes on the scroll container; `area` is where a swipe may start (the cards); `slides()` returns what moves
+ * sideways (the cards' track), `fades()` what dissolves (the feed under it).
  */
-export function useSwipeBetween({ canGo, onSwitch, page }: { canGo: (direction: 1 | -1) => boolean; onSwitch: (direction: 1 | -1) => void; page: string }) {
-  const content = useRef<HTMLElement | null>(null)
+export function useSwipeBetween({ canGo, onSwitch, page, area, slides, fades }: { canGo: (direction: 1 | -1) => boolean; onSwitch: (direction: 1 | -1) => void; page: string; area?: string; slides: () => HTMLElement[]; fades: () => HTMLElement[] }) {
   const entering = useRef<number>(0)
   const settling = useRef(false)
+  const leaving = useRef(false)
+  const pageNow = useRef(page)
+  pageNow.current = page
 
   const springBack = () => {
-    const el = content.current
-    if (!el || !el.style.translate) return
-    const from = { translate: el.style.translate, opacity: el.style.opacity || '1' }
-    el.style.translate = ''
-    el.style.opacity = ''
-    el.animate([from, { translate: '0 0', opacity: '1' }], { duration: 240, easing: EASING })
+    for (const el of slides()) {
+      if (!el.style.translate) continue
+      const from = { translate: el.style.translate }
+      el.style.translate = ''
+      el.animate([from, { translate: '0 0' }], { duration: 240, easing: EASING })
+    }
   }
 
-  const bind = useSwipe(
+  // The track slides to the other card (from where the finger left it) as the rest fades out; then the switch.
+  const leave = (direction: 1 | -1, commit: () => void) => {
+    if (leaving.current) return
+    entering.current = direction
+    const moving = slides()
+    const dissolving = fades()
+    if (reducedMotion() || (!moving.length && !dissolving.length)) return commit()
+    leaving.current = true
+    Promise.all([
+      ...moving.map((el) => {
+        const from = { translate: el.style.translate || '0 0' }
+        el.style.translate = ''
+        // The track moves one card's width: the other card is then where this one was.
+        return el.animate([from, { translate: `${-direction * el.offsetWidth}px 0` }], { duration: SLIDE_MS, easing: EASING, fill: 'forwards' }).finished
+      }),
+      ...dissolving.map((el) => el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: FADE_OUT_MS, easing: 'linear', fill: 'forwards' }).finished),
+    ]).then(done, done)
+    function done() {
+      leaving.current = false
+      const was = pageNow.current
+      commit()
+      // The switch didn't happen (still the same page once React has had time to render): bring the old one back
+      // rather than leave it hidden.
+      setTimeout(() => {
+        if (pageNow.current !== was || !entering.current) return
+        entering.current = 0
+        for (const el of [...slides(), ...fades()]) el.getAnimations().forEach((a) => a.cancel())
+      }, 120)
+    }
+  }
+
+  const swipeBind = useSwipe(
     (direction) => {
       settling.current = false
       if (!canGo(direction)) return springBack()
-      entering.current = direction
-      onSwitch(direction)
+      leave(direction, () => onSwitch(direction))
     },
     (dx) => {
-      const el = content.current
-      if (!el || reducedMotion()) return
+      if (reducedMotion() || leaving.current) return
       if (dx === null) {
         settling.current = true
         setTimeout(() => {
@@ -24394,30 +25641,35 @@ export function useSwipeBetween({ canGo, onSwitch, page }: { canGo: (direction: 
         }, 0)
         return
       }
-      const pull = canGo(dx < 0 ? 1 : -1) ? 0.6 : 0.18
-      el.style.translate = `${dx * pull}px 0`
-      el.style.opacity = String(1 - Math.min(Math.abs(dx) / 600, 0.3))
+      // Swiping is off altogether (neither way goes): the card doesn't even rubber-band.
+      if (!canGo(1) && !canGo(-1)) return
+      // Towards a market: the card follows the finger. Past the last one: a short rubber band.
+      const pull = canGo(dx < 0 ? 1 : -1) ? 1 : 0.18
+      for (const el of slides()) el.style.translate = `${dx * pull}px 0`
     },
+    area,
   )
 
   useLayoutEffect(() => {
-    const el = content.current
     const from = entering.current
-    if (!el || !from) return
+    if (!from) return
     entering.current = 0
-    el.style.translate = ''
-    el.style.opacity = ''
-    if (!reducedMotion()) el.animate([{ translate: `${from * 56}px 0`, opacity: '0' }, { translate: '0 0', opacity: '1' }], { duration: 300, easing: EASING })
+    const motion = !reducedMotion()
+    // The track has already brought the new card into place: it just resets (now with that card in the middle).
+    for (const el of slides()) {
+      el.getAnimations().forEach((a) => a.cancel())
+      el.style.translate = ''
+    }
+    for (const el of fades()) {
+      el.getAnimations().forEach((a) => a.cancel())
+      if (motion) el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: FADE_IN_MS, easing: 'linear' })
+    }
   }, [page])
 
   return {
-    bind,
-    contentRef: (el: HTMLElement | null) => {
-      content.current = el
-    },
-    entered: (direction: 1 | -1) => {
-      entering.current = direction
-    },
+    bind: swipeBind,
+    /** Switch by tap (tabs, market button): the same switch as a swipe, towards `direction`. */
+    go: (direction: 1 | -1, commit: () => void) => leave(direction, commit),
   }
 }
 ```
@@ -24431,20 +25683,19 @@ export function useSwipeBetween({ canGo, onSwitch, page }: { canGo: (direction: 
   "top.wallet": "Wallet",
   "top.profile": "Profile and settings",
   "indices.label": "Market indices",
-  "holdings.label": "Current Holdings",
-  "holdings.overallLabel": "Overall Holdings",
-  "holdings.inLabel": "INR Holdings",
+  "holdings.label": "IN Stocks holdings",
+  "holdings.overallLabel": "Overall holdings",
+  "holdings.inLabel": "IN Stocks holdings",
   "products.label": "Products",
   "products.new": "New",
   "shortcuts.title": "Do More With Lemonn",
-  "shortcuts.watchlistBadge": "{count} in your watchlist",
+  "shortcuts.newBadge": "new",
   "movers.title": "Top Movers",
   "movers.tabsLabel": "Movers",
   "movers.gainers": "Top Gainers",
   "movers.losers": "Top Losers",
   "movers.under100": "Under ₹100",
   "watchlists.title": "Watchlist",
-  "watchlists.new": "Add Watchlist",
   "watchlists.railLabel": "Your watchlists",
   "watchlists.one": "{count} stock",
   "watchlists.many": "{count} stocks",
@@ -24474,14 +25725,28 @@ export function useSwipeBetween({ canGo, onSwitch, page }: { canGo: (direction: 
   "disclosure.readMore": "Read More",
   "disclosure.readLess": "Read Less",
   "us.tabs.label": "Market",
-  "us.tabs.in": "INR Stocks",
-  "us.tabs.us": "USD Stocks",
+  "us.tabs.in": "IN Stocks",
+  "us.tabs.us": "US Stocks",
   "us.tabs.live": "Live till 2:30 AM",
   "us.tabs.usLabel": "US Stocks, live till 2:30 AM IST",
   "us.tabs.inShort": "IND",
   "us.tabs.usShort": "US",
   "us.tabs.new": "New",
   "us.indices.label": "US market indices",
+  "in.kyc.title": "Start your KYC",
+  "in.kyc.subtitle": "This will take only 2 minutes.",
+  "in.kyc.cta": "Start KYC",
+  "in.kyc.benefitsHeader": "Start to unlock exclusive benefits",
+  "in.benefit.dash.tag": "DASH",
+  "in.benefit.dash.text": "Save up to ₹50 per trade",
+  "in.benefit.brokerage.tag": "Brokerage waiver",
+  "in.benefit.brokerage.text": "Up to 100% discount on all trades",
+  "in.benefit.mtf.tag": "MTF",
+  "in.benefit.mtf.text": "At 10.95% with 5x leverage",
+  "us.lock.kyc": "Complete your KYC to unlock these benefits",
+  "us.lock.activate": "Activate to unlock these benefits",
+  "us.lock.soon": "Benefits activating soon",
+  "us.lock.open": "Benefits unlocked",
   "us.kyc.title": "Complete your KYC first",
   "us.kyc.subtitle": "US Stocks opens once your Lemonn KYC is done",
   "us.kyc.cta": "Complete KYC",
@@ -24501,6 +25766,7 @@ export function useSwipeBetween({ canGo, onSwitch, page }: { canGo: (direction: 
   "us.benefit.kyc.text": "No new account or KYC needed",
   "us.movers.title": "Top Movers",
   "us.movers.tabsLabel": "Top movers filter",
+  "us.movers.railLabel": "Top movers, swipe for more",
   "us.movers.gainers": "Top Gainers",
   "us.movers.losers": "Top Losers",
   "us.movers.active": "Most Active",
@@ -24511,22 +25777,54 @@ export function useSwipeBetween({ canGo, onSwitch, page }: { canGo: (direction: 
   "us.cap.mid": "Mid Cap",
   "us.cap.small": "Small Cap",
   "us.cap.switch": "{cap}, tap to switch",
-  "us.titans.title": "Trillion Dollar Titans",
-  "us.titans.railLabel": "Trillion dollar companies",
   "us.brands.title": "Brands You Know",
   "us.brands.railLabel": "Brands",
-  "us.heatmap.title": "Heatmap",
-  "us.heatmap.index": "Index",
-  "us.heatmap.indexLabel": "Index, tap to switch",
-  "us.heatmap.tabsLabel": "Heatmap index",
-  "us.heatmap.sp": "S&P 500",
-  "us.heatmap.ndx": "Nasdaq 100",
-  "us.heatmap.dow": "Dow Jones",
+  "us.etfs.title": "Discover ETFs",
+  "us.etfs.description": "A basket of stocks in one buy, like Nifty 50",
+  "us.etfs.regionsLabel": "ETFs by region",
+  "us.etfs.region.us": "US",
+  "us.etfs.region.china": "China",
+  "us.etfs.region.japan": "Japan",
+  "us.etfs.region.europe": "Europe",
+  "us.etfs.region.korea": "Korea",
+  "us.etfs.row": "{sym} · {fund}",
+  "us.etfs.by.country": "Country",
+  "us.etfs.by.sector": "Sector",
+  "us.etfs.by.switch": "Filter by {by}, tap to switch",
+  "us.etfs.sectorsLabel": "ETFs by sector",
+  "us.etfs.sector.broad": "Broad market",
+  "us.etfs.sector.tech": "Technology",
+  "us.etfs.sector.industrials": "Industrials",
+  "us.etfs.sector.financials": "Financials",
+  "us.etfs.sector.healthcare": "Healthcare",
+  "us.etfs.sector.energy": "Energy",
+  "us.support.subject": "US Stocks activation still under review",
   "us.themes.title": "Explore by themes",
-  "us.theme.trending": "Trending",
-  "us.theme.leveraged": "Leveraged ETFs",
-  "us.theme.dividend": "Dividend Stocks",
-  "us.theme.parking": "Dollar Parking",
+  "us.themes.pageTitle": "Themes",
+  "us.themes.railLabel": "Themes",
+  "us.themes.stocks": "{count} stocks",
+  "us.themes.return1y": "1Y",
+  "us.themes.cardLabel": "{name}: {pct}% in 1 year, {count} stocks",
+  "us.themes.returns": "Returns",
+  "us.themes.period.1m": "1M",
+  "us.themes.period.1y": "1Y",
+  "us.themes.period.3y": "3Y",
+  "us.themes.periodSwitch": "Return period, tap to change",
+  "us.themes.allStocks": "All stocks",
+  "us.themes.footnote": "Returns treat all its stocks in equal amounts. Past returns don’t guarantee future returns. The securities are quoted as an example, not as a recommendation.",
+  "us.themes.back": "Back",
+  "us.theme.ai": "AI & chips",
+  "us.theme.ai.desc": "The companies that design the chips and software behind the AI boom.",
+  "us.theme.bigtech": "Big Tech",
+  "us.theme.bigtech.desc": "The giants you use every day: phones, search, shopping, streaming and cloud.",
+  "us.theme.dividend": "Dividend payers",
+  "us.theme.dividend.desc": "Steady, established companies with a record of paying shareholders.",
+  "us.theme.ev": "EV & clean energy",
+  "us.theme.ev.desc": "Carmakers and energy firms betting on electric driving and charging.",
+  "us.theme.health": "Healthcare leaders",
+  "us.theme.health.desc": "Drugmakers and insurers that serve a growing, ageing world.",
+  "us.theme.parking": "Dollar parking",
+  "us.theme.parking.desc": "Large, steady businesses to hold your dollars in while you wait for ideas.",
   "us.benefit.stocks.tag": "5,000+",
   "us.benefit.stocks.text": "US stocks and ETFs",
   "us.benefit.evening.tag": "Evening",
@@ -24535,8 +25833,15 @@ export function useSwipeBetween({ canGo, onSwitch, page }: { canGo: (direction: 
   "us.review.subtitle": "This usually takes up to 1 working day",
   "us.support.cta": "Contact Support",
   "us.onTheWay.title": "Money on the way",
-  "us.onTheWay.subtitle": "Trade from Thu 8 PM",
-  "us.onTheWay.cta": "Track Transfer",
+  "us.onTheWay.subtitle": "Expected ready to trade by Thu 8 PM",
+  "us.onTheWay.cta": "View details",
+  "us.transfer.label": "Your transfer to US Stocks",
+  "us.transfer.paid": "Paid",
+  "us.transfer.sent": "Sent to US",
+  "us.transfer.ready": "Ready",
+  "us.transfer.days": "1–2 days",
+  "us.transfer.eta": "Expected {eta}",
+  "us.transfer.safe": "Your money is safe with Lemonn",
   "us.benefit.debit.tag": "What happens next",
   "us.benefit.debit.text": "Debited from your bank by Wed",
   "us.benefit.convert.tag": "What happens next",
@@ -24552,7 +25857,7 @@ export function useSwipeBetween({ canGo, onSwitch, page }: { canGo: (direction: 
   "us.ready.title": "Your money is ready",
   "us.ready.subtitle": "$1,035.37 added to your US wallet",
   "us.ready.cta": "Explore US Stocks",
-  "us.holdings.label": "USD Holdings",
+  "us.holdings.label": "US Stocks holdings",
   "us.sheet.close": "Close",
   "us.ftux.title": "Invest in US stocks and ETFs on Lemonn",
   "us.ftux.logos": "Apple, NVIDIA, Tesla, Microsoft and Google",
@@ -24589,18 +25894,52 @@ export function useSwipeBetween({ canGo, onSwitch, page }: { canGo: (direction: 
   "switchGuide.fraction": "0.25 share · $1 minimum",
   "switchGuide.buy": "Buy",
   "switchGuide.bought": "Bought 0.25 {sym}",
-  "movers.under500": "Under ₹500",
-  "movers.high52": "52W High",
-  "movers.low52": "52W Low",
+  "switcher.label": "Home prototype settings",
+  "switcher.drag": "Drag to move, or into an edge to tuck it away",
+  "switcher.open": "Open Home prototype settings",
+  "switcher.us.kyc": "US · KYC pending",
+  "switcher.us.off": "US · Not activated",
+  "switcher.us.review": "US · Under review",
+  "switcher.us.support": "US · Contact support",
+  "switcher.us.failed": "US · Failed",
+  "switcher.us.active": "US · Activated",
+  "switcher.wallet.empty": "Wallet · $0",
+  "switcher.wallet.onTheWay": "Wallet · On the way",
+  "switcher.wallet.funded": "Wallet · Funded",
+  "switcher.holdings.none": "No holdings",
+  "switcher.holdings.some": "Holds NVDA",
+  "us.heatmap.title": "Heatmap",
+  "us.heatmap.index": "Index",
+  "us.heatmap.indexLabel": "Index, tap to switch",
+  "us.heatmap.tabsLabel": "Heatmap index",
+  "us.heatmap.sp": "S&P 500",
+  "us.heatmap.ndx": "Nasdaq 100",
+  "us.heatmap.dow": "Dow Jones",
   "us.picks.title": "Top analyst picks",
   "us.picks.railLabel": "Top analyst picks",
   "us.picks.recommendation": "Recommendation",
   "us.picks.week": "7D",
+  "us.picks.expectedProfit": "Expected profit",
+  "us.picks.analysts": "{pct}% of analysts recommend",
+  "us.picks.rowLabel": "{name}, {sym}: {analysts}% of analysts recommend it; expected profit {pct}%",
+  "picksPage.title": "Top analyst picks",
+  "picksPage.back": "Back",
+  "picksPage.tabsLabel": "Analyst picks",
+  "picksPage.tab.stocks": "Stocks",
+  "picksPage.tab.history": "History",
+  "picksPage.ltp": "LTP",
+  "picksPage.expectedProfit": "Expected profit",
+  "picksPage.analysts": "{pct}% of {total} recommend",
+  "picksPage.rating.strongBuy": "Strong Buy",
+  "picksPage.rating.buy": "Buy",
+  "picksPage.cardLabel": "{name}: {rating}, expected profit {pct}%, recommended by {analysts}% of {total} analysts",
+  "picksPage.outcome.target": "Target hit in {days} days",
+  "picksPage.outcome.exited": "Exited in {days} days",
+  "picksPage.today": "Today",
+  "picksPage.yesterday": "Yesterday",
+  "picksPage.closedLabel": "{name}: return {pct}%, {outcome}",
+  "picksPage.disclaimer": "Analyst views are shown for information only and aren’t advice from Lemonn. Expected profit isn’t guaranteed.",
   "us.picks.label": "{name}, {sym}: recommendation {rating}; {direction} {pct}% in the last 7 days",
-  "us.etfs.title": "Discover ETFs",
-  "us.etfs.tabsLabel": "ETF country",
-  "us.etfs.description": "Buy a whole market in one go. An ETF is a basket of stocks that trades like a single share, starting from just $1.",
-  "us.sectors.title": "Sectors",
   "us.sectors.tabsLabel": "Sector",
   "us.sectors.all": "All",
   "us.sector.tech": "Technology",
@@ -24608,13 +25947,7 @@ export function useSwipeBetween({ canGo, onSwitch, page }: { canGo: (direction: 
   "us.sector.health": "Healthcare",
   "us.sector.consumer": "Consumer",
   "us.sector.energy": "Energy",
-  "us.sector.industrials": "Industrials",
-  "us.themes.description": "Curated theme-based stock picks",
-  "us.themes.railLabel": "Themes",
-  "us.themes.stocks": "{count} Stocks",
-  "us.themes.etfs": "{count} ETFs",
-  "us.movers.holdingSub": "Category • {sym}",
-  "us.watchlist.name": "Watchlist"
+  "us.sector.industrials": "Industrials"
 }
 ```
 
@@ -24638,7 +25971,7 @@ import { companies, companiesByChange, type Company } from '../../shared/data/co
 /** Stocks home — what the API sends for each section, in page order. Sample values; market data from the live app. */
 
 /** Product shortcuts under the holdings: one line on what's special about each. */
-export type Product = { id: 'mutual-funds' | 'fno' | 'commodities' | 'us-stocks' | 'us-etfs' | 'us-fractional' | 'us-hours' | 'us-themes'; name: string; highlight: string; detail: string; isNew?: boolean }
+export type Product = { id: 'mutual-funds' | 'fno' | 'commodities' | 'us-stocks'; name: string; highlight: string; detail: string; isNew?: boolean }
 export const products: Product[] = [
   { id: 'mutual-funds', name: 'Mutual funds', highlight: '240+', detail: 'funds' },
   { id: 'fno', name: 'Equity F&O', highlight: '0', detail: 'slippage' },
@@ -24656,32 +25989,27 @@ export const productsWithUs: Product[] = [
   { id: 'commodities', name: 'Commodities', highlight: '0', detail: 'brokerage' },
   { id: 'us-stocks', name: 'US Stocks', highlight: 'Opens', detail: '8:00 PM', isNew: true },
 ]
-/** The US Stocks tab's tiles (every version, and the two-homes US home), as the US Stocks design (2 Nov): ETFs opens
- *  the ETF list; Fractional and Themes are promises only. */
-export const productsUs: Product[] = [
-  { id: 'us-etfs', name: 'ETFs', highlight: '500+', detail: 'funds' },
-  { id: 'us-fractional', name: 'Fractional', highlight: '$1', detail: 'to start' },
-  { id: 'us-themes', name: 'Themes', highlight: '12+', detail: 'curated' },
-]
-
-/** "Do more with Lemonn": feature shortcuts, each with an optional count or "New" flag. */
+/** "Do more with Lemonn": feature shortcuts, each with an optional count of new things (IPO: 5 new IPOs). */
 /** `art` names the shortcut's custom two-tone icon (Jojo's, assets/shortcuts/<art>.svg — not an L3 system icon). */
-export type ShortcutArt = 'analysis' | 'ipo' | 'watchlist' | 'referral' | 'etf'
-export type Shortcut = { id: string; label: string; art: ShortcutArt; badge?: { count?: number; text?: string } }
-// As the US Stocks design (2 Nov): Analysis 3 New · IPO 5 New · Watchlist 1 · Referral New.
+export type ShortcutArt = 'analysis' | 'ipo' | 'watchlist' | 'referral' | 'etf' | 'fractional' | 'hours'
+export type Shortcut = { id: string; label: string; art: ShortcutArt; badge?: { count: number } }
 export const shortcuts: Shortcut[] = [
-  { id: 'analysis', label: 'Analysis', art: 'analysis', badge: { text: '3 New' } },
-  { id: 'ipo', label: 'IPO', art: 'ipo', badge: { text: '5 New' } },
-  { id: 'watchlist', label: 'Watchlist', art: 'watchlist', badge: { count: 1 } },
-  { id: 'referral', label: 'Referral', art: 'referral', badge: { text: 'New' } },
+  { id: 'trade-ideas', label: 'Trade Ideas', art: 'analysis' },
+  { id: 'ipo', label: 'IPO', art: 'ipo', badge: { count: 5 } },
+  { id: 'watchlist', label: 'Watchlist', art: 'watchlist' },
+  { id: 'referral', label: 'Referral', art: 'referral' },
 ]
 
-/** The US Stocks tab's shortcuts: Analysis · ETFs · Watchlist · Referral, with the same badges (ETFs takes IPO's). */
+/**
+ * The US Stocks tab's shortcuts: Analysis · ETFs · Watchlist · Referral (no badges), the last two as on the IND tab
+ * (3 Nov: no Fractional or Market hours). The US home's quick access lives here, in the white body; the grey summary
+ * has no product tiles on the US tab.
+ */
 export const usShortcuts: Shortcut[] = [
-  { id: 'analysis', label: 'Analysis', art: 'analysis', badge: { text: '3 New' } },
-  { id: 'etfs', label: 'ETFs', art: 'etf', badge: { text: '5 New' } },
-  { id: 'watchlist', label: 'Watchlist', art: 'watchlist', badge: { count: 1 } },
-  { id: 'referral', label: 'Referral', art: 'referral', badge: { text: 'New' } },
+  { id: 'analysis', label: 'Analysis', art: 'analysis' },
+  { id: 'etfs', label: 'ETFs', art: 'etf' },
+  { id: 'watchlist', label: 'Watchlist', art: 'watchlist' },
+  { id: 'referral', label: 'Referral', art: 'referral' },
 ]
 
 /**
@@ -24689,9 +26017,7 @@ export const usShortcuts: Shortcut[] = [
  * All three come from the company catalogue (src/shared/data/companies.ts — a real Yahoo Finance snapshot, refreshed
  * at runtime), so they're read at render time: call `topMovers(list)` inside a component that calls `useMarketSnapshot()`.
  */
-/** The chips (US Stocks design, 2 Nov): Under ₹100 · Under ₹500 · 52W High · 52W Low. Gainers / losers stay for the
- *  board's older states. */
-export type MoverList = 'under-100' | 'under-500' | 'high-52' | 'low-52' | 'gainers' | 'losers'
+export type MoverList = 'gainers' | 'losers' | 'under-100'
 /** How many cards a list shows (two rows of three). */
 export const MOVERS_COUNT = 6
 
@@ -24707,22 +26033,10 @@ function asStock(c: Company): Stock {
  */
 export function topMovers(list: MoverList): Stock[] {
   const priced = Object.values(companies).filter((c) => c.market)
-  // Under ₹100 / ₹500: the best movers today under that price (cheapest first if none rose). 52W High / Low: the
-  // stocks closest to their 52-week high / low.
-  const under = (cap: number) => {
-    const cheap = priced.filter((c) => c.market!.price < cap)
-    return cheap.length ? cheap.sort((a, b) => b.market!.changePct - a.market!.changePct) : priced.sort((a, b) => a.market!.price - b.market!.price)
-  }
   const picked =
     list === 'under-100'
-      ? under(100)
-      : list === 'under-500'
-        ? under(500)
-        : list === 'high-52'
-          ? priced.sort((a, b) => b.market!.price / b.market!.high52 - a.market!.price / a.market!.high52)
-          : list === 'low-52'
-            ? priced.sort((a, b) => a.market!.price / a.market!.low52 - b.market!.price / b.market!.low52)
-            : companiesByChange(list).filter((c) => (list === 'gainers' ? c.market!.changePct > 0 : c.market!.changePct < 0))
+      ? priced.sort((a, b) => a.market!.price - b.market!.price)
+      : companiesByChange(list).filter((c) => (list === 'gainers' ? c.market!.changePct > 0 : c.market!.changePct < 0))
   return picked.slice(0, MOVERS_COUNT).map(asStock)
 }
 
@@ -24788,21 +26102,25 @@ export { disclosure } from '../../shared/data/broker'
 ### `src/flows/stocks/index.tsx`
 
 ```tsx
-import { useState, type ComponentProps } from 'react'
+import { emailSupport } from '../../shared/support'
+import { useEffect, useState, type ComponentProps } from 'react'
 import type { Flow } from '../types'
 import { goToTab } from '../../shared/ui/MainNav'
 import type { Go } from '../types'
 import { Home } from './screens/Home'
+import { t } from './copy'
 import { activeHomeVersions, DEFAULT_HOME_VERSION } from './components/homeVersions'
-import type { UsState } from './components/us/data'
-import { useUserStatus, useUsJourney } from '../../shared/userStatus'
+import { themes, themeScreenId, type ThemeId, type UsState } from './components/us/data'
+import { ThemePage } from './screens/ThemePage'
+import { AnalystPicksPage } from './screens/AnalystPicksPage'
+import { setUsJourney, useUsJourney } from '../../shared/userStatus'
 import { ActivationApprovedSheet } from './components/us/sheets/ActivationApprovedSheet'
 import { ActivationSubmittedSheet } from './components/us/sheets/ActivationSubmittedSheet'
 import { RiskDisclosureSheet } from './components/us/sheets/RiskDisclosureSheet'
 import { UsFtuxSheet } from './components/us/sheets/UsFtuxSheet'
 
 /** The US tab's taps, by screen id: Activate US Stocks → the risk disclosure sheet (stocks-12), a stock → its page (not activated, in the US Stocks flow), View all / a theme → Market on the US list. */
-const usNav = (go: Go) => ({ onActivateUs: () => go('stocks-12'), onUsStock: () => go('us-stocks-13'), onUsMarket: () => go('market-10'), onUsEtfs: () => go('us-stocks-71') })
+const usNav = (go: Go) => ({ onActivateUs: () => go('stocks-12'), onUsStock: () => go('us-stocks-13'), onUsMarket: () => go('market-10'), onUsTheme: (id: ThemeId) => go(themeScreenId(id)), onUsEtfs: () => go('us-stocks-71'), onUsEtf: () => go('us-stocks-72'), onUsPicks: () => go('stocks-29'), onUsHoldings: () => go('us-stocks-77') })
 
 /** The top bar and navbar taps every Home screen shares. */
 /** Search from the Home field: the Stocks tab on IND, the US tab on US (search-29). */
@@ -24814,14 +26132,26 @@ const chrome = (go: Go) => ({ onTab: (t: Parameters<typeof goToTab>[1]) => goToT
 const walletFor: Record<UsState, string> = { kyc: 'us-stocks-53', activate: 'us-stocks-53', review: 'us-stocks-55', support: 'us-stocks-57', failed: 'us-stocks-56', activated: 'us-stocks-20', onTheWay: 'us-stocks-28', ready: 'us-stocks-59', holding: 'us-stocks-59' }
 
 /** A Home screen on the US tab in one of the user's US Stocks states (Figma frames designed in the US Stocks flow). */
-const usHome = (go: Go, usState: UsState, extra: Partial<ComponentProps<typeof Home>> = {}) => (
-  <Home market="us" usState={usState} {...chrome(go)} {...usNav(go)} onWallet={() => go(walletFor[usState])} {...extra} />
-)
+const usHome = (go: Go, usState: UsState, extra: Partial<ComponentProps<typeof Home>> = {}) => <UsTabInState go={go} state={usState} extra={extra} />
+
+/**
+ * A US tab screen: it shows its own state and sets the user status to it on arrival, so the floating "US Stocks
+ * activation" switcher beside the phone matches. Picking another status there shows that state in place (with that
+ * state's taps; the screen's own sheet and auto-advance belong to its state only).
+ */
+function UsTabInState({ go, state, extra }: { go: Go; state: UsState; extra: Partial<ComponentProps<typeof Home>> }) {
+  const live: UsState = useUsJourney()
+  const [arrived, setArrived] = useState(false)
+  useEffect(() => { setUsJourney(state); setArrived(true) }, [state])
+  const shown = arrived ? live : state
+  return <Home market="us" usState={shown} {...chrome(go)} {...usNav(go)} onWallet={() => go(walletFor[shown])} {...(shown === state ? extra : stateTaps(go, shown))} />
+}
 
 /** Each state's own taps on the Home (the card's button, a US stock), as on that state's screen. */
 const stateTaps = (go: Go, usState: UsState): Partial<ComponentProps<typeof Home>> => {
   switch (usState) {
     case 'kyc': return { onActivateUs: () => go('kyc-01'), onUsStock: () => go('us-stocks-74') }
+    case 'support': return { onActivateUs: () => emailSupport(t('us.support.subject')) }
     case 'activated': return { onActivateUs: () => go('us-stocks-20') }
     case 'onTheWay': return { onActivateUs: () => go('us-stocks-28') }
     case 'ready': return { onActivateUs: () => go('stocks-17') }
@@ -24835,14 +26165,10 @@ const stateTaps = (go: Go, usState: UsState): Partial<ComponentProps<typeof Home
  * activation, USD wallet, holdings). Picking a status shows its US tab. A US stock opens the stock page and the wallet
  * the wallet's US tab, which follow the same status (the wallet opens on the Indian tab until US Stocks is activated).
  */
-// User status "FTUX bottom sheet" (2 Nov): the Home opens with the US Stocks intro sheet over it. Activate → the risk
-// disclosure; ✕ closes it (until the Home opens again in that state).
 function HomeInState({ go }: { go: Go }) {
   const usState: UsState = useUsJourney()
   const wallet = usState === 'kyc' || usState === 'activate' ? 'us-stocks-53' : 'us-stocks-54'
-  const [closed, setClosed] = useState(false)
-  const sheet = useUserStatus().us === 'ftux' && !closed ? <UsFtuxSheet onActivate={() => go('stocks-12')} onClose={() => setClosed(true)} /> : undefined
-  return <Home usState={usState} {...chrome(go)} {...usNav(go)} {...stateTaps(go, usState)} onUsStock={() => go('us-stocks-13')} onWallet={() => go(wallet)} sheet={sheet} />
+  return <Home market="us" usState={usState} {...chrome(go)} {...usNav(go)} {...stateTaps(go, usState)} onUsStock={() => go('us-stocks-13')} onWallet={() => go(wallet)} />
 }
 
 /**
@@ -24868,19 +26194,25 @@ export const stocks: Flow = {
     // FTUX guide for the IND / US switch: dims the screen, lights the switch with a tooltip. Shown every time a Home
     // opens (and again after a version change) while on; tap anywhere or ✕ to end it.
     // "Do more with Lemonn" shortcuts: V1 circles, V2 one outlined card with dividers (default).
+    // Archived 3 Nov: the "Header" setting (Holdings on page · Holdings in card). Holdings on page is the only header;
+    // the card variant stays in Home.tsx (HEADER_CARD) but is no longer offered.
+    // US tab, Top analyst picks: a list of four rows (default, 3 Nov) or the swipeable cards with the 7-day line.
+    { id: 'picksView', group: 'Home', label: 'Analyst picks', values: [{ value: 'list', label: 'List' }, { value: 'cards', label: 'Cards' }], default: 'list' },
     { id: 'shortcuts', group: 'Home', label: 'Shortcuts', values: [{ value: 'v1', label: 'V1' }, { value: 'v2', label: 'V2' }], default: 'v1' },
+    // US tab, Discover ETFs: the region pills with their round flags (default) or text only — testing whether the flags are too much (3 Nov).
+    { id: 'etfFlags', group: 'Home', label: 'ETF region flags', picker: 'toggle', values: [{ value: 'off', label: 'Off' }, { value: 'on', label: 'On' }], default: 'on' },
     { id: 'switchGuide', group: 'Home', label: 'Market switch guide', picker: 'toggle', values: [{ value: 'off', label: 'Off' }, { value: 'on', label: 'On' }], default: 'off' },
   ],
   screens: [
     { id: 'stocks-01', name: 'Home', badge: 'changed', badgeNote: 'Header hides on scroll; DASH pill removed; back returns to the IND / US tab you left', figma: '5714:64982', group: 'ftux', note: 'The Stocks home in the user status picked in the prototype settings (User status: US Stocks activation — Lemonn KYC pending → … → Activated —, USD wallet, US holdings — the same settings the US stock page and the wallet follow). Picking a status shows its US tab. Each state is also a screen of its own (hidden in the list), which the activation and add-money taps go to.', tab: true, render: (go) => <HomeInState go={go} /> },
     { id: 'stocks-02', hidden: true, name: 'Home · top movers & watchlists', badge: 'changed', badgeNote: 'Compact IND / US tabs under the index strip when scrolled; switching tabs keeps the scroll', figma: '', note: 'Same page, scrolled.', tab: true, render: (go) => <Home onTab={(t) => goToTab(go, t)} onSearch={(m) => go(searchFor(m))} onProfile={() => go('profile-01')} {...usNav(go)} scrollTo="movers" /> },
-    { id: 'stocks-03', hidden: true, name: 'Home · 52W Low', figma: '', note: 'The "52W Low" chip picked.', tab: true, render: (go) => <Home onTab={(t) => goToTab(go, t)} onSearch={(m) => go(searchFor(m))} onProfile={() => go('profile-01')} {...usNav(go)} scrollTo="movers" movers="low-52" /> },
+    { id: 'stocks-03', hidden: true, name: 'Home · top losers', figma: '', note: 'The "Top losers" chip picked.', tab: true, render: (go) => <Home onTab={(t) => goToTab(go, t)} onSearch={(m) => go(searchFor(m))} onProfile={() => go('profile-01')} {...usNav(go)} scrollTo="movers" movers="losers" /> },
     { id: 'stocks-04', hidden: true, name: 'Home · Smart Invest', figma: '', note: 'Same page, scrolled: managed strategies, then the announcement.', tab: true, render: (go) => <Home onTab={(t) => goToTab(go, t)} onSearch={(m) => go(searchFor(m))} onProfile={() => go('profile-01')} {...usNav(go)} scrollTo="invest" /> },
     { id: 'stocks-05', hidden: true, name: 'Home · sectors & highlights', figma: '', note: 'Same page, scrolled.', tab: true, render: (go) => <Home onTab={(t) => goToTab(go, t)} onSearch={(m) => go(searchFor(m))} onProfile={() => go('profile-01')} {...usNav(go)} scrollTo="sectors" /> },
     { id: 'stocks-06', hidden: true, name: 'Home · highlights & idea baskets', figma: '', note: 'Same page, scrolled. (The live app no longer has Trade ideas here — removed 2026-10-22.)', tab: true, render: (go) => <Home onTab={(t) => goToTab(go, t)} onSearch={(m) => go(searchFor(m))} onProfile={() => go('profile-01')} {...usNav(go)} scrollTo="highlights" /> },
     { id: 'stocks-07', hidden: true, name: 'Home · idea baskets & disclosure', figma: '', note: 'The end of the page: the disclosure, four lines and Read More.', tab: true, render: (go) => <Home onTab={(t) => goToTab(go, t)} onSearch={(m) => go(searchFor(m))} onProfile={() => go('profile-01')} {...usNav(go)} scrollTo="more" /> },
     { id: 'stocks-21', hidden: true, name: 'Home · US tab · KYC not done', badge: 'new', badgeNote: 'Not in Jojo\'s Figma: a user whose Lemonn KYC isn\'t complete', figma: '9001:20', group: 'us-activate', note: 'The US tab for a user who hasn\'t finished their Lemonn (Indian) KYC: US Stocks can\'t be activated yet, so the card asks for KYC first. Complete KYC → the KYC flow (kyc-01). A US stock opens its page with Complete KYC in place of Activate (us-stocks-74). Everything else on the tab is as for a not-activated user (stocks-09).', tab: true, render: (go) => usHome(go, 'kyc', { onActivateUs: () => go('kyc-01'), onUsStock: () => go('us-stocks-74') }) },
-    { id: 'stocks-09', hidden: true, name: 'Home · US Stocks tab', figma: '5756:74756', group: 'us-activate', note: 'The US Stocks tab for a user who has not activated US Stocks: US indices, the Activate US Stocks card (→ risk disclosure sheet, stocks-12), shortcuts, Top Movers, Trillion Dollar Titans, Brands, Heatmap, themes. A US stock opens its page (not activated). Designed in the US Stocks flow (Figma Home · US tab · Activate US Stocks card); here it is the tab on the app\'s own Stocks home.', tab: true, render: (go) => usHome(go, 'activate') },
+    { id: 'stocks-09', hidden: true, name: 'Home · US Stocks tab', figma: '5756:74756', group: 'us-activate', note: 'The US Stocks tab for a user who has not activated US Stocks: US indices, the Activate US Stocks card (→ risk disclosure sheet, stocks-12), shortcuts, Top Movers (a swipeable row of cards), Brands, Heatmap, themes. A US stock opens its page (not activated). Designed in the US Stocks flow (Figma Home · US tab · Activate US Stocks card); here it is the tab on the app\'s own Stocks home.', tab: true, render: (go) => usHome(go, 'activate') },
     { id: 'stocks-10', hidden: true, name: 'Home · US Stocks tab · scrolled', figma: '', note: 'Same tab, scrolled past the tabs: the compact IND / US tabs are pinned under the top bar.', tab: true, render: (go) => usHome(go, 'activate', { scrollTo: 'movers' }) },
     { id: 'stocks-11', name: 'Home · US Stocks intro (FTUX) sheet', figma: '5756:68986', group: 'ftux', note: 'First launch after release: the IND tab with the US Stocks intro (FTUX) sheet — animated flag, five company logos, three benefits. Activate US Stocks → the risk disclosure (stocks-12); ✕ → Home (stocks-01).', tab: true, render: (go) => <Home {...chrome(go)} {...usNav(go)} sheet={<UsFtuxSheet onActivate={() => go('stocks-12')} onClose={() => go('stocks-01')} />} /> },
     { id: 'stocks-12', name: 'Home · US tab · risk disclosure sheet', figma: '5756:71475', group: 'us-activate', note: 'The Risk disclosure (For US Stocks) sheet over the US tab. Agree and Continue submits the activation → under review (stocks-13); closing it → the tab (stocks-09).', tab: true, render: (go) => usHome(go, 'activate', { sheet: <RiskDisclosureSheet onAgree={() => go('stocks-13')} onClose={() => go('stocks-09')} /> }) },
@@ -24890,10 +26222,259 @@ export const stocks: Flow = {
     { id: 'stocks-15', hidden: true, name: 'Home · US tab · activated · add money', figma: '5776:81870', note: 'US tab, activation successful: green card with the unlocked benefits, Add Money to US wallet → the $0 USD wallet (us-stocks-20). The wallet icon goes there too.', tab: true, render: (go) => usHome(go, 'activated', { onActivateUs: () => go('us-stocks-20') }) },
     { id: 'stocks-16', hidden: true, name: 'Home · US tab · money ready', figma: '5796:87332', note: 'Money reached the US wallet: a "Your money is ready" toast above the navbar (times out after 6 s; no card, as in his design); tapping the toast → the activated page (stocks-17). Wallet → the funded USD wallet (us-stocks-59).', tab: true, render: (go) => usHome(go, 'ready', { onActivateUs: () => go('stocks-17') }) },
     { id: 'stocks-17', hidden: true, name: 'Home · US tab · activated · holding', figma: '5826:92885', note: 'US tab for an activated user who holds US stocks: no card, the summary shows US holdings ($). A US stock opens its stock page — NVDA (held) with Buy / Sell, others Buy only. Wallet → the funded USD wallet.', tab: true, render: (go) => usHome(go, 'holding', { onUsStock: (sym) => go(sym === 'NVDA' ? 'us-stocks-32' : 'us-stocks-31') }) },
-    { id: 'stocks-19', hidden: true, name: 'Home · US tab · under review · Contact Support', badge: 'new', badgeNote: 'Added from Jojo\'s Figma (A00 · Home · Under review · Contact Support)', figma: '5776:80202', group: 'us-review', note: 'Activation still under review after a working day: the honey card gains a Contact Support button. Figma has no support screen, so the button goes nowhere yet (L3 gap / missing screen). The wallet opens the wallet\'s Contact Support state (us-stocks-57).', tab: true, render: (go) => usHome(go, 'support') },
+    { id: 'stocks-19', hidden: true, name: 'Home · US tab · under review · Contact Support', badge: 'new', badgeNote: 'Added from Jojo\'s Figma (A00 · Home · Under review · Contact Support)', figma: '5776:80202', group: 'us-review', note: 'Activation still under review after a working day: the honey card gains a Contact Support button. Contact Support opens an email to Lemonn support (mail app), no in-app screen. The wallet opens the wallet\'s Contact Support state (us-stocks-57).', tab: true, render: (go) => usHome(go, 'support', stateTaps(go, 'support')) },
     { id: 'stocks-20', hidden: true, name: 'Home · US tab · money on the way', badge: 'new', badgeNote: 'Added from Jojo\'s Figma (A00 · Home · Money on the way)', figma: '5796:86490', note: 'After paying on the bank page: the honey "Money on the way" card (trade from Thu 8 PM) with what happens next (debited, converted, credited). Track Transfer and the wallet open the wallet\'s transfer in progress (us-stocks-28). In the prototype it moves on to "money ready" (stocks-16) by itself after 2 s, as in his prototype.', tab: true, render: (go) => usHome(go, 'onTheWay', { onActivateUs: () => go('us-stocks-28'), autoNext: 'stocks-16' }) },
     { id: 'stocks-18', name: 'Home · activation submitted sheet', figma: '5756:73797', group: 'us-review', note: 'The under-review US tab with the "US Stocks activation under review" sheet (we\'ll let you know as soon as it\'s active). Okay → the under-review Home (stocks-13). Reached from Confirm details in the US Stocks flow.', tab: true, render: (go) => usHome(go, 'review', { sheet: <ActivationSubmittedSheet onOkay={() => go('stocks-13')} /> }) },
+    { id: 'stocks-29', name: 'Top analyst picks · Stocks', badge: 'new', badgeNote: 'Not in Figma: the page View all opens (user brief, 3 Nov)', figma: '', group: 'analyst-picks', note: 'The US tab\'s Top analyst picks, View all (in the header and under the list). Actionbar: back + title, flat tabs Stocks · History in its bottom slot (they stay put). Stocks: a card per pick — expected profit (always positive, green), "62 of 66 analysts recommend" with a progress bar, current price against the average target, the Strong Buy · Buy · Hold · Sell split and the date it was picked; tapping a card opens its US stock page (us-stocks-13). Back → the US tab.', tab: false, render: (go: Go) => <AnalystPicksPage onStock={() => go('us-stocks-13')} /> },
+    { id: 'stocks-30', name: 'Top analyst picks · History', badge: 'new', badgeNote: 'Not in Figma: the History tab (user brief, 3 Nov)', figma: '', group: 'analyst-picks', note: 'The same page on History: the track record (picks closed, how many reached their target, the average return), then each closed pick — dates, its return (green / red) and a Target hit / Exited early tag. A row opens its US stock page.', tab: false, render: (go: Go) => <AnalystPicksPage tab="history" onStock={() => go('us-stocks-13')} /> },
+    ...themes.map((theme, i) => ({
+      id: themeScreenId(theme.id),
+      hidden: i > 0,
+      ...(i === 0 ? { badge: 'new' as const, badgeNote: 'Not in Jojo\'s Figma: a theme of Explore by themes' } : {}),
+      name: `Themes · ${t(`us.theme.${theme.id}`)}`,
+      figma: '',
+      note: i === 0
+        ? 'Themes: every theme of Explore by themes on one page, like the ETFs page. Actionbar: back + "Themes", the themes as pill tabs in its bottom slot (they stay put; switching theme stays on the page). For the picked theme: description + "quoted as an example" disclaimer, a Returns card (1M real from the snapshot, 1Y / 3Y sample, what $100 from 3 years ago is worth), then its stocks (StockListCard, 12 apart). Home\'s View all opens it on AI & chips, a theme card on that theme. A stock → its US stock page (us-stocks-13); back → the screen before.'
+        : `Themes, opened on ${t(`us.theme.${theme.id}`)} (that theme\'s card on Home). Same page as stocks-23.`,
+      tab: false,
+      render: (go: Go) => <ThemePage theme={theme.id} onStock={() => go('us-stocks-13')} />,
+    })),
   ],
+}
+```
+
+### `src/flows/stocks/screens/AnalystPicksPage.module.css`
+
+```css
+/* Top analyst picks page (stocks-29 / 30). */
+
+.disclaimer {
+  margin: 0;
+  font: var(--l3-text-description-12);
+  color: var(--l3-content-secondary);
+}
+
+/* Pick cards are tappable but flat on the page: border only, no shadow. Their head and footer bring their own 12
+   padding, so the card's 8 row gap goes too (it doubled the space above the hairline).
+   L3 gap: a clickable Card always adds elevation-low and has no prop to turn it off. */
+.card.card[data-interactive] {
+  gap: 0;
+  box-shadow: var(--card-border);
+}
+
+/* A pick card's head: name over its LTP, then the average target over the rating at the end. */
+.name {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--l3-spacing-04);
+  min-width: 0;
+}
+
+.title {
+  overflow: hidden;
+  font: var(--l3-text-label-16);
+  color: var(--l3-content-primary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sub {
+  font: var(--l3-text-description-14);
+  color: var(--l3-content-secondary);
+}
+
+.end {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--l3-spacing-04);
+}
+
+.target {
+  font: var(--l3-text-label-16);
+  color: var(--l3-content-primary);
+}
+
+/* The card's bottom row, under a hairline: expected profit · analysts who recommend it. */
+.footer {
+  border-top: 1px solid var(--l3-border-light);
+}
+
+/* 12 so both halves stay on one line at 360 wide. */
+.meta {
+  font: var(--l3-text-description-12);
+  color: var(--l3-content-secondary);
+  white-space: nowrap;
+}
+
+/* History: the day a group of picks closed. */
+.day {
+  margin: 0;
+  font: var(--l3-text-label-14);
+  color: var(--l3-content-secondary);
+}
+```
+
+### `src/flows/stocks/screens/AnalystPicksPage.tsx`
+
+```tsx
+// stocks-29 / 30: Top analyst picks — the page Home's "View all" (US tab) opens. Built from the live app's Trade Ideas
+// page (phone screenshots, 3 Nov), without its F&O tab. The Actionbar carries back + the title, with flat (underline)
+// tabs Stocks · History in its bottom slot, so they stay put while the page scrolls.
+// Stocks: one card per pick — name over its LTP, the analysts' average target over their rating; under a hairline, the
+// expected profit and how many analysts recommend it (Trade Ideas: entry range + "Not in range", potential profit, TP · SL).
+// History: closed picks grouped by the day they closed (Today, Yesterday, then the date) — name over entry → exit price,
+// the return over "Target hit in 24 days" / "Exited in 9 days".
+// Differences from the screenshots (L3 wins): signed % with no ▲ / ▼ arrows (PriceChange), flat tabs instead of pills.
+import { useState } from 'react'
+import { Actionbar } from '@l3/components/Actionbar'
+import { Avatar } from '@l3/components/Avatar'
+import { Card } from '@l3/components/Card'
+import { Inset } from '@l3/components/Inset'
+import { ListCell } from '@l3/components/ListCell'
+import { PriceChange } from '@l3/components/PriceChange'
+import { Stack } from '@l3/components/Stack'
+import { Tabs } from '@l3/components/Tabs'
+import { Tag } from '@l3/components/Tag'
+import { usePreview } from '../../../shared/prototype'
+import { useLiveQuote } from '../../../shared/data/live'
+import { usLogo, viewUsStock } from '../../../shared/data/usStocks'
+import { Usd } from '../../../shared/money'
+import { Screen } from '../../../shared/ui/Screen'
+import { t } from '../copy'
+import { analystCount, analystPicks, closedPicks, closedReturn, PICKS_TODAY, usStock, type AnalystPick, type ClosedPick } from '../components/us/data'
+import styles from './AnalystPicksPage.module.css'
+
+export type PicksTab = 'stocks' | 'history'
+
+type AnalystPicksPageProps = {
+  /** The tab it opens on (stocks-29: Stocks, stocks-30: History). */
+  tab?: PicksTab
+  /** A pick was tapped (already remembered with `viewUsStock`) → its US stock page. */
+  onStock?: (sym: string) => void
+}
+
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+/** An ISO date (2026-10-30) as days since 1970, so two dates subtract to a number of days. */
+const dayNumber = (iso: string) => {
+  const [y, m, d] = iso.split('-').map(Number)
+  return Date.UTC(y, m - 1, d) / 86_400_000
+}
+
+/** History's heading for a closing day: Today, Yesterday, or "30 Oct 2026". */
+function dayHeading(iso: string) {
+  const daysAgo = dayNumber(PICKS_TODAY) - dayNumber(iso)
+  if (daysAgo === 0) return t('picksPage.today')
+  if (daysAgo === 1) return t('picksPage.yesterday')
+  const [y, m, d] = iso.split('-').map(Number)
+  return `${d} ${MONTHS[m - 1]} ${y}`
+}
+
+/** One open pick. Tapping it opens the stock. */
+function PickCard({ pick, onOpen }: { pick: AnalystPick; onOpen: (sym: string) => void }) {
+  const stock = usStock(pick.sym, pick.name)
+  const live = useLiveQuote(pick.sym, stock.price, stock.change)
+  // The average target is fixed by the analysts; the expected profit is measured from the snapshot price.
+  const target = stock.price * (1 + pick.expectedProfit / 100)
+  const total = analystCount(pick)
+  return (
+    <Card
+      padding="none"
+      className={styles.card}
+      onClick={() => onOpen(pick.sym)}
+      aria-label={t('picksPage.cardLabel', { name: pick.name, rating: pick.rating, pct: pick.expectedProfit.toFixed(2), analysts: pick.analystsPct, total })}
+    >
+      <Inset padding="12">
+        <Stack direction="horizontal" align="center" gap="12">
+          <Avatar src={usLogo(pick.sym)} initials={pick.sym.slice(0, 2)} size={40} />
+          <span className={styles.name}>
+            <span className={styles.title}>{pick.name}</span>
+            <span className={styles.sub}>{t('picksPage.ltp')} <Usd value={live.price} layout="inline" /></span>
+          </span>
+          <span className={styles.end}>
+            <span className={styles.target}><Usd value={target} layout="inline" /></span>
+            <Tag variant="secondary" color={pick.rating === 'Strong Buy' ? 'success' : 'neutral'}>{t(`picksPage.rating.${pick.rating === 'Strong Buy' ? 'strongBuy' : 'buy'}`)}</Tag>
+          </span>
+        </Stack>
+      </Inset>
+      <div className={styles.footer}>
+        <Inset padding="12">
+          <Stack direction="horizontal" align="center" justify="between" gap="08">
+            <span className={styles.meta}>
+              {t('picksPage.expectedProfit')} <PriceChange value={pick.expectedProfit} size="sm" />
+            </span>
+            <span className={styles.meta}>{t('picksPage.analysts', { pct: pick.analystsPct, total })}</span>
+          </Stack>
+        </Inset>
+      </div>
+    </Card>
+  )
+}
+
+/** One closed pick: name over entry → exit price, the return over how it closed and after how long. */
+function ClosedRow({ pick, onOpen }: { pick: ClosedPick; onOpen: (sym: string) => void }) {
+  const ret = closedReturn(pick)
+  const outcome = t(`picksPage.outcome.${pick.outcome}`, { days: pick.days })
+  return (
+    <ListCell
+      variant="card"
+      raised={false}
+      onClick={() => onOpen(pick.sym)}
+      iconLeft={<Avatar src={usLogo(pick.sym)} initials={pick.sym.slice(0, 2)} size={40} label={pick.name} />}
+      labelSize="16"
+      label={pick.name}
+      description={<><Usd value={pick.entry} layout="inline" /> → <Usd value={pick.exit} layout="inline" /></>}
+      trailing={<PriceChange value={ret} size="lg" />}
+      caption={outcome}
+      aria-label={t('picksPage.closedLabel', { name: pick.name, outcome, pct: ret.toFixed(2) })}
+    />
+  )
+}
+
+/** History: closed picks under a heading per closing day (the data is newest first). */
+function History({ onOpen }: { onOpen: (sym: string) => void }) {
+  const days = [...new Set(closedPicks.map((p) => p.closedOn))]
+  return (
+    <Stack gap="24">
+      {days.map((day) => (
+        <Stack key={day} gap="12">
+          <h3 className={styles.day}>{dayHeading(day)}</h3>
+          {closedPicks.filter((p) => p.closedOn === day).map((pick) => <ClosedRow key={pick.sym} pick={pick} onOpen={onOpen} />)}
+        </Stack>
+      ))}
+    </Stack>
+  )
+}
+
+export function AnalystPicksPage({ tab: initialTab = 'stocks', onStock }: AnalystPicksPageProps) {
+  const { back, go } = usePreview()
+  const [tab, setTab] = useState<PicksTab>(initialTab)
+  const open = (sym: string) => { viewUsStock(sym); onStock?.(sym) }
+  const tabs = (['stocks', 'history'] as const).map((value) => ({ value, label: t(`picksPage.tab.${value}`) }))
+  return (
+    <Screen
+      top={
+        <Actionbar
+          title={t('picksPage.title')}
+          headingLevel={2}
+          onBack={() => { if (!back?.()) go('stocks-09') }}
+          backLabel={t('picksPage.back')}
+          bottom={<Tabs appearance="underline" width="fill" aria-label={t('picksPage.tabsLabel')} items={tabs} value={tab} onChange={(v) => setTab(v as PicksTab)} />}
+        />
+      }
+    >
+      <Inset paddingInline="16" paddingBlock="24">
+        <Stack gap="16">
+          {tab === 'stocks'
+            ? <Stack gap="12">{analystPicks.map((pick) => <PickCard key={pick.sym} pick={pick} onOpen={open} />)}</Stack>
+            : <History onOpen={open} />}
+          <p className={styles.disclaimer}>{t('picksPage.disclaimer')}</p>
+        </Stack>
+      </Inset>
+    </Screen>
+  )
 }
 ```
 
@@ -24902,14 +26483,14 @@ export const stocks: Flow = {
 ```css
 /*
  * Stocks home — page layout. A grey summary area (indices, holdings, products) and, over its bottom edge, the feed on
- * a rounded sheet (radius 32 at the top), like the live app. The grey area is surface/primary (2 Nov; it was
- * surface/secondary), with the top bar, the ticker's band and the market tabs on the same grey. The layout is L3 Stack /
+ * a rounded sheet (radius 32 at the top), like the live app. The grey area is intentional and high-emphasis (the
+ * account summary), so a large surface/secondary block is allowed here (DESIGN_SYSTEM 7.2). The layout is L3 Stack /
  * Section; what those blocks don't cover lives here: uneven padding (16 / 48, 16 / 24), the feed's overlap and
  * top-only radius, the default surface and the accent tints.
  */
 .summary {
   padding: var(--l3-spacing-24) 0 var(--l3-spacing-48); /* 24 under the index marquee, which sits above it */
-  background: var(--l3-surface-primary);
+  background: var(--l3-surface-secondary);
 }
 
 .feed {
@@ -24937,11 +26518,6 @@ export const stocks: Flow = {
   box-shadow: inset 0 0 0 1px var(--l3-border-light); /* 1px: Figma stroke weight has no variable */
 }
 
-
-/* Live app at 360 dp: section titles are 16 (L3 SectionHeader is 14) — part of the same one-off for this screen. */
-.flatCards.flatCards h2 {
-  font: var(--l3-text-label-16);
-}
 
 /* Home versions V3, V4: the L3 IND / US switch at the top of the feed's rounded sheet (the feed then starts under it). */
 .sheetHead {
@@ -25020,7 +26596,7 @@ export const stocks: Flow = {
   position: absolute;
   inset: calc(-1 * var(--band-pad)) 0;
   z-index: -1;
-  background: var(--l3-surface-primary); /* the summary's grey: invisible at the top of the page */
+  background: var(--l3-surface-secondary); /* the summary's grey: invisible at the top of the page */
 }
 
 .marquee:not([data-state='top']) .band {
@@ -25041,10 +26617,8 @@ export const stocks: Flow = {
   pointer-events: none;
 }
 
-/* Folded away 4 past the clip edge, not exactly on it: the active tab's 2 underline sat on the edge and bled through
-   as a white line under the index strip when the mockup is scaled (3 Nov). */
 .pinnedTabs > * {
-  translate: 0 calc(-100% - var(--l3-spacing-04));
+  translate: 0 -100%;
 }
 
 .pinnedTabs[data-open] {
@@ -25055,10 +26629,10 @@ export const stocks: Flow = {
   translate: 0 0;
 }
 
-/* One slow, smooth curve for every part, so they move as one. */
+/* One slow, smooth curve for every part, so they move as one. Colours don't fade: the band turns white at once, with
+ * the top bar and the status bar. */
 .header[data-animate] .topBar,
 .marquee[data-animate],
-.marquee[data-animate] .band,
 .marquee[data-animate] .pinnedTabs > * {
   transition-duration: var(--l3-motion-duration-long);
   transition-timing-function: var(--l3-motion-easing-standard);
@@ -25070,14 +26644,9 @@ export const stocks: Flow = {
   transition-property: translate;
 }
 
-.marquee[data-animate] .band {
-  transition-property: background-color, box-shadow;
-}
-
 @media (prefers-reduced-motion: reduce) {
   .header[data-animate] .topBar,
   .marquee[data-animate],
-  .marquee[data-animate] .band,
   .marquee[data-animate] .pinnedTabs > * {
     transition: none;
   }
@@ -25101,19 +26670,38 @@ export const stocks: Flow = {
 .stickySwitch[data-look='pill'] [role='tablist'][data-appearance='pill-group'] {
   background: var(--l3-surface-default);
   box-shadow: inset 0 0 0 1px var(--l3-border-light); /* 1px hairline */
-  transition: background-color var(--l3-motion-duration-short) var(--l3-motion-easing-standard);
 }
 
 .marquee:not([data-state='top']) .stickySwitch[data-look='pill'] [role='tablist'][data-appearance='pill-group'] {
   background: var(--l3-surface-secondary);
   box-shadow: none;
 }
+
+/* The top cards' track: the market on show is in the flow (the track is its height); the other one sits just off
+   screen beside it, so a swipe or a switch slides it into view. */
+.cardTrack {
+  position: relative;
+}
+
+.cardSlide[data-side] {
+  position: absolute;
+  top: 0;
+  width: 100%;
+}
+
+.cardSlide[data-side='after'] {
+  left: 100%;
+}
+
+.cardSlide[data-side='before'] {
+  right: 100%;
+}
 ```
 
 ### `src/flows/stocks/screens/Home.tsx`
 
 ```tsx
-import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import { Aerobar } from '@l3/components/Aerobar'
 import { Icon } from '@l3/components/Icon'
 import { Inset } from '@l3/components/Inset'
@@ -25130,8 +26718,10 @@ import { HoldingsSummary, HoldingsSwitcher, IndexStrip, ProductCards, type Holdi
 import { MarketSwitch, MarketTabs, PinnedMarketTabs, type Market } from '../components/MarketTabs'
 import { DEFAULT_HOME_VERSION, homeVersion, type HomeVersion } from '../components/homeVersions'
 import { MarketSwitchGuide } from '../components/MarketSwitchGuide'
+import { HomeSwitcher } from '../components/HomeSwitcher'
 import { TopBar } from '../components/TopBar'
-import { usIndices, type UsState } from '../components/us/data'
+import { TransferStatusCard } from '../components/us/TransferProgress'
+import { activatedStates, inKycCard, usIndices, type ThemeId, type UsState } from '../components/us/data'
 import { UsActivationCard } from '../components/us/UsActivationCard'
 import { UsHome } from '../components/us/UsHome'
 import { neighbour, useSwipeBetween } from '../components/useSwipeBetween'
@@ -25147,17 +26737,6 @@ export type HomePart = 'top' | 'movers' | 'invest' | 'sectors' | 'highlights' | 
 type ScrollState = 'top' | 'down' | 'up'
 /** Scrolling this far in one direction (px, as in the US Stocks prototype) changes the direction. */
 const DIRECTION_DELTA = 6
-
-/**
- * V13's vertical page swap: how far the page moves (px) and how long the old page takes to leave and the new one to
- * arrive (ms). These match L3's motion: short and accelerate to leave, medium and decelerate to arrive.
- */
-const SWAP_SHIFT = 24
-const SWAP_OUT = 150
-const SWAP_IN = 250
-const SWAP_EASE_OUT = 'cubic-bezier(0.3, 0, 1, 1)'
-const SWAP_EASE_IN = 'cubic-bezier(0, 0, 0, 1)'
-const reducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches
 
 type Props = {
   scrollTo?: HomePart
@@ -25178,12 +26757,20 @@ type Props = {
   usState?: UsState
   /** US tab: the card's button — Activate US Stocks / Retry / Add money / Explore, by `usState`. */
   onActivateUs?: () => void
+  /** The US holdings card was tapped → Portfolio, Holdings, with the US Stocks card upfront. */
+  onUsHoldings?: () => void
   /** US tab: a US stock was tapped (already remembered with `viewUsStock`) → its stock page. */
   onUsStock?: (sym: string) => void
   /** US tab: "View all" / a theme (Market was handed what to open on) → the Market page. */
   onUsMarket?: () => void
+  /** A theme card on the US tab → the theme's page. */
+  onUsTheme?: (id: ThemeId) => void
   /** The US tab's ETFs shortcut → the ETF list. */
   onUsEtfs?: () => void
+  /** A Discover ETFs row (the symbol is already remembered with `viewUsStock`) → the ETF page. */
+  onUsEtf?: () => void
+  /** US tab, Top analyst picks' View all → the Top analyst picks page. */
+  onUsPicks?: () => void
   /** Prototype: after 2 s go on to this screen (the under-review Home moves on to "activated" by itself). */
   autoNext?: string
   /** A sheet over the page: the US Stocks intro, the risk disclosure, "activation submitted". */
@@ -25198,7 +26785,10 @@ type Props = {
  * products; and on the rounded sheet over it, the feed: shortcuts, top movers, watchlists, Smart Invest (brand tint),
  * an announcement (the campaign's artwork), sectors, highlights, idea baskets and the broker's disclosure.
  */
-export function Home({ scrollTo = 'top', market = 'in', movers, onTab, onSearch, onProfile, onWallet, usState = 'activate', onActivateUs, onUsStock, onUsMarket, onUsEtfs, autoNext, sheet }: Props) {
+/** Archived "Header" variant: true puts the holdings inside the top card (the card the US tab uses for activation). */
+const HEADER_CARD = false as boolean
+
+export function Home({ scrollTo = 'top', market = 'in', movers, onTab, onSearch, onProfile, onWallet, usState = 'activate', onActivateUs, onUsHoldings, onUsStock, onUsMarket, onUsTheme, onUsEtfs, onUsEtf, onUsPicks, autoNext, sheet }: Props) {
   useAutoAdvance(autoNext, 2000)
   const page = useRef<HTMLDivElement>(null)
   // The design version (the prototype's "Homepage version" option): where the IND / US switch sits and how it looks.
@@ -25206,6 +26796,8 @@ export function Home({ scrollTo = 'top', market = 'in', movers, onTab, onSearch,
   // The market switch guide (prototype setting, on by default) shows every time this Home opens, and again for each
   // homepage version picked; ending it hides it for this version until the Home opens again.
   const guideOn = useFlowOption('stocks', 'switchGuide', 'off') === 'on'
+  // Archived 3 Nov: the "Header" setting. The holdings are always on the page; flip this to see them inside the top card.
+  const headerCard = HEADER_CARD
   const [guideDoneFor, setGuideDoneFor] = useState<string | null>(null)
   const guiding = guideOn && !sheet && guideDoneFor !== version.id
   const hasSwitch = version.place !== 'none'
@@ -25333,10 +26925,10 @@ export function Home({ scrollTo = 'top', market = 'in', movers, onTab, onSearch,
     return () => cancelAnimationFrame(frame)
   }, [scrollTo])
 
-  // IND ↔ US in place: tap a tab or swipe the page sideways; the feed slides in from the side of the new tab.
-  const switchTo = (next: Market, tapped = false) => {
+  // IND ↔ US in place: tap the switcher or swipe the top card. A swipe slides the card across; a tap switches at once
+  // (no slide-out first: it read as a ~1 s lag on phones, the user's call, 3 Nov). Either way the feed fades in.
+  const switchTo = (next: Market) => {
     if (next === tab) return
-    if (tapped) swipe.entered(next === 'us' ? 1 : -1)
     setStripSlides(true)
     setTab(next)
   }
@@ -25345,41 +26937,21 @@ export function Home({ scrollTo = 'top', market = 'in', movers, onTab, onSearch,
   useEffect(() => {
     if (usState === shownState.current) return
     shownState.current = usState
-    switchTo('us', true)
+    switchTo('us')
   }, [usState])
-  // V13's market button swaps the page vertically instead: the summary and feed on screen slide down and fade out, then
-  // the other market's slide up into place and fade in (no sideways slide, the index strip just changes).
-  const swappingUp = useRef(false)
-  // The button's label moves at once, while the page is still leaving.
-  const [heading, setHeading] = useState<Market | null>(null)
-  const swapVertically = (next: Market) => {
-    if (next === (heading ?? tab)) return
-    setHeading(next)
-    const parts = [...(page.current?.querySelectorAll<HTMLElement>(':scope > [data-swap]') ?? [])]
-    setStripSlides(false)
-    const done = () => {
-      swappingUp.current = true
-      setTab(next)
-      setHeading(null)
-    }
-    if (reducedMotion() || !parts.length) return done()
-    Promise.all(parts.map((el) => el.animate([{ translate: '0 0', opacity: 1 }, { translate: `0 ${SWAP_SHIFT}px`, opacity: 0 }], { duration: SWAP_OUT, easing: SWAP_EASE_OUT, fill: 'forwards' }).finished)).then(done)
-  }
-  useLayoutEffect(() => {
-    if (!swappingUp.current) return
-    swappingUp.current = false
-    page.current?.querySelectorAll<HTMLElement>(':scope > [data-swap]').forEach((el) => {
-      el.getAnimations().forEach((a) => a.cancel())
-      el.animate([{ translate: `0 ${SWAP_SHIFT}px`, opacity: 0 }, { translate: '0 0', opacity: 1 }], { duration: SWAP_IN, easing: SWAP_EASE_IN })
-    })
-  }, [tab])
   const markets: Market[] = ['in', 'us']
   const hasSwitchNow = useRef(hasSwitch)
   hasSwitchNow.current = hasSwitch
+  // Swiping between IND and US only once both have a holdings card (US Stocks holds stocks); before that, the tabs only.
+  const canSwipeNow = useRef(false)
+  canSwipeNow.current = usState === 'holding'
   const swipe = useSwipeBetween({
-    canGo: (direction) => hasSwitchNow.current && neighbour(markets, tab, direction) !== null,
+    canGo: (direction) => hasSwitchNow.current && canSwipeNow.current && neighbour(markets, tab, direction) !== null,
     onSwitch: (direction) => switchTo(neighbour(markets, tab, direction)!),
     page: tab,
+    area: '[data-market-card]',
+    slides: () => [...(page.current?.querySelectorAll<HTMLElement>('[data-market-card]') ?? [])],
+    fades: () => [...(page.current?.querySelectorAll<HTMLElement>('[data-market-part]') ?? [])],
   })
   useEffect(() => {
     const body = page.current?.parentElement ?? null
@@ -25402,22 +26974,56 @@ export function Home({ scrollTo = 'top', market = 'in', movers, onTab, onSearch,
   }, [tab, version.id])
 
   // Under a switch in the middle the feed starts right below it; otherwise it overlaps the summary on a rounded sheet.
-  const switchInPage = (next: Market) => switchTo(next, true)
+  const switchInPage = (next: Market) => switchTo(next)
   // The US tab's summary: the status card (KYC → activation → add money → buy) in place of the holdings until every
   // step is done and the user holds a US stock; then the US holdings in dollars replace the card.
-  // Money ready (3 Nov): no card — the Aerobar ("Your money is ready") says it; the summary shows US holdings at $0.00.
-  const usCard = usState !== 'holding' && usState !== 'ready'
-  // V2–V4 (the switch over the feed): the holdings at the top follow the tab (2 Nov): INR holdings on INR Stocks, USD
-  // holdings on USD Stocks; the ↕ still cycles Overall → INR → USD by hand. The US activation card
+  const usCard = usState !== 'holding'
+  // V2–V4 (the switch over the feed): the tabs are the feed's, not the page's. The top keeps "IN Stocks holdings" with its
+  // own IN / US switch, whatever tab the feed is on; only the index marquee follows the tabs. The US activation card
   // moves into the US tab's feed — except Lemonn KYC pending, which takes the holdings' place (and leaves the feed).
   const feedTabs = version.place === 'mid' && !twoHomes
-  const [holdingsView, setHoldingsView] = useState<HoldingsView>(() => (tab === 'us' ? 'us' : 'in'))
-  useEffect(() => setHoldingsView(tab === 'us' ? 'us' : 'in'), [tab])
+  const [holdingsView, setHoldingsView] = useState<HoldingsView>('overall')
   const onProduct = (id: string) => {
-    if (id === 'us-stocks') switchTo('us', true)
-    else if (id === 'us-etfs') onUsEtfs?.()
-    else if (id === 'us-fractional' || id === 'us-hours') onUsMarket?.()
+    if (id === 'us-stocks') switchTo('us')
   }
+  // While the Lemonn KYC is pending the product tiles under it are hidden (nothing can be traded yet).
+  // The top of the summary. IND: "Start your KYC" while the Lemonn KYC is pending (nothing is verified, so Indian stocks
+  // can't be traded either), else the holdings. US: the status card (KYC → activation → add money → buy) until the
+  // user holds a US stock. Header card on: the holdings sit inside the card — on IND always, on US once activated (with
+  // the state's next step, e.g. Add money, below them).
+  const inCard = (node: ReactNode) => <Inset paddingInline="16" paddingBlock="00">{node}</Inset>
+  // A version without the IND / US switch: only the IND summary.
+  const inSummaryTop = () => {
+    return headerCard ? inCard(<UsActivationCard holdings={<HoldingsSummary />} />) : <HoldingsSummary />
+  }
+  // Lemonn KYC pending: one card, "Start your KYC", on both tabs (nothing, US Stocks included, works before it). Once US
+  // Stocks is activated, each market's top card is a card, so holdings that would sit on the page go into the plain card there (as with Header "Holdings in card").
+  const topCard = (market: Market) => {
+    if (market === 'in') return <UsActivationCard holdings={<HoldingsSummary />} />
+    if (headerCard && activatedStates.includes(usState)) return <UsActivationCard state={usState} holdings={<HoldingsSummary us onOpen={onUsHoldings} usEmpty={usState !== 'holding'} />} onCta={onActivateUs} />
+    // Money on the way: the holdings card as when holding, at $0.00, with a small "Money on the way" card under it.
+    if (usState === 'onTheWay') return (
+      <Stack gap="12">
+        <UsActivationCard holdings={<HoldingsSummary us onOpen={onUsHoldings} usEmpty />} />
+        <TransferStatusCard onOpen={onActivateUs} />
+      </Stack>
+    )
+    return usCard ? <UsActivationCard state={usState} onCta={onActivateUs} /> : <UsActivationCard holdings={<HoldingsSummary us onOpen={onUsHoldings} />} />
+  }
+  // The top card is what slides sideways when the market switches — by a swipe on it (once both markets hold stocks)
+  // or a tap on the switcher; the rest of the page dissolves into the other market's.
+  // Both markets' cards sit side by side in one track (IND left, US right), the other one just off screen: a swipe drags
+  // the track so the other card slides into view, and a tap on the switcher slides it across the same way.
+  // FLAG: hand-made carousel — L3 has none.
+  const topCards = (
+    <div className={styles.cardTrack} data-market-card>
+      {markets.map((m) => (
+        <div key={m} className={styles.cardSlide} data-side={m === tab ? undefined : m === 'us' ? 'after' : 'before'} aria-hidden={m !== tab || undefined} inert={m !== tab || undefined}>
+          {inCard(topCard(m))}
+        </div>
+      ))}
+    </div>
+  )
   const feedClass = version.place !== 'mid' ? styles.feed : version.look === 'folder' ? `${styles.feed} ${styles.feedTabbed}` : `${styles.feed} ${styles.feedTabbed} ${styles.feedUnderHead}`
 
   return (
@@ -25429,18 +27035,18 @@ export function Home({ scrollTo = 'top', market = 'in', movers, onTab, onSearch,
       <div className={styles.header} data-animate={animate || undefined}>
         <div className={styles.topBar} data-hidden={scrollState === 'down' || undefined} inert={scrollState === 'down' || undefined}>
           <TopBar scrolled={scrolled} initials={initials(user.name)} onProfile={onProfile} onSearch={() => onSearch?.(tab)} onWallet={onWallet}
-            // The search shrinks to an icon only where the top bar also holds the market switch / chip (V12, V13).
-            compactSearch={twoHomes && version.place !== 'top'}
+            compactSearch={twoHomes}
             placeholder={twoHomes && tab === 'us' ? t('search.placeholderUs') : undefined}
-            market={version.place === 'picker' ? { value: heading ?? tab, onSwitch: () => swapVertically((heading ?? tab) === 'us' ? 'in' : 'us') } : undefined}
+            market={version.place === 'picker' ? { value: tab, onSwitch: () => switchTo(tab === 'us' ? 'in' : 'us') } : undefined}
             start={version.place === 'header' && twoHomes && <MarketSwitch topBar appearance="pill-group" look={version} value={tab} onChange={switchInPage} />}
             end={version.place === 'header' && !twoHomes && <MarketSwitch compact appearance="pill-group" look={version} value={tab} onChange={switchInPage} />} />
         </div>
       </div>
       {/* Holds the top bar's place at the top of the page (the bar itself hangs from the sticky header above). */}
       <div ref={spacer} className={styles.spacer} aria-hidden="true" />
+      <HomeSwitcher />
       <Stack ref={page} className={styles.flatCards}>
-        {version.place === 'top' && !twoHomes && <MarketSwitchFor version={version} value={tab} onChange={(next) => switchTo(next, true)} />}
+        {version.place === 'top' && !twoHomes && <MarketSwitchFor version={version} value={tab} onChange={(next) => switchTo(next)} />}
         {/* The page's one index marquee: sticky under the top bar, and up to the very top while the top bar is away. */}
         <div ref={marquee} className={styles.marquee} data-home="top" data-state={scrollState} data-tabs={pinned || undefined} data-animate={animate || undefined} data-ticker={version.ticker ? undefined : 'off'}>
           <div ref={band} className={styles.band} aria-hidden="true" />
@@ -25454,50 +27060,49 @@ export function Home({ scrollTo = 'top', market = 'in', movers, onTab, onSearch,
           )}
           {!version.ticker ? null : tab === 'us' ? <IndexStrip key="us" items={usIndices} label={t('us.indices.label')} slideIn={stripSlides} /> : <IndexStrip key="in" slideIn={stripSlides} />}
           <div className={styles.pinnedTabs} data-open={pinned || undefined} inert={!pinned || undefined}>
-            <PinnedMarketTabs value={tab} onChange={(next) => switchTo(next, true)} />
+            <PinnedMarketTabs value={tab} onChange={(next) => switchTo(next)} />
           </div>
         </div>
-        {twoHomes && tab === 'us' ? (
-          <Stack key="summary-us" gap="24" className={styles.summary} data-swap>
-            {usCard ? <Inset paddingInline="16" paddingBlock="00"><UsActivationCard state={usState as Exclude<UsState, 'holding'>} onCta={onActivateUs} /></Inset> : <HoldingsSummary us usEmpty={usState !== 'holding'} />}
-          </Stack>
-        ) : feedTabs ? (
+        {feedTabs ? (
           <Stack key="summary-feed-tabs" gap="24" className={styles.summary}>
             {usState === 'kyc'
               ? <Inset paddingInline="16" paddingBlock="00"><UsActivationCard state="kyc" onCta={onActivateUs} /></Inset>
               : <HoldingsSwitcher view={holdingsView} onView={setHoldingsView} usEmpty={usState !== 'holding'} />}
-            {/* No product tiles on the US Stocks tab (2 Nov). */}
-            {tab !== 'us' && <ProductCards key={version.tiles} items={tiles[version.tiles]} onProduct={onProduct} />}
+            {usState !== 'kyc' && <ProductCards key={version.tiles} items={tiles[version.tiles]} onProduct={onProduct} />}
           </Stack>
         ) : (
-          <Stack key="summary-in" gap="24" className={styles.summary} data-swap>
-            {tab === 'us' && usCard ? (
-              <Inset paddingInline="16" paddingBlock="00"><UsActivationCard state={usState as Exclude<UsState, 'holding'>} onCta={onActivateUs} /></Inset>
-            ) : (
-              <HoldingsSummary us={tab === 'us'} usEmpty={tab === 'us' && usState !== 'holding'} />
+          <Stack key="summary" gap="24" className={styles.summary}>
+            {usState === 'kyc' ? inCard(<UsActivationCard spec={inKycCard} onCta={onActivateUs} />) : hasSwitch ? topCards : inSummaryTop()}
+            {/* The US tab has no tiles here (every version): its quick access is the shortcuts in the white body. No empty
+                box either, or the summary's gap would leave 24 of extra grey under the card. */}
+            {usState !== 'kyc' && tab === 'in' && (
+              <div data-market-part>
+                <ProductCards key={version.tiles} items={twoHomes ? products : tiles[version.tiles]} onProduct={onProduct} />
+              </div>
             )}
-            {/* No product tiles on the US Stocks tab (2 Nov). */}
-            {tab !== 'us' && <ProductCards key={version.tiles} items={twoHomes ? products : tiles[version.tiles]} onProduct={onProduct} />}
           </Stack>
         )}
-        {version.place === 'mid' && <MarketSwitchFor version={version} value={tab} onChange={(next) => switchTo(next, true)} />}
-        {tab === 'in' ? (
-          <Stack key="in" gap="32" className={feedClass} data-swap ref={swipe.contentRef}>
-            <Shortcuts titled={version.doMore} />
-            <div data-home="movers"><TopMovers initial={movers} /></div>
-            <Watchlists />
-            <Section paddingBlock="24" className={styles.tinted} data-tint="brand" data-home="invest"><SmartInvest /></Section>
-            <Announcement />
-            <div data-home="sectors"><Sectors /></div>
-            <div data-home="highlights"><Highlights /></div>
-            <div data-home="more"><IdeaBaskets /></div>
-            <Disclosure />
-          </Stack>
-        ) : (
-          <Stack key="us" gap="32" className={feedClass} data-swap style={{ '--stk-gap': 'var(--l3-spacing-28)' } as CSSProperties} ref={swipe.contentRef}>
-            <UsHome card={feedTabs && usState !== 'kyc'} usState={usState} onActivate={onActivateUs} onStock={onUsStock} onMarket={onUsMarket} onEtfs={onUsEtfs} />
-          </Stack>
-        )}
+        {version.place === 'mid' && <MarketSwitchFor version={version} value={tab} onChange={(next) => switchTo(next)} />}
+        {/* The white sheet stays; only what's on it changes (with the tiles above, in one movement). */}
+        <div className={feedClass}>
+          {tab === 'in' ? (
+            <Stack key="in" gap="32" data-market-part>
+              <Shortcuts />
+              <div data-home="movers"><TopMovers initial={movers} /></div>
+              <Watchlists />
+              <Section paddingBlock="24" className={styles.tinted} data-tint="brand" data-home="invest"><SmartInvest /></Section>
+              <Announcement />
+              <div data-home="sectors"><Sectors /></div>
+              <div data-home="highlights"><Highlights /></div>
+              <div data-home="more"><IdeaBaskets /></div>
+              <Disclosure />
+            </Stack>
+          ) : (
+            <Stack key="us" gap="32" data-market-part>
+              <UsHome card={feedTabs && usState !== 'kyc'} usState={usState} onActivate={onActivateUs} onStock={onUsStock} onMarket={onUsMarket} onTheme={onUsTheme} onEtfs={onUsEtfs} onEtf={onUsEtf} onPicks={onUsPicks} />
+            </Stack>
+          )}
+        </div>
       </Stack>
     </Screen>
   )
@@ -25522,7 +27127,394 @@ function initials(name: string) {
 }
 ```
 
+### `src/flows/stocks/screens/ThemePage.module.css`
+
+```css
+/* The theme overview card: name over its one-line description, the return (with its period switcher) on the right. */
+.about {
+  flex: 1;
+  min-width: 0;
+}
+
+.name {
+  margin: 0;
+  font: var(--l3-text-heading-18);
+  color: var(--l3-content-primary);
+}
+
+.desc {
+  margin: 0;
+  font: var(--l3-text-description-14);
+  color: var(--l3-content-secondary);
+}
+
+/* The return column: the period switcher's tap area is stretched over all of it, out to the card's top, bottom and
+   right edges (the card's 12 padding), so a tap anywhere on the period or the return switches it. */
+.returns {
+  position: relative;
+  align-self: stretch;
+  justify-content: center;
+}
+
+.periodSwitch.periodSwitch {
+  position: static;
+}
+
+.periodSwitch.periodSwitch::before {
+  inset: calc(-1 * var(--l3-spacing-12));
+  width: auto;
+  height: auto;
+  transform: none;
+}
+
+/* How returns are counted and that it's not a recommendation, under the stocks. */
+.footnote {
+  margin: 0;
+  font: var(--l3-text-description-12);
+  color: var(--l3-content-secondary);
+}
+
+/* Clips the themes either side of the current one (they show only while a swipe or a tap slides them in). Sideways
+   only, and it never shrinks below its content: the page under the tabs scrolls vertically as usual. */
+.viewport {
+  flex-shrink: 0;
+  min-height: 100%;
+  overflow-x: clip;
+}
+
+/* The sliding track (a swipe drags it sideways): fills the page so a swipe can start anywhere under the tabs. */
+.body {
+  position: relative;
+  min-height: 100%;
+}
+
+/* The themes before and after: one page width off either side of the current one, top-aligned with it. */
+.panel[data-side='before'],
+.panel[data-side='after'] {
+  position: absolute;
+  inset-block-start: 0;
+  inline-size: 100%;
+}
+
+.panel[data-side='before'] {
+  inset-inline-start: -100%;
+}
+
+.panel[data-side='after'] {
+  inset-inline-start: 100%;
+}
+```
+
+### `src/flows/stocks/screens/ThemePage.tsx`
+
+```tsx
+// stocks-23 … 28: Themes — every theme of "Explore by themes" on one page, laid out like the ETFs page (us-stocks-71).
+// The Actionbar carries back + "Themes" with the themes as flat (underline) tabs, each with its icon, in its bottom slot,
+// so they stay put while the page scrolls and switching theme never leaves the page. Switching slides the body sideways:
+// a tap slides the new theme in from its side; a left / right swipe on the body drags it with the finger, and the next (or previous) theme — laid beside it, as in a
+// carousel — comes into view with it (the stocks flow's `useSwipeBetween`). A theme card on Home opens it on that theme (one
+// screen per theme: stocks-23 AI & chips … 28 Dollar parking); "View all" opens it on the first.
+// Under the tabs, for the picked theme, two sections:
+// 1. About it, kept short — one card: its name and a one-line description, its return on the right (1Y; an L3 Select
+//    switcher above it steps to 3Y and 1M).
+// 2. "All stocks": its stocks as list cards.
+// The fine print (how returns are counted, not a recommendation) closes the page.
+import { useLayoutEffect, useRef, useState } from 'react'
+import { Actionbar } from '@l3/components/Actionbar'
+import { Card } from '@l3/components/Card'
+import { Icon } from '@l3/components/Icon'
+import { Inset } from '@l3/components/Inset'
+import { PriceChange } from '@l3/components/PriceChange'
+import { Section } from '@l3/components/Section'
+import { SectionHeader } from '@l3/components/SectionHeader'
+import { Select } from '@l3/components/Select'
+import { Stack } from '@l3/components/Stack'
+import { Tabs } from '@l3/components/Tabs'
+import { msDevices, msElectricCar, msHealthCross, msMemory, msPaid, msSavings } from '@l3/icons/material'
+import { usePreview } from '../../../shared/prototype'
+import { useLiveQuote } from '../../../shared/data/live'
+import { usLogo, viewUsStock } from '../../../shared/data/usStocks'
+import { Usd } from '../../../shared/money'
+import { Screen } from '../../../shared/ui/Screen'
+import { StockListCard } from '../../../shared/ui/StockListCard'
+import { t } from '../copy'
+import { neighbour, useSwipeBetween } from '../components/useSwipeBetween'
+import { themeById, themeMonthReturn, themes, usStock, type ThemeId } from '../components/us/data'
+import styles from './ThemePage.module.css'
+
+type ThemePageProps = {
+  /** The theme it opens on (the card that was tapped; View all → the first). */
+  theme: ThemeId
+  /** A stock was tapped (already remembered with `viewUsStock`) → its page. */
+  onStock?: (sym: string) => void
+  /** Back (the screen before, wherever the page was opened from). */
+  onBack?: () => void
+}
+
+/** Each theme's icon on its pill. */
+const THEME_ICONS: Record<ThemeId, string> = {
+  ai: msMemory,
+  bigtech: msDevices,
+  dividend: msPaid,
+  ev: msElectricCar,
+  health: msHealthCross,
+  parking: msSavings,
+}
+
+function ThemeStock({ sym, onOpen }: { sym: string; onOpen: (sym: string) => void }) {
+  const stock = usStock(sym)
+  const live = useLiveQuote(sym, stock.price, stock.change)
+  return <StockListCard symbol={sym} name={stock.name} logoUrl={usLogo(sym)} price={<Usd value={live.price} layout="inline" />} changePct={live.changePct} onOpen={() => onOpen(sym)} />
+}
+
+/** The return periods the switcher steps through, starting on 1Y. */
+const PERIODS = ['1y', '3y', '1m'] as const
+type Period = (typeof PERIODS)[number]
+
+/**
+ * About the theme, kept short: its name and one line on what it is, with its return on the right. The period above the
+ * return is an L3 Select switcher (↕): each tap steps 1Y → 3Y → 1M. Its tap area covers the whole right part of the card
+ * (period and return, edge to edge), so it's easy to hit.
+ */
+function ThemeOverview({ id }: { id: ThemeId }) {
+  const theme = themeById(id)
+  const [period, setPeriod] = useState<Period>('1y')
+  const pct = period === '1m' ? themeMonthReturn(theme.symbols) : theme.returns[period]
+  const next = () => setPeriod(PERIODS[(PERIODS.indexOf(period) + 1) % PERIODS.length])
+  return (
+    <Card aria-label={t(`us.theme.${id}`)}>
+      <Stack direction="horizontal" align="center" gap="16">
+        <Stack gap="04" className={styles.about}>
+          <h3 className={styles.name}>{t(`us.theme.${id}`)}</h3>
+          <p className={styles.desc}>{t(`us.theme.${id}.desc`)}</p>
+        </Stack>
+        <Stack gap="04" align="end" className={styles.returns}>
+          <Select size="sm" subtle icon="swap" onClick={next} className={styles.periodSwitch} aria-label={t('us.themes.periodSwitch')}>
+            {t(`us.themes.period.${period}`)}
+          </Select>
+          <PriceChange value={pct} size="lg" />
+        </Stack>
+      </Stack>
+    </Card>
+  )
+}
+
+/** One theme's page under the tabs: its overview card, "All stocks", the fine print. */
+function ThemeBody({ id, onOpen }: { id: ThemeId; onOpen: (sym: string) => void }) {
+  const theme = themeById(id)
+  return (
+    <Inset paddingInline="16" paddingBlock="24">
+      <Stack gap="32">
+        <ThemeOverview id={id} />
+        <Section gap="16">
+          <SectionHeader title={t('us.themes.allStocks')} description={t('us.themes.stocks', { count: theme.symbols.length })} headingLevel={3} />
+          <Stack gap="12">
+            {theme.symbols.map((sym) => <ThemeStock key={sym} sym={sym} onOpen={onOpen} />)}
+          </Stack>
+        </Section>
+        <p className={styles.footnote}>{t('us.themes.footnote')}</p>
+      </Stack>
+    </Inset>
+  )
+}
+
+export function ThemePage({ theme: initialTheme, onStock, onBack }: ThemePageProps) {
+  const { back, go } = usePreview()
+  const [id, setId] = useState<ThemeId>(initialTheme)
+  const goBack = onBack ?? (() => { if (!back?.()) go('stocks-09') })
+  const open = (sym: string) => { viewUsStock(sym); onStock?.(sym) }
+  const order = themes.map((item) => item.id)
+  const tabs = themes.map((item) => ({ value: item.id, label: t(`us.theme.${item.id}`), iconLeft: <Icon icon={THEME_ICONS[item.id]} /> }))
+
+  // The body that slides, and the side the next theme comes in from (1: from the right, -1: from the left).
+  const body = useRef<HTMLDivElement>(null)
+  const comingFrom = useRef<1 | -1 | 0>(0)
+  const swipe = useSwipeBetween({
+    page: id,
+    canGo: (direction) => neighbour(order, id, direction) !== null,
+    onSwitch: (direction) => {
+      const next = neighbour(order, id, direction)
+      // The track has already slid the neighbour into place: no slide-in after it.
+      if (next) setId(next)
+    },
+    slides: () => (body.current ? [body.current] : []),
+    fades: () => [],
+  })
+  // A tap on a tab. The theme next door: the same carousel slide as a swipe. Further away: it slides straight in from
+  // its side (no slide-out first, so it answers at once).
+  const pick = (next: ThemeId) => {
+    const step = order.indexOf(next) - order.indexOf(id)
+    if (!step) return
+    if (Math.abs(step) === 1) return swipe.go(step as 1 | -1, () => setId(next))
+    comingFrom.current = step > 0 ? 1 : -1
+    setId(next)
+  }
+  // Runs after the swipe hook has reset the body: the new theme glides in from where the old one left.
+  useLayoutEffect(() => {
+    const from = comingFrom.current
+    comingFrom.current = 0
+    const el = body.current
+    if (!from || !el || matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    el.animate([{ translate: `${from * el.offsetWidth}px 0` }, { translate: '0 0' }], { duration: 280, easing: 'cubic-bezier(0.2, 0, 0, 1)' })
+  }, [id])
+
+  return (
+    <Screen
+      top={
+        <Actionbar
+          title={t('us.themes.pageTitle')}
+          headingLevel={2}
+          onBack={goBack}
+          backLabel={t('us.themes.back')}
+          bottom={<Tabs appearance="underline" aria-label={t('us.themes.railLabel')} items={tabs} value={id} onChange={(v) => pick(v as ThemeId)} />}
+        />
+      }
+    >
+      <div className={styles.viewport}>
+        <div ref={(el) => { body.current = el; swipe.bind(el) }} className={styles.body}>
+          {/* The theme before and after sit just off-screen on either side, so a swipe brings them into view. Keyed by
+              theme: the one that slides in stays the same page once it becomes the current one. */}
+          {[neighbour(order, id, -1), id, neighbour(order, id, 1)].map((themeId, at) => themeId && (
+            <div key={themeId} className={styles.panel} data-side={['before', 'current', 'after'][at]} inert={at !== 1} aria-hidden={at !== 1 || undefined}>
+              <ThemeBody id={themeId} onOpen={open} />
+            </div>
+          ))}
+        </div>
+      </div>
+    </Screen>
+  )
+}
+```
+
 ## Source — shared app parts it uses
+
+### `src/shared/assets/flags/china.svg`
+
+```tsx
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+  <!-- China, round. Flag artwork keeps its own colours. -->
+  <defs><clipPath id="c"><circle cx="12" cy="12" r="12"/></clipPath></defs>
+  <g clip-path="url(#c)">
+    <rect width="24" height="24" fill="#DE2910"/>
+    <g fill="#FFDE00">
+      <polygon points="7.00,3.90 7.81,6.39 10.42,6.39 8.31,7.92 9.12,10.41 7.00,8.88 4.88,10.41 5.69,7.92 3.58,6.39 6.19,6.39"/>
+      <polygon points="12.88,2.17 12.85,2.97 13.60,3.24 12.83,3.46 12.80,4.26 12.36,3.59 11.59,3.82 12.08,3.19 11.63,2.52 12.38,2.80"/>
+      <polygon points="15.51,4.76 15.21,5.50 15.82,6.01 15.02,5.96 14.72,6.70 14.53,5.92 13.73,5.87 14.41,5.44 14.22,4.67 14.83,5.18"/>
+      <polygon points="14.99,7.72 15.10,8.51 15.89,8.65 15.17,9.00 15.28,9.79 14.73,9.21 14.01,9.56 14.38,8.86 13.83,8.28 14.62,8.42"/>
+      <polygon points="13.05,10.25 12.88,11.03 13.58,11.43 12.78,11.51 12.61,12.29 12.29,11.56 11.50,11.65 12.09,11.11 11.76,10.38 12.46,10.78"/>
+    </g>
+  </g>
+  <circle cx="12" cy="12" r="11.75" fill="none" stroke="#000000" stroke-opacity="0.12" stroke-width="0.5"/>
+</svg>
+```
+
+### `src/shared/assets/flags/europe.svg`
+
+```tsx
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+  <!-- European Union, round. Flag artwork keeps its own colours. -->
+  <defs><clipPath id="c"><circle cx="12" cy="12" r="12"/></clipPath></defs>
+  <g clip-path="url(#c)">
+    <rect width="24" height="24" fill="#003399"/>
+    <g fill="#FFCC00">
+      <polygon points="12.00,3.80 12.27,4.63 13.14,4.63 12.44,5.14 12.71,5.97 12.00,5.46 11.29,5.97 11.56,5.14 10.86,4.63 11.73,4.63"/>
+      <polygon points="15.50,4.74 15.77,5.57 16.64,5.57 15.94,6.08 16.21,6.91 15.50,6.40 14.79,6.91 15.06,6.08 14.36,5.57 15.23,5.57"/>
+      <polygon points="18.06,7.30 18.33,8.13 19.20,8.13 18.50,8.64 18.77,9.47 18.06,8.96 17.36,9.47 17.63,8.64 16.92,8.13 17.79,8.13"/>
+      <polygon points="19.00,10.80 19.27,11.63 20.14,11.63 19.44,12.14 19.71,12.97 19.00,12.46 18.29,12.97 18.56,12.14 17.86,11.63 18.73,11.63"/>
+      <polygon points="18.06,14.30 18.33,15.13 19.20,15.13 18.50,15.64 18.77,16.47 18.06,15.96 17.36,16.47 17.63,15.64 16.92,15.13 17.79,15.13"/>
+      <polygon points="15.50,16.86 15.77,17.69 16.64,17.69 15.94,18.20 16.21,19.03 15.50,18.52 14.79,19.03 15.06,18.20 14.36,17.69 15.23,17.69"/>
+      <polygon points="12.00,17.80 12.27,18.63 13.14,18.63 12.44,19.14 12.71,19.97 12.00,19.46 11.29,19.97 11.56,19.14 10.86,18.63 11.73,18.63"/>
+      <polygon points="8.50,16.86 8.77,17.69 9.64,17.69 8.94,18.20 9.21,19.03 8.50,18.52 7.79,19.03 8.06,18.20 7.36,17.69 8.23,17.69"/>
+      <polygon points="5.94,14.30 6.21,15.13 7.08,15.13 6.37,15.64 6.64,16.47 5.94,15.96 5.23,16.47 5.50,15.64 4.80,15.13 5.67,15.13"/>
+      <polygon points="5.00,10.80 5.27,11.63 6.14,11.63 5.44,12.14 5.71,12.97 5.00,12.46 4.29,12.97 4.56,12.14 3.86,11.63 4.73,11.63"/>
+      <polygon points="5.94,7.30 6.21,8.13 7.08,8.13 6.37,8.64 6.64,9.47 5.94,8.96 5.23,9.47 5.50,8.64 4.80,8.13 5.67,8.13"/>
+      <polygon points="8.50,4.74 8.77,5.57 9.64,5.57 8.94,6.08 9.21,6.91 8.50,6.40 7.79,6.91 8.06,6.08 7.36,5.57 8.23,5.57"/>
+    </g>
+  </g>
+  <circle cx="12" cy="12" r="11.75" fill="none" stroke="#000000" stroke-opacity="0.12" stroke-width="0.5"/>
+</svg>
+```
+
+### `src/shared/assets/flags/india.svg`
+
+```tsx
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+  <!-- India, round: saffron / white / green with the navy Ashoka Chakra. Flag artwork keeps its own colours. -->
+  <defs><clipPath id="c"><circle cx="12" cy="12" r="12"/></clipPath></defs>
+  <g clip-path="url(#c)">
+    <rect width="24" height="8" fill="#FF9933"/>
+    <rect y="8" width="24" height="8" fill="#FFFFFF"/>
+    <rect y="16" width="24" height="8" fill="#138808"/>
+    <circle cx="12" cy="12" r="3" fill="none" stroke="#000080" stroke-width="0.8"/>
+    <circle cx="12" cy="12" r="0.8" fill="#000080"/>
+    <g stroke="#000080" stroke-width="0.4">
+      <path d="M12 9v6M9 12h6M9.88 9.88l4.24 4.24M14.12 9.88l-4.24 4.24"/>
+    </g>
+  </g>
+  <circle cx="12" cy="12" r="11.75" fill="none" stroke="#000000" stroke-opacity="0.12" stroke-width="0.5"/>
+</svg>
+```
+
+### `src/shared/assets/flags/japan.svg`
+
+```tsx
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+  <!-- Japan, round. Flag artwork keeps its own colours. -->
+  <defs><clipPath id="c"><circle cx="12" cy="12" r="12"/></clipPath></defs>
+  <g clip-path="url(#c)">
+    <rect width="24" height="24" fill="#FFFFFF"/>
+    <circle cx="12" cy="12" r="5.6" fill="#BC002D"/>
+  </g>
+  <circle cx="12" cy="12" r="11.75" fill="none" stroke="#000000" stroke-opacity="0.12" stroke-width="0.5"/>
+</svg>
+```
+
+### `src/shared/assets/flags/korea.svg`
+
+```tsx
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+  <!-- South Korea, round. Flag artwork keeps its own colours. -->
+  <defs><clipPath id="c"><circle cx="12" cy="12" r="12"/></clipPath></defs>
+  <g clip-path="url(#c)">
+    <rect width="24" height="24" fill="#FFFFFF"/>
+    <circle cx="12" cy="12" r="5" fill="#0047A0"/>
+    <path d="M7 12a5 5 0 0 1 10 0a2.5 2.5 0 0 1-5 0a2.5 2.5 0 0 0-5 0z" fill="#CD2E3A"/>
+    <g stroke="#000000" stroke-width="0.9" stroke-linecap="butt">
+      <path d="M3.6 6.2l2.4-1.4M4.3 7.6l2.4-1.4M5 9l2.4-1.4" transform="translate(-0.4 0.2)"/>
+      <path d="M20.4 6.2l-2.4-1.4M19.7 7.6l-2.4-1.4M19 9l-2.4-1.4" transform="translate(0.4 0.2)"/>
+      <path d="M3.6 17.8l2.4 1.4M4.3 16.4l2.4 1.4M5 15l2.4 1.4" transform="translate(-0.4 -0.2)"/>
+      <path d="M20.4 17.8l-2.4 1.4M19.7 16.4l-2.4 1.4M19 15l-2.4 1.4" transform="translate(0.4 -0.2)"/>
+    </g>
+  </g>
+  <circle cx="12" cy="12" r="11.75" fill="none" stroke="#000000" stroke-opacity="0.12" stroke-width="0.5"/>
+</svg>
+```
+
+### `src/shared/assets/flags/us.svg`
+
+```tsx
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+  <!-- United States, round: red and white stripes with the blue canton. Flag artwork keeps its own colours. -->
+  <defs><clipPath id="c"><circle cx="12" cy="12" r="12"/></clipPath></defs>
+  <g clip-path="url(#c)">
+    <rect width="24" height="24" fill="#FFFFFF"/>
+    <g fill="#B22234">
+      <rect y="0" width="24" height="2.4"/>
+      <rect y="4.8" width="24" height="2.4"/>
+      <rect y="9.6" width="24" height="2.4"/>
+      <rect y="14.4" width="24" height="2.4"/>
+      <rect y="19.2" width="24" height="2.4"/>
+    </g>
+    <rect width="12" height="12" fill="#3C3B6E"/>
+    <g fill="#FFFFFF">
+      <circle cx="3.5" cy="3" r="0.8"/><circle cx="7" cy="3" r="0.8"/><circle cx="10.5" cy="3" r="0.8"/>
+      <circle cx="5.25" cy="6" r="0.8"/><circle cx="8.75" cy="6" r="0.8"/>
+      <circle cx="3.5" cy="9" r="0.8"/><circle cx="7" cy="9" r="0.8"/><circle cx="10.5" cy="9" r="0.8"/>
+    </g>
+  </g>
+  <circle cx="12" cy="12" r="11.75" fill="none" stroke="#000000" stroke-opacity="0.12" stroke-width="0.5"/>
+</svg>
+```
 
 ### `src/shared/assets/logos/asahiindia.png`
 
@@ -26175,49 +28167,6 @@ export function companiesByChange(direction: 'gainers' | 'losers'): Company[] {
 }
 ```
 
-### `src/shared/data/etfIssuers.ts`
-
-```ts
-// The companies that run the ETFs (issuers), their logos and which issuer runs which ETF — shared by the ETF list
-// (us-stocks) and the Stocks home's Discover ETFs (stocks), 3 Nov. Logos are PNGs in src/shared/assets/etf-issuers.
-
-const logoFiles = import.meta.glob('../assets/etf-issuers/*.png', { eager: true, query: '?url', import: 'default' }) as Record<string, string>
-const logoByFile = new Map(Object.entries(logoFiles).map(([path, url]) => [path.slice(path.lastIndexOf('/') + 1, -'.png'.length), url]))
-
-// Each logo sits on a plate (the colour it was drawn for); `fill` logos cover the whole circle.
-type Issuer = { file: string; plate: string; name: string; fill?: boolean }
-const ISSUERS: Record<string, Issuer> = {
-  spdr: { file: 'spdr', plate: 'var(--l3-static-white)', name: 'State Street (SPDR)' },
-  invesco: { file: 'invesco', plate: 'var(--l3-static-black)', name: 'Invesco' },
-  vanguard: { file: 'vanguard', plate: 'var(--l3-static-white)', name: 'Vanguard' },
-  vaneck: { file: 'vaneck', plate: 'var(--l3-static-black)', name: 'VanEck' },
-  ishares: { file: 'ishares', plate: 'var(--l3-static-black)', name: 'BlackRock (iShares)', fill: true },
-  globalx: { file: 'globalx', plate: 'var(--l3-static-white)', name: 'Global X' },
-  procure: { file: 'procure', plate: 'var(--l3-static-white)', name: 'Procure', fill: true },
-  wisdomtree: { file: 'wisdomtree', plate: 'var(--l3-static-white)', name: 'WisdomTree' },
-  kraneshares: { file: 'kraneshares', plate: 'var(--l3-static-white)', name: 'KraneShares', fill: true },
-  proshares: { file: 'proshares', plate: 'var(--l3-static-white)', name: 'ProShares' },
-  direxion: { file: 'direxion', plate: 'var(--l3-static-white)', name: 'Direxion' },
-  graniteshares: { file: 'graniteshares', plate: 'var(--l3-static-white)', name: 'GraniteShares', fill: true },
-}
-const ISSUER_OF: Record<string, string> = {
-  SPY: 'spdr', XLE: 'spdr', QQQ: 'invesco', VTI: 'vanguard', VGK: 'vanguard', SMH: 'vaneck', ITA: 'ishares', INDA: 'ishares',
-  MCHI: 'ishares', EWJ: 'ishares', EWY: 'ishares', BOTZ: 'globalx', UFO: 'procure', EPI: 'wisdomtree', KWEB: 'kraneshares',
-  TQQQ: 'proshares', SQQQ: 'proshares', SOXL: 'direxion', SOXS: 'direxion', SPXL: 'direxion', SPXS: 'direxion',
-  NVDL: 'graniteshares', NVD: 'graniteshares', SGOV: 'ishares', SHV: 'ishares', BIL: 'spdr',
-}
-
-/** The issuer's logo (PNG URL), the plate behind it and whether it fills the circle; undefined when there is none. */
-export const etfIssuerLogo = (sym: string): { src: string; plate: string; fill: boolean } | undefined => {
-  const issuer = ISSUERS[ISSUER_OF[sym]]
-  const src = issuer && logoByFile.get(issuer.file)
-  return issuer && src ? { src, plate: issuer.plate, fill: !!issuer.fill } : undefined
-}
-
-/** The issuer's name ("Vanguard"), for the ETF page. */
-export const etfIssuerName = (sym: string): string | undefined => ISSUERS[ISSUER_OF[sym]]?.name
-```
-
 ### `src/shared/data/format.ts`
 
 ```ts
@@ -26269,6 +28218,12 @@ function subscribe(onChange: () => void) {
       timer = undefined
     }
   }
+}
+
+/** Re-render every ticking price now (fresher snapshot data arrived), one tick early. */
+export function nudgeLive() {
+  tick += 1
+  listeners.forEach((l) => l())
 }
 
 /** The live clock: a number that goes up by one every 2 s while anything on screen listens. */
@@ -41535,123 +43490,196 @@ export const watchlists: Watchlist[] = [
 ```json
 {
  "source": "Yahoo Finance (public chart endpoint)",
- "fetchedAt": "2026-11-01T19:29:36.501Z",
+ "fetchedAt": "2026-11-03T10:12:30.415Z",
  "symbols": [
   "AAL",
   "AAPL",
+  "ABBV",
   "ABNB",
   "ADBE",
+  "AEO",
+  "AMC",
   "AMD",
   "AMZN",
+  "ANF",
   "AVGO",
   "BA",
+  "BAC",
+  "BB",
   "BBWI",
+  "BIRK",
+  "BLNK",
+  "BOOT",
   "BOTZ",
+  "BROS",
   "BYND",
+  "CAKE",
+  "CAR",
   "CAVA",
+  "CHPT",
+  "CHWY",
   "CLOV",
+  "CMG",
   "COIN",
+  "COLM",
   "COST",
+  "CPRI",
+  "CQQQ",
   "CRM",
   "CROX",
   "CRWD",
   "CSCO",
   "CVX",
+  "CZR",
+  "DAL",
+  "DASH",
+  "DDOG",
+  "DELL",
   "DIS",
+  "DXJ",
   "EB",
+  "EBAY",
+  "ELF",
   "EPI",
   "ETSY",
   "EWJ",
   "EWY",
+  "EZU",
   "F",
+  "FEZ",
+  "FIVE",
+  "FLKR",
   "FUBO",
+  "FXI",
+  "GAP",
+  "GE",
   "GM",
   "GOOG",
   "GOOGL",
   "GPRO",
   "HAS",
   "HD",
+  "HEWJ",
   "HOG",
+  "HOOD",
+  "IBM",
+  "IEUR",
   "INDA",
   "INTC",
   "IRBT",
   "ITA",
+  "JBLU",
   "JNJ",
   "JPM",
   "KO",
   "KWEB",
   "LAZR",
+  "LCID",
+  "LEVI",
+  "LLY",
   "LULU",
   "LYFT",
+  "M",
   "MA",
+  "MAR",
   "MAT",
   "MCD",
   "MCHI",
   "META",
+  "MRK",
   "MSFT",
   "MU",
+  "NET",
   "NFLX",
+  "NIO",
   "NKE",
   "NVD",
   "NVDA",
   "NVDL",
   "OPEN",
   "ORCL",
+  "PENN",
   "PEP",
   "PFE",
+  "PG",
+  "PLAY",
+  "PLNT",
   "PLTR",
   "PLUG",
   "PTON",
   "PYPL",
   "QCOM",
   "QQQ",
+  "QS",
+  "RBLX",
+  "RH",
+  "RIG",
   "RIVN",
   "SBUX",
+  "SCJ",
+  "SHAK",
   "SHOP",
+  "SIRI",
   "SLB",
   "SMH",
+  "SNAP",
   "SNBR",
   "SNOW",
   "SONO",
+  "SOUN",
   "SOXL",
   "SOXS",
   "SPCE",
+  "SPOT",
   "SPXL",
   "SPXS",
   "SPY",
   "SQQQ",
   "TGT",
+  "TLRY",
+  "TMUS",
   "TQQQ",
+  "TRIP",
   "TSLA",
+  "TTD",
+  "U",
+  "UAL",
   "UBER",
   "UFO",
   "UNH",
+  "URBN",
   "V",
+  "VFC",
   "VGK",
   "VTI",
+  "WEN",
+  "WFC",
+  "WING",
   "WMT",
+  "WOOF",
   "XLE",
-  "XOM"
+  "XLF",
+  "XLV",
+  "XOM",
+  "YETI",
+  "ZM"
  ],
  "quotes": {
   "AAL": {
    "name": "American Airlines Group Inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 12.6,
-   "open": 12.64,
-   "prevClose": 12.78,
-   "change": -0.18,
-   "changePct": -1.41,
-   "dayHigh": 12.64,
-   "dayLow": 12.27,
+   "price": 13.08,
+   "open": 13.09,
+   "prevClose": 12.6,
+   "change": 0.48,
+   "changePct": 3.81,
+   "dayHigh": 13.4,
+   "dayLow": 12.96,
    "high52": 18.79,
    "low52": 10.09,
-   "volume": 60054246,
+   "volume": 84185003,
    "closes": [
-    13.37,
-    13.13,
-    12.94,
     12.83,
     13,
     12.85,
@@ -41671,27 +43699,25 @@ export const watchlists: Watchlist[] = [
     12.61,
     12.58,
     12.78,
-    12.6
+    12.6,
+    13.08
    ]
   },
   "AAPL": {
    "name": "Apple Inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 344.63,
-   "open": 346.72,
-   "prevClose": 348.91,
-   "change": -4.28,
-   "changePct": -1.23,
-   "dayHigh": 349.19,
-   "dayLow": 342.35,
+   "price": 338.32,
+   "open": 342.67,
+   "prevClose": 344.63,
+   "change": -6.31,
+   "changePct": -1.83,
+   "dayHigh": 343.78,
+   "dayLow": 335.84,
    "high52": 351.73,
    "low52": 243.42,
-   "volume": 67841555,
+   "volume": 64689155,
    "closes": [
-    333.02,
-    330.32,
-    333.69,
     332.89,
     333.63,
     336.67,
@@ -41711,27 +43737,63 @@ export const watchlists: Watchlist[] = [
     347.1,
     343.83,
     348.91,
-    344.63
+    344.63,
+    338.32
+   ]
+  },
+  "ABBV": {
+   "name": "AbbVie Inc.",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 288.84,
+   "open": 290.38,
+   "prevClose": 294.89,
+   "change": -6.05,
+   "changePct": -2.05,
+   "dayHigh": 294.86,
+   "dayLow": 286.14,
+   "high52": 298.74,
+   "low52": 190.75,
+   "volume": 8850080,
+   "closes": [
+    265.76,
+    266.69,
+    271.36,
+    272.42,
+    276.47,
+    281.12,
+    274.36,
+    283.48,
+    283.4,
+    285.42,
+    282.68,
+    289.08,
+    284.8,
+    285.19,
+    285.64,
+    286.74,
+    286.39,
+    285.99,
+    290.79,
+    294.89,
+    288.84
    ]
   },
   "ABNB": {
    "name": "Airbnb, Inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 164.39,
-   "open": 166.67,
-   "prevClose": 166.45,
-   "change": -2.06,
-   "changePct": -1.24,
-   "dayHigh": 166.85,
-   "dayLow": 164.1,
+   "price": 171.11,
+   "open": 167.6,
+   "prevClose": 164.39,
+   "change": 6.72,
+   "changePct": 4.09,
+   "dayHigh": 173.05,
+   "dayLow": 166.51,
    "high52": 193.45,
    "low52": 110.81,
-   "volume": 4024388,
+   "volume": 5960555,
    "closes": [
-    160.65,
-    160.47,
-    162.43,
     164.07,
     160.39,
     160.63,
@@ -41751,27 +43813,25 @@ export const watchlists: Watchlist[] = [
     168.82,
     166.04,
     166.45,
-    164.39
+    164.39,
+    171.11
    ]
   },
   "ADBE": {
    "name": "Adobe Inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 250.23,
-   "open": 253.4,
-   "prevClose": 248.12,
-   "change": 2.11,
-   "changePct": 0.85,
-   "dayHigh": 257.13,
-   "dayLow": 248.8,
+   "price": 251.47,
+   "open": 249.96,
+   "prevClose": 250.23,
+   "change": 1.24,
+   "changePct": 0.5,
+   "dayHigh": 255.43,
+   "dayLow": 248.62,
    "high52": 362.71,
    "low52": 190.12,
-   "volume": 5823508,
+   "volume": 3882346,
    "closes": [
-    239.94,
-    241.28,
-    237.69,
     238.79,
     238.12,
     232.77,
@@ -41791,27 +43851,101 @@ export const watchlists: Watchlist[] = [
     248.36,
     249.76,
     248.12,
-    250.23
+    250.23,
+    251.47
+   ]
+  },
+  "AEO": {
+   "name": "American Eagle Outfitters, Inc.",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 19.75,
+   "open": 19.62,
+   "prevClose": 19.61,
+   "change": 0.14,
+   "changePct": 0.71,
+   "dayHigh": 20.27,
+   "dayLow": 19.62,
+   "high52": 28.46,
+   "low52": 14.1,
+   "volume": 5660365,
+   "closes": [
+    18.11,
+    17.89,
+    17.66,
+    17.97,
+    18.17,
+    18.07,
+    17.78,
+    17.6,
+    18.05,
+    17.98,
+    17.93,
+    17.81,
+    17.38,
+    17.89,
+    17.91,
+    18.81,
+    19.42,
+    19.46,
+    20.12,
+    19.61,
+    19.75
+   ]
+  },
+  "AMC": {
+   "name": "AMC Entertainment Holdings, Inc.",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 3.19,
+   "open": 3.1,
+   "prevClose": 3.06,
+   "change": 0.13,
+   "changePct": 4.25,
+   "dayHigh": 3.26,
+   "dayLow": 3.04,
+   "high52": 3.4,
+   "low52": 0.93,
+   "volume": 29144200,
+   "closes": [
+    2.79,
+    2.95,
+    2.88,
+    2.88,
+    2.98,
+    3,
+    3.06,
+    2.89,
+    3.02,
+    2.91,
+    2.98,
+    3.08,
+    3.04,
+    2.93,
+    2.9,
+    2.89,
+    2.99,
+    2.99,
+    3.08,
+    3.06,
+    3.19
    ]
   },
   "AMD": {
    "name": "Advanced Micro Devices, Inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 504.8,
-   "open": 508.53,
-   "prevClose": 566.42,
-   "change": -61.62,
-   "changePct": -10.88,
-   "dayHigh": 520.4,
-   "dayLow": 492.24,
+   "price": 466.84,
+   "open": 510.71,
+   "prevClose": 504.8,
+   "change": -37.96,
+   "changePct": -7.52,
+   "dayHigh": 512.82,
+   "dayLow": 466.07,
    "high52": 658.52,
    "low52": 188.22,
-   "volume": 39697503,
+   "volume": 32129533,
    "closes": [
-    611.76,
-    615.73,
-    633.91,
     631.75,
     649.42,
     645.86,
@@ -41831,27 +43965,25 @@ export const watchlists: Watchlist[] = [
     560.26,
     578.44,
     566.42,
-    504.8
+    504.8,
+    466.84
    ]
   },
   "AMZN": {
    "name": "Amazon.com, Inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 240.35,
-   "open": 232.54,
-   "prevClose": 243.79,
-   "change": -3.44,
-   "changePct": -1.41,
-   "dayHigh": 241.55,
-   "dayLow": 229.36,
+   "price": 245.63,
+   "open": 243.01,
+   "prevClose": 240.35,
+   "change": 5.28,
+   "changePct": 2.2,
+   "dayHigh": 253.81,
+   "dayLow": 242.28,
    "high52": 287.2,
    "low52": 196,
-   "volume": 104894738,
+   "volume": 58327853,
    "closes": [
-    249.15,
-    248.23,
-    251.52,
     251.4,
     256.29,
     259.92,
@@ -41871,27 +44003,63 @@ export const watchlists: Watchlist[] = [
     253.1,
     254.6,
     243.79,
-    240.35
+    240.35,
+    245.63
+   ]
+  },
+  "ANF": {
+   "name": "Abercrombie & Fitch Co.",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 164.17,
+   "open": 165.28,
+   "prevClose": 164.44,
+   "change": -0.27,
+   "changePct": -0.16,
+   "dayHigh": 169.24,
+   "dayLow": 163.88,
+   "high52": 169.24,
+   "low52": 65.45,
+   "volume": 1134181,
+   "closes": [
+    141.4,
+    141.39,
+    139.44,
+    141.41,
+    142.58,
+    145.91,
+    150.88,
+    149.74,
+    151.99,
+    153.26,
+    162.01,
+    161.73,
+    159.64,
+    161.49,
+    155.82,
+    164.73,
+    165.38,
+    161.24,
+    165.77,
+    164.44,
+    164.17
    ]
   },
   "AVGO": {
    "name": "Broadcom Inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 326.08,
-   "open": 330.72,
-   "prevClose": 345,
-   "change": -18.92,
-   "changePct": -5.48,
-   "dayHigh": 331.98,
-   "dayLow": 319.3,
+   "price": 322.23,
+   "open": 328.37,
+   "prevClose": 326.08,
+   "change": -3.85,
+   "changePct": -1.18,
+   "dayHigh": 333.56,
+   "dayLow": 321.87,
    "high52": 495,
    "low52": 289.96,
-   "volume": 36511750,
+   "volume": 20318871,
    "closes": [
-    351.19,
-    343.64,
-    355.14,
     362.51,
     375.81,
     376.51,
@@ -41911,27 +44079,25 @@ export const watchlists: Watchlist[] = [
     342.33,
     351.81,
     345,
-    326.08
+    326.08,
+    322.23
    ]
   },
   "BA": {
    "name": "The Boeing Company",
    "exchange": "NYSE",
    "type": "EQUITY",
-   "price": 171.55,
-   "open": 171.1,
-   "prevClose": 172.65,
-   "change": -1.1,
-   "changePct": -0.64,
-   "dayHigh": 173.82,
-   "dayLow": 170.37,
+   "price": 175.4,
+   "open": 173.21,
+   "prevClose": 171.55,
+   "change": 3.85,
+   "changePct": 2.24,
+   "dayHigh": 177.37,
+   "dayLow": 172.8,
    "high52": 254.35,
    "low52": 165.01,
-   "volume": 8726123,
+   "volume": 9439858,
    "closes": [
-    186.05,
-    192.28,
-    193.56,
     192.72,
     189.82,
     188.32,
@@ -41951,27 +44117,101 @@ export const watchlists: Watchlist[] = [
     168.18,
     167.14,
     172.65,
-    171.55
+    171.55,
+    175.4
+   ]
+  },
+  "BAC": {
+   "name": "Bank of America Corporation",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 49.57,
+   "open": 50.45,
+   "prevClose": 50.01,
+   "change": -0.44,
+   "changePct": -0.88,
+   "dayHigh": 50.47,
+   "dayLow": 49.45,
+   "high52": 65.23,
+   "low52": 46.12,
+   "volume": 48512490,
+   "closes": [
+    54,
+    54.09,
+    53.52,
+    53.61,
+    54.32,
+    54.58,
+    53.96,
+    51.39,
+    51.7,
+    51.23,
+    50.39,
+    50.64,
+    50.78,
+    51.08,
+    50.56,
+    50.52,
+    50.68,
+    50.85,
+    51.14,
+    50.01,
+    49.57
+   ]
+  },
+  "BB": {
+   "name": "BlackBerry Limited",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 8.02,
+   "open": 8.45,
+   "prevClose": 8.42,
+   "change": -0.4,
+   "changePct": -4.75,
+   "dayHigh": 8.45,
+   "dayLow": 8.01,
+   "high52": 13.59,
+   "low52": 3.12,
+   "volume": 12253892,
+   "closes": [
+    9.08,
+    9.58,
+    8.77,
+    8.63,
+    8.91,
+    8.45,
+    8.47,
+    8.23,
+    8.7,
+    8.06,
+    8.16,
+    8.87,
+    9.41,
+    8.59,
+    8.92,
+    9.19,
+    9.55,
+    9.4,
+    9.19,
+    8.42,
+    8.02
    ]
   },
   "BBWI": {
    "name": "Bath & Body Works, Inc.",
    "exchange": "NYSE",
    "type": "EQUITY",
-   "price": 22.77,
-   "open": 22.78,
-   "prevClose": 22.78,
-   "change": -0.01,
-   "changePct": -0.04,
-   "dayHigh": 23.07,
-   "dayLow": 22.38,
+   "price": 23.19,
+   "open": 23.3,
+   "prevClose": 22.77,
+   "change": 0.42,
+   "changePct": 1.84,
+   "dayHigh": 23.66,
+   "dayLow": 22.94,
    "high52": 25.21,
    "low52": 14.28,
-   "volume": 6572732,
+   "volume": 7247716,
    "closes": [
-    15.92,
-    16.4,
-    16.06,
     17.46,
     17.93,
     17.81,
@@ -41991,27 +44231,139 @@ export const watchlists: Watchlist[] = [
     21.95,
     21.64,
     22.78,
-    22.77
+    22.77,
+    23.19
+   ]
+  },
+  "BIRK": {
+   "name": "Birkenstock Holding plc",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 35.54,
+   "open": 33.81,
+   "prevClose": 33.43,
+   "change": 2.11,
+   "changePct": 6.31,
+   "dayHigh": 35.77,
+   "dayLow": 33.71,
+   "high52": 50.73,
+   "low52": 29.93,
+   "volume": 2590203,
+   "closes": [
+    33.77,
+    34,
+    33.17,
+    33.12,
+    33.65,
+    33.85,
+    34.18,
+    33.92,
+    35.89,
+    33.85,
+    32.71,
+    32.78,
+    32.32,
+    33.68,
+    32.57,
+    32.61,
+    32.26,
+    31.59,
+    33.39,
+    33.43,
+    35.54
+   ]
+  },
+  "BLNK": {
+   "name": "Blink Charging Co.",
+   "exchange": "NASDAQ",
+   "type": "EQUITY",
+   "price": 0.43,
+   "open": 0.41,
+   "prevClose": 0.4,
+   "change": 0.03,
+   "changePct": 7.5,
+   "dayHigh": 0.44,
+   "dayLow": 0.4,
+   "high52": 1.7,
+   "low52": 0.38,
+   "volume": 2278953,
+   "closes": [
+    0.55,
+    0.51,
+    0.51,
+    0.48,
+    0.47,
+    0.48,
+    0.48,
+    0.45,
+    0.44,
+    0.42,
+    0.42,
+    0.42,
+    0.42,
+    0.4,
+    0.38,
+    0.38,
+    0.38,
+    0.41,
+    0.41,
+    0.4,
+    0.43
+   ]
+  },
+  "BOOT": {
+   "name": "Boot Barn Holdings, Inc.",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 137.32,
+   "open": 134,
+   "prevClose": 132.24,
+   "change": 5.08,
+   "changePct": 3.84,
+   "dayHigh": 139.48,
+   "dayLow": 133.23,
+   "high52": 210.25,
+   "low52": 110.53,
+   "volume": 1310033,
+   "closes": [
+    122.88,
+    124.32,
+    122.34,
+    121.6,
+    119.96,
+    119.97,
+    117.57,
+    112.86,
+    120.62,
+    121.72,
+    119.36,
+    115.35,
+    116.09,
+    119.76,
+    115.18,
+    114.18,
+    111.69,
+    113.3,
+    130.48,
+    132.24,
+    137.32
    ]
   },
   "BOTZ": {
    "name": "Global X Robotics & Artificial Intelligence ETF",
    "exchange": "NASDAQ",
    "type": "ETF",
-   "price": 32.22,
-   "open": 32.6,
-   "prevClose": 33.42,
-   "change": -1.2,
-   "changePct": -3.59,
-   "dayHigh": 32.6,
-   "dayLow": 31.9,
+   "price": 32.27,
+   "open": 32.58,
+   "prevClose": 32.22,
+   "change": 0.05,
+   "changePct": 0.16,
+   "dayHigh": 32.91,
+   "dayLow": 32.2,
    "high52": 41.71,
    "low52": 31.88,
-   "volume": 911761,
+   "volume": 766492,
    "closes": [
-    35.23,
-    35.43,
-    36.03,
     36.2,
     36.17,
     35.67,
@@ -42031,27 +44383,63 @@ export const watchlists: Watchlist[] = [
     33.48,
     34.03,
     33.42,
-    32.22
+    32.22,
+    32.27
+   ]
+  },
+  "BROS": {
+   "name": "Dutch Bros Inc.",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 43.87,
+   "open": 42.6,
+   "prevClose": 42.87,
+   "change": 1,
+   "changePct": 2.33,
+   "dayHigh": 45.1,
+   "dayLow": 42.6,
+   "high52": 74.02,
+   "low52": 36.51,
+   "volume": 5833257,
+   "closes": [
+    38.23,
+    39.06,
+    38.18,
+    39.78,
+    38.05,
+    37.28,
+    37.98,
+    39.17,
+    41.1,
+    41.16,
+    42.86,
+    43.82,
+    42.26,
+    41.75,
+    41.49,
+    42.02,
+    41.64,
+    42.93,
+    43.98,
+    42.87,
+    43.87
    ]
   },
   "BYND": {
    "name": "Beyond Meat, Inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 6.91,
-   "open": 7.2,
-   "prevClose": 7.38,
-   "change": -0.47,
-   "changePct": -6.37,
-   "dayHigh": 7.2,
-   "dayLow": 6.75,
+   "price": 7.05,
+   "open": 7.01,
+   "prevClose": 6.91,
+   "change": 0.14,
+   "changePct": 2.03,
+   "dayHigh": 7.7,
+   "dayLow": 7.01,
    "high52": 46.8,
    "low52": 6.49,
-   "volume": 1024658,
+   "volume": 883178,
    "closes": [
-    8.26,
-    8.26,
-    8.25,
     8.06,
     7.99,
     7.66,
@@ -42071,27 +44459,101 @@ export const watchlists: Watchlist[] = [
     7,
     7.13,
     7.38,
-    6.91
+    6.91,
+    7.05
+   ]
+  },
+  "CAKE": {
+   "name": "The Cheesecake Factory Incorporated",
+   "exchange": "NASDAQ",
+   "type": "EQUITY",
+   "price": 112.96,
+   "open": 113.69,
+   "prevClose": 112.64,
+   "change": 0.32,
+   "changePct": 0.28,
+   "dayHigh": 117.96,
+   "dayLow": 112.87,
+   "high52": 118.63,
+   "low52": 43.07,
+   "volume": 1478759,
+   "closes": [
+    109.03,
+    108.23,
+    106.99,
+    106.91,
+    108.45,
+    109,
+    112.37,
+    112.85,
+    116.59,
+    114.92,
+    116.18,
+    116.43,
+    114.39,
+    112.44,
+    108.37,
+    110.13,
+    108.47,
+    105.73,
+    113.12,
+    112.64,
+    112.96
+   ]
+  },
+  "CAR": {
+   "name": "Avis Budget Group, Inc.",
+   "exchange": "NASDAQ",
+   "type": "EQUITY",
+   "price": 111.52,
+   "open": 109.61,
+   "prevClose": 107.99,
+   "change": 3.53,
+   "changePct": 3.27,
+   "dayHigh": 114.36,
+   "dayLow": 108.23,
+   "high52": 847.7,
+   "low52": 85.96,
+   "volume": 713639,
+   "closes": [
+    107.98,
+    112.65,
+    110.22,
+    110,
+    105.98,
+    105.1,
+    107.6,
+    106.72,
+    109.77,
+    102.83,
+    102.38,
+    102.45,
+    98.39,
+    101.55,
+    101.34,
+    101.86,
+    102.21,
+    101.74,
+    108.16,
+    107.99,
+    111.52
    ]
   },
   "CAVA": {
    "name": "CAVA Group, Inc.",
    "exchange": "NYSE",
    "type": "EQUITY",
-   "price": 58.74,
-   "open": 59.21,
-   "prevClose": 59.21,
-   "change": -0.47,
-   "changePct": -0.79,
-   "dayHigh": 60.33,
-   "dayLow": 58.09,
+   "price": 62.05,
+   "open": 59.53,
+   "prevClose": 58.74,
+   "change": 3.31,
+   "changePct": 5.64,
+   "dayHigh": 62.95,
+   "dayLow": 59,
    "high52": 98.79,
    "low52": 43.41,
-   "volume": 2330547,
+   "volume": 3904409,
    "closes": [
-    54.1,
-    54.4,
-    54.41,
     54.1,
     52.64,
     52.07,
@@ -42111,27 +44573,101 @@ export const watchlists: Watchlist[] = [
     51.86,
     54.25,
     59.21,
-    58.74
+    58.74,
+    62.05
+   ]
+  },
+  "CHPT": {
+   "name": "ChargePoint Holdings, Inc.",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 9.88,
+   "open": 9.77,
+   "prevClose": 9.54,
+   "change": 0.34,
+   "changePct": 3.56,
+   "dayHigh": 10.73,
+   "dayLow": 9.73,
+   "high52": 11.26,
+   "low52": 4.44,
+   "volume": 1377462,
+   "closes": [
+    8.93,
+    8.67,
+    8.22,
+    8.13,
+    7.92,
+    7.22,
+    7.22,
+    6.65,
+    7.23,
+    6.91,
+    7.15,
+    7.83,
+    8.39,
+    8.21,
+    8.35,
+    8.24,
+    8.73,
+    9.22,
+    9.27,
+    9.54,
+    9.88
+   ]
+  },
+  "CHWY": {
+   "name": "Chewy, Inc.",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 22.27,
+   "open": 21.4,
+   "prevClose": 21.29,
+   "change": 0.98,
+   "changePct": 4.6,
+   "dayHigh": 22.57,
+   "dayLow": 21.15,
+   "high52": 37.34,
+   "low52": 17.4,
+   "volume": 6610503,
+   "closes": [
+    18.22,
+    18.14,
+    18.22,
+    18.91,
+    18.95,
+    19.5,
+    19.71,
+    20.83,
+    21.31,
+    20.97,
+    20.53,
+    21.53,
+    21.33,
+    22.33,
+    21.93,
+    21.9,
+    21.52,
+    20.64,
+    20.83,
+    21.29,
+    22.27
    ]
   },
   "CLOV": {
    "name": "Clover Health Investments, Corp.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 4.46,
+   "price": 4.31,
    "open": 4.53,
-   "prevClose": 4.58,
-   "change": -0.12,
-   "changePct": -2.62,
-   "dayHigh": 4.57,
-   "dayLow": 4.35,
+   "prevClose": 4.46,
+   "change": -0.15,
+   "changePct": -3.36,
+   "dayHigh": 4.53,
+   "dayLow": 4.27,
    "high52": 5.59,
    "low52": 1.58,
-   "volume": 4651444,
+   "volume": 5005122,
    "closes": [
-    4.31,
-    4.23,
-    4.38,
     4.68,
     4.6,
     4.56,
@@ -42151,27 +44687,63 @@ export const watchlists: Watchlist[] = [
     4.63,
     4.79,
     4.58,
-    4.46
+    4.46,
+    4.31
+   ]
+  },
+  "CMG": {
+   "name": "Chipotle Mexican Grill, Inc.",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 32.91,
+   "open": 31.9,
+   "prevClose": 31.89,
+   "change": 1.02,
+   "changePct": 3.2,
+   "dayHigh": 33.35,
+   "dayLow": 31.9,
+   "high52": 41.42,
+   "low52": 27.31,
+   "volume": 19854563,
+   "closes": [
+    30.85,
+    30.9,
+    30.77,
+    32.68,
+    31.59,
+    30.4,
+    30.35,
+    30.52,
+    30.58,
+    29.89,
+    29.85,
+    29.65,
+    28.12,
+    28.14,
+    27.52,
+    28.41,
+    27.98,
+    28.73,
+    31.28,
+    31.89,
+    32.91
    ]
   },
   "COIN": {
    "name": "Coinbase Global, Inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 143.54,
-   "open": 148.23,
-   "prevClose": 160.59,
-   "change": -17.05,
-   "changePct": -10.62,
-   "dayHigh": 148.5,
-   "dayLow": 136.9,
+   "price": 137.83,
+   "open": 140.36,
+   "prevClose": 143.54,
+   "change": -5.71,
+   "changePct": -3.98,
+   "dayHigh": 143.77,
+   "dayLow": 135.47,
    "high52": 342.8,
-   "low52": 136.89,
-   "volume": 20893993,
+   "low52": 135.47,
+   "volume": 10634242,
    "closes": [
-    186.41,
-    189.29,
-    183,
     188.22,
     185.74,
     178.45,
@@ -42191,27 +44763,63 @@ export const watchlists: Watchlist[] = [
     161.09,
     162.32,
     160.59,
-    143.54
+    143.54,
+    137.83
+   ]
+  },
+  "COLM": {
+   "name": "Columbia Sportswear Company",
+   "exchange": "NASDAQ",
+   "type": "EQUITY",
+   "price": 71.12,
+   "open": 67.49,
+   "prevClose": 67.54,
+   "change": 3.58,
+   "changePct": 5.3,
+   "dayHigh": 71.17,
+   "dayLow": 66.97,
+   "high52": 71.17,
+   "low52": 48.16,
+   "volume": 1358777,
+   "closes": [
+    56.93,
+    57.45,
+    56.53,
+    56.76,
+    57.04,
+    56.34,
+    57.06,
+    57.7,
+    60.82,
+    60.16,
+    59.98,
+    61.1,
+    59.51,
+    62.07,
+    61.35,
+    60.82,
+    61.17,
+    60.9,
+    63.69,
+    67.54,
+    71.12
    ]
   },
   "COST": {
    "name": "Costco Wholesale Corporation",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 1012.28,
-   "open": 1012.05,
-   "prevClose": 996.08,
-   "change": 16.2,
-   "changePct": 1.63,
-   "dayHigh": 1021.25,
-   "dayLow": 1006.56,
+   "price": 1040.55,
+   "open": 1015.87,
+   "prevClose": 1012.28,
+   "change": 28.27,
+   "changePct": 2.79,
+   "dayHigh": 1042.57,
+   "dayLow": 1014.34,
    "high52": 1096.5,
    "low52": 844.06,
-   "volume": 3466739,
+   "volume": 3114312,
    "closes": [
-    910.34,
-    914.94,
-    920.65,
     923.52,
     935.68,
     942.25,
@@ -42231,27 +44839,101 @@ export const watchlists: Watchlist[] = [
     992.13,
     982.73,
     996.08,
-    1012.28
+    1012.28,
+    1040.55
+   ]
+  },
+  "CPRI": {
+   "name": "Capri Holdings Limited",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 20.05,
+   "open": 18.94,
+   "prevClose": 18.68,
+   "change": 1.37,
+   "changePct": 7.33,
+   "dayHigh": 20.57,
+   "dayLow": 19.19,
+   "high52": 28.27,
+   "low52": 12.4,
+   "volume": 7449406,
+   "closes": [
+    14.49,
+    14.67,
+    14.44,
+    14.68,
+    14.95,
+    15.09,
+    15.16,
+    15.02,
+    15.85,
+    15.95,
+    16.15,
+    16.51,
+    15.7,
+    16.36,
+    15.87,
+    15.57,
+    15.42,
+    15.29,
+    16.06,
+    18.68,
+    20.05
+   ]
+  },
+  "CQQQ": {
+   "name": "Invesco China Technology ETF",
+   "exchange": "NYSE ARCA",
+   "type": "ETF",
+   "price": 38.5,
+   "open": 38.57,
+   "prevClose": 37.78,
+   "change": 0.72,
+   "changePct": 1.91,
+   "dayHigh": 39.06,
+   "dayLow": 38.5,
+   "high52": 58.92,
+   "low52": 37.58,
+   "volume": 1193652,
+   "closes": [
+    45.05,
+    45.03,
+    44.44,
+    43.07,
+    43.88,
+    42.98,
+    43.09,
+    42,
+    41.98,
+    41.09,
+    40.99,
+    41.53,
+    41.11,
+    39.93,
+    40.26,
+    40.03,
+    39.49,
+    39.79,
+    38.74,
+    37.78,
+    38.5
    ]
   },
   "CRM": {
    "name": "Salesforce, Inc.",
    "exchange": "NYSE",
    "type": "EQUITY",
-   "price": 229.17,
-   "open": 231.34,
-   "prevClose": 230.9,
-   "change": -1.73,
-   "changePct": -0.75,
-   "dayHigh": 234.62,
-   "dayLow": 227.68,
+   "price": 226.18,
+   "open": 229.75,
+   "prevClose": 229.17,
+   "change": -2.99,
+   "changePct": -1.3,
+   "dayHigh": 232.95,
+   "dayLow": 225.15,
    "high52": 269.11,
    "low52": 146.32,
-   "volume": 7886465,
+   "volume": 6621619,
    "closes": [
-    229.57,
-    236.69,
-    234.69,
     229.79,
     224.99,
     224.56,
@@ -42271,27 +44953,25 @@ export const watchlists: Watchlist[] = [
     240.89,
     242.11,
     230.9,
-    229.17
+    229.17,
+    226.18
    ]
   },
   "CROX": {
    "name": "Crocs, Inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 150.52,
-   "open": 151.73,
-   "prevClose": 150.26,
-   "change": 0.26,
-   "changePct": 0.17,
-   "dayHigh": 154.05,
-   "dayLow": 149,
-   "high52": 154.05,
+   "price": 153.13,
+   "open": 151.63,
+   "prevClose": 150.52,
+   "change": 2.61,
+   "changePct": 1.73,
+   "dayHigh": 156.71,
+   "dayLow": 150.26,
+   "high52": 156.71,
    "low52": 73.21,
-   "volume": 2119913,
+   "volume": 1497442,
    "closes": [
-    117.31,
-    119.24,
-    118.09,
     118.19,
     120.22,
     115.2,
@@ -42311,27 +44991,25 @@ export const watchlists: Watchlist[] = [
     119.5,
     119.69,
     150.26,
-    150.52
+    150.52,
+    153.13
    ]
   },
   "CRWD": {
    "name": "CrowdStrike Holdings, Inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 250.43,
-   "open": 261.06,
-   "prevClose": 261.15,
-   "change": -10.72,
-   "changePct": -4.1,
-   "dayHigh": 264.9,
-   "dayLow": 245.15,
+   "price": 241.81,
+   "open": 253,
+   "prevClose": 250.43,
+   "change": -8.62,
+   "changePct": -3.44,
+   "dayHigh": 253.61,
+   "dayLow": 240.17,
    "high52": 286.99,
    "low52": 85.68,
-   "volume": 12503061,
+   "volume": 9274782,
    "closes": [
-    264.75,
-    266.09,
-    270.04,
     272.67,
     278.86,
     265.44,
@@ -42351,27 +45029,25 @@ export const watchlists: Watchlist[] = [
     268.02,
     266.66,
     261.15,
-    250.43
+    250.43,
+    241.81
    ]
   },
   "CSCO": {
    "name": "Cisco Systems, Inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 104.51,
-   "open": 108.77,
-   "prevClose": 108.59,
-   "change": -4.08,
-   "changePct": -3.76,
-   "dayHigh": 108.77,
-   "dayLow": 103.15,
+   "price": 101.61,
+   "open": 105.42,
+   "prevClose": 104.51,
+   "change": -2.9,
+   "changePct": -2.77,
+   "dayHigh": 105.42,
+   "dayLow": 101.41,
    "high52": 130.37,
    "low52": 70.54,
-   "volume": 24706212,
+   "volume": 26009032,
    "closes": [
-    107.63,
-    108.76,
-    112.2,
     112.82,
     117.94,
     117.39,
@@ -42391,27 +45067,25 @@ export const watchlists: Watchlist[] = [
     111.38,
     110.29,
     108.59,
-    104.51
+    104.51,
+    101.61
    ]
   },
   "CVX": {
    "name": "Chevron Corporation",
    "exchange": "NYSE",
    "type": "EQUITY",
-   "price": 235.52,
-   "open": 234.01,
-   "prevClose": 231.46,
-   "change": 4.06,
-   "changePct": 1.75,
-   "dayHigh": 236.46,
-   "dayLow": 233.22,
+   "price": 227.77,
+   "open": 232.5,
+   "prevClose": 235.52,
+   "change": -7.75,
+   "changePct": -3.29,
+   "dayHigh": 233.25,
+   "dayLow": 227.42,
    "high52": 236.48,
    "low52": 146.49,
-   "volume": 11009664,
+   "volume": 9170787,
    "closes": [
-    204.21,
-    207.1,
-    206.69,
     206.47,
     207.58,
     205.15,
@@ -42431,27 +45105,215 @@ export const watchlists: Watchlist[] = [
     228.23,
     229.2,
     231.46,
-    235.52
+    235.52,
+    227.77
+   ]
+  },
+  "CZR": {
+   "name": "Caesars Entertainment, Inc.",
+   "exchange": "NASDAQ",
+   "type": "EQUITY",
+   "price": 28.99,
+   "open": 29.05,
+   "prevClose": 29.09,
+   "change": -0.1,
+   "changePct": -0.34,
+   "dayHigh": 29.11,
+   "dayLow": 28.96,
+   "high52": 30.88,
+   "low52": 17.86,
+   "volume": 7102887,
+   "closes": [
+    29.65,
+    29.65,
+    29.49,
+    29.52,
+    29.5,
+    29.58,
+    29.47,
+    29.3,
+    29.25,
+    28.8,
+    29.04,
+    29.09,
+    28.9,
+    29.07,
+    28.8,
+    28.99,
+    28.85,
+    28.57,
+    29.13,
+    29.09,
+    28.99
+   ]
+  },
+  "DAL": {
+   "name": "Delta Air Lines, Inc.",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 83.42,
+   "open": 83.04,
+   "prevClose": 80.15,
+   "change": 3.27,
+   "changePct": 4.08,
+   "dayHigh": 84.07,
+   "dayLow": 82.24,
+   "high52": 95.68,
+   "low52": 55.03,
+   "volume": 7588384,
+   "closes": [
+    83.08,
+    83.66,
+    82.97,
+    82.14,
+    82.17,
+    80.11,
+    79.57,
+    76.65,
+    78.08,
+    75.37,
+    74.63,
+    76.66,
+    77.67,
+    79.26,
+    76.78,
+    79.16,
+    81.45,
+    80.35,
+    81.64,
+    80.15,
+    83.42
+   ]
+  },
+  "DASH": {
+   "name": "DoorDash, Inc.",
+   "exchange": "NASDAQ",
+   "type": "EQUITY",
+   "price": 190.07,
+   "open": 181.17,
+   "prevClose": 178.99,
+   "change": 11.08,
+   "changePct": 6.19,
+   "dayHigh": 191.02,
+   "dayLow": 177,
+   "high52": 258,
+   "low52": 143.3,
+   "volume": 6211986,
+   "closes": [
+    191.77,
+    193.62,
+    191.24,
+    191.71,
+    196.5,
+    194.24,
+    193.09,
+    184.01,
+    193.05,
+    189.15,
+    193.53,
+    191.67,
+    184.45,
+    185.94,
+    179.38,
+    168.44,
+    170.56,
+    169.49,
+    179,
+    178.99,
+    190.07
+   ]
+  },
+  "DDOG": {
+   "name": "Datadog, Inc.",
+   "exchange": "NASDAQ",
+   "type": "EQUITY",
+   "price": 216.1,
+   "open": 235.51,
+   "prevClose": 235.27,
+   "change": -19.17,
+   "changePct": -8.15,
+   "dayHigh": 236.39,
+   "dayLow": 215.73,
+   "high52": 300.68,
+   "low52": 98.01,
+   "volume": 4651321,
+   "closes": [
+    276.42,
+    278.24,
+    271.34,
+    273.8,
+    293.26,
+    287.29,
+    283.34,
+    269.33,
+    266.25,
+    247.11,
+    260.36,
+    256.43,
+    273.09,
+    257.75,
+    269.65,
+    280.24,
+    280.82,
+    278.41,
+    265.84,
+    235.27,
+    216.1
+   ]
+  },
+  "DELL": {
+   "name": "Dell Technologies Inc.",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 392.78,
+   "open": 423,
+   "prevClose": 424.3,
+   "change": -31.52,
+   "changePct": -7.43,
+   "dayHigh": 424.13,
+   "dayLow": 391.29,
+   "high52": 595.51,
+   "low52": 110.22,
+   "volume": 6608456,
+   "closes": [
+    552.29,
+    574,
+    578.96,
+    574.55,
+    586.06,
+    576.76,
+    572.47,
+    507.93,
+    473.39,
+    451.71,
+    455.44,
+    461.56,
+    485.88,
+    452.95,
+    456.44,
+    467.09,
+    501.96,
+    493.79,
+    475.51,
+    424.3,
+    392.78
    ]
   },
   "DIS": {
    "name": "The Walt Disney Company",
    "exchange": "NYSE",
    "type": "EQUITY",
-   "price": 110.94,
-   "open": 111.82,
-   "prevClose": 110.91,
-   "change": 0.03,
-   "changePct": 0.03,
-   "dayHigh": 112.47,
-   "dayLow": 110.76,
+   "price": 113.11,
+   "open": 111.78,
+   "prevClose": 110.94,
+   "change": 2.17,
+   "changePct": 1.96,
+   "dayHigh": 113.79,
+   "dayLow": 111.81,
    "high52": 117.09,
    "low52": 92.19,
-   "volume": 6143195,
+   "volume": 7437480,
    "closes": [
-    104.9,
-    101.33,
-    102.19,
     103.61,
     104.03,
     104.75,
@@ -42471,27 +45333,155 @@ export const watchlists: Watchlist[] = [
     110.23,
     109.04,
     110.91,
-    110.94
+    110.94,
+    113.11
+   ]
+  },
+  "DXJ": {
+   "name": "WisdomTree Japan Hedged Equity Fund",
+   "exchange": "NYSE ARCA",
+   "type": "ETF",
+   "price": 58.89,
+   "open": 58.76,
+   "prevClose": 58.39,
+   "change": 0.5,
+   "changePct": 0.86,
+   "dayHigh": 59.38,
+   "dayLow": 58.73,
+   "high52": 61.55,
+   "low52": 44.75,
+   "volume": 510806,
+   "closes": [
+    61.16,
+    61.29,
+    60.67,
+    60.22,
+    60.71,
+    60.67,
+    60.6,
+    60.09,
+    59.83,
+    59.8,
+    59.86,
+    60.01,
+    60,
+    59.02,
+    58.64,
+    59.17,
+    59.89,
+    59.46,
+    59.59,
+    58.39,
+    58.89
+   ]
+  },
+  "EB": {
+   "name": null,
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": null,
+   "open": null,
+   "prevClose": null,
+   "change": null,
+   "changePct": null,
+   "dayHigh": null,
+   "dayLow": null,
+   "high52": null,
+   "low52": null,
+   "volume": null,
+   "closes": []
+  },
+  "EBAY": {
+   "name": "eBay Inc.",
+   "exchange": "NASDAQ",
+   "type": "EQUITY",
+   "price": 120.93,
+   "open": 121.63,
+   "prevClose": 121.64,
+   "change": -0.71,
+   "changePct": -0.58,
+   "dayHigh": 123.92,
+   "dayLow": 120.31,
+   "high52": 124.59,
+   "low52": 78.03,
+   "volume": 4027217,
+   "closes": [
+    107.14,
+    107.06,
+    107.6,
+    111.98,
+    112.19,
+    114.65,
+    116.41,
+    116.88,
+    122.91,
+    120.28,
+    120.47,
+    121.19,
+    122.9,
+    122.04,
+    121.41,
+    118.62,
+    117.83,
+    118.02,
+    121.19,
+    121.64,
+    120.93
+   ]
+  },
+  "ELF": {
+   "name": "e.l.f. Beauty, Inc.",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 110.68,
+   "open": 114.37,
+   "prevClose": 111.69,
+   "change": -1.01,
+   "changePct": -0.9,
+   "dayHigh": 115,
+   "dayLow": 109.77,
+   "high52": 123.07,
+   "low52": 48.82,
+   "volume": 1265602,
+   "closes": [
+    103.75,
+    102.79,
+    105.03,
+    105.96,
+    109.23,
+    109.94,
+    108.16,
+    108.13,
+    116.11,
+    113.54,
+    113.48,
+    114.74,
+    113.78,
+    114.99,
+    114.24,
+    112.94,
+    113.17,
+    115.41,
+    112.95,
+    111.69,
+    110.68
    ]
   },
   "EPI": {
    "name": "WisdomTree India Earnings Fund",
    "exchange": "NYSE ARCA",
    "type": "ETF",
-   "price": 40.97,
-   "open": 40.69,
-   "prevClose": 40.78,
-   "change": 0.19,
-   "changePct": 0.47,
-   "dayHigh": 41,
-   "dayLow": 40.7,
+   "price": 41.69,
+   "open": 41.52,
+   "prevClose": 40.97,
+   "change": 0.72,
+   "changePct": 1.76,
+   "dayHigh": 41.83,
+   "dayLow": 41.53,
    "high52": 46.83,
    "low52": 39.36,
-   "volume": 430982,
+   "volume": 888517,
    "closes": [
-    40.73,
-    40.44,
-    40.53,
     40.51,
     40.57,
     40.09,
@@ -42511,27 +45501,25 @@ export const watchlists: Watchlist[] = [
     40.32,
     40.33,
     40.78,
-    40.97
+    40.97,
+    41.69
    ]
   },
   "ETSY": {
    "name": "Etsy, Inc.",
    "exchange": "NYSE",
    "type": "EQUITY",
-   "price": 88.96,
-   "open": 90.42,
-   "prevClose": 91.59,
-   "change": -2.63,
-   "changePct": -2.87,
-   "dayHigh": 92.77,
-   "dayLow": 87.93,
-   "high52": 94.49,
+   "price": 92.45,
+   "open": 90.53,
+   "prevClose": 88.96,
+   "change": 3.49,
+   "changePct": 3.92,
+   "dayHigh": 95.49,
+   "dayLow": 90.02,
+   "high52": 95.49,
    "low52": 44,
-   "volume": 3428330,
+   "volume": 5003048,
    "closes": [
-    71.49,
-    72.84,
-    72.77,
     70.89,
     71.39,
     71.49,
@@ -42551,27 +45539,25 @@ export const watchlists: Watchlist[] = [
     87.66,
     92.35,
     91.59,
-    88.96
+    88.96,
+    92.45
    ]
   },
   "EWJ": {
    "name": "iShares MSCI Japan ETF",
    "exchange": "NYSE ARCA",
    "type": "ETF",
-   "price": 92.91,
-   "open": 93.08,
-   "prevClose": 94.94,
-   "change": -2.03,
-   "changePct": -2.14,
-   "dayHigh": 93.24,
-   "dayLow": 92.07,
+   "price": 92.84,
+   "open": 92.91,
+   "prevClose": 92.91,
+   "change": -0.07,
+   "changePct": -0.08,
+   "dayHigh": 93.88,
+   "dayLow": 92.75,
    "high52": 99.98,
    "low52": 79.48,
-   "volume": 7345784,
+   "volume": 3908370,
    "closes": [
-    97.46,
-    97.38,
-    98.92,
     99.3,
     99.32,
     98.32,
@@ -42591,27 +45577,25 @@ export const watchlists: Watchlist[] = [
     95.25,
     94.99,
     94.94,
-    92.91
+    92.91,
+    92.84
    ]
   },
   "EWY": {
    "name": "iShares MSCI South Korea ETF",
    "exchange": "NYSE ARCA",
    "type": "ETF",
-   "price": 152.89,
-   "open": 153.89,
-   "prevClose": 161.83,
-   "change": -8.94,
-   "changePct": -5.52,
-   "dayHigh": 155.04,
-   "dayLow": 150.7,
+   "price": 151.62,
+   "open": 158.37,
+   "prevClose": 152.89,
+   "change": -1.27,
+   "changePct": -0.83,
+   "dayHigh": 158.91,
+   "dayLow": 151.48,
    "high52": 220.89,
    "low52": 86.9,
-   "volume": 22500953,
+   "volume": 15065157,
    "closes": [
-    182.78,
-    186.11,
-    191.88,
     191.46,
     186.4,
     183.69,
@@ -42631,27 +45615,63 @@ export const watchlists: Watchlist[] = [
     157.46,
     165.91,
     161.83,
-    152.89
+    152.89,
+    151.62
+   ]
+  },
+  "EZU": {
+   "name": "iShares MSCI Eurozone ETF",
+   "exchange": "Cboe US",
+   "type": "ETF",
+   "price": 65.71,
+   "open": 65.45,
+   "prevClose": 65.16,
+   "change": 0.55,
+   "changePct": 0.84,
+   "dayHigh": 66.26,
+   "dayLow": 65.45,
+   "high52": 72.2,
+   "low52": 59.92,
+   "volume": 1588642,
+   "closes": [
+    66.79,
+    67,
+    65.9,
+    65.63,
+    65.88,
+    65.61,
+    65.88,
+    65.33,
+    66.02,
+    65.82,
+    65.13,
+    65.62,
+    66.08,
+    65.04,
+    64.63,
+    64.93,
+    65.59,
+    65.72,
+    66.23,
+    65.16,
+    65.71
    ]
   },
   "F": {
    "name": "Ford Motor Company",
    "exchange": "NYSE",
    "type": "EQUITY",
-   "price": 12.25,
-   "open": 12.28,
-   "prevClose": 12.36,
-   "change": -0.11,
-   "changePct": -0.89,
-   "dayHigh": 12.34,
-   "dayLow": 12.12,
+   "price": 12.6,
+   "open": 12.4,
+   "prevClose": 12.25,
+   "change": 0.35,
+   "changePct": 2.86,
+   "dayHigh": 12.65,
+   "dayLow": 12.38,
    "high52": 17.78,
    "low52": 11.11,
-   "volume": 44464123,
+   "volume": 53362018,
    "closes": [
-    12.06,
-    12.27,
-    12.1,
     12.15,
     12.28,
     12.12,
@@ -42671,27 +45691,139 @@ export const watchlists: Watchlist[] = [
     11.71,
     11.95,
     12.36,
-    12.25
+    12.25,
+    12.6
+   ]
+  },
+  "FEZ": {
+   "name": "State Street SPDR EURO STOXX 50 ETF",
+   "exchange": "NYSE ARCA",
+   "type": "ETF",
+   "price": 65.39,
+   "open": 65.54,
+   "prevClose": 65.03,
+   "change": 0.36,
+   "changePct": 0.55,
+   "dayHigh": 65.94,
+   "dayLow": 65.34,
+   "high52": 72.36,
+   "low52": 59.57,
+   "volume": 1431505,
+   "closes": [
+    66.74,
+    66.79,
+    65.8,
+    65.57,
+    65.92,
+    65.59,
+    65.77,
+    65.37,
+    66.05,
+    65.85,
+    65.11,
+    65.61,
+    66.12,
+    65.06,
+    64.56,
+    64.76,
+    65.37,
+    65.5,
+    66.05,
+    65.03,
+    65.39
+   ]
+  },
+  "FIVE": {
+   "name": "Five Below, Inc.",
+   "exchange": "NASDAQ",
+   "type": "EQUITY",
+   "price": 238.97,
+   "open": 241.42,
+   "prevClose": 240.96,
+   "change": -1.99,
+   "changePct": -0.83,
+   "dayHigh": 245.61,
+   "dayLow": 238.77,
+   "high52": 263.88,
+   "low52": 143.02,
+   "volume": 892351,
+   "closes": [
+    215.93,
+    209.92,
+    204.24,
+    209.73,
+    214.73,
+    213.58,
+    213.35,
+    218.95,
+    223.23,
+    222.72,
+    225.61,
+    223.8,
+    224.1,
+    225.87,
+    223.24,
+    230,
+    231.25,
+    234.47,
+    245.5,
+    240.96,
+    238.97
+   ]
+  },
+  "FLKR": {
+   "name": "Franklin FTSE South Korea ETF",
+   "exchange": "NYSE ARCA",
+   "type": "ETF",
+   "price": 49.99,
+   "open": 52.15,
+   "prevClose": 50.42,
+   "change": -0.43,
+   "changePct": -0.85,
+   "dayHigh": 52.27,
+   "dayLow": 49.99,
+   "high52": 72.49,
+   "low52": 29.06,
+   "volume": 644083,
+   "closes": [
+    62.68,
+    61.26,
+    60.37,
+    57.99,
+    58.36,
+    56.03,
+    54.89,
+    52.81,
+    51.61,
+    49.94,
+    51.94,
+    51.16,
+    51.77,
+    49.45,
+    50.15,
+    50.45,
+    51.86,
+    54.59,
+    53.18,
+    50.42,
+    49.99
    ]
   },
   "FUBO": {
    "name": "FuboTV Inc.",
    "exchange": "NYSE",
    "type": "EQUITY",
-   "price": 7.62,
-   "open": 7.81,
-   "prevClose": 7.96,
-   "change": -0.34,
-   "changePct": -4.27,
-   "dayHigh": 7.9,
-   "dayLow": 7.48,
+   "price": 7.61,
+   "open": 7.67,
+   "prevClose": 7.62,
+   "change": -0.01,
+   "changePct": -0.13,
+   "dayHigh": 7.92,
+   "dayLow": 7.55,
    "high52": 50.4,
    "low52": 7.48,
-   "volume": 1102895,
+   "volume": 766984,
    "closes": [
-    8.96,
-    8.88,
-    8.66,
     8.62,
     8.83,
     9.25,
@@ -42711,27 +45843,139 @@ export const watchlists: Watchlist[] = [
     7.8,
     7.98,
     7.96,
-    7.62
+    7.62,
+    7.61
+   ]
+  },
+  "FXI": {
+   "name": "iShares China Large-Cap ETF",
+   "exchange": "NYSE ARCA",
+   "type": "ETF",
+   "price": 33.21,
+   "open": 33.1,
+   "prevClose": 33.08,
+   "change": 0.13,
+   "changePct": 0.39,
+   "dayHigh": 33.42,
+   "dayLow": 33.09,
+   "high52": 41.22,
+   "low52": 31.19,
+   "volume": 20630515,
+   "closes": [
+    33.85,
+    33.77,
+    33.42,
+    33.45,
+    34.24,
+    34.14,
+    34.17,
+    33.86,
+    34.26,
+    33.84,
+    33.53,
+    33.51,
+    32.94,
+    32.45,
+    32.31,
+    32.51,
+    32.5,
+    32.46,
+    32.69,
+    33.08,
+    33.21
+   ]
+  },
+  "GAP": {
+   "name": "The Gap, Inc.",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 22.22,
+   "open": 22.5,
+   "prevClose": 22.32,
+   "change": -0.1,
+   "changePct": -0.45,
+   "dayHigh": 22.74,
+   "dayLow": 22.05,
+   "high52": 29.36,
+   "low52": 18.11,
+   "volume": 6257925,
+   "closes": [
+    23.3,
+    23.79,
+    23.61,
+    23.36,
+    23.23,
+    22.78,
+    22.83,
+    22.67,
+    23.46,
+    23.12,
+    23.54,
+    23.47,
+    22.69,
+    22.91,
+    22.32,
+    22.26,
+    21.7,
+    22,
+    22.89,
+    22.32,
+    22.22
+   ]
+  },
+  "GE": {
+   "name": "GE Aerospace",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 315.78,
+   "open": 309.2,
+   "prevClose": 301.8,
+   "change": 13.98,
+   "changePct": 4.63,
+   "dayHigh": 316.79,
+   "dayLow": 308.17,
+   "high52": 388.84,
+   "low52": 268.91,
+   "volume": 4829940,
+   "closes": [
+    306.34,
+    309.39,
+    303.62,
+    305.62,
+    308.2,
+    308.64,
+    307.63,
+    307.02,
+    312,
+    313.83,
+    311.28,
+    299.87,
+    295.88,
+    293.54,
+    285.64,
+    288.43,
+    297.66,
+    301.13,
+    313.05,
+    301.8,
+    315.78
    ]
   },
   "GM": {
    "name": "General Motors Company",
    "exchange": "NYSE",
    "type": "EQUITY",
-   "price": 87.4,
-   "open": 85.51,
-   "prevClose": 85.72,
-   "change": 1.68,
-   "changePct": 1.96,
-   "dayHigh": 88.02,
-   "dayLow": 84.73,
+   "price": 89.94,
+   "open": 88.5,
+   "prevClose": 87.4,
+   "change": 2.54,
+   "changePct": 2.91,
+   "dayHigh": 90.03,
+   "dayLow": 87.92,
    "high52": 91.85,
    "low52": 66.75,
-   "volume": 11691040,
+   "volume": 8429526,
    "closes": [
-    77,
-    79.31,
-    78.27,
     80.23,
     82.01,
     80.99,
@@ -42751,27 +45995,25 @@ export const watchlists: Watchlist[] = [
     80.54,
     82.48,
     85.72,
-    87.4
+    87.4,
+    89.94
    ]
   },
   "GOOG": {
    "name": "Alphabet Inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 278.22,
-   "open": 279.69,
-   "prevClose": 282.32,
-   "change": -4.1,
-   "changePct": -1.45,
-   "dayHigh": 281.86,
-   "dayLow": 275.35,
+   "price": 278.04,
+   "open": 280.58,
+   "prevClose": 278.22,
+   "change": -0.18,
+   "changePct": -0.06,
+   "dayHigh": 285.21,
+   "dayLow": 277.78,
    "high52": 404.47,
    "low52": 271.41,
-   "volume": 45116487,
+   "volume": 29219125,
    "closes": [
-    340.74,
-    334.93,
-    340.35,
     343.83,
     344.59,
     347.37,
@@ -42791,27 +46033,25 @@ export const watchlists: Watchlist[] = [
     316.83,
     321.89,
     282.32,
-    278.22
+    278.22,
+    278.04
    ]
   },
   "GOOGL": {
    "name": "Alphabet Inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 279.84,
-   "open": 281.12,
-   "prevClose": 283.82,
-   "change": -3.98,
-   "changePct": -1.4,
-   "dayHigh": 283.14,
-   "dayLow": 276.92,
+   "price": 278.99,
+   "open": 282.46,
+   "prevClose": 279.84,
+   "change": -0.85,
+   "changePct": -0.3,
+   "dayHigh": 287,
+   "dayLow": 278.87,
    "high52": 408.61,
    "low52": 270.7,
-   "volume": 65695032,
+   "volume": 48504345,
    "closes": [
-    344.08,
-    338.24,
-    343.5,
     346.47,
     347.68,
     350.5,
@@ -42831,27 +46071,25 @@ export const watchlists: Watchlist[] = [
     320.58,
     324.89,
     283.82,
-    279.84
+    279.84,
+    278.99
    ]
   },
   "GPRO": {
    "name": "GoPro, Inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 0.93,
-   "open": 1,
-   "prevClose": 1,
-   "change": -0.07,
-   "changePct": -7,
-   "dayHigh": 1.01,
-   "dayLow": 0.92,
+   "price": 0.96,
+   "open": 0.95,
+   "prevClose": 0.93,
+   "change": 0.03,
+   "changePct": 3.23,
+   "dayHigh": 0.98,
+   "dayLow": 0.93,
    "high52": 2.05,
    "low52": 0.57,
-   "volume": 10147238,
+   "volume": 9811781,
    "closes": [
-    1.29,
-    1.33,
-    1.35,
     1.36,
     1.32,
     1.22,
@@ -42871,27 +46109,25 @@ export const watchlists: Watchlist[] = [
     1.02,
     1.03,
     1,
-    0.93
+    0.93,
+    0.95
    ]
   },
   "HAS": {
    "name": "Hasbro, Inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 119.09,
-   "open": 120.1,
-   "prevClose": 119.57,
-   "change": -0.48,
-   "changePct": -0.4,
-   "dayHigh": 120.36,
-   "dayLow": 118.16,
+   "price": 118.36,
+   "open": 119.4,
+   "prevClose": 119.09,
+   "change": -0.73,
+   "changePct": -0.61,
+   "dayHigh": 120.15,
+   "dayLow": 118.18,
    "high52": 121.04,
    "low52": 74.78,
-   "volume": 1921808,
+   "volume": 1967698,
    "closes": [
-    87.68,
-    89.98,
-    89.54,
     92.38,
     91.03,
     90.75,
@@ -42911,27 +46147,25 @@ export const watchlists: Watchlist[] = [
     118.33,
     118.68,
     119.57,
-    119.09
+    119.09,
+    118.36
    ]
   },
   "HD": {
    "name": "The Home Depot, Inc.",
    "exchange": "NYSE",
    "type": "EQUITY",
-   "price": 329.2,
-   "open": 333.35,
-   "prevClose": 328.98,
-   "change": 0.22,
-   "changePct": 0.07,
-   "dayHigh": 334.8,
-   "dayLow": 328.56,
+   "price": 341.15,
+   "open": 334.08,
+   "prevClose": 329.2,
+   "change": 11.95,
+   "changePct": 3.63,
+   "dayHigh": 341.54,
+   "dayLow": 333,
    "high52": 397.63,
    "low52": 277.15,
-   "volume": 3936972,
+   "volume": 4778206,
    "closes": [
-    284.49,
-    282.46,
-    282.85,
     281.15,
     286.69,
     285.77,
@@ -42951,27 +46185,63 @@ export const watchlists: Watchlist[] = [
     318.5,
     317.56,
     328.98,
-    329.2
+    329.2,
+    341.15
+   ]
+  },
+  "HEWJ": {
+   "name": "iShares Currency Hedged MSCI Japan ETF",
+   "exchange": "NYSE ARCA",
+   "type": "ETF",
+   "price": 62.54,
+   "open": 62.68,
+   "prevClose": 62.44,
+   "change": 0.1,
+   "changePct": 0.16,
+   "dayHigh": 63.16,
+   "dayLow": 62.54,
+   "high52": 67.27,
+   "low52": 51.98,
+   "volume": 66242,
+   "closes": [
+    66.78,
+    66.82,
+    66.15,
+    65.58,
+    66.09,
+    65.87,
+    65.59,
+    64.61,
+    64.35,
+    63.91,
+    64.27,
+    64.42,
+    64.61,
+    63.2,
+    62.87,
+    63.38,
+    63.73,
+    64.01,
+    63.98,
+    62.44,
+    62.54
    ]
   },
   "HOG": {
    "name": "Harley-Davidson, Inc.",
    "exchange": "NYSE",
    "type": "EQUITY",
-   "price": 31.22,
-   "open": 30.26,
-   "prevClose": 30.33,
-   "change": 0.89,
-   "changePct": 2.93,
-   "dayHigh": 31.22,
-   "dayLow": 29.93,
-   "high52": 31.23,
+   "price": 33.07,
+   "open": 31.6,
+   "prevClose": 31.22,
+   "change": 1.85,
+   "changePct": 5.93,
+   "dayHigh": 33.38,
+   "dayLow": 31.6,
+   "high52": 33.38,
    "low52": 17.09,
-   "volume": 3251566,
+   "volume": 4682265,
    "closes": [
-    24.43,
-    24.83,
-    24.55,
     26.19,
     26.94,
     26.95,
@@ -42991,27 +46261,139 @@ export const watchlists: Watchlist[] = [
     29.44,
     29.52,
     30.33,
-    31.22
+    31.22,
+    33.07
+   ]
+  },
+  "HOOD": {
+   "name": "Robinhood Markets, Inc.",
+   "exchange": "NASDAQ",
+   "type": "EQUITY",
+   "price": 83.84,
+   "open": 85.56,
+   "prevClose": 84.99,
+   "change": -1.15,
+   "changePct": -1.35,
+   "dayHigh": 87.37,
+   "dayLow": 83.35,
+   "high52": 149.41,
+   "low52": 63.52,
+   "volume": 19525136,
+   "closes": [
+    114.11,
+    112,
+    109.51,
+    107.01,
+    109.02,
+    109.22,
+    110.52,
+    101.08,
+    103.99,
+    98.87,
+    96.52,
+    98.21,
+    101.93,
+    96.58,
+    95.07,
+    92.84,
+    94.56,
+    91.43,
+    91.59,
+    84.99,
+    83.84
+   ]
+  },
+  "IBM": {
+   "name": "International Business Machines Corporation",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 252.51,
+   "open": 258.12,
+   "prevClose": 257.81,
+   "change": -5.3,
+   "changePct": -2.06,
+   "dayHigh": 259.87,
+   "dayLow": 252.36,
+   "high52": 332.46,
+   "low52": 199.19,
+   "volume": 5592757,
+   "closes": [
+    221.58,
+    221.29,
+    220.51,
+    226.61,
+    227.13,
+    227.02,
+    230.78,
+    227.88,
+    234.12,
+    232.14,
+    236.39,
+    241.92,
+    251.46,
+    252.11,
+    253.56,
+    253.44,
+    250.25,
+    253.22,
+    258.28,
+    257.81,
+    252.51
+   ]
+  },
+  "IEUR": {
+   "name": "iShares Core MSCI Europe ETF",
+   "exchange": "NYSE ARCA",
+   "type": "ETF",
+   "price": 74.79,
+   "open": 74.71,
+   "prevClose": 74.4,
+   "change": 0.39,
+   "changePct": 0.52,
+   "dayHigh": 75.16,
+   "dayLow": 74.72,
+   "high52": 78.9,
+   "low52": 66.45,
+   "volume": 772780,
+   "closes": [
+    73.31,
+    73.58,
+    72.7,
+    72.58,
+    73.1,
+    72.84,
+    73.3,
+    73.05,
+    74.05,
+    74.09,
+    73.36,
+    74.01,
+    74.3,
+    73.71,
+    73.3,
+    73.49,
+    73.91,
+    74.1,
+    74.85,
+    74.4,
+    74.79
    ]
   },
   "INDA": {
    "name": "iShares MSCI India ETF",
    "exchange": "Cboe US",
    "type": "ETF",
-   "price": 47.72,
-   "open": 47.42,
-   "prevClose": 47.41,
-   "change": 0.31,
-   "changePct": 0.65,
-   "dayHigh": 47.76,
-   "dayLow": 47.42,
+   "price": 48.45,
+   "open": 48.24,
+   "prevClose": 47.72,
+   "change": 0.73,
+   "changePct": 1.53,
+   "dayHigh": 48.54,
+   "dayLow": 48.16,
    "high52": 55.1,
    "low52": 45.21,
-   "volume": 6258413,
+   "volume": 9860116,
    "closes": [
-    46.68,
-    46.36,
-    46.52,
     46.57,
     46.73,
     46.11,
@@ -43031,27 +46413,25 @@ export const watchlists: Watchlist[] = [
     46.74,
     46.79,
     47.41,
-    47.72
+    47.72,
+    48.45
    ]
   },
   "INTC": {
    "name": "Intel Corporation",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 65.76,
-   "open": 68.36,
-   "prevClose": 92.07,
-   "change": -26.31,
-   "changePct": -28.58,
-   "dayHigh": 68.77,
-   "dayLow": 63.2,
+   "price": 59.97,
+   "open": 65.4,
+   "prevClose": 65.76,
+   "change": -5.79,
+   "changePct": -8.8,
+   "dayHigh": 65.72,
+   "dayLow": 59.4,
    "high52": 142.35,
    "low52": 32.89,
-   "volume": 455599430,
+   "volume": 230485372,
    "closes": [
-    120.23,
-    120,
-    119.33,
     116.19,
     112.5,
     113.12,
@@ -43071,27 +46451,41 @@ export const watchlists: Watchlist[] = [
     93.74,
     95.53,
     92.07,
-    65.76
+    65.76,
+    59.97
    ]
+  },
+  "IRBT": {
+   "name": null,
+   "exchange": "NASDAQ",
+   "type": "EQUITY",
+   "price": null,
+   "open": null,
+   "prevClose": null,
+   "change": null,
+   "changePct": null,
+   "dayHigh": null,
+   "dayLow": null,
+   "high52": null,
+   "low52": null,
+   "volume": null,
+   "closes": []
   },
   "ITA": {
    "name": "iShares U.S. Aerospace & Defense ETF",
    "exchange": "Cboe US",
    "type": "ETF",
-   "price": 209.74,
-   "open": 214,
-   "prevClose": 214.3,
-   "change": -4.56,
-   "changePct": -2.13,
-   "dayHigh": 215.55,
-   "dayLow": 208.72,
+   "price": 214.68,
+   "open": 212.07,
+   "prevClose": 209.74,
+   "change": 4.94,
+   "changePct": 2.36,
+   "dayHigh": 215.69,
+   "dayLow": 211.87,
    "high52": 256.6,
    "low52": 195.71,
-   "volume": 1299312,
+   "volume": 1072347,
    "closes": [
-    207.18,
-    208.04,
-    207.79,
     206.98,
     208.26,
     203.6,
@@ -43111,27 +46505,63 @@ export const watchlists: Watchlist[] = [
     206.22,
     207.74,
     214.3,
-    209.74
+    209.74,
+    214.68
+   ]
+  },
+  "JBLU": {
+   "name": "JetBlue Airways Corporation",
+   "exchange": "NASDAQ",
+   "type": "EQUITY",
+   "price": 3.17,
+   "open": 2.99,
+   "prevClose": 2.85,
+   "change": 0.32,
+   "changePct": 11.23,
+   "dayHigh": 3.23,
+   "dayLow": 2.97,
+   "high52": 6.62,
+   "low52": 2.16,
+   "volume": 32585866,
+   "closes": [
+    4.06,
+    4.03,
+    3.97,
+    3.92,
+    3.84,
+    3.62,
+    3.35,
+    3.01,
+    3.15,
+    2.93,
+    2.91,
+    2.91,
+    2.93,
+    2.65,
+    2.63,
+    2.37,
+    2.82,
+    2.85,
+    3.05,
+    2.85,
+    3.17
    ]
   },
   "JNJ": {
    "name": "Johnson & Johnson",
    "exchange": "NYSE",
    "type": "EQUITY",
-   "price": 273.2,
-   "open": 280,
-   "prevClose": 275.2,
-   "change": -2,
-   "changePct": -0.73,
-   "dayHigh": 282,
-   "dayLow": 273.15,
+   "price": 270.56,
+   "open": 272.06,
+   "prevClose": 273.2,
+   "change": -2.64,
+   "changePct": -0.97,
+   "dayHigh": 273.01,
+   "dayLow": 267.44,
    "high52": 282.02,
    "low52": 185.12,
-   "volume": 8968187,
+   "volume": 8262644,
    "closes": [
-    264.74,
-    258.66,
-    256.03,
     252.93,
     254.78,
     258.45,
@@ -43151,27 +46581,25 @@ export const watchlists: Watchlist[] = [
     268.73,
     271.04,
     275.2,
-    273.2
+    273.2,
+    270.56
    ]
   },
   "JPM": {
    "name": "JPMorgan Chase & Co.",
    "exchange": "NYSE",
    "type": "EQUITY",
-   "price": 337.04,
-   "open": 345.29,
-   "prevClose": 343.58,
-   "change": -6.54,
-   "changePct": -1.9,
-   "dayHigh": 345.29,
-   "dayLow": 335.12,
+   "price": 340.58,
+   "open": 340.94,
+   "prevClose": 337.04,
+   "change": 3.54,
+   "changePct": 1.05,
+   "dayHigh": 342.4,
+   "dayLow": 339.92,
    "high52": 366.5,
    "low52": 279.1,
-   "volume": 7829798,
+   "volume": 6014579,
    "closes": [
-    330.83,
-    333.18,
-    332.38,
     332.38,
     331.28,
     329.58,
@@ -43191,27 +46619,25 @@ export const watchlists: Watchlist[] = [
     335.79,
     339.3,
     343.58,
-    337.04
+    337.04,
+    340.58
    ]
   },
   "KO": {
    "name": "The Coca-Cola Company",
    "exchange": "NYSE",
    "type": "EQUITY",
-   "price": 94.08,
-   "open": 94.52,
-   "prevClose": 92.82,
-   "change": 1.26,
-   "changePct": 1.36,
-   "dayHigh": 95.08,
-   "dayLow": 93.95,
-   "high52": 95.37,
+   "price": 95.83,
+   "open": 94.28,
+   "prevClose": 94.08,
+   "change": 1.75,
+   "changePct": 1.86,
+   "dayHigh": 96.26,
+   "dayLow": 94.28,
+   "high52": 96.26,
    "low52": 67.27,
-   "volume": 18358783,
+   "volume": 22706151,
    "closes": [
-    86.08,
-    86.1,
-    85.65,
     86.51,
     86.17,
     85.82,
@@ -43231,27 +46657,25 @@ export const watchlists: Watchlist[] = [
     91.18,
     91.73,
     92.82,
-    94.08
+    94.08,
+    95.83
    ]
   },
   "KWEB": {
    "name": "KraneShares CSI China Internet ETF",
    "exchange": "NYSE ARCA",
    "type": "ETF",
-   "price": 22.74,
-   "open": 22.78,
-   "prevClose": 22.79,
-   "change": -0.05,
-   "changePct": -0.22,
-   "dayHigh": 22.95,
-   "dayLow": 22.69,
+   "price": 23.35,
+   "open": 23.19,
+   "prevClose": 22.74,
+   "change": 0.61,
+   "changePct": 2.68,
+   "dayHigh": 23.65,
+   "dayLow": 23.18,
    "high52": 40.1,
    "low52": 22.54,
-   "volume": 14936590,
+   "volume": 30354294,
    "closes": [
-    24.51,
-    24.33,
-    23.86,
     24.56,
     24.54,
     24.33,
@@ -43271,27 +46695,25 @@ export const watchlists: Watchlist[] = [
     23.13,
     22.99,
     22.79,
-    22.74
+    22.74,
+    23.35
    ]
   },
   "LAZR": {
    "name": "Tema Photonics & Optical ETF",
    "exchange": "NYSE ARCA",
    "type": "ETF",
-   "price": 34.09,
-   "open": 34.67,
-   "prevClose": 37.1,
-   "change": -3.01,
-   "changePct": -8.11,
-   "dayHigh": 35.15,
-   "dayLow": 33.04,
+   "price": 32.02,
+   "open": 34.58,
+   "prevClose": 34.09,
+   "change": -2.07,
+   "changePct": -6.07,
+   "dayHigh": 34.15,
+   "dayLow": 31.96,
    "high52": 50.82,
-   "low52": 32.55,
-   "volume": 350704,
+   "low52": 31.96,
+   "volume": 176470,
    "closes": [
-    44.46,
-    45.63,
-    48.28,
     48.35,
     48.63,
     47.78,
@@ -43311,27 +46733,139 @@ export const watchlists: Watchlist[] = [
     36.33,
     37.91,
     37.1,
-    34.09
+    34.09,
+    32.02
+   ]
+  },
+  "LCID": {
+   "name": "Lucid Group, Inc.",
+   "exchange": "NASDAQ",
+   "type": "EQUITY",
+   "price": 3,
+   "open": 3.09,
+   "prevClose": 3.02,
+   "change": -0.02,
+   "changePct": -0.66,
+   "dayHigh": 3.3,
+   "dayLow": 2.99,
+   "high52": 18.1,
+   "low52": 2.37,
+   "volume": 12709565,
+   "closes": [
+    4.17,
+    4.16,
+    3.89,
+    3.82,
+    3.79,
+    3.43,
+    3.36,
+    3.29,
+    3.5,
+    3.13,
+    3.1,
+    3.27,
+    3.21,
+    3.46,
+    3.52,
+    3.4,
+    3.31,
+    3.41,
+    3.2,
+    3.02,
+    3
+   ]
+  },
+  "LEVI": {
+   "name": "Levi Strauss & Co.",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 23.03,
+   "open": 22.72,
+   "prevClose": 22.5,
+   "change": 0.53,
+   "changePct": 2.36,
+   "dayHigh": 23.19,
+   "dayLow": 22.72,
+   "high52": 25.7,
+   "low52": 17.72,
+   "volume": 2963945,
+   "closes": [
+    20.27,
+    20.53,
+    19.51,
+    19.05,
+    18.7,
+    19.24,
+    19.48,
+    19.57,
+    20.65,
+    20.44,
+    20.63,
+    20.85,
+    20.93,
+    21.36,
+    21.13,
+    21.84,
+    21.78,
+    21.63,
+    22.61,
+    22.5,
+    23.03
+   ]
+  },
+  "LLY": {
+   "name": "Eli Lilly and Company",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 1410.99,
+   "open": 1393.15,
+   "prevClose": 1417.54,
+   "change": -6.55,
+   "changePct": -0.46,
+   "dayHigh": 1421.99,
+   "dayLow": 1387.1,
+   "high52": 1449.68,
+   "low52": 850.51,
+   "volume": 3737111,
+   "closes": [
+    1143.12,
+    1157.49,
+    1188.72,
+    1169.6,
+    1179.27,
+    1182.62,
+    1166.51,
+    1208.74,
+    1251.61,
+    1257.03,
+    1240.34,
+    1283.66,
+    1270.75,
+    1306.69,
+    1273.46,
+    1279.14,
+    1281.91,
+    1288.3,
+    1373.7,
+    1417.54,
+    1410.99
    ]
   },
   "LULU": {
    "name": "lululemon athletica inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 107.24,
-   "open": 110.1,
-   "prevClose": 109.82,
-   "change": -2.58,
-   "changePct": -2.35,
-   "dayHigh": 111.68,
-   "dayLow": 106.56,
+   "price": 107.83,
+   "open": 107.48,
+   "prevClose": 107.24,
+   "change": 0.59,
+   "changePct": 0.55,
+   "dayHigh": 110.19,
+   "dayLow": 107.27,
    "high52": 225.98,
    "low52": 90.38,
-   "volume": 3923320,
+   "volume": 2621947,
    "closes": [
-    96.19,
-    95.86,
-    94.46,
     93.14,
     93.61,
     91.88,
@@ -43351,27 +46885,25 @@ export const watchlists: Watchlist[] = [
     104.59,
     105.22,
     109.82,
-    107.24
+    107.24,
+    107.83
    ]
   },
   "LYFT": {
    "name": "Lyft, Inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 16.16,
-   "open": 16.33,
-   "prevClose": 16.41,
-   "change": -0.25,
-   "changePct": -1.52,
-   "dayHigh": 16.36,
-   "dayLow": 15.84,
+   "price": 16.62,
+   "open": 16.35,
+   "prevClose": 16.16,
+   "change": 0.46,
+   "changePct": 2.85,
+   "dayHigh": 16.99,
+   "dayLow": 16.23,
    "high52": 25.54,
    "low52": 12.46,
-   "volume": 8116278,
+   "volume": 10646286,
    "closes": [
-    15.01,
-    15.21,
-    15.46,
     15.73,
     15.76,
     15.6,
@@ -43391,27 +46923,63 @@ export const watchlists: Watchlist[] = [
     16.79,
     16.34,
     16.41,
-    16.16
+    16.16,
+    16.62
+   ]
+  },
+  "M": {
+   "name": "Macy's, Inc.",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 24.33,
+   "open": 24.48,
+   "prevClose": 24.11,
+   "change": 0.22,
+   "changePct": 0.91,
+   "dayHigh": 24.69,
+   "dayLow": 24.02,
+   "high52": 26.59,
+   "low52": 16.69,
+   "volume": 5731290,
+   "closes": [
+    22.51,
+    22.46,
+    22.79,
+    22.79,
+    22.67,
+    22.99,
+    22.74,
+    22.68,
+    24.22,
+    24,
+    23.6,
+    23.41,
+    23.43,
+    24.17,
+    24.1,
+    23.59,
+    23.86,
+    23.74,
+    24.72,
+    24.11,
+    24.33
    ]
   },
   "MA": {
    "name": "Mastercard Incorporated",
    "exchange": "NYSE",
    "type": "EQUITY",
-   "price": 638.01,
-   "open": 642.43,
-   "prevClose": 635.7,
-   "change": 2.31,
-   "changePct": 0.36,
-   "dayHigh": 644.21,
-   "dayLow": 633.41,
-   "high52": 644.24,
+   "price": 658.1,
+   "open": 638.32,
+   "prevClose": 638.01,
+   "change": 20.09,
+   "changePct": 3.15,
+   "dayHigh": 661.34,
+   "dayLow": 638.25,
+   "high52": 661.34,
    "low52": 464.52,
-   "volume": 4516903,
+   "volume": 3977345,
    "closes": [
-    551.47,
-    550,
-    552.26,
     564.59,
     566.58,
     570.06,
@@ -43431,27 +46999,63 @@ export const watchlists: Watchlist[] = [
     609.85,
     610.31,
     635.7,
-    638.01
+    638.01,
+    658.1
+   ]
+  },
+  "MAR": {
+   "name": "Marriott International, Inc.",
+   "exchange": "NASDAQ",
+   "type": "EQUITY",
+   "price": 416.3,
+   "open": 425,
+   "prevClose": 399.3,
+   "change": 17,
+   "changePct": 4.26,
+   "dayHigh": 433.3,
+   "dayLow": 411.8,
+   "high52": 433.3,
+   "low52": 258.99,
+   "volume": 2590311,
+   "closes": [
+    355.89,
+    361.28,
+    356.5,
+    361.08,
+    365.88,
+    369.3,
+    371.5,
+    371.82,
+    385.71,
+    388.05,
+    390.7,
+    397.31,
+    404,
+    396.8,
+    390.71,
+    394.75,
+    390.23,
+    394.4,
+    399.65,
+    399.3,
+    416.3
    ]
   },
   "MAT": {
    "name": "Mattel, Inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 15.42,
-   "open": 15.52,
-   "prevClose": 15.48,
-   "change": -0.06,
-   "changePct": -0.39,
-   "dayHigh": 15.6,
-   "dayLow": 15.27,
+   "price": 15.53,
+   "open": 15.51,
+   "prevClose": 15.42,
+   "change": 0.11,
+   "changePct": 0.71,
+   "dayHigh": 15.85,
+   "dayLow": 15.45,
    "high52": 22.48,
    "low52": 12.4,
-   "volume": 4564989,
+   "volume": 4511429,
    "closes": [
-    12.66,
-    15.04,
-    15.27,
     16.05,
     15.93,
     16.37,
@@ -43471,27 +47075,25 @@ export const watchlists: Watchlist[] = [
     15.43,
     15.28,
     15.48,
-    15.42
+    15.42,
+    15.53
    ]
   },
   "MCD": {
    "name": "McDonald's Corporation",
    "exchange": "NYSE",
    "type": "EQUITY",
-   "price": 258.12,
-   "open": 260.38,
-   "prevClose": 257.38,
-   "change": 0.74,
-   "changePct": 0.29,
-   "dayHigh": 262.88,
-   "dayLow": 257.11,
+   "price": 265.64,
+   "open": 260.02,
+   "prevClose": 258.12,
+   "change": 7.52,
+   "changePct": 2.91,
+   "dayHigh": 265.64,
+   "dayLow": 259.75,
    "high52": 341.75,
    "low52": 229.2,
-   "volume": 6521726,
+   "volume": 6480042,
    "closes": [
-    230.94,
-    231.83,
-    231.89,
     233.04,
     232.45,
     230.88,
@@ -43511,27 +47113,25 @@ export const watchlists: Watchlist[] = [
     249.47,
     250.5,
     257.38,
-    258.12
+    258.12,
+    265.64
    ]
   },
   "MCHI": {
    "name": "iShares MSCI China ETF",
    "exchange": "NASDAQ",
    "type": "ETF",
-   "price": 49.07,
-   "open": 49.03,
-   "prevClose": 48.96,
-   "change": 0.11,
-   "changePct": 0.22,
-   "dayHigh": 49.18,
-   "dayLow": 48.91,
+   "price": 49.59,
+   "open": 49.45,
+   "prevClose": 49.07,
+   "change": 0.52,
+   "changePct": 1.06,
+   "dayHigh": 49.95,
+   "dayLow": 49.45,
    "high52": 65.37,
    "low52": 48.65,
-   "volume": 2627256,
+   "volume": 2188252,
    "closes": [
-    52.19,
-    52.11,
-    51.24,
     52.28,
     52.22,
     51.64,
@@ -43551,27 +47151,25 @@ export const watchlists: Watchlist[] = [
     49.08,
     49.04,
     48.96,
-    49.07
+    49.07,
+    49.59
    ]
   },
   "META": {
    "name": "Meta Platforms, Inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 614.99,
-   "open": 614.51,
-   "prevClose": 624.52,
-   "change": -9.53,
-   "changePct": -1.53,
-   "dayHigh": 626.37,
-   "dayLow": 610.14,
+   "price": 606.73,
+   "open": 614.44,
+   "prevClose": 614.99,
+   "change": -8.26,
+   "changePct": -1.34,
+   "dayHigh": 621.69,
+   "dayLow": 606.41,
    "high52": 779.82,
    "low52": 520.26,
-   "volume": 25364656,
+   "volume": 19494137,
    "closes": [
-    725.18,
-    725.93,
-    728.08,
     741.9,
     738.88,
     721.31,
@@ -43591,27 +47189,63 @@ export const watchlists: Watchlist[] = [
     620.19,
     612.49,
     624.52,
-    614.99
+    614.99,
+    606.73
+   ]
+  },
+  "MRK": {
+   "name": "Merck & Co., Inc.",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 148.36,
+   "open": 148.82,
+   "prevClose": 149.52,
+   "change": -1.16,
+   "changePct": -0.78,
+   "dayHigh": 150.25,
+   "dayLow": 147.12,
+   "high52": 156.92,
+   "low52": 82.01,
+   "volume": 9095330,
+   "closes": [
+    139.54,
+    141.94,
+    142.79,
+    142.38,
+    145.6,
+    145.45,
+    141.98,
+    147.37,
+    145.19,
+    145.95,
+    143.63,
+    148.3,
+    149.88,
+    147.24,
+    145.27,
+    140.61,
+    141.82,
+    140.93,
+    146.33,
+    149.52,
+    148.36
    ]
   },
   "MSFT": {
    "name": "Microsoft Corporation",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 521.91,
-   "open": 525.27,
-   "prevClose": 530.14,
-   "change": -8.23,
-   "changePct": -1.55,
-   "dayHigh": 526,
-   "dayLow": 514.35,
+   "price": 507.12,
+   "open": 524.02,
+   "prevClose": 521.91,
+   "change": -14.79,
+   "changePct": -2.83,
+   "dayHigh": 529.63,
+   "dayLow": 504.96,
    "high52": 551.15,
    "low52": 349.2,
-   "volume": 35652049,
+   "volume": 34738903,
    "closes": [
-    512.9,
-    512.8,
-    517.53,
     525.18,
     529.3,
     529.76,
@@ -43631,27 +47265,25 @@ export const watchlists: Watchlist[] = [
     531.33,
     531.01,
     530.14,
-    521.91
+    521.91,
+    507.12
    ]
   },
   "MU": {
    "name": "Micron Technology, Inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 884.74,
-   "open": 884,
-   "prevClose": 934.27,
-   "change": -49.53,
-   "changePct": -5.3,
-   "dayHigh": 906.54,
-   "dayLow": 861.59,
+   "price": 833.59,
+   "open": 890.54,
+   "prevClose": 884.74,
+   "change": -51.15,
+   "changePct": -5.78,
+   "dayHigh": 892.08,
+   "dayLow": 829.24,
    "high52": 1255,
    "low52": 192.59,
-   "volume": 30872693,
+   "volume": 29868539,
    "closes": [
-    1065.11,
-    1097.39,
-    1074.89,
     1063.96,
     1045.56,
     1088,
@@ -43671,27 +47303,63 @@ export const watchlists: Watchlist[] = [
     928.76,
     983.23,
     934.27,
-    884.74
+    884.74,
+    833.59
+   ]
+  },
+  "NET": {
+   "name": "Cloudflare, Inc.",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 265.17,
+   "open": 282.27,
+   "prevClose": 280.7,
+   "change": -15.53,
+   "changePct": -5.53,
+   "dayHigh": 282,
+   "dayLow": 263.86,
+   "high52": 370.35,
+   "low52": 158.83,
+   "volume": 4126436,
+   "closes": [
+    359.49,
+    355.01,
+    342.97,
+    341.89,
+    360.93,
+    350.87,
+    347.7,
+    324.33,
+    316.32,
+    296.3,
+    297.58,
+    291.69,
+    307.22,
+    303.61,
+    325.73,
+    331.86,
+    327.8,
+    318.72,
+    310.3,
+    280.7,
+    265.17
    ]
   },
   "NFLX": {
    "name": "Netflix, Inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 62.08,
-   "open": 62.66,
-   "prevClose": 62.05,
-   "change": 0.03,
-   "changePct": 0.05,
-   "dayHigh": 63.05,
-   "dayLow": 61.64,
+   "price": 62.34,
+   "open": 62.2,
+   "prevClose": 62.08,
+   "change": 0.26,
+   "changePct": 0.42,
+   "dayHigh": 62.89,
+   "dayLow": 61.72,
    "high52": 116.73,
    "low52": 61.39,
-   "volume": 52331670,
+   "volume": 40911045,
    "closes": [
-    69.58,
-    67.85,
-    67.06,
     67.5,
     68.69,
     69.7,
@@ -43711,27 +47379,63 @@ export const watchlists: Watchlist[] = [
     62.52,
     61.99,
     62.05,
-    62.08
+    62.08,
+    62.34
+   ]
+  },
+  "NIO": {
+   "name": "NIO Inc.",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 3.19,
+   "open": 3.23,
+   "prevClose": 3.21,
+   "change": -0.02,
+   "changePct": -0.62,
+   "dayHigh": 3.28,
+   "dayLow": 3.18,
+   "high52": 7.54,
+   "low52": 3.16,
+   "volume": 31405621,
+   "closes": [
+    3.42,
+    3.48,
+    3.54,
+    3.41,
+    3.58,
+    3.47,
+    3.56,
+    3.41,
+    3.5,
+    3.43,
+    3.39,
+    3.43,
+    3.36,
+    3.31,
+    3.29,
+    3.26,
+    3.29,
+    3.32,
+    3.32,
+    3.21,
+    3.19
    ]
   },
   "NKE": {
    "name": "NIKE, Inc.",
    "exchange": "NYSE",
    "type": "EQUITY",
-   "price": 38.67,
-   "open": 38.9,
-   "prevClose": 38.42,
-   "change": 0.25,
-   "changePct": 0.65,
-   "dayHigh": 39.24,
-   "dayLow": 38.48,
+   "price": 39.12,
+   "open": 39,
+   "prevClose": 38.67,
+   "change": 0.45,
+   "changePct": 1.16,
+   "dayHigh": 39.57,
+   "dayLow": 38.95,
    "high52": 69.14,
    "low52": 31.97,
-   "volume": 26957486,
+   "volume": 22959016,
    "closes": [
-    35.4,
-    35.15,
-    33.87,
     33.96,
     34.61,
     34.36,
@@ -43751,27 +47455,25 @@ export const watchlists: Watchlist[] = [
     37.56,
     37.15,
     38.42,
-    38.67
+    38.67,
+    39.12
    ]
   },
   "NVD": {
    "name": "Graniteshares 2x Short NVDA Daily ETF",
    "exchange": "NASDAQ",
    "type": "ETF",
-   "price": 4.43,
-   "open": 4.26,
-   "prevClose": 4.09,
-   "change": 0.34,
-   "changePct": 8.31,
-   "dayHigh": 4.58,
-   "dayLow": 4.27,
+   "price": 4.54,
+   "open": 4.3,
+   "prevClose": 4.43,
+   "change": 0.11,
+   "changePct": 2.48,
+   "dayHigh": 4.56,
+   "dayLow": 4.2,
    "high52": 9.76,
    "low52": 3.19,
-   "volume": 143182184,
+   "volume": 190470563,
    "closes": [
-    3.64,
-    3.54,
-    3.45,
     3.31,
     3.3,
     3.35,
@@ -43791,27 +47493,25 @@ export const watchlists: Watchlist[] = [
     3.93,
     4.01,
     4.09,
-    4.43
+    4.43,
+    4.54
    ]
   },
   "NVDA": {
    "name": "NVIDIA Corporation",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 204.64,
-   "open": 208.94,
-   "prevClose": 213.66,
-   "change": -9.02,
-   "changePct": -4.22,
-   "dayHigh": 209.05,
-   "dayLow": 200.92,
+   "price": 202.06,
+   "open": 207.53,
+   "prevClose": 204.64,
+   "change": -2.58,
+   "changePct": -1.26,
+   "dayHigh": 209.98,
+   "dayLow": 201.66,
    "high52": 243.37,
    "low52": 164.27,
-   "volume": 168386423,
+   "volume": 119222246,
    "closes": [
-    228.38,
-    230.86,
-    233.95,
     238.9,
     239.24,
     237.47,
@@ -43831,27 +47531,25 @@ export const watchlists: Watchlist[] = [
     217.94,
     215.38,
     213.66,
-    204.64
+    204.64,
+    202.06
    ]
   },
   "NVDL": {
    "name": "GraniteShares 2x Long NVDA Daily ETF",
    "exchange": "NASDAQ",
    "type": "ETF",
-   "price": 28.97,
-   "open": 30.14,
-   "prevClose": 31.6,
-   "change": -2.63,
-   "changePct": -8.32,
-   "dayHigh": 30.23,
-   "dayLow": 27.83,
+   "price": 28.24,
+   "open": 29.75,
+   "prevClose": 28.97,
+   "change": -0.73,
+   "changePct": -2.52,
+   "dayHigh": 30.43,
+   "dayLow": 28.09,
    "high52": 43.27,
    "low52": 21.54,
-   "volume": 12879546,
+   "volume": 7509179,
    "closes": [
-    36.71,
-    37.52,
-    38.5,
     40.17,
     40.17,
     39.57,
@@ -43871,7 +47569,8 @@ export const watchlists: Watchlist[] = [
     32.92,
     32.15,
     31.6,
-    28.97
+    28.97,
+    28.24
    ]
   },
   "OPEN": {
@@ -43879,19 +47578,16 @@ export const watchlists: Watchlist[] = [
    "exchange": "NASDAQ",
    "type": "EQUITY",
    "price": 1.8,
-   "open": 1.86,
-   "prevClose": 1.9,
-   "change": -0.1,
-   "changePct": -5.26,
-   "dayHigh": 1.88,
-   "dayLow": 1.76,
+   "open": 1.85,
+   "prevClose": 1.8,
+   "change": 0,
+   "changePct": 0,
+   "dayHigh": 1.95,
+   "dayLow": 1.79,
    "high52": 9.46,
    "low52": 1.76,
-   "volume": 31961118,
+   "volume": 31498544,
    "closes": [
-    2.37,
-    2.4,
-    2.44,
     2.31,
     2.27,
     2.27,
@@ -43911,6 +47607,7 @@ export const watchlists: Watchlist[] = [
     1.91,
     1.91,
     1.9,
+    1.8,
     1.8
    ]
   },
@@ -43918,20 +47615,17 @@ export const watchlists: Watchlist[] = [
    "name": "Oracle Corporation",
    "exchange": "NYSE",
    "type": "EQUITY",
-   "price": 130.67,
-   "open": 133.62,
-   "prevClose": 139.56,
-   "change": -8.89,
-   "changePct": -6.37,
-   "dayHigh": 135.2,
-   "dayLow": 129.27,
+   "price": 119.22,
+   "open": 125.88,
+   "prevClose": 130.67,
+   "change": -11.45,
+   "changePct": -8.76,
+   "dayHigh": 126.5,
+   "dayLow": 118.43,
    "high52": 265.62,
    "low52": 114.5,
-   "volume": 40052541,
+   "volume": 58710047,
    "closes": [
-    137.3,
-    138.07,
-    142.3,
     142.48,
     144.77,
     143.56,
@@ -43951,27 +47645,63 @@ export const watchlists: Watchlist[] = [
     130.53,
     144.54,
     139.56,
-    130.67
+    130.67,
+    119.22
+   ]
+  },
+  "PENN": {
+   "name": "PENN Entertainment, Inc.",
+   "exchange": "NASDAQ",
+   "type": "EQUITY",
+   "price": 17.02,
+   "open": 16.05,
+   "prevClose": 15.89,
+   "change": 1.13,
+   "changePct": 7.11,
+   "dayHigh": 17.45,
+   "dayLow": 16,
+   "high52": 22.36,
+   "low52": 11.65,
+   "volume": 4108359,
+   "closes": [
+    15.1,
+    15.91,
+    15.72,
+    15.76,
+    15.48,
+    15.4,
+    15.37,
+    14.52,
+    15.21,
+    14.94,
+    14.71,
+    14.96,
+    14.89,
+    15.46,
+    14.5,
+    14.9,
+    14.83,
+    14.72,
+    15.33,
+    15.89,
+    17.02
    ]
   },
   "PEP": {
    "name": "PepsiCo, Inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 137.34,
-   "open": 136.58,
-   "prevClose": 133.79,
-   "change": 3.55,
-   "changePct": 2.65,
-   "dayHigh": 138.59,
-   "dayLow": 135.8,
+   "price": 140.42,
+   "open": 138.28,
+   "prevClose": 137.34,
+   "change": 3.08,
+   "changePct": 2.24,
+   "dayHigh": 140.65,
+   "dayLow": 137.92,
    "high52": 171.48,
    "low52": 123.47,
-   "volume": 19505523,
+   "volume": 9351020,
    "closes": [
-    126.72,
-    125.6,
-    125.89,
     125.65,
     125.71,
     123.73,
@@ -43991,27 +47721,25 @@ export const watchlists: Watchlist[] = [
     133.5,
     132.63,
     133.79,
-    137.34
+    137.34,
+    140.42
    ]
   },
   "PFE": {
    "name": "Pfizer Inc.",
    "exchange": "NYSE",
    "type": "EQUITY",
-   "price": 30.52,
-   "open": 30.51,
-   "prevClose": 29.95,
-   "change": 0.57,
-   "changePct": 1.9,
-   "dayHigh": 30.67,
-   "dayLow": 30.14,
-   "high52": 30.67,
+   "price": 30.67,
+   "open": 30.45,
+   "prevClose": 30.52,
+   "change": 0.15,
+   "changePct": 0.49,
+   "dayHigh": 31.04,
+   "dayLow": 30.2,
+   "high52": 31.04,
    "low52": 23.62,
-   "volume": 37087729,
+   "volume": 50815555,
    "closes": [
-    28.52,
-    28.12,
-    27.8,
     27.41,
     27.5,
     28,
@@ -44031,27 +47759,139 @@ export const watchlists: Watchlist[] = [
     29.8,
     29.45,
     29.95,
-    30.52
+    30.52,
+    30.67
+   ]
+  },
+  "PG": {
+   "name": "The Procter & Gamble Company",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 163.56,
+   "open": 162.24,
+   "prevClose": 161.57,
+   "change": 1.99,
+   "changePct": 1.23,
+   "dayHigh": 164.34,
+   "dayLow": 162.24,
+   "high52": 167.25,
+   "low52": 137.62,
+   "volume": 9724324,
+   "closes": [
+    145.94,
+    148.41,
+    147.82,
+    150.59,
+    151.23,
+    153.2,
+    153.04,
+    156.53,
+    157.08,
+    159.35,
+    157.69,
+    159.32,
+    156.84,
+    165.59,
+    161.02,
+    159.92,
+    159.23,
+    158.26,
+    160.59,
+    161.57,
+    163.56
+   ]
+  },
+  "PLAY": {
+   "name": "Dave & Buster's Entertainment, Inc.",
+   "exchange": "NASDAQ",
+   "type": "EQUITY",
+   "price": 8.51,
+   "open": 7.9,
+   "prevClose": 7.83,
+   "change": 0.68,
+   "changePct": 8.68,
+   "dayHigh": 8.7,
+   "dayLow": 7.9,
+   "high52": 22.1,
+   "low52": 6.26,
+   "volume": 2228239,
+   "closes": [
+    6.76,
+    6.86,
+    6.56,
+    6.97,
+    6.9,
+    7.09,
+    7.39,
+    7.15,
+    7.96,
+    7.6,
+    7.71,
+    7.79,
+    7.23,
+    7.46,
+    6.96,
+    7.07,
+    7.58,
+    7.71,
+    8.13,
+    7.83,
+    8.51
+   ]
+  },
+  "PLNT": {
+   "name": "Planet Fitness, Inc.",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 55.65,
+   "open": 54.83,
+   "prevClose": 53.58,
+   "change": 2.07,
+   "changePct": 3.86,
+   "dayHigh": 55.89,
+   "dayLow": 54.46,
+   "high52": 114.26,
+   "low52": 37.03,
+   "volume": 1473886,
+   "closes": [
+    42.07,
+    42.25,
+    43.09,
+    44.03,
+    47.98,
+    47.89,
+    47.45,
+    46.95,
+    49.41,
+    50.92,
+    52.89,
+    52.96,
+    51.69,
+    53.27,
+    52.52,
+    52.44,
+    52.26,
+    52.63,
+    53.72,
+    53.58,
+    55.65
    ]
   },
   "PLTR": {
    "name": "Palantir Technologies Inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 184.11,
-   "open": 193.63,
-   "prevClose": 196.42,
-   "change": -12.31,
-   "changePct": -6.27,
-   "dayHigh": 193.92,
-   "dayLow": 183.68,
+   "price": 178.34,
+   "open": 186.52,
+   "prevClose": 184.11,
+   "change": -5.77,
+   "changePct": -3.13,
+   "dayHigh": 187.55,
+   "dayLow": 178.13,
    "high52": 212.94,
    "low52": 106.37,
-   "volume": 27070005,
+   "volume": 37089804,
    "closes": [
-    187.05,
-    190.04,
-    188.75,
     189.4,
     192.07,
     194.12,
@@ -44071,27 +47911,25 @@ export const watchlists: Watchlist[] = [
     198.73,
     196.81,
     196.42,
-    184.11
+    184.11,
+    178.34
    ]
   },
   "PLUG": {
    "name": "Plug Power Inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 1.37,
-   "open": 1.37,
-   "prevClose": 1.42,
-   "change": -0.05,
-   "changePct": -3.52,
-   "dayHigh": 1.41,
-   "dayLow": 1.34,
+   "price": 1.31,
+   "open": 1.39,
+   "prevClose": 1.37,
+   "change": -0.06,
+   "changePct": -4.38,
+   "dayHigh": 1.42,
+   "dayLow": 1.3,
    "high52": 4.33,
-   "low52": 1.34,
-   "volume": 34041188,
+   "low52": 1.3,
+   "volume": 44037337,
    "closes": [
-    1.94,
-    1.89,
-    1.9,
     1.89,
     1.86,
     1.78,
@@ -44111,27 +47949,25 @@ export const watchlists: Watchlist[] = [
     1.4,
     1.42,
     1.42,
-    1.37
+    1.37,
+    1.31
    ]
   },
   "PTON": {
    "name": "Peloton Interactive, Inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 5.12,
-   "open": 5.29,
-   "prevClose": 5.28,
-   "change": -0.16,
-   "changePct": -3.03,
-   "dayHigh": 5.29,
-   "dayLow": 5.08,
+   "price": 5.3,
+   "open": 5.14,
+   "prevClose": 5.12,
+   "change": 0.18,
+   "changePct": 3.52,
+   "dayHigh": 5.36,
+   "dayLow": 5.11,
    "high52": 7.92,
    "low52": 3.65,
-   "volume": 5449113,
+   "volume": 7639138,
    "closes": [
-    4.99,
-    4.97,
-    4.92,
     5.01,
     4.87,
     4.85,
@@ -44151,27 +47987,25 @@ export const watchlists: Watchlist[] = [
     5.3,
     5.27,
     5.28,
-    5.12
+    5.12,
+    5.3
    ]
   },
   "PYPL": {
    "name": "PayPal Holdings, Inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 57.01,
-   "open": 56.92,
-   "prevClose": 56.95,
-   "change": 0.06,
-   "changePct": 0.11,
-   "dayHigh": 57.62,
-   "dayLow": 56.48,
+   "price": 58.78,
+   "open": 57.68,
+   "prevClose": 57.01,
+   "change": 1.77,
+   "changePct": 3.1,
+   "dayHigh": 59.03,
+   "dayLow": 57.27,
    "high52": 70.35,
    "low52": 38.46,
-   "volume": 15364954,
+   "volume": 14896219,
    "closes": [
-    52.53,
-    53.06,
-    52.8,
     54.41,
     54.61,
     54.95,
@@ -44191,27 +48025,25 @@ export const watchlists: Watchlist[] = [
     56.09,
     56.55,
     56.95,
-    57.01
+    57.01,
+    58.78
    ]
   },
   "QCOM": {
    "name": "QUALCOMM Incorporated",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 164.79,
-   "open": 174.82,
-   "prevClose": 185.41,
-   "change": -20.62,
-   "changePct": -11.12,
-   "dayHigh": 176.17,
-   "dayLow": 161.72,
+   "price": 162.08,
+   "open": 166.44,
+   "prevClose": 164.79,
+   "change": -2.71,
+   "changePct": -1.64,
+   "dayHigh": 169.52,
+   "dayLow": 161.46,
    "high52": 259.92,
    "low52": 121.99,
-   "volume": 24111889,
+   "volume": 11019565,
    "closes": [
-    184.04,
-    182.09,
-    184.87,
     180.79,
     181.03,
     177.12,
@@ -44231,27 +48063,25 @@ export const watchlists: Watchlist[] = [
     184.17,
     182.97,
     185.41,
-    164.79
+    164.79,
+    162.08
    ]
   },
   "QQQ": {
    "name": "Invesco QQQ Trust",
    "exchange": "NASDAQ",
    "type": "ETF",
-   "price": 690.49,
-   "open": 697.21,
-   "prevClose": 715.34,
-   "change": -24.85,
-   "changePct": -3.47,
-   "dayHigh": 698.63,
-   "dayLow": 683.45,
+   "price": 681.09,
+   "open": 695.32,
+   "prevClose": 690.49,
+   "change": -9.4,
+   "changePct": -1.36,
+   "dayHigh": 699.43,
+   "dayLow": 680.33,
    "high52": 762.86,
    "low52": 555.6,
-   "volume": 85242074,
+   "volume": 54716423,
    "closes": [
-    739.77,
-    742.03,
-    749.58,
     756.2,
     759.66,
     757.73,
@@ -44271,27 +48101,177 @@ export const watchlists: Watchlist[] = [
     721.25,
     725.61,
     715.34,
-    690.49
+    690.49,
+    681.09
+   ]
+  },
+  "QS": {
+   "name": "QuantumScape Corporation",
+   "exchange": "NASDAQ",
+   "type": "EQUITY",
+   "price": 4.02,
+   "open": 4.15,
+   "prevClose": 4.06,
+   "change": -0.04,
+   "changePct": -0.99,
+   "dayHigh": 4.22,
+   "dayLow": 3.99,
+   "high52": 17.86,
+   "low52": 3.8,
+   "volume": 13263774,
+   "closes": [
+    4.62,
+    4.65,
+    4.52,
+    4.58,
+    4.58,
+    4.27,
+    4.12,
+    3.93,
+    4.23,
+    4.01,
+    3.89,
+    3.98,
+    3.98,
+    4.15,
+    4.03,
+    3.9,
+    4.18,
+    4.24,
+    4.2,
+    4.06,
+    4.02
+   ]
+  },
+  "RBLX": {
+   "name": "Roblox Corporation",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 42.88,
+   "open": 42.9,
+   "prevClose": 42.99,
+   "change": -0.11,
+   "changePct": -0.26,
+   "dayHigh": 44.79,
+   "dayLow": 41.78,
+   "high52": 113.6,
+   "low52": 33.88,
+   "volume": 14261200,
+   "closes": [
+    44.58,
+    45.56,
+    46.41,
+    45.52,
+    48.09,
+    49.58,
+    49.51,
+    47.54,
+    51.13,
+    49.55,
+    50.75,
+    52.35,
+    52.55,
+    53.96,
+    52.89,
+    54.37,
+    54.47,
+    53.28,
+    52.46,
+    42.99,
+    42.88
+   ]
+  },
+  "RH": {
+   "name": "RH",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 146.52,
+   "open": 148.55,
+   "prevClose": 146.66,
+   "change": -0.14,
+   "changePct": -0.1,
+   "dayHigh": 155,
+   "dayLow": 145.29,
+   "high52": 239.4,
+   "low52": 106.3,
+   "volume": 775541,
+   "closes": [
+    117.45,
+    117.16,
+    115.19,
+    113.67,
+    116.99,
+    116.76,
+    115.88,
+    110.99,
+    117.87,
+    112.99,
+    114.03,
+    119.74,
+    128.01,
+    140.15,
+    137.43,
+    135.72,
+    140.76,
+    145.06,
+    150.79,
+    146.66,
+    146.52
+   ]
+  },
+  "RIG": {
+   "name": "Transocean Ltd.",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 6.23,
+   "open": 6.65,
+   "prevClose": 6.94,
+   "change": -0.71,
+   "changePct": -10.23,
+   "dayHigh": 6.77,
+   "dayLow": 6.21,
+   "high52": 7.66,
+   "low52": 3.68,
+   "volume": 45683885,
+   "closes": [
+    5.51,
+    5.4,
+    5.39,
+    5.54,
+    5.51,
+    5.6,
+    5.65,
+    5.58,
+    5.51,
+    5.62,
+    5.89,
+    5.82,
+    6.04,
+    6.08,
+    6.41,
+    6.53,
+    6.46,
+    6.71,
+    6.69,
+    6.94,
+    6.23
    ]
   },
   "RIVN": {
    "name": "Rivian Automotive, Inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 12.16,
-   "open": 12.1,
-   "prevClose": 11.45,
-   "change": 0.71,
-   "changePct": 6.2,
-   "dayHigh": 12.27,
-   "dayLow": 11.53,
+   "price": 13.19,
+   "open": 12.75,
+   "prevClose": 12.16,
+   "change": 1.03,
+   "changePct": 8.47,
+   "dayHigh": 13.7,
+   "dayLow": 12.65,
    "high52": 22.69,
    "low52": 11.38,
-   "volume": 62702140,
+   "volume": 65299674,
    "closes": [
-    14.94,
-    14.76,
-    14.3,
     14.6,
     14.51,
     14.34,
@@ -44311,27 +48291,25 @@ export const watchlists: Watchlist[] = [
     11.82,
     11.67,
     11.45,
-    12.16
+    12.16,
+    13.19
    ]
   },
   "SBUX": {
    "name": "Starbucks Corporation",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 103.65,
-   "open": 105.71,
-   "prevClose": 105.51,
-   "change": -1.86,
-   "changePct": -1.76,
-   "dayHigh": 106.25,
-   "dayLow": 102.24,
+   "price": 104.4,
+   "open": 104.41,
+   "prevClose": 103.67,
+   "change": 0.73,
+   "changePct": 0.7,
+   "dayHigh": 105.06,
+   "dayLow": 102.29,
    "high52": 110.51,
    "low52": 77.99,
-   "volume": 14220252,
+   "volume": 9915772,
    "closes": [
-    93.96,
-    94.88,
-    94.71,
     94.43,
     96.11,
     93.58,
@@ -44351,27 +48329,101 @@ export const watchlists: Watchlist[] = [
     103.04,
     103.2,
     105.51,
-    103.67
+    103.67,
+    104.4
+   ]
+  },
+  "SCJ": {
+   "name": "iShares MSCI Japan Small-Cap ETF",
+   "exchange": "NYSE ARCA",
+   "type": "ETF",
+   "price": 105.98,
+   "open": 105.9,
+   "prevClose": 105.3,
+   "change": 0.68,
+   "changePct": 0.65,
+   "dayHigh": 106.49,
+   "dayLow": 105.98,
+   "high52": 111.44,
+   "low52": 88.54,
+   "volume": 7552,
+   "closes": [
+    110.65,
+    110.89,
+    110.19,
+    109.26,
+    110.03,
+    109.72,
+    110.02,
+    108.56,
+    108.07,
+    108.32,
+    107.75,
+    107.43,
+    107.55,
+    106.89,
+    106.25,
+    106.77,
+    107.76,
+    106.79,
+    106.78,
+    105.3,
+    105.98
+   ]
+  },
+  "SHAK": {
+   "name": "Shake Shack Inc.",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 72.46,
+   "open": 70.43,
+   "prevClose": 70.48,
+   "change": 1.98,
+   "changePct": 2.81,
+   "dayHigh": 73.08,
+   "dayLow": 69.57,
+   "high52": 107.46,
+   "low52": 51.6,
+   "volume": 1796365,
+   "closes": [
+    62.4,
+    64.61,
+    64.17,
+    67.31,
+    66.9,
+    69.34,
+    71.06,
+    68.77,
+    70.61,
+    69.99,
+    71.87,
+    69.74,
+    67.84,
+    67.88,
+    65.16,
+    64.89,
+    64.54,
+    67.22,
+    70.51,
+    70.48,
+    72.46
    ]
   },
   "SHOP": {
    "name": "Shopify Inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 157.49,
-   "open": 161.89,
-   "prevClose": 166.89,
-   "change": -9.4,
-   "changePct": -5.63,
-   "dayHigh": 161.95,
-   "dayLow": 154.26,
+   "price": 156.22,
+   "open": 158.29,
+   "prevClose": 157.49,
+   "change": -1.27,
+   "changePct": -0.81,
+   "dayHigh": 160.88,
+   "dayLow": 153.33,
    "high52": 180.88,
    "low52": 94,
-   "volume": 10541418,
+   "volume": 13919506,
    "closes": [
-    148.3,
-    149.09,
-    151.39,
     160.11,
     164.44,
     166.03,
@@ -44391,27 +48443,63 @@ export const watchlists: Watchlist[] = [
     165.81,
     168.22,
     166.89,
-    157.49
+    157.49,
+    156.22
+   ]
+  },
+  "SIRI": {
+   "name": "Sirius XM Holdings Inc.",
+   "exchange": "NASDAQ",
+   "type": "EQUITY",
+   "price": 29.57,
+   "open": 29.2,
+   "prevClose": 29.01,
+   "change": 0.56,
+   "changePct": 1.93,
+   "dayHigh": 29.73,
+   "dayLow": 29.05,
+   "high52": 32.66,
+   "low52": 19.77,
+   "volume": 4793874,
+   "closes": [
+    26.31,
+    26.36,
+    25.95,
+    26.33,
+    26.51,
+    26.61,
+    26.57,
+    26.51,
+    27.15,
+    26.97,
+    26.84,
+    27.16,
+    26.96,
+    27.54,
+    27.63,
+    27.42,
+    27.25,
+    27.32,
+    28.67,
+    29.01,
+    29.57
    ]
   },
   "SLB": {
    "name": "SLB N.V.",
    "exchange": "NYSE",
    "type": "EQUITY",
-   "price": 53.74,
-   "open": 53.29,
-   "prevClose": 53.81,
-   "change": -0.07,
-   "changePct": -0.13,
-   "dayHigh": 54.13,
-   "dayLow": 53.03,
+   "price": 52.31,
+   "open": 52.3,
+   "prevClose": 53.74,
+   "change": -1.43,
+   "changePct": -2.66,
+   "dayHigh": 53.83,
+   "dayLow": 52.23,
    "high52": 60.46,
    "low52": 34.65,
-   "volume": 12752871,
+   "volume": 11945165,
    "closes": [
-    48.72,
-    48.66,
-    48.74,
     50.28,
     50,
     47.96,
@@ -44431,27 +48519,25 @@ export const watchlists: Watchlist[] = [
     54.08,
     53.75,
     53.81,
-    53.74
+    53.74,
+    52.31
    ]
   },
   "SMH": {
    "name": "VanEck Semiconductor ETF",
    "exchange": "NASDAQ",
    "type": "ETF",
-   "price": 522.49,
-   "open": 532.58,
-   "prevClose": 561.67,
-   "change": -39.18,
-   "changePct": -6.98,
-   "dayHigh": 535.32,
-   "dayLow": 511.63,
+   "price": 508.31,
+   "open": 529.05,
+   "prevClose": 522.49,
+   "change": -14.18,
+   "changePct": -2.71,
+   "dayHigh": 532.76,
+   "dayLow": 506.45,
    "high52": 671.83,
    "low52": 315.05,
-   "volume": 17601979,
+   "volume": 8863693,
    "closes": [
-    609,
-    617.81,
-    630.6,
     633.9,
     632.5,
     625.03,
@@ -44471,7 +48557,46 @@ export const watchlists: Watchlist[] = [
     557.98,
     567.67,
     561.67,
-    522.49
+    522.49,
+    508.31
+   ]
+  },
+  "SNAP": {
+   "name": "Snap Inc.",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 5.45,
+   "open": 5.38,
+   "prevClose": 5.34,
+   "change": 0.11,
+   "changePct": 2.06,
+   "dayHigh": 5.65,
+   "dayLow": 5.33,
+   "high52": 9.13,
+   "low52": 3.81,
+   "volume": 39403564,
+   "closes": [
+    5.61,
+    5.78,
+    5.81,
+    5.86,
+    6.23,
+    6.53,
+    6.49,
+    6.1,
+    6.44,
+    6.13,
+    6.27,
+    6.38,
+    6.35,
+    6.35,
+    6.34,
+    6.34,
+    6.08,
+    5.96,
+    5.68,
+    5.34,
+    5.45
    ]
   },
   "SNBR": {
@@ -44494,20 +48619,17 @@ export const watchlists: Watchlist[] = [
    "name": "Snowflake Inc.",
    "exchange": "NYSE",
    "type": "EQUITY",
-   "price": 306.08,
-   "open": 313.25,
-   "prevClose": 330.27,
-   "change": -24.19,
-   "changePct": -7.32,
-   "dayHigh": 314.93,
-   "dayLow": 295.26,
+   "price": 290.68,
+   "open": 306,
+   "prevClose": 306.08,
+   "change": -15.4,
+   "changePct": -5.03,
+   "dayHigh": 306.96,
+   "dayLow": 287.93,
    "high52": 384.56,
    "low52": 118.3,
-   "volume": 7747027,
+   "volume": 6437324,
    "closes": [
-    339.56,
-    341.99,
-    341.04,
     338.99,
     335.95,
     332.85,
@@ -44527,27 +48649,25 @@ export const watchlists: Watchlist[] = [
     337.42,
     339.91,
     330.27,
-    306.08
+    306.08,
+    290.68
    ]
   },
   "SONO": {
    "name": "Sonos, Inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 16.17,
-   "open": 17.42,
-   "prevClose": 17.46,
-   "change": -1.29,
-   "changePct": -7.39,
-   "dayHigh": 17.42,
-   "dayLow": 15.98,
+   "price": 15.73,
+   "open": 16.39,
+   "prevClose": 16.17,
+   "change": -0.44,
+   "changePct": -2.72,
+   "dayHigh": 16.67,
+   "dayLow": 15.69,
    "high52": 19.82,
    "low52": 12.44,
-   "volume": 1533616,
+   "volume": 1630590,
    "closes": [
-    17.89,
-    17.75,
-    17.7,
     17.94,
     17.43,
     16.98,
@@ -44567,27 +48687,63 @@ export const watchlists: Watchlist[] = [
     17.87,
     17.75,
     17.46,
-    16.17
+    16.17,
+    15.73
+   ]
+  },
+  "SOUN": {
+   "name": "SoundHound AI, Inc.",
+   "exchange": "NASDAQ",
+   "type": "EQUITY",
+   "price": 4.09,
+   "open": 4.28,
+   "prevClose": 4.22,
+   "change": -0.13,
+   "changePct": -3.08,
+   "dayHigh": 4.42,
+   "dayLow": 4.09,
+   "high52": 17.85,
+   "low52": 4.04,
+   "volume": 17247939,
+   "closes": [
+    5.88,
+    5.72,
+    5.63,
+    5.52,
+    5.39,
+    4.97,
+    4.88,
+    4.53,
+    4.89,
+    4.72,
+    4.65,
+    4.7,
+    4.61,
+    4.5,
+    4.43,
+    4.24,
+    4.37,
+    4.44,
+    4.36,
+    4.22,
+    4.09
    ]
   },
   "SOXL": {
    "name": "Direxion Daily Semiconductor Bull 3X Shares",
    "exchange": "NYSE ARCA",
    "type": "ETF",
-   "price": 77.05,
-   "open": 81.79,
-   "prevClose": 102.39,
-   "change": -25.34,
-   "changePct": -24.75,
-   "dayHigh": 84.19,
-   "dayLow": 70.23,
+   "price": 68.17,
+   "open": 79.45,
+   "prevClose": 77.05,
+   "change": -8.88,
+   "changePct": -11.52,
+   "dayHigh": 81.07,
+   "dayLow": 67.5,
    "high52": 302,
    "low52": 28.12,
-   "volume": 199204589,
+   "volume": 159025645,
    "closes": [
-    147.86,
-    153.69,
-    163.71,
     164.27,
     164.26,
     158.91,
@@ -44607,27 +48763,25 @@ export const watchlists: Watchlist[] = [
     101.08,
     107.35,
     102.39,
-    77.05
+    77.05,
+    68.17
    ]
   },
   "SOXS": {
    "name": "Direxion Daily Semiconductor Bear 3X Shares",
    "exchange": "NYSE ARCA",
    "type": "ETF",
-   "price": 52.08,
-   "open": 50.12,
-   "prevClose": 41.68,
-   "change": 10.4,
-   "changePct": 24.95,
-   "dayHigh": 54.85,
-   "dayLow": 49.15,
+   "price": 58.09,
+   "open": 50.38,
+   "prevClose": 52.08,
+   "change": 6.01,
+   "changePct": 11.54,
+   "dayHigh": 58.52,
+   "dayLow": 49.31,
    "high52": 1030,
    "low52": 28.46,
-   "volume": 95869283,
+   "volume": 77017172,
    "closes": [
-    33.08,
-    31.76,
-    29.71,
     29.62,
     29.63,
     30.65,
@@ -44647,27 +48801,25 @@ export const watchlists: Watchlist[] = [
     42.5,
     39.78,
     41.68,
-    52.08
+    52.08,
+    58.09
    ]
   },
   "SPCE": {
    "name": "Virgin Galactic Holdings, Inc.",
    "exchange": "NYSE",
    "type": "EQUITY",
-   "price": 2.58,
-   "open": 2.64,
-   "prevClose": 2.73,
-   "change": -0.15,
-   "changePct": -5.49,
-   "dayHigh": 2.66,
-   "dayLow": 2.5,
+   "price": 2.47,
+   "open": 2.62,
+   "prevClose": 2.58,
+   "change": -0.11,
+   "changePct": -4.26,
+   "dayHigh": 2.63,
+   "dayLow": 2.45,
    "high52": 8.9,
    "low52": 2.13,
-   "volume": 5127084,
+   "volume": 5087555,
    "closes": [
-    2.99,
-    2.99,
-    3.03,
     3.05,
     3.07,
     3.01,
@@ -44687,27 +48839,63 @@ export const watchlists: Watchlist[] = [
     2.69,
     2.66,
     2.73,
-    2.58
+    2.58,
+    2.47
+   ]
+  },
+  "SPOT": {
+   "name": "Spotify Technology S.A.",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 594.04,
+   "open": 588.8,
+   "prevClose": 593.44,
+   "change": 0.6,
+   "changePct": 0.1,
+   "dayHigh": 600.18,
+   "dayLow": 581.28,
+   "high52": 668.5,
+   "low52": 405,
+   "volume": 1753645,
+   "closes": [
+    483.05,
+    488.13,
+    512.92,
+    526.42,
+    529.14,
+    528.8,
+    527.45,
+    523.96,
+    533.37,
+    530.46,
+    518.76,
+    526.08,
+    525.34,
+    583.66,
+    584.22,
+    572.36,
+    555.45,
+    538.4,
+    557.24,
+    593.44,
+    594.04
    ]
   },
   "SPXL": {
    "name": "Direxion Daily S&P500 Bull 3X Shares",
    "exchange": "NYSE ARCA",
    "type": "ETF",
-   "price": 270.35,
-   "open": 276.63,
-   "prevClose": 285.67,
-   "change": -15.32,
-   "changePct": -5.36,
-   "dayHigh": 276.72,
-   "dayLow": 264.36,
+   "price": 266.32,
+   "open": 274.14,
+   "prevClose": 270.35,
+   "change": -4.03,
+   "changePct": -1.49,
+   "dayHigh": 278.82,
+   "dayLow": 265.77,
    "high52": 303.18,
    "low52": 168.04,
-   "volume": 3003617,
+   "volume": 2269902,
    "closes": [
-    281.1,
-    282.7,
-    288.65,
     294.56,
     299.21,
     296.91,
@@ -44727,27 +48915,25 @@ export const watchlists: Watchlist[] = [
     286.21,
     288.95,
     285.67,
-    270.35
+    270.35,
+    266.32
    ]
   },
   "SPXS": {
    "name": "Direxion Daily S&P 500 Bear 3X Shares",
    "exchange": "NYSE ARCA",
    "type": "ETF",
-   "price": 25.63,
-   "open": 25.09,
-   "prevClose": 24.3,
-   "change": 1.33,
-   "changePct": 5.47,
-   "dayHigh": 26.14,
-   "dayLow": 25.08,
+   "price": 26.01,
+   "open": 25.27,
+   "prevClose": 25.63,
+   "change": 0.38,
+   "changePct": 1.48,
+   "dayHigh": 26.05,
+   "dayLow": 24.81,
    "high52": 44.83,
    "low52": 23.04,
-   "volume": 15973258,
+   "volume": 10554277,
    "closes": [
-    24.77,
-    24.62,
-    24.12,
     23.64,
     23.26,
     23.45,
@@ -44767,27 +48953,25 @@ export const watchlists: Watchlist[] = [
     24.27,
     24.01,
     24.3,
-    25.63
+    25.63,
+    26.01
    ]
   },
   "SPY": {
    "name": "State Street SPDR S&P 500 ETF Trust",
    "exchange": "NYSE ARCA",
    "type": "ETF",
-   "price": 755.72,
-   "open": 761.38,
-   "prevClose": 769.36,
-   "change": -13.64,
-   "changePct": -1.77,
-   "dayHigh": 761.46,
-   "dayLow": 750.36,
+   "price": 752.1,
+   "open": 759.45,
+   "prevClose": 755.72,
+   "change": -3.62,
+   "changePct": -0.48,
+   "dayHigh": 763.86,
+   "dayLow": 751.6,
    "high52": 781.62,
    "low52": 629.28,
-   "volume": 77142196,
+   "volume": 50778592,
    "closes": [
-    762.63,
-    763.99,
-    769.64,
     774.83,
     779.09,
     777.22,
@@ -44807,27 +48991,25 @@ export const watchlists: Watchlist[] = [
     769.66,
     772.31,
     769.36,
-    755.72
+    755.72,
+    752.1
    ]
   },
   "SQQQ": {
    "name": "ProShares UltraPro Short QQQ",
    "exchange": "NASDAQ",
    "type": "ETF",
-   "price": 41.83,
-   "open": 40.78,
-   "prevClose": 37.83,
-   "change": 4,
-   "changePct": 10.57,
-   "dayHigh": 42.96,
-   "dayLow": 40.55,
+   "price": 43.55,
+   "open": 40.99,
+   "prevClose": 41.83,
+   "change": 1.72,
+   "changePct": 4.11,
+   "dayHigh": 43.7,
+   "dayLow": 40.24,
    "high52": 90.72,
    "low52": 31.42,
-   "volume": 67107225,
+   "volume": 53112899,
    "closes": [
-    34.41,
-    34.11,
-    33.12,
     32.25,
     31.83,
     32.07,
@@ -44847,27 +49029,25 @@ export const watchlists: Watchlist[] = [
     36.93,
     36.28,
     37.83,
-    41.83
+    41.83,
+    43.55
    ]
   },
   "TGT": {
    "name": "Target Corporation",
    "exchange": "NYSE",
    "type": "EQUITY",
-   "price": 154.38,
-   "open": 154.68,
-   "prevClose": 151.82,
-   "change": 2.56,
-   "changePct": 1.69,
-   "dayHigh": 155.49,
-   "dayLow": 152.06,
+   "price": 158.38,
+   "open": 155.13,
+   "prevClose": 154.38,
+   "change": 4,
+   "changePct": 2.59,
+   "dayHigh": 159.29,
+   "dayLow": 155,
    "high52": 170.75,
    "low52": 83.44,
-   "volume": 5164432,
+   "volume": 4279508,
    "closes": [
-    156.69,
-    156.7,
-    156,
     152.99,
     154.33,
     150.92,
@@ -44887,27 +49067,101 @@ export const watchlists: Watchlist[] = [
     148.01,
     148.96,
     151.82,
-    154.38
+    154.38,
+    158.38
+   ]
+  },
+  "TLRY": {
+   "name": "Tilray Brands, Inc.",
+   "exchange": "NASDAQ",
+   "type": "EQUITY",
+   "price": 2.55,
+   "open": 2.58,
+   "prevClose": 2.53,
+   "change": 0.02,
+   "changePct": 0.79,
+   "dayHigh": 2.66,
+   "dayLow": 2.52,
+   "high52": 15.7,
+   "low52": 2.49,
+   "volume": 4611682,
+   "closes": [
+    3.72,
+    3.78,
+    3.72,
+    3.59,
+    3.54,
+    3.36,
+    3.27,
+    3.14,
+    3.21,
+    3.04,
+    3.03,
+    3.03,
+    2.92,
+    2.93,
+    2.81,
+    2.72,
+    2.77,
+    2.69,
+    2.64,
+    2.53,
+    2.55
+   ]
+  },
+  "TMUS": {
+   "name": "T-Mobile US, Inc.",
+   "exchange": "NASDAQ",
+   "type": "EQUITY",
+   "price": 160.15,
+   "open": 153.66,
+   "prevClose": 156.44,
+   "change": 3.71,
+   "changePct": 2.37,
+   "dayHigh": 160.48,
+   "dayLow": 154,
+   "high52": 224.75,
+   "low52": 143.75,
+   "volume": 7259759,
+   "closes": [
+    164.64,
+    165.93,
+    167.65,
+    171.31,
+    148.58,
+    151.87,
+    153.73,
+    157.79,
+    157.03,
+    159.1,
+    156.09,
+    157.75,
+    153.75,
+    158.79,
+    146.54,
+    146.93,
+    146.83,
+    148.08,
+    147.29,
+    156.44,
+    160.15
    ]
   },
   "TQQQ": {
    "name": "ProShares UltraPro QQQ",
    "exchange": "NASDAQ",
    "type": "ETF",
-   "price": 62.01,
-   "open": 63.93,
-   "prevClose": 69.26,
-   "change": -7.25,
-   "changePct": -10.47,
-   "dayHigh": 64.33,
-   "dayLow": 59.95,
+   "price": 59.46,
+   "open": 63.25,
+   "prevClose": 62.01,
+   "change": -2.55,
+   "changePct": -4.11,
+   "dayHigh": 64.35,
+   "dayLow": 59.22,
    "high52": 88.09,
    "low52": 37.32,
-   "volume": 108409521,
+   "volume": 73778531,
    "closes": [
-    78.03,
-    78.73,
-    81.01,
     83.12,
     84.25,
     83.62,
@@ -44927,27 +49181,63 @@ export const watchlists: Watchlist[] = [
     71.04,
     72.36,
     69.26,
-    62.01
+    62.01,
+    59.46
+   ]
+  },
+  "TRIP": {
+   "name": "Tripadvisor, Inc.",
+   "exchange": "NASDAQ",
+   "type": "EQUITY",
+   "price": 9.44,
+   "open": 9.32,
+   "prevClose": 9.22,
+   "change": 0.22,
+   "changePct": 2.39,
+   "dayHigh": 9.65,
+   "dayLow": 9.26,
+   "high52": 17.53,
+   "low52": 8.02,
+   "volume": 4001151,
+   "closes": [
+    8.79,
+    8.52,
+    8.63,
+    8.96,
+    8.68,
+    8.72,
+    8.74,
+    8.93,
+    9.39,
+    9.32,
+    9.27,
+    9.51,
+    9.44,
+    9.67,
+    9.41,
+    9.24,
+    8.98,
+    8.94,
+    9.22,
+    9.22,
+    9.44
    ]
   },
   "TSLA": {
    "name": "Tesla, Inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 399.81,
-   "open": 393.22,
-   "prevClose": 403.3,
-   "change": -3.49,
-   "changePct": -0.87,
-   "dayHigh": 404.2,
-   "dayLow": 387.52,
+   "price": 403.82,
+   "open": 404.66,
+   "prevClose": 399.81,
+   "change": 4.01,
+   "changePct": 1,
+   "dayHigh": 414.23,
+   "dayLow": 397.61,
    "high52": 498.83,
    "low52": 297.38,
-   "volume": 41737178,
+   "volume": 43129424,
    "closes": [
-    354.81,
-    354.11,
-    370.59,
     378.73,
     380.68,
     377.81,
@@ -44967,27 +49257,139 @@ export const watchlists: Watchlist[] = [
     407.46,
     404.22,
     403.3,
-    399.81
+    399.81,
+    403.82
+   ]
+  },
+  "TTD": {
+   "name": "The Trade Desk, Inc.",
+   "exchange": "NASDAQ",
+   "type": "EQUITY",
+   "price": 12.55,
+   "open": 12.38,
+   "prevClose": 12.29,
+   "change": 0.26,
+   "changePct": 2.12,
+   "dayHigh": 12.84,
+   "dayLow": 12.38,
+   "high52": 50.06,
+   "low52": 11.62,
+   "volume": 11576523,
+   "closes": [
+    11.98,
+    11.92,
+    12.09,
+    12.34,
+    12.08,
+    11.94,
+    12.17,
+    12.18,
+    13.13,
+    12.23,
+    12.26,
+    12.65,
+    12.59,
+    13.16,
+    13,
+    12.77,
+    12.7,
+    12.76,
+    13.06,
+    12.29,
+    12.55
+   ]
+  },
+  "U": {
+   "name": "Unity Software Inc.",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 38.87,
+   "open": 38.37,
+   "prevClose": 37.7,
+   "change": 1.17,
+   "changePct": 3.1,
+   "dayHigh": 40.76,
+   "dayLow": 38.32,
+   "high52": 52.15,
+   "low52": 16.78,
+   "volume": 12147609,
+   "closes": [
+    45.68,
+    44.95,
+    45.44,
+    45.89,
+    46.88,
+    46.68,
+    46.63,
+    41.4,
+    43.34,
+    40.4,
+    40.58,
+    40.16,
+    41.21,
+    40.27,
+    40.79,
+    40.33,
+    40.1,
+    39.5,
+    39.27,
+    37.7,
+    38.87
+   ]
+  },
+  "UAL": {
+   "name": "United Airlines Holdings, Inc.",
+   "exchange": "NASDAQ",
+   "type": "EQUITY",
+   "price": 109.24,
+   "open": 108.96,
+   "prevClose": 104.24,
+   "change": 5,
+   "changePct": 4.8,
+   "dayHigh": 112.01,
+   "dayLow": 108.12,
+   "high52": 138.77,
+   "low52": 84.64,
+   "volume": 6632130,
+   "closes": [
+    110,
+    111.87,
+    110.17,
+    107.44,
+    107.46,
+    104.44,
+    103.23,
+    98.96,
+    101.31,
+    96.1,
+    95.6,
+    97.77,
+    101.67,
+    102,
+    97.93,
+    100.69,
+    104.71,
+    103.43,
+    105.21,
+    104.24,
+    109.24
    ]
   },
   "UBER": {
    "name": "Uber Technologies, Inc.",
    "exchange": "NYSE",
    "type": "EQUITY",
-   "price": 65.25,
-   "open": 65.61,
-   "prevClose": 65.74,
-   "change": -0.49,
-   "changePct": -0.75,
-   "dayHigh": 65.8,
-   "dayLow": 64.67,
+   "price": 66.71,
+   "open": 66.12,
+   "prevClose": 65.25,
+   "change": 1.46,
+   "changePct": 2.24,
+   "dayHigh": 67.47,
+   "dayLow": 65.55,
    "high52": 100.35,
    "low52": 64.04,
-   "volume": 17111001,
+   "volume": 17740543,
    "closes": [
-    68.51,
-    67.88,
-    68.11,
     69.48,
     69.08,
     68.45,
@@ -45007,27 +49409,25 @@ export const watchlists: Watchlist[] = [
     65.78,
     65.27,
     65.74,
-    65.25
+    65.25,
+    66.71
    ]
   },
   "UFO": {
    "name": "Procure Space ETF",
    "exchange": "NASDAQ",
    "type": "ETF",
-   "price": 40.24,
-   "open": 40.69,
-   "prevClose": 41.72,
-   "change": -1.48,
-   "changePct": -3.55,
-   "dayHigh": 41.13,
-   "dayLow": 39.82,
+   "price": 39.89,
+   "open": 40.63,
+   "prevClose": 40.24,
+   "change": -0.35,
+   "changePct": -0.87,
+   "dayHigh": 40.95,
+   "dayLow": 39.76,
    "high52": 68.21,
    "low52": 30.89,
-   "volume": 368012,
+   "volume": 289149,
    "closes": [
-    42.31,
-    41.95,
-    43.13,
     43.56,
     44.33,
     43.04,
@@ -45047,27 +49447,25 @@ export const watchlists: Watchlist[] = [
     41.13,
     41.28,
     41.72,
-    40.24
+    40.24,
+    39.89
    ]
   },
   "UNH": {
    "name": "UnitedHealth Group Incorporated",
    "exchange": "NYSE",
    "type": "EQUITY",
-   "price": 406.97,
-   "open": 415,
-   "prevClose": 410.91,
-   "change": -3.94,
-   "changePct": -0.96,
-   "dayHigh": 416.11,
-   "dayLow": 405.91,
+   "price": 400.44,
+   "open": 406,
+   "prevClose": 406.97,
+   "change": -6.53,
+   "changePct": -1.6,
+   "dayHigh": 408.88,
+   "dayLow": 394.11,
    "high52": 461.62,
    "low52": 255.97,
-   "volume": 4296307,
+   "volume": 5899348,
    "closes": [
-    367.08,
-    365.2,
-    371.9,
     378.58,
     376.32,
     375.98,
@@ -45087,27 +49485,63 @@ export const watchlists: Watchlist[] = [
     410.39,
     407.1,
     410.91,
-    406.97
+    406.97,
+    400.44
+   ]
+  },
+  "URBN": {
+   "name": "Urban Outfitters, Inc.",
+   "exchange": "NASDAQ",
+   "type": "EQUITY",
+   "price": 88.94,
+   "open": 91.16,
+   "prevClose": 90.72,
+   "change": -1.78,
+   "changePct": -1.96,
+   "dayHigh": 92.35,
+   "dayLow": 88.8,
+   "high52": 93.64,
+   "low52": 59.54,
+   "volume": 1251455,
+   "closes": [
+    81.6,
+    80.25,
+    79.75,
+    80.96,
+    82.18,
+    82.69,
+    84.85,
+    84.68,
+    87.4,
+    86.57,
+    86.83,
+    87.32,
+    86.96,
+    88.29,
+    86.55,
+    90.59,
+    90.73,
+    89.35,
+    92.19,
+    90.72,
+    88.94
    ]
   },
   "V": {
    "name": "Visa Inc.",
    "exchange": "NYSE",
    "type": "EQUITY",
-   "price": 413.59,
-   "open": 415.25,
-   "prevClose": 410.54,
-   "change": 3.05,
-   "changePct": 0.74,
-   "dayHigh": 416.99,
-   "dayLow": 411.82,
-   "high52": 417,
+   "price": 425.51,
+   "open": 415.51,
+   "prevClose": 413.59,
+   "change": 11.92,
+   "changePct": 2.88,
+   "dayHigh": 426.78,
+   "dayLow": 414.37,
+   "high52": 426.78,
    "low52": 293.89,
-   "volume": 7073982,
+   "volume": 7425819,
    "closes": [
-    359.33,
-    359.85,
-    360.66,
     369.71,
     370.64,
     372.1,
@@ -45127,27 +49561,63 @@ export const watchlists: Watchlist[] = [
     401.86,
     400.6,
     410.54,
-    413.59
+    413.59,
+    425.51
+   ]
+  },
+  "VFC": {
+   "name": "V.F. Corporation",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 19.39,
+   "open": 18.58,
+   "prevClose": 18.3,
+   "change": 1.09,
+   "changePct": 5.96,
+   "dayHigh": 19.48,
+   "dayLow": 18.47,
+   "high52": 22.27,
+   "low52": 12.46,
+   "volume": 11541162,
+   "closes": [
+    14.27,
+    14.45,
+    14.38,
+    14.53,
+    15,
+    15.79,
+    16.07,
+    16.48,
+    17,
+    16.85,
+    17.14,
+    17.46,
+    17.15,
+    17.48,
+    17.26,
+    16.95,
+    17.03,
+    17.23,
+    18.33,
+    18.3,
+    19.39
    ]
   },
   "VGK": {
    "name": "Vanguard FTSE Europe ETF",
    "exchange": "NYSE ARCA",
    "type": "ETF",
-   "price": 87.54,
-   "open": 87.73,
-   "prevClose": 88.14,
-   "change": -0.6,
-   "changePct": -0.68,
-   "dayHigh": 87.88,
-   "dayLow": 87.07,
+   "price": 88.06,
+   "open": 87.93,
+   "prevClose": 87.54,
+   "change": 0.52,
+   "changePct": 0.59,
+   "dayHigh": 88.49,
+   "dayLow": 87.77,
    "high52": 93.29,
    "low52": 77.87,
-   "volume": 1750002,
+   "volume": 2006619,
    "closes": [
-    86.8,
-    85.49,
-    86.38,
     86.28,
     86.58,
     85.56,
@@ -45167,27 +49637,25 @@ export const watchlists: Watchlist[] = [
     87.04,
     87.31,
     88.14,
-    87.54
+    87.54,
+    88.06
    ]
   },
   "VTI": {
    "name": "Vanguard Morningstar Total Stock Market ETF",
    "exchange": "NYSE ARCA",
    "type": "ETF",
-   "price": 371.57,
-   "open": 374.25,
-   "prevClose": 378.24,
-   "change": -6.67,
-   "changePct": -1.76,
-   "dayHigh": 374.49,
-   "dayLow": 368.89,
+   "price": 370,
+   "open": 373.52,
+   "prevClose": 371.57,
+   "change": -1.57,
+   "changePct": -0.42,
+   "dayHigh": 375.64,
+   "dayLow": 369.75,
    "high52": 385.12,
    "low52": 310.4,
-   "volume": 4673257,
+   "volume": 6578469,
    "closes": [
-    374.24,
-    375.18,
-    377.99,
     380.6,
     382.54,
     381.03,
@@ -45207,27 +49675,139 @@ export const watchlists: Watchlist[] = [
     377.92,
     379.17,
     378.24,
-    371.57
+    371.57,
+    370
+   ]
+  },
+  "WEN": {
+   "name": "The Wendy's Company",
+   "exchange": "NASDAQ",
+   "type": "EQUITY",
+   "price": 7.26,
+   "open": 7.22,
+   "prevClose": 7.21,
+   "change": 0.05,
+   "changePct": 0.69,
+   "dayHigh": 7.35,
+   "dayLow": 7.17,
+   "high52": 10.12,
+   "low52": 5.94,
+   "volume": 6008759,
+   "closes": [
+    6.1,
+    6.16,
+    6.11,
+    6.22,
+    6.23,
+    6.31,
+    6.35,
+    6.44,
+    6.7,
+    6.7,
+    6.68,
+    6.52,
+    6.28,
+    6.57,
+    6.22,
+    6.19,
+    6.14,
+    7.07,
+    7.17,
+    7.21,
+    7.26
+   ]
+  },
+  "WFC": {
+   "name": "Wells Fargo & Company",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 85.89,
+   "open": 84.4,
+   "prevClose": 83.4,
+   "change": 2.49,
+   "changePct": 2.99,
+   "dayHigh": 86.03,
+   "dayLow": 84.1,
+   "high52": 97.76,
+   "low52": 72.78,
+   "volume": 18923647,
+   "closes": [
+    81.44,
+    81.51,
+    80.26,
+    82.03,
+    83.55,
+    83.32,
+    80.74,
+    80.9,
+    82.75,
+    83.87,
+    81.8,
+    82.2,
+    82.42,
+    83.01,
+    82.39,
+    82.65,
+    82.66,
+    83.67,
+    84.81,
+    83.4,
+    85.89
+   ]
+  },
+  "WING": {
+   "name": "Wingstop Inc.",
+   "exchange": "NASDAQ",
+   "type": "EQUITY",
+   "price": 163.04,
+   "open": 153.46,
+   "prevClose": 149.73,
+   "change": 13.31,
+   "changePct": 8.89,
+   "dayHigh": 170.37,
+   "dayLow": 152.89,
+   "high52": 302.8,
+   "low52": 95.82,
+   "volume": 2973137,
+   "closes": [
+    106.84,
+    112.2,
+    116.68,
+    118.5,
+    122.26,
+    126.02,
+    125.76,
+    122.9,
+    131.03,
+    131.72,
+    132.75,
+    130.31,
+    119.95,
+    120.87,
+    119.54,
+    122.88,
+    123.52,
+    138.57,
+    145.39,
+    149.73,
+    163.04
    ]
   },
   "WMT": {
    "name": "Walmart Inc.",
    "exchange": "NASDAQ",
    "type": "EQUITY",
-   "price": 123.51,
-   "open": 123.14,
-   "prevClose": 121.25,
-   "change": 2.26,
-   "changePct": 1.86,
-   "dayHigh": 124.5,
-   "dayLow": 122.75,
+   "price": 127.69,
+   "open": 124.1,
+   "prevClose": 123.51,
+   "change": 4.18,
+   "changePct": 3.38,
+   "dayHigh": 127.94,
+   "dayLow": 124.12,
    "high52": 135.16,
    "low52": 98.88,
-   "volume": 29777249,
+   "volume": 27680627,
    "closes": [
-    103.92,
-    104.26,
-    104.26,
     105.07,
     107.2,
     108.16,
@@ -45247,27 +49827,63 @@ export const watchlists: Watchlist[] = [
     119.32,
     118.77,
     121.25,
-    123.51
+    123.51,
+    127.69
+   ]
+  },
+  "WOOF": {
+   "name": "Petco Health and Wellness Company, Inc.",
+   "exchange": "NASDAQ",
+   "type": "EQUITY",
+   "price": 2.74,
+   "open": 2.63,
+   "prevClose": 2.61,
+   "change": 0.13,
+   "changePct": 4.98,
+   "dayHigh": 2.77,
+   "dayLow": 2.62,
+   "high52": 3.78,
+   "low52": 2.14,
+   "volume": 4727059,
+   "closes": [
+    2.18,
+    2.22,
+    2.22,
+    2.24,
+    2.23,
+    2.33,
+    2.41,
+    2.37,
+    2.38,
+    2.33,
+    2.34,
+    2.33,
+    2.31,
+    2.53,
+    2.45,
+    2.49,
+    2.48,
+    2.51,
+    2.59,
+    2.61,
+    2.74
    ]
   },
   "XLE": {
    "name": "State Street Energy Select Sector SPDR ETF",
    "exchange": "NYSE ARCA",
    "type": "ETF",
-   "price": 70.02,
-   "open": 69.52,
-   "prevClose": 68.71,
-   "change": 1.31,
-   "changePct": 1.91,
-   "dayHigh": 70.15,
-   "dayLow": 69.28,
+   "price": 67.25,
+   "open": 68.85,
+   "prevClose": 70.02,
+   "change": -2.77,
+   "changePct": -3.96,
+   "dayHigh": 69.14,
+   "dayLow": 67.23,
    "high52": 70.15,
    "low52": 43.19,
-   "volume": 31087568,
+   "volume": 50873640,
    "closes": [
-    61.5,
-    62.7,
-    62.82,
     63.45,
     63.75,
     63.36,
@@ -45287,27 +49903,101 @@ export const watchlists: Watchlist[] = [
     68.21,
     68.45,
     68.71,
-    70.02
+    70.02,
+    67.25
+   ]
+  },
+  "XLF": {
+   "name": "State Street Financial Select Sector SPDR ETF",
+   "exchange": "NYSE ARCA",
+   "type": "ETF",
+   "price": 57.56,
+   "open": 56.96,
+   "prevClose": 56.51,
+   "change": 1.05,
+   "changePct": 1.86,
+   "dayHigh": 57.7,
+   "dayLow": 56.88,
+   "high52": 58.6,
+   "low52": 47.67,
+   "volume": 41200451,
+   "closes": [
+    53.88,
+    54.01,
+    53.75,
+    54.23,
+    54.73,
+    55.05,
+    54.82,
+    54.52,
+    55.27,
+    55.52,
+    55.06,
+    55.72,
+    56.04,
+    56.65,
+    55.9,
+    56.02,
+    55.88,
+    56.13,
+    56.94,
+    56.51,
+    57.56
+   ]
+  },
+  "XLV": {
+   "name": "State Street Health Care Select Sector SPDR ETF",
+   "exchange": "NYSE ARCA",
+   "type": "ETF",
+   "price": 184.6,
+   "open": 184.69,
+   "prevClose": 184.87,
+   "change": -0.27,
+   "changePct": -0.15,
+   "dayHigh": 185.54,
+   "dayLow": 183.38,
+   "high52": 187.99,
+   "low52": 141.97,
+   "volume": 14062650,
+   "closes": [
+    167.37,
+    167.09,
+    168.81,
+    168.16,
+    170.81,
+    171.99,
+    169.66,
+    173.96,
+    177.19,
+    176.71,
+    175.65,
+    179.82,
+    178.94,
+    181.3,
+    179.28,
+    179.28,
+    179.18,
+    179.72,
+    184.04,
+    184.87,
+    184.6
    ]
   },
   "XOM": {
    "name": "ExxonMobil Holdings Corporation",
    "exchange": "NYSE",
    "type": "EQUITY",
-   "price": 187.25,
-   "open": 185.98,
-   "prevClose": 183.29,
-   "change": 3.96,
-   "changePct": 2.16,
-   "dayHigh": 188.5,
-   "dayLow": 184.68,
+   "price": 179.67,
+   "open": 183.98,
+   "prevClose": 187.25,
+   "change": -7.58,
+   "changePct": -4.05,
+   "dayHigh": 184.59,
+   "dayLow": 179.67,
    "high52": 188.5,
    "low52": 112.51,
-   "volume": 21162779,
+   "volume": 16459189,
    "closes": [
-    162.75,
-    163.82,
-    164.01,
     164,
     164.48,
     164.05,
@@ -45327,44 +50017,121 @@ export const watchlists: Watchlist[] = [
     179.91,
     182.02,
     183.29,
-    187.25
+    187.25,
+    179.67
+   ]
+  },
+  "YETI": {
+   "name": "YETI Holdings, Inc.",
+   "exchange": "NYSE",
+   "type": "EQUITY",
+   "price": 45.42,
+   "open": 44.87,
+   "prevClose": 43.66,
+   "change": 1.76,
+   "changePct": 4.03,
+   "dayHigh": 45.77,
+   "dayLow": 44.65,
+   "high52": 53.99,
+   "low52": 32.26,
+   "volume": 1322526,
+   "closes": [
+    40.52,
+    40.25,
+    39.47,
+    39.6,
+    39.79,
+    39.01,
+    39.34,
+    40.51,
+    42.02,
+    43.07,
+    42.12,
+    42.55,
+    42.77,
+    44.03,
+    42.79,
+    43.57,
+    42.25,
+    42.91,
+    44.19,
+    43.66,
+    45.42
+   ]
+  },
+  "ZM": {
+   "name": "Zoom Communications, Inc.",
+   "exchange": "NASDAQ",
+   "type": "EQUITY",
+   "price": 91.98,
+   "open": 95.69,
+   "prevClose": 95.5,
+   "change": -3.52,
+   "changePct": -3.69,
+   "dayHigh": 95.85,
+   "dayLow": 91.39,
+   "high52": 114.74,
+   "low52": 70.7,
+   "volume": 2525733,
+   "closes": [
+    93.62,
+    94.2,
+    94.77,
+    94.67,
+    97.74,
+    97.94,
+    98.16,
+    94.47,
+    98.51,
+    94.19,
+    97.59,
+    97.46,
+    99.44,
+    96.2,
+    95.77,
+    98.04,
+    97.4,
+    100.26,
+    97.66,
+    95.5,
+    91.98
    ]
   }
  },
  "indices": {
   "sp-500": {
    "symbol": "^GSPC",
-   "price": 7580.07,
-   "open": 7631.07,
-   "prevClose": 7720.39,
-   "change": -140.32,
-   "changePct": -1.82,
-   "dayHigh": 7637.48,
-   "dayLow": 7527.56,
+   "price": 7541.4,
+   "open": 7610.83,
+   "prevClose": 7580.07,
+   "change": -38.67,
+   "changePct": -0.51,
+   "dayHigh": 7662.23,
+   "dayLow": 7539.38,
    "high52": 7844.52,
    "low52": 6316.91
   },
   "nasdaq": {
    "symbol": "^IXIC",
-   "price": 25437,
-   "open": 25592.49,
-   "prevClose": 26184.72,
-   "change": -747.72,
-   "changePct": -2.86,
-   "dayHigh": 25673,
-   "dayLow": 25177.33,
+   "price": 25164.36,
+   "open": 25600.17,
+   "prevClose": 25437,
+   "change": -272.64,
+   "changePct": -1.07,
+   "dayHigh": 25799.46,
+   "dayLow": 25145.95,
    "high52": 27722.75,
    "low52": 20690.25
   },
   "dow-jones": {
    "symbol": "^DJI",
-   "price": 51770.31,
-   "open": 52383.9,
-   "prevClose": 52342.56,
-   "change": -572.25,
-   "changePct": -1.09,
-   "dayHigh": 52383.9,
-   "dayLow": 51563.76,
+   "price": 51983.98,
+   "open": 52008.23,
+   "prevClose": 51770.31,
+   "change": 213.67,
+   "changePct": 0.41,
+   "dayHigh": 52424.91,
+   "dayLow": 51981.66,
    "high52": 54744.33,
    "low52": 45057.28
   }
@@ -45372,15 +50139,15 @@ export const watchlists: Watchlist[] = [
  "fx": {
   "usdInr": {
    "symbol": "USDINR=X",
-   "price": 94.87,
-   "open": null,
-   "prevClose": 95.19,
-   "change": -0.32,
-   "changePct": -0.34,
-   "dayHigh": null,
-   "dayLow": null,
-   "high52": null,
-   "low52": null
+   "price": 94.74,
+   "open": 94.89,
+   "prevClose": 94.9,
+   "change": -0.16,
+   "changePct": -0.17,
+   "dayHigh": 94.89,
+   "dayLow": 94.6,
+   "high52": 97.05,
+   "low52": 85.86
   }
  }
 }
@@ -45392,8 +50159,13 @@ export const watchlists: Watchlist[] = [
 // US stocks — data more than one flow uses (the US Stocks flow, the Stocks home's US tab, the Market tab's US list).
 // Prices are real: us-market-snapshot.json, from Yahoo Finance by `npm run us:snapshot` (scripts/us-market-snapshot.mjs),
 // overrides the catalogue's numbers below and adds every other stock / ETF the app shows. `live.ts` makes them tick.
-// Logos are PNGs in src/shared/assets/us-logos (L3 has company logos for Indian stocks only).
-import snapshot from './us-market-snapshot.json'
+// Near-live, not live: the bundled copy is used at first, then the app re-reads ./us-market-snapshot.json (published by
+// the build, refreshed every 15 minutes in US market hours by the site repo's Action, scripts/site-workflow-us.yml) on
+// load and every 5 minutes, and updates the numbers below in place.
+// Logos are in src/shared/assets/us-logos: full-colour SVGs (scripts/us-logos.mjs), PNGs for the few without one (L3 has company logos for Indian stocks only).
+import { useSyncExternalStore } from 'react'
+import bundled from './us-market-snapshot.json'
+import { nudgeLive } from './live'
 
 export type UsStock = {
   sym: string
@@ -45436,34 +50208,92 @@ export const catalogue: Record<string, Omit<UsStock, 'sym'>> = {
 }
 
 type SnapshotQuote = { name: string | null; exchange: string | null; price: number; changePct: number; open?: number | null; prevClose: number; dayHigh: number | null; dayLow: number | null; high52: number | null; low52: number | null; volume: number | null; closes: number[] }
-const quotes = snapshot.quotes as unknown as Record<string, SnapshotQuote>
+type IndexQuote = { price: number; changePct: number }
+type Snapshot = { source: string; fetchedAt: string; quotes: Record<string, SnapshotQuote>; indices: Record<string, IndexQuote>; fx?: { usdInr?: { price: number } } }
+
+// The numbers in use now — the bundled snapshot's, replaced in place when a fresher one is read (see the runtime refresh).
+const quotes: Record<string, SnapshotQuote> = { ...(bundled.quotes as unknown as Record<string, SnapshotQuote>) }
+const indices: Record<string, IndexQuote> = { ...(bundled.indices as Record<string, IndexQuote>) }
+const current = { fetchedAt: bundled.fetchedAt, source: bundled.source, usdInr: (bundled as unknown as Snapshot).fx?.usdInr?.price }
 
 /** "Apple Inc." → "Apple Inc", "Airbnb, Inc." → "Airbnb Inc": the snapshot's legal names, as the app writes them. */
 const tidyName = (name: string) => name.replace(/,? (Inc|Corp|Corporation|Co|Ltd|Plc|N\.V|S\.A)\.?$/i, (m) => ' ' + m.replace(/[,.]/g, '').trim()).replace(/\s+/g, ' ').trim()
 
 // The snapshot's real price, day change and exchange for every symbol in it; the catalogue's own names stay.
-for (const [sym, q] of Object.entries(quotes)) {
-  if (q.price == null) continue
-  const known = catalogue[sym]
-  catalogue[sym] = { name: known?.name ?? tidyName(q.name ?? sym), price: q.price, change: q.changePct, exchange: q.exchange ?? known?.exchange ?? 'NASDAQ' }
+function applyQuotes() {
+  for (const [sym, q] of Object.entries(quotes)) {
+    if (q.price == null) continue
+    const known = catalogue[sym]
+    catalogue[sym] = { name: known?.name ?? tidyName(q.name ?? sym), price: q.price, change: q.changePct, exchange: q.exchange ?? known?.exchange ?? 'NASDAQ' }
+  }
 }
+applyQuotes()
 
 /** When the US prices were taken (ISO time). */
-export const usSnapshotAt: string = snapshot.fetchedAt
+export const usSnapshotAt = (): string => current.fetchedAt
 
 /** The snapshot's full quote of a symbol (day range, 52-week range, volume, a month of closes), if it has one. */
 export const usQuote = (symbol: string): SnapshotQuote | undefined => quotes[symbol]
 
 /** Today's value of a US index (`sp-500`, `nasdaq`, `dow-jones`) from the snapshot. */
-export const usIndexQuote = (id: string): { price: number; changePct: number } | undefined => (snapshot.indices as Record<string, { price: number; changePct: number }>)[id]
+export const usIndexQuote = (id: string): IndexQuote | undefined => indices[id]
 
-const logoFiles = import.meta.glob('../assets/us-logos/*.png', { eager: true, query: '?url', import: 'default' }) as Record<string, string>
-const logoBySymbol = new Map(Object.entries(logoFiles).map(([path, url]) => [path.slice(path.lastIndexOf('/') + 1, -'.png'.length), url]))
+/** ₹ per $ in the snapshot (USDINR=X), or undefined if it has none. */
+export const usdInrSnapshot = (): number | undefined => current.usdInr
+
+// ── Runtime refresh ──────────────────────────────────────────────────────────────────────────────────────────────
+const listeners = new Set<() => void>()
+
+function apply(next: Snapshot) {
+  if (!(next.fetchedAt > current.fetchedAt)) return // ISO strings sort by time; never go back to older data
+  // A symbol the published file doesn't have yet (added to the app after the site's copy) keeps the numbers we have.
+  Object.assign(quotes, next.quotes)
+  Object.assign(indices, next.indices)
+  Object.assign(current, { fetchedAt: next.fetchedAt, source: next.source, usdInr: next.fx?.usdInr?.price ?? current.usdInr })
+  applyQuotes()
+  listeners.forEach((l) => l())
+  nudgeLive() // every ticking price re-renders now, not at the next tick
+}
+
+/** Re-read the published US snapshot (same origin — no API call). Fails quietly: the numbers we have stay. */
+export async function refreshUsMarket() {
+  try {
+    const res = await fetch('us-market-snapshot.json', { cache: 'no-cache' })
+    if (res.ok) apply(await res.json())
+  } catch { /* offline, or the file isn't there — keep what we have */ }
+}
+
+const REFRESH_MS = 5 * 60 * 1000
+if (typeof window !== 'undefined') {
+  refreshUsMarket()
+  setInterval(() => { if (document.visibilityState === 'visible') refreshUsMarket() }, REFRESH_MS)
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') refreshUsMarket() })
+}
+
+function subscribe(listener: () => void) {
+  listeners.add(listener)
+  return () => { listeners.delete(listener) }
+}
+
+/** Re-renders the calling component when fresher US data arrives; returns its `fetchedAt`. */
+export function useUsMarketSnapshot(): string {
+  return useSyncExternalStore(subscribe, () => current.fetchedAt)
+}
+
+// A full-colour SVG (the mark on its brand colour, edge to edge — scripts/us-logos.mjs) wins over the older PNG (a mark on
+// transparent, which shows on the L3 Avatar's grey); the PNG stays for the few symbols that have no SVG.
+const logoFiles = import.meta.glob('../assets/us-logos/*.{png,svg}', { eager: true, query: '?url', import: 'default' }) as Record<string, string>
+const symbolOf = (path: string) => path.slice(path.lastIndexOf('/') + 1, path.lastIndexOf('.'))
+const logoBySymbol = new Map(
+  Object.entries(logoFiles)
+    .sort(([a], [b]) => Number(a.endsWith('.svg')) - Number(b.endsWith('.svg')))
+    .map(([path, url]) => [symbolOf(path), url]),
+)
 
 /** Symbols that have a logo file in src/shared/assets/us-logos. */
 export const usLogoSymbols: string[] = [...logoBySymbol.keys()].sort()
 
-/** The logo of a US company (PNG URL), or undefined (show initials). */
+/** The logo of a US company (SVG or PNG URL), or undefined (show initials). */
 export const usLogo = (symbol: string): string | undefined => logoBySymbol.get(symbol)
 
 // Logos from financialmodelingprep.com (2 Nov, ETF holdings) are transparent marks drawn for a white page: they sit on
@@ -45520,6 +50350,15 @@ export const bankAccount: BankAccount = {
   type: 'Savings',
   branch: 'Andheri West, Mumbai',
 }
+
+/** A linked bank account as the money screens show it: the bank's logo symbol (companies.ts) and the last 4 digits. */
+export type LinkedBank = BankAccount & { id: string; logoSymbol: string; last4: string; primary?: boolean }
+
+/** The user's linked bank accounts, primary first. "User status → Bank accounts" picks how many the prototype shows. */
+export const linkedBanks: LinkedBank[] = [
+  { ...bankAccount, id: 'hdfc', logoSymbol: 'HDFCBANK', last4: '7821', primary: true },
+  { id: 'icici', bank: 'ICICI Bank', accountNumber: '002101554410', ifsc: 'ICIC0000021', type: 'Savings', branch: 'Powai, Mumbai', logoSymbol: 'ICICIBANK', last4: '4410' },
+]
 ```
 
 ### `src/shared/money.module.css`
@@ -45551,7 +50390,7 @@ export const bankAccount: BankAccount = {
 // US Stocks money — every value inside US Stocks is in US dollars (the news, prices and filings users read are in $),
 // with its rupee equivalent at the live USD → INR rate available everywhere. How the ₹ shows is a prototype setting
 // ("₹ equivalent" in the User status panel), so the same screens try each idea:
-//   off    — $ only
+//   off    — $ only (the default; the stock and ETF pages still show ≈ ₹ under the price)
 //   below  — $ with a small "≈ ₹1,23,456" line under it — only in the order pad since 3 Nov (`layout="stack"`)
 //   switch — a $ / ₹ switch (<CurrencySwitch />); picking ₹ turns every US value into rupees, across every screen
 // Screens never format a US amount themselves: <Usd value={188.42} /> (or useUsd() where only a string fits).
@@ -45560,7 +50399,7 @@ export const bankAccount: BankAccount = {
 import { useSyncExternalStore, type ReactNode } from 'react'
 import { Tabs } from '@l3/components/Tabs'
 import type { FlowOption } from '../flows/types'
-import snapshot from './data/us-market-snapshot.json'
+import { usdInrSnapshot } from './data/usStocks'
 import { liveDrift, useLiveTick } from './data/live'
 import { useFlowOption } from './prototype'
 import { USER_STATUS } from './userStatus'
@@ -45568,13 +50407,13 @@ import styles from './money.module.css'
 
 // ── The rate ────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-/** ₹ per $ in the snapshot (the fallback is the 2 Nov 2026 close, should the snapshot lose it). */
-export const USD_INR_SNAPSHOT: number = (snapshot as { fx?: { usdInr?: { price: number } } }).fx?.usdInr?.price ?? 94.87
+/** ₹ per $ in the snapshot (the fallback is the 2 Nov 2026 close, should the snapshot lose it). Re-read with the prices. */
+const usdInrNow = (): number => usdInrSnapshot() ?? 94.87
 
 /** The USD → INR rate right now: the snapshot's, moving a little every 2 s like a live quote. */
 export function useUsdInrRate(): number {
   const at = useLiveTick()
-  return Math.round(USD_INR_SNAPSHOT * (1 + liveDrift('USDINR', at) / 4) * 100) / 100
+  return Math.round(usdInrNow() * (1 + liveDrift('USDINR', at) / 4) * 100) / 100
 }
 
 // ── Formatting ──────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -45637,8 +50476,11 @@ export const moneyOptions: FlowOption[] = [
     group: 'US Stocks money',
     label: '₹ equivalent',
     values: [{ value: 'off', label: '$ only' }, { value: 'below', label: '₹ below' }, { value: 'switch', label: '$ / ₹ switch' }],
-    default: 'below',
-    floatOn: ['stocks-01', 'us-stocks-13', 'us-stocks-54'],
+    // $ only by default (3 Nov): the ₹ shows when picked here. The stock and ETF pages are the exception — their price
+    // always has its ≈ ₹ under it.
+    default: 'off',
+    // The Home and its US tab screens (the US tab's fixed states show $ amounts too), a US stock page, the wallet's US tab.
+    floatOn: ['stocks-01', 'stocks-09', 'stocks-10', 'stocks-13', 'stocks-14', 'stocks-15', 'stocks-16', 'stocks-17', 'stocks-19', 'stocks-20', 'stocks-21', 'us-stocks-13', 'us-stocks-54'],
   },
 ]
 
@@ -45882,6 +50724,54 @@ export function useSystemKeyboard() {
 }
 ```
 
+### `src/shared/support.ts`
+
+```ts
+/**
+ * Contact support = an email to Lemonn support, opened in the phone's mail app (no in-app support screen). Every
+ * "Contact support" button calls `emailSupport`, with a subject saying what it's about.
+ */
+export const SUPPORT_EMAIL = 'support@lemonn.co'
+
+export function emailSupport(subject: string) {
+  window.location.href = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(subject)}`
+}
+```
+
+### `src/shared/ui/Flag.module.css`
+
+```css
+.flag {
+  display: block;
+  flex: none;
+  width: var(--l3-icon-size-16);
+  height: var(--l3-icon-size-16);
+}
+```
+
+### `src/shared/ui/Flag.tsx`
+
+```tsx
+import flagChina from '../assets/flags/china.svg'
+import flagEurope from '../assets/flags/europe.svg'
+import flagIndia from '../assets/flags/india.svg'
+import flagJapan from '../assets/flags/japan.svg'
+import flagKorea from '../assets/flags/korea.svg'
+import flagUs from '../assets/flags/us.svg'
+import styles from './Flag.module.css'
+
+export type FlagCode = 'us' | 'in' | 'cn' | 'jp' | 'eu' | 'kr'
+
+const files: Record<FlagCode, string> = { us: flagUs, in: flagIndia, cn: flagChina, jp: flagJapan, eu: flagEurope, kr: flagKorea }
+
+/**
+ * A round flag, 16 like the icons in small buttons and tabs (use as an `iconLeft`).
+ * L3 gap: no flag icons in L3 — round flag SVGs of our own (shared/assets/flags), not emoji, so they look the same and
+ * sit centred on every device.
+ */
+export const Flag = ({ code }: { code: FlagCode }) => <img className={styles.flag} src={files[code]} alt="" aria-hidden="true" />
+```
+
 ### `src/shared/ui/MainNav.tsx`
 
 ```tsx
@@ -46039,6 +50929,15 @@ export function Rail({ children, label, visible, rows = 1, snap = 'start', class
   overflow: clip; /* clip, not hidden: a sheet taking focus while it slides in can't scroll the screen */
   background: var(--l3-surface-default);
   color: var(--l3-content-primary);
+  /* An app, not a page: swiping and long-pressing never select text (fields still do — see below). */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.screen :is(input, textarea, [contenteditable='true']) {
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 .page {
@@ -46341,6 +51240,90 @@ export function Spot({ icon, tone = 'brand', size = 'lg' }: { icon: string; tone
 }
 ```
 
+### `src/shared/ui/StockListCard.module.css`
+
+```css
+/* Price (Label 14, matching the symbol) over the day's change, right-aligned (numbers are Label, never Description). */
+.price {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--l3-spacing-02);
+  white-space: nowrap;
+}
+
+.value {
+  font: var(--l3-text-label-14);
+}
+```
+
+### `src/shared/ui/StockListCard.tsx`
+
+```tsx
+import type { ReactNode } from 'react'
+import { Avatar } from '@l3/components/Avatar'
+import { ListCell } from '@l3/components/ListCell'
+import { PriceChange } from '@l3/components/PriceChange'
+import styles from './StockListCard.module.css'
+
+type StockListCardProps = {
+  /** Ticker, e.g. "RELIANCE" or "QQQ" (L3 Label 14, one line). */
+  symbol: string
+  /** Company or fund name (L3 Description 12, one line with "…"). */
+  name: string
+  /** Logo image URL (a square image; ETFs pass their issuer logo on its plate). Without one the Avatar shows `initials`. Always the L3 Avatar at 40, so every list looks the same. */
+  logoUrl?: string
+  initials?: string
+  /**
+   * The logo itself, for a list that marks it (e.g. a Boosted ETF's "3x" pill on the logo's foot). Build it around the
+   * same L3 Avatar at 40; without it the card draws that Avatar from `logoUrl` / `initials`.
+   */
+  logo?: ReactNode
+  /** A small Tag after the symbol, e.g. "3x Long" (an L3 Tag, keeping its own colour; ListCell's label suffix). */
+  tag?: ReactNode
+  /** The price, already formatted by the caller: `<Usd value>` for US, `inr()` for India. */
+  price: ReactNode
+  /**
+   * The day's change in %, shown with its sign in green / red — never an arrow too (the user's rule, 3 Nov). Leave it
+   * out when the right side is one number that isn't a price, e.g. a holding's weight in an ETF's Top holdings.
+   */
+  changePct?: number
+  /** Opens the stock / ETF page. Without it the card is static (no fill, no press). */
+  onOpen?: () => void
+  'aria-label'?: string
+}
+
+/**
+ * The one stock row of the app, as a card — the Market list's style, used wherever stocks or ETFs are listed:
+ * logo · symbol over name · price over the day's change. Long lists show it flat (border only, no shadow).
+ *
+ * Flat = L3 ListCell `raised={false}`, symbol in Label 14 = `labelSize="14"` (list-cell 1.9.0).
+ */
+export function StockListCard({ symbol, name, logoUrl, initials, logo, tag, price, changePct, onOpen, ...rest }: StockListCardProps) {
+  return (
+    <ListCell
+      variant="card"
+      as={onOpen ? 'button' : undefined}
+      raised={false}
+      iconLeft={logo ?? <Avatar initials={initials ?? symbol.slice(0, 2)} src={logoUrl} size={40} label={name} />}
+      labelSuffix={tag || undefined}
+      labelSuffixTone="neutral"
+      labelSize="14"
+      label={symbol}
+      description={name}
+      trailing={
+        <span className={styles.price}>
+          <span className={styles.value}>{price}</span>
+          {changePct !== undefined && <PriceChange value={changePct} size="sm" />}
+        </span>
+      }
+      onClick={onOpen}
+      aria-label={rest['aria-label']}
+    />
+  )
+}
+```
+
 ### `src/shared/userStatus.ts`
 
 ```ts
@@ -46350,22 +51333,27 @@ export function Spot({ icon, tone = 'brand', size = 'lg' }: { icon: string; tone
 // show that state. Picking never moves on by itself; taps in the prototype don't change it.
 // In a real app these come from the user's account (KYC status, US Stocks activation, wallet, holdings).
 import type { FlowOption } from '../flows/types'
-import { useFlowOption } from './prototype'
+import { setFlowOption, useFlowOption } from './prototype'
+import { linkedBanks, type LinkedBank } from './data/user'
 
 /** The settings' owner in the preview (as a flow id: where the picks are remembered). */
 export const USER_STATUS = 'app'
 
 export type KycStatus = 'done' | 'pending'
-/** `ftux`: KYC done, not activated, first launch after release — the Home opens with the US Stocks intro sheet. */
-export type UsActivation = 'kyc' | 'off' | 'ftux' | 'review' | 'support' | 'failed' | 'active'
+export type UsActivation = 'kyc' | 'off' | 'review' | 'support' | 'failed' | 'active'
 export type UsWallet = 'empty' | 'onTheWay' | 'funded'
 export type UsHoldings = 'none' | 'some'
+export type BankLinks = 'none' | 'one' | 'two'
 
 /**
  * Screens that change with the user status: the settings float beside the phone on these (desktop preview). The Home,
- * a US stock page and the wallet's US tab.
+ * its US tab screens (each one sets the status to its own state on arrival, then follows a pick), a US stock page and
+ * the wallet's US tab.
  */
-const STATUS_SCREENS = ['stocks-01', 'us-stocks-13', 'us-stocks-54']
+/** The add-money screens and the wallet: the bank row and its sheet change with the user's linked banks. */
+const BANK_SCREENS = ['deposit-01', 'deposit-06', 'deposit-07', 'deposit-08', 'deposit-09', 'us-stocks-21', 'us-stocks-22', 'us-stocks-23', 'us-stocks-24', 'us-stocks-53', 'us-stocks-54']
+
+const STATUS_SCREENS = ['stocks-01', 'stocks-09', 'stocks-10', 'stocks-13', 'stocks-14', 'stocks-15', 'stocks-16', 'stocks-17', 'stocks-19', 'stocks-20', 'stocks-21', 'us-stocks-13', 'us-stocks-54']
 
 /** The settings, parent first: each one below only matters (and shows) while the one above has the listed values. */
 export const userStatusOptions: FlowOption[] = [
@@ -46379,22 +51367,21 @@ export const userStatusOptions: FlowOption[] = [
     values: [
       { value: 'kyc', label: 'Lemonn KYC pending' },
       { value: 'off', label: 'KYC done · not activated' },
-      { value: 'ftux', label: 'FTUX bottom sheet' },
       { value: 'review', label: 'Activation under review' },
       { value: 'support', label: 'Under review · contact support' },
       { value: 'failed', label: 'Activation failed' },
       { value: 'active', label: 'Activated' },
     ],
-    default: 'off',
+    // The prototype opens on a user who's all set: activated, money in the wallet, holding US stocks.
+    default: 'active',
     floatOn: STATUS_SCREENS,
   },
   {
     id: 'usWallet',
     group: 'User status',
     label: 'USD wallet',
-    // "Money on the way" removed from the picker (2 Nov); the type keeps it so older saved settings still parse.
-    values: [{ value: 'empty', label: '$0' }, { value: 'funded', label: 'Has money' }],
-    default: 'empty',
+    values: [{ value: 'empty', label: '$0' }, { value: 'onTheWay', label: 'Money on the way' }, { value: 'funded', label: 'Has money' }],
+    default: 'funded',
     showIf: { us: ['active'] },
     floatOn: STATUS_SCREENS,
   },
@@ -46404,16 +51391,25 @@ export const userStatusOptions: FlowOption[] = [
     label: 'US holdings',
     picker: 'toggle',
     values: [{ value: 'none', label: 'None' }, { value: 'some', label: 'Holds NVDA' }],
-    default: 'none',
+    default: 'some',
     showIf: { usWallet: ['funded'] },
     floatOn: STATUS_SCREENS,
+  },
+  {
+    // Bank accounts linked to Lemonn (KYC adds the first). None = the add-money screens ask for one first.
+    id: 'banks',
+    group: 'User status',
+    label: 'Bank accounts',
+    values: [{ value: 'none', label: 'None' }, { value: 'one', label: 'One' }, { value: 'two', label: 'Two' }],
+    default: 'two',
+    floatOn: BANK_SCREENS,
   },
 ]
 
 const option = (id: string) => userStatusOptions.find((o) => o.id === id)!
 const useStatus = (id: string) => useFlowOption(USER_STATUS, id, option(id).default)
 
-export type UserStatus = { kyc: KycStatus; us: UsActivation; usWallet: UsWallet; usHoldings: UsHoldings }
+export type UserStatus = { kyc: KycStatus; us: UsActivation; usWallet: UsWallet; usHoldings: UsHoldings; banks: BankLinks }
 
 /** The user status as picked (settings under one that's off keep their last pick). KYC comes from the activation list. */
 export function useUserStatus(): UserStatus {
@@ -46423,7 +51419,22 @@ export function useUserStatus(): UserStatus {
     us,
     usWallet: useStatus('usWallet') as UsWallet,
     usHoldings: useStatus('usHoldings') as UsHoldings,
+    banks: useStatus('banks') as BankLinks,
   }
+}
+
+/**
+ * The bank accounts the user has linked, as picked in "User status → Bank accounts" (primary first). Money in the USD
+ * wallet (on the way or landed) came from a bank, so then "None" counts as one — as in the real app, a user with money
+ * moving always has a bank.
+ */
+export function useLinkedBanks(): LinkedBank[] {
+  const picked = useStatus('banks') as BankLinks
+  const us = useStatus('us') as UsActivation
+  const usWallet = useStatus('usWallet') as UsWallet
+  const moneyMoved = us === 'active' && usWallet !== 'empty'
+  const banks = picked === 'none' && moneyMoved ? 'one' : picked
+  return banks === 'none' ? [] : banks === 'one' ? linkedBanks.slice(0, 1) : linkedBanks
 }
 
 /**
@@ -46435,13 +51446,22 @@ export type UsJourney = 'kyc' | 'activate' | 'review' | 'support' | 'failed' | '
 
 export function usJourney({ kyc, us, usWallet, usHoldings }: UserStatus): UsJourney {
   if (kyc === 'pending' || us === 'kyc') return 'kyc'
-  // The FTUX state is "not activated" everywhere; only the Home adds the intro sheet over it.
-  if (us === 'off' || us === 'ftux') return 'activate'
+  if (us === 'off') return 'activate'
   if (us !== 'active') return us
-  // A saved "Money on the way" (no longer offered) reads as $0.
-  if (usWallet === 'empty' || usWallet === 'onTheWay') return 'activated'
+  if (usWallet === 'empty') return 'activated'
+  if (usWallet === 'onTheWay') return 'onTheWay'
   return usHoldings === 'some' ? 'holding' : 'ready'
 }
 
 export const useUsJourney = () => usJourney(useUserStatus())
+
+/** Sets the user status to one US Stocks step (a US tab screen showing its own state sets it on arrival). */
+export function setUsJourney(step: UsJourney) {
+  const us: UsActivation = step === 'activate' ? 'off' : ['kyc', 'review', 'support', 'failed'].includes(step) ? (step as UsActivation) : 'active'
+  const set = (id: string, value: string) => setFlowOption(USER_STATUS, id, option(id).default, value)
+  set('us', us)
+  if (us !== 'active') return
+  set('usWallet', step === 'activated' ? 'empty' : step === 'onTheWay' ? 'onTheWay' : 'funded')
+  if (step === 'ready' || step === 'holding') set('usHoldings', step === 'holding' ? 'some' : 'none')
+}
 ```
