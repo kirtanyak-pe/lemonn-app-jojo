@@ -12,7 +12,7 @@ Prototype: https://kirtanyak-pe.github.io/lemonn-app-prototype/#/stocks · machi
 |---|---|---|---|---|
 | `stocks-01` | Home | [5714:64982]() | — | The Stocks home in the user status picked in the prototype settings (User status: US Stocks activation — Lemonn KYC pending → … → Activated —, USD wallet, US holdings — the same settings the US stock page and the wallet follow). Picking a status shows its US tab. Each state is also a screen of its own (hidden in the list), which the activation and add-money taps go to. |
 | `stocks-02` | Home · top movers & watchlists | — | `profile-01` | Same page, scrolled. |
-| `stocks-03` | Home · top losers | — | `profile-01` | The "Top losers" chip picked. |
+| `stocks-03` | Home · 52W Low | — | `profile-01` | The "52W Low" chip picked. |
 | `stocks-04` | Home · Smart Invest | — | `profile-01` | Same page, scrolled: managed strategies, then the announcement. |
 | `stocks-05` | Home · sectors & highlights | — | `profile-01` | Same page, scrolled. |
 | `stocks-06` | Home · highlights & idea baskets | — | `profile-01` | Same page, scrolled. (The live app no longer has Trade ideas here — removed 2026-10-22.) |
@@ -144,7 +144,7 @@ for a while, are back in the picker.)
 | V6 · Pill on top | 6128:30747 | L3 pill group under the top bar, flags | F&O · Commodities · US Stocks (opens the US tab) | |
 | V7 · Lit folder on top | 6128:31013 | folder tabs under the top bar, flags, US "New" | Mutual funds · Equity F&O · Commodities | |
 | V8 · Lit folder · US tiles | 6128:31431 | folder tabs "IN Stocks / US Stocks" under the top bar (Figma's "INDIA / USA" dropped: labels are IN Stocks / US Stocks where they fit, IND / US where they don't), flags, US "New" | F&O · Commodities · US Stocks | "Do More With Lemonn" title |
-| V9 · Graphite segmented | 6128:31986 | L3 pill group "IN Stocks / US Stocks" under the top bar, flags, US "New" | Mutual funds · Equity F&O · Commodities | no index ticker; "Do More With Lemonn" title |
+| ~~V9 · Graphite segmented~~ (archived) | 6128:31986 | L3 pill group "IN Stocks / US Stocks" under the top bar, flags, US "New" | Mutual funds · Equity F&O · Commodities | no index ticker; "Do More With Lemonn" title |
 
 #### Two homes (V10–V13, no Figma yet)
 
@@ -164,8 +164,8 @@ section of the Indian home. The business wants the two markets kept apart, so V1
 
 | Version | Switch | Why try it |
 |---|---|---|
-| V10 · Two homes · segmented on top | L3 pill group, flags, US "New", sticky under the top bar; the track is white with a hairline over the grey summary (grey again once scrolled) so it stands out | clearest: two equal choices, always visible |
-| V11 · Two homes · tabs on top | L3 underline tabs, flags, US "New", sticky | lighter; reads as top-level navigation (Delivery / Dining style) |
+| ~~V10 · Two homes · segmented on top~~ (archived) | L3 pill group, flags, US "New", sticky under the top bar; the track is white with a hairline over the grey summary (grey again once scrolled) so it stands out | clearest: two equal choices, always visible |
+| ~~V11 · Two homes · tabs on top~~ (archived) | L3 underline tabs, flags, US "New", sticky | lighter; reads as top-level navigation (Delivery / Dining style) |
 | V12 · Two homes · switch in top bar | L3 pill group with the big (md, 32) pills "🇮🇳 IND / 🇺🇸 US", right after the profile, in a surface/primary track as tall as search and the wallet (38); the unselected pill has no grey fill | no extra row; most room for content (the top bar never hides on this version) |
 | V13 · Two homes · market picker | one round button after the profile, as tall as search and the wallet: "🇮🇳 IN Stocks" + the L3 switch arrows (`lmSwitchArrowVertical`) — one tap switches to the other market (no sheet; TopBar `market`) | the market as the user's context; the smallest switch |
 
@@ -278,6 +278,31 @@ lower on the page is scrolled into view first). `components/MarketSwitchGuide.ts
 
 ### Changelog
 
+- 2026-11-03 — **US tab, money ready: no "Your money is ready" card**. The Aerobar already says it; the summary shows US holdings at $0.00 until the first buy.
+- 2026-11-03 — **Discover ETFs cards are the Market page's card**: L3 ListCell (40 logo, Label 16 heading, 12
+  description, $ Label 16 over the change), 66 tall with 16 between cards, as on the Market page and the ETF list. The
+  change reads ▲ / ▼ and the size, with no sign. Top Movers' second line is back to secondary.
+- 2026-11-03 — **Discover ETFs rows match the ETF list card**: the fund's own logo (SPDR, Invesco, Vanguard…), the plain
+  name as the heading ("Top 500 US stocks") and "SPY · SPDR S&P 500 ETF" under it, with the price and change on the
+  right. The 2×2 holding-logo square is gone. Logos come from src/shared/data/etfIssuers.ts.
+- 2026-11-03 — Discover ETFs rows: the fund's own name ("SPDR S&P 500 ETF") over "SPY · Top 500 US companies" — the
+  companies line ("Apple, Microsoft, NVIDIA") is gone.
+
+- 2026-11-03 — **Discover ETFs**: "Discover ETFs" and View all on one line, a one-line pitch under it ("Buy a whole
+  market in one go. An ETF is a basket of stocks that trades like a single share, starting from just $1." — 12,
+  written to fill about two lines: 85% of the second line at 375, 89% at 360. Plain facts only: not "hundreds of
+  companies" (not true of every ETF) nor "your money is spread out" (reads as advice)), then the region
+  chips (removed and brought back, 3 Nov). Rows show the ETF list's
+  logo square (two holding logos and an L3 Tag "+501", or up to four logos; plates from `usLogoPlate` in
+  shared/data/usStocks). No "≈ ₹" on home cards (shared `<Usd>` is inline by default now).
+- 2026-11-03 — The hidden compact tabs fold 4 past their clip edge: their active underline sat on the edge and showed
+  as a white line under the index strip (NASDAQ side) when the mockup is scaled.
+
+- 2026-11-02 — Homepage version **V14 · Tabs under top bar** (CoinSwitch's home structure): full-width L3 underline tabs with flags right under the top bar; the page below is the picked market's (V11's structure, offered again under its own name).
+- 2026-11-02 — Home ported from the US Stocks design HTML (Lemonn US Stocks Design.html):
+  - **US tab:** tiles ETFs 500+ funds · Fractional $1 to start · Themes 12+ curated (every version); shortcut badges Analysis 3 New · ETFs 5 New · Watchlist 1 · Referral New; Watchlist after Top Movers; **Top analyst picks** (titan card: Recommendation · 7D); **Discover ETFs** (country pills US / China / Japan / Europe / Korea, rows open the ETF list — the ETF page is another flow's); the heatmap is now **Sectors** (index switcher S&P 500 → Nasdaq 100 → Dow Jones, cap chip, sector pills); **Explore by themes** is the Invest in Ideas card with eight US themes; Trillion Dollar Titans removed; holding state's mover rows read "Category • SYM".
+  - **IND tab:** shortcuts Analysis 3 New · IPO 5 New · Watchlist 1 · Referral New; Top Movers chips Under ₹100 · Under ₹500 · 52W High · 52W Low (from the catalogue's price / 52-week high and low); the "top losers" board state is now "52W Low".
+  - User status: "FTUX bottom sheet" (Home opens with the US Stocks intro sheet); "Money on the way" removed from the USD wallet picker.
 - 2026-11-02 — Shortcuts V1: 8 more space above the circles (every home version), so the "New" tags clear the tabs above.
 - 2026-11-02 — Shortcut icons are Jojo's custom two-tone set (`assets/shortcuts/*.svg`: analysis, IPO, watchlist, referral, ETF; success green + its light surface, drawn inline by `components/ShortcutArt`), not L3 system icons. "Market switch guide" is off by default.
 - 2026-11-02 — Shortcut "New" tags: the slide animation is reverted; the tag (red L3 Tag) sits over the icon's top edge again, like the count.
@@ -290,6 +315,8 @@ lower on the page is scrolled into view first). `components/MarketSwitchGuide.ts
 - 2026-11-02 — Shortcut "New" tags (IPO "5 New", Referral "New") no longer sit over the icon: the icon shows, then
   slides out to the left as a black L3 Tag (neutral primary) slides in from the right, and back — icon 3.5 s, tag
   2.5 s. Still on the icon with reduced motion or while the page is hidden. Both shortcut versions.
+- 2026-11-02 — Homepage versions **V9, V10 and V11 archived**: kept in code (`archived: true` in
+  components/homeVersions.ts) but no longer in the "Homepage version" picker; a saved pick falls back to V7.
 - 2026-11-02 — V2 · One card: the hairlines between the shortcuts float, 12 short of the card's top and bottom edges.
 - 2026-11-02 — Home V2, V3, V4 (the IND / US tabs over the feed): the tabs belong to the feed, not the page. The top
   keeps the holdings with their own switch — the label itself is an L3 Select (switcher, ↕): "Overall holdings"
@@ -19610,14 +19637,15 @@ function ShortcutsCircles({ onOpen, items = shortcuts, titled = false }: Shortcu
   )
 }
 
-const moverTabs: { value: MoverList; label: 'movers.gainers' | 'movers.losers' | 'movers.under100'; icon: string }[] = [
-  { value: 'gainers', label: 'movers.gainers', icon: msTrendingUp },
-  { value: 'losers', label: 'movers.losers', icon: msTrendingDown },
+const moverTabs: { value: MoverList; label: 'movers.under100' | 'movers.under500' | 'movers.high52' | 'movers.low52'; icon: string }[] = [
   { value: 'under-100', label: 'movers.under100', icon: msCurrencyRupee },
+  { value: 'under-500', label: 'movers.under500', icon: msCurrencyRupee },
+  { value: 'high-52', label: 'movers.high52', icon: msTrendingUp },
+  { value: 'low-52', label: 'movers.low52', icon: msTrendingDown },
 ]
 
 /** Top movers: gainers / losers / under ₹100 (chips), as two rows of stock cards that scroll together. Prices update with the market snapshot. */
-export function TopMovers({ initial = 'gainers', onStock, onViewAll }: { initial?: MoverList; onStock?: (symbol: string) => void; onViewAll?: () => void }) {
+export function TopMovers({ initial = 'under-100', onStock, onViewAll }: { initial?: MoverList; onStock?: (symbol: string) => void; onViewAll?: () => void }) {
   const [list, setList] = useState<MoverList>(initial)
   useMarketSnapshot() // re-render when fresher prices arrive
   return (
@@ -19649,24 +19677,30 @@ export function TopMovers({ initial = 'gainers', onStock, onViewAll }: { initial
 }
 
 /** The user's watchlists, each opening its list. "New watchlist" creates one. */
-export function Watchlists({ onOpen, onCreate }: { onOpen?: (id: string) => void; onCreate?: () => void }) {
+export function Watchlists({ onOpen, onCreate, lists = watchlists }: { onOpen?: (id: string) => void; onCreate?: () => void; /** The US tab shows its own (one "Watchlist · 1 stock"). */ lists?: { id: string; name: string; count: number }[] }) {
+  const cell = (w: { id: string; name: string; count: number }) => (
+    <ListCell
+      key={w.id}
+      variant="card"
+      as="button"
+      iconLeft={<Avatar initials={w.name.slice(0, 1)} size={40} />}
+      label={w.name}
+      description={t(w.count === 1 ? 'watchlists.one' : 'watchlists.many', { count: w.count })}
+      iconRight={<Icon icon={msChevronRight} />}
+      onClick={() => onOpen?.(w.id)}
+    />
+  )
   return (
     <Stack as="section" gap="16" aria-label={t('watchlists.title')}>
       <Inset paddingInline="16" paddingBlock="00"><SectionHeader title={t('watchlists.title')} action={{ type: 'view-all', label: t('watchlists.new'), onClick: () => onCreate?.() }} /></Inset>
-      <Rail label={t('watchlists.railLabel')} visible={1.6}>
-        {watchlists.map((w) => (
-          <ListCell
-            key={w.id}
-            variant="card"
-            as="button"
-            iconLeft={<Avatar initials={w.name.slice(0, 1)} size={40} />}
-            label={w.name}
-            description={t(w.count === 1 ? 'watchlists.one' : 'watchlists.many', { count: w.count })}
-            iconRight={<Icon icon={msChevronRight} />}
-            onClick={() => onOpen?.(w.id)}
-          />
-        ))}
-      </Rail>
+      {/* One list runs the full width (16 in at both sides); several scroll sideways. */}
+      {lists.length === 1 ? (
+        <Inset paddingInline="16" paddingBlock="00">{cell(lists[0])}</Inset>
+      ) : (
+        <Rail label={t('watchlists.railLabel')} visible={1.6}>
+          {lists.map(cell)}
+        </Rail>
+      )}
     </Stack>
   )
 }
@@ -19749,6 +19783,13 @@ export function Watchlists({ onOpen, onCreate }: { onOpen?: (id: string) => void
   align-items: baseline;
   gap: var(--l3-spacing-08);
   font: var(--l3-text-heading-28);
+}
+
+/* The % change on the amount's bottom line: L3 PriceChange is a flex box led by its arrow, so "baseline" lined up the
+   arrow, not the figure (6 too high). Sat on the row's bottom and lifted 2, its text baseline meets the amount's. */
+.holdingsChange {
+  align-self: flex-end;
+  margin-bottom: var(--l3-spacing-02);
 }
 
 /* V2–V4: the holdings' IN / US switch, at the page margin. */
@@ -20636,7 +20677,7 @@ function findSwitch(from: HTMLElement): HTMLElement | null {
   display: flex;
   height: var(--l3-size-40);
   margin-top: calc(-1 * var(--l3-spacing-24));
-  background: var(--l3-surface-secondary);
+  background: var(--l3-surface-primary);
 }
 
 /* Home versions V7, V8: under the top bar, above the index ticker — no pull-up, and 12 under the strip for the sticky
@@ -20656,7 +20697,7 @@ function findSwitch(from: HTMLElement): HTMLElement | null {
 
 /* ---- The IND / US switch as L3 Tabs (MarketSwitch) ---- */
 .switch {
-  background: var(--l3-surface-secondary);
+  background: var(--l3-surface-primary);
 }
 
 .switch:not([data-compact], [data-bare]) {
@@ -20759,7 +20800,7 @@ function findSwitch(from: HTMLElement): HTMLElement | null {
 
 /* V7, V8: on top the selected tab sits on the summary's grey (not the feed sheet), so its wash fades into that grey. */
 .marketTabs[data-place='top'] .washBottom {
-  stop-color: var(--l3-surface-secondary);
+  stop-color: var(--l3-surface-primary);
 }
 
 .marketTab {
@@ -21141,7 +21182,7 @@ import { inr } from '../../../shared/data/format'
 import { Rail } from '../../../shared/ui/Rail'
 import { products, type Product } from '../data'
 import { usHoldings } from './us/data'
-import { InrEquivalent, useUsd, useUsdInrRate } from '../../../shared/money'
+import { useUsd, useUsdInrRate } from '../../../shared/money'
 import { t } from '../copy'
 import styles from './Home.module.css'
 
@@ -21201,9 +21242,8 @@ export function HoldingsSummary({ onOpen, us = false, overall = false, label: la
           {label && <span className={styles.holdingsLabel}>{label}</span>}
           <span className={styles.holdingsValue}>
             {value}
-            {returnPct !== undefined && <PriceChange value={returnPct} size="lg" arrow />}
+            {returnPct !== undefined && <PriceChange value={returnPct} size="lg" arrow className={styles.holdingsChange} />}
           </span>
-          {us && !overall && <InrEquivalent usd={usValue} />}
         </span>
         <span className={styles.roundArrow} aria-hidden="true"><Icon icon={msArrowForward} /></span>
       </span>
@@ -21217,9 +21257,9 @@ const nextView: Record<HoldingsView, HoldingsView> = { overall: 'in', in: 'us', 
 const viewLabel = { overall: 'holdings.overallLabel', in: 'holdings.inLabel', us: 'us.holdings.label' } as const
 
 /**
- * Home V2–V4: the holdings' label is the switch — an L3 Select (switcher, ↕): "Overall holdings" → "IN holdings" →
- * "US holdings", each tap the next. It sits over the number, outside the holdings block (both are buttons). It is
- * not the page's market tabs: those sit lower, over the feed, and never change it.
+ * Home V2–V4: the holdings' label is the switch — an L3 Select (switcher, ↕): "Overall holdings" → "INR holdings" →
+ * "USD holdings", each tap the next. It sits over the number, outside the holdings block (both are buttons). The
+ * page's market tabs (over the feed) set it too: INR Stocks → INR holdings, USD Stocks → USD holdings (2 Nov).
  */
 export function HoldingsSwitcher({ view, onView, usEmpty, onOpen }: { view: HoldingsView; onView: (view: HoldingsView) => void; /** Nothing bought in the US yet: US $0.00, overall = Indian. */ usEmpty?: boolean; onOpen?: () => void }) {
   return (
@@ -21288,14 +21328,19 @@ export function ShortcutArt({ art }: { art: Art }) {
   gap: var(--l3-spacing-12);
   padding-right: var(--l3-spacing-16);
   padding-left: var(--l3-spacing-16);
-  background: var(--l3-surface-secondary);
+  background: var(--l3-surface-primary);
   position: sticky;
   height: var(--l3-size-64);
   transition: background-color var(--l3-motion-duration-short) var(--l3-motion-easing-standard);
 }
 
-/* Scrolled: the bar leaves the summary's grey for surface/primary. */
+/* Scrolled: the bar leaves the summary's grey for the pinned header's black (surface/default), matching the ticker's
+   band and the tabs under it; the search pill lifts to surface/primary so it still reads on the black. */
 .bar[data-scrolled] {
+  background: var(--l3-surface-default);
+}
+
+.bar[data-scrolled] .search {
   background: var(--l3-surface-primary);
 }
 
@@ -22066,7 +22111,7 @@ export function UsIntroStory({ onView, onClose }: { onView: () => void; onClose:
 // V10–V13 ("two homes", no Figma yet) split the page at the top: the market is picked first and everything below is its own.
 // The prototype picks one with the flow option `homeVersion` (index.tsx), default V7 (V2 is the default in Jojo’s file).
 
-export type HomeVersionId = 'v2' | 'v3' | 'v4' | 'v5' | 'v6' | 'v7' | 'v8' | 'v9' | 'v10' | 'v11' | 'v12' | 'v13'
+export type HomeVersionId = 'v2' | 'v3' | 'v4' | 'v5' | 'v6' | 'v7' | 'v8' | 'v9' | 'v10' | 'v11' | 'v12' | 'v13' | 'v14'
 
 export type HomeVersion = {
   id: HomeVersionId
@@ -22110,15 +22155,19 @@ export const homeVersions: HomeVersion[] = [
   { id: 'v6', name: 'Pill on top', figma: '6128:30747', place: 'top', scope: 'feed', look: 'pill', labels: 'stocks', flags: true, usNew: false, tiles: 'withUs', ticker: true, doMore: false },
   { id: 'v7', name: 'Lit folder on top', figma: '6128:31013', place: 'top', scope: 'feed', look: 'folder', labels: 'stocks', flags: true, usNew: true, tiles: 'today', ticker: true, doMore: false },
   { id: 'v8', name: 'Lit folder · US tiles', figma: '6128:31431', place: 'top', scope: 'feed', look: 'folder', labels: 'stocks', flags: true, usNew: true, tiles: 'withUs', ticker: true, doMore: true },
-  { id: 'v9', name: 'Graphite segmented', figma: '6128:31986', place: 'top', scope: 'feed', look: 'pill', labels: 'stocks', flags: true, usNew: true, tiles: 'today', ticker: false, doMore: true },
+  { id: 'v9', name: 'Graphite segmented', figma: '6128:31986', place: 'top', scope: 'feed', look: 'pill', labels: 'stocks', flags: true, usNew: true, tiles: 'today', ticker: false, doMore: true , archived: true },
   // Two homes (2026-11-02): top-level segregation — the market is picked first, and the whole page is that market's.
-  { id: 'v10', name: 'Two homes · segmented on top', figma: '', place: 'top', scope: 'page', look: 'pill', labels: 'stocks', flags: true, usNew: true, tiles: 'today', ticker: true, doMore: false },
-  { id: 'v11', name: 'Two homes · tabs on top', figma: '', place: 'top', scope: 'page', look: 'underline', labels: 'stocks', flags: true, usNew: true, tiles: 'today', ticker: true, doMore: false },
+  { id: 'v10', name: 'Two homes · segmented on top', figma: '', place: 'top', scope: 'page', look: 'pill', labels: 'stocks', flags: true, usNew: true, tiles: 'today', ticker: true, doMore: false , archived: true },
+  { id: 'v11', name: 'Two homes · tabs on top', figma: '', place: 'top', scope: 'page', look: 'underline', labels: 'stocks', flags: true, usNew: true, tiles: 'today', ticker: true, doMore: false , archived: true },
   { id: 'v12', name: 'Two homes · switch in top bar', figma: '', place: 'header', scope: 'page', look: 'pill', labels: 'short', flags: true, usNew: false, tiles: 'today', ticker: true, doMore: false },
+  // V14 (2026-11-02, Jojo: "one more tab structure like this", from CoinSwitch's home — Crypto / US Stocks): full-width
+  // L3 underline tabs right under the top bar, with icons, and the whole page below is the market picked (V11's
+  // structure, offered again under its own name).
+  { id: 'v14', name: 'Tabs under top bar', figma: '', place: 'top', scope: 'page', look: 'underline', labels: 'stocks', flags: true, usNew: false, tiles: 'today', ticker: true, doMore: false },
   { id: 'v13', name: 'Two homes · market picker', figma: '', place: 'picker', scope: 'page', look: 'pill', labels: 'stocks', flags: true, usNew: false, tiles: 'today', ticker: true, doMore: false },
 ]
 
-// Archived 2026-11-02 (V2, V3, V4, V5, V6, V9), back in the picker the same day.
+// Archived 2026-11-02 (V2, V3, V4, V5, V6, V9), back in the picker the same day. V9, V10 and V11 archived again later that day.
 
 /** The version shown until one is picked (and in place of an archived pick). */
 export const DEFAULT_HOME_VERSION: HomeVersionId = 'v7'
@@ -22523,8 +22572,11 @@ export function UsActivationCard({ state, onCta }: { state: Exclude<UsState, 'ho
 }
 
 .rowSub {
+  overflow: hidden;
   color: var(--l3-content-secondary);
   font: var(--l3-text-label-12);
+  text-overflow: ellipsis;
+  white-space: nowrap; /* one line */
 }
 
 .rowPrice {
@@ -22546,6 +22598,100 @@ export function UsActivationCard({ state, onCta }: { state: Exclude<UsState, 'ho
 
 .rowChange[data-up] {
   color: var(--l3-content-accent-indicator-up-default);
+}
+
+/* Discover ETFs (3 Nov): the pitch under the title line, and the ETF list's logo square (us-stocks Etf.module.css). */
+.sectionPitch {
+  margin: calc(-1 * var(--l3-spacing-08)) 0 0;
+  font: var(--l3-text-label-12);
+  color: var(--l3-content-secondary);
+}
+
+/* Discover ETFs card (3 Nov): the Market page's ListCell card. ListCell's icon slot is a 24 box that stretches any span
+   in it; this slot keeps the 40 logo's own size. */
+span:has(> .fundLogoSlot) {
+  width: auto;
+  height: auto;
+}
+
+.fundLogoSlot.fundLogoSlot.fundLogoSlot {
+  display: flex;
+  width: auto;
+  height: auto;
+}
+
+/* "SPY · SPDR S&P 500 ETF": the ticker secondary, the name tertiary. */
+.etfSub {
+  color: var(--l3-content-tertiary);
+}
+
+.etfSym {
+  color: var(--l3-content-secondary);
+}
+
+.etfPrice {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--l3-spacing-02);
+  max-width: var(--l3-size-96);
+  white-space: nowrap;
+}
+
+.etfValue {
+  color: var(--l3-content-primary);
+  font: var(--l3-text-label-16);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The change as on the ETF list: ▲ / ▼ then the size, no sign. */
+.etfMove {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--l3-spacing-04);
+  color: var(--l3-content-accent-error-default);
+  font: var(--l3-text-label-12);
+  font-variant-numeric: tabular-nums;
+}
+
+.etfMove[data-up] {
+  color: var(--l3-content-accent-success-default);
+}
+
+.etfTri {
+  width: 0;
+  height: 0;
+  border-top: var(--l3-spacing-04) solid currentColor;
+  border-right: var(--l3-spacing-04) solid transparent;
+  border-left: var(--l3-spacing-04) solid transparent;
+}
+
+.etfMove[data-up] .etfTri {
+  border-top: 0;
+  border-bottom: var(--l3-spacing-04) solid currentColor;
+}
+
+/* The fund's own logo (3 Nov), as on the ETF list: a 40 circle on the logo's plate; `fill` logos cover it. */
+.fundLogo {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: var(--l3-size-40);
+  height: var(--l3-size-40);
+  overflow: hidden;
+  border-radius: var(--l3-radius-full);
+}
+
+.fundLogo > img {
+  width: 72%;
+  height: 72%;
+  object-fit: contain;
+}
+
+.fundLogo[data-fill] > img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 /* ---- Trillion Dollar Titans ---- */
@@ -22614,6 +22760,35 @@ export function UsActivationCard({ state, onCta }: { state: Exclude<UsState, 'ho
 .titanChange[data-up] {
   color: var(--l3-content-accent-success-default);
   font: var(--l3-text-heading-12);
+}
+
+/* ---- Top analyst picks: the titan card's foot as two labelled figures, Recommendation (left) and 7D (right) ---- */
+.pickFoot {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  width: 146px; /* FLAG: raw px — the titan card's inner width */
+  font: var(--l3-text-label-10);
+  color: var(--l3-content-tertiary);
+}
+
+.pickFoot > span {
+  display: flex;
+  flex-direction: column;
+  gap: var(--l3-spacing-02);
+}
+
+.pickFoot > span[data-end] {
+  align-items: flex-end;
+}
+
+.pickFoot b {
+  font: var(--l3-text-heading-12);
+  color: var(--l3-content-accent-success-default);
+}
+
+.pickFoot b[data-tone='down'] {
+  color: var(--l3-content-accent-error-default);
 }
 
 /* ---- Brands You Know: two rows scrolling together ---- */
@@ -22764,8 +22939,8 @@ export function UsActivationCard({ state, onCta }: { state: Exclude<UsState, 'ho
 
 ```tsx
 // The US Stocks tab's feed: the activation card for the user's state (activate / under review / failed / activated /
-// money ready; none once they hold US stocks), shortcuts, Top Movers, Trillion Dollar Titans, Brands You Know, Heatmap
-// and themes. Ported from the
+// money ready; none once they hold US stocks), shortcuts, Top Movers, Watchlist, Top analyst picks, Brands You Know,
+// Discover ETFs, the Sectors heatmap and themes — as the US Stocks design (2 Nov; Trillion Dollar Titans removed). Ported from the
 // US Stocks prototype's Home (src/flows/us-stocks/screens/home/UsHome.tsx), rebuilt with L3 layout blocks.
 // FLAG: hand-made chips, titan / brand cards' insides, heatmap tiles and logo stacks — see UsHome.module.css.
 import { useState, type CSSProperties } from 'react'
@@ -22774,31 +22949,42 @@ import { Card } from '@l3/components/Card'
 import { Grid } from '@l3/components/Grid'
 import { Icon } from '@l3/components/Icon'
 import { Inset } from '@l3/components/Inset'
+import { ListCell } from '@l3/components/ListCell'
 import { SectionHeader } from '@l3/components/SectionHeader'
 import { Stack } from '@l3/components/Stack'
 import { Tabs } from '@l3/components/Tabs'
-import { msChevronRight, msUnfoldMore } from '@l3/icons/material'
+import { msChevronRight } from '@l3/icons/material'
+import { lmSwitchArrowVertical } from '@l3/icons/lemonnade'
 import { handToMarket } from '../../../../shared/data/marketHandoff'
 import { useLiveQuote } from '../../../../shared/data/live'
+import { etfIssuerLogo } from '../../../../shared/data/etfIssuers'
 import { usLogo, viewUsStock } from '../../../../shared/data/usStocks'
 import { Usd, useUsd } from '../../../../shared/money'
+import { Rail } from '../../../../shared/ui/Rail'
 import { usShortcuts } from '../../data'
 import { t } from '../../copy'
-import { Shortcuts } from '../Discover'
+import { Shortcuts, Watchlists } from '../Discover'
+import homeStyles from '../Home.module.css'
 import {
+  analystPicks,
   brandRows,
   capBuckets,
   formatPct,
+  heatSectors,
   heatStrength,
   heatmapIndices,
   moverFilters,
   moversFor,
+  sectorSymbols,
   sparkDown,
   sparkUp,
-  themes,
-  titans,
+  usEtfs,
+  etfCountries,
+  type EtfCountry,
   usStock,
+  usThemes,
   type CapValue,
+  type HeatSector,
   type UsState,
   type MoverFilter,
   type MoverToday,
@@ -22826,9 +23012,17 @@ const sign = (up: boolean) => (up ? '+' : '-')
 
 export function UsHome({ usState = 'activate', onActivate, onStock, onMarket, onEtfs, card = true }: UsHomeProps) {
   const [filter, setFilter] = useState<MoverFilter>('gainers')
+  const [etfCountry, setEtfCountry] = useState<EtfCountry>('US')
   const [cap, setCap] = useState<CapValue>('mega')
   const [index, setIndex] = useState<(typeof heatmapIndices)[number]>('sp')
-  const heat = useLiveHeatmap()
+  const [heatCap, setHeatCap] = useState<CapValue>('mega')
+  const [sector, setSector] = useState<HeatSector>('all')
+  // Sectors: the cap tier and sector pick the nine tiles; biggest rise top left, biggest fall bottom right.
+  const heat = [...useLiveHeatmap(sectorSymbols(sector, capBuckets.indexOf(heatCap)))].sort((a, b) => b.pct - a.pct)
+  const cycleHeatCap = () => setHeatCap(capBuckets[(capBuckets.indexOf(heatCap) + 1) % capBuckets.length])
+  const heatCapName = t(`us.cap.${heatCap}`)
+  const nextIndex = () => setIndex(heatmapIndices[(heatmapIndices.indexOf(index) + 1) % heatmapIndices.length])
+  const holding = usState === 'holding'
 
   const cycleCap = () => setCap(capBuckets[(capBuckets.indexOf(cap) + 1) % capBuckets.length])
   const capName = t(`us.cap.${cap}`)
@@ -22842,10 +23036,6 @@ export function UsHome({ usState = 'activate', onActivate, onStock, onMarket, on
   // biggest first; a theme → the US list (Market has no theme filter yet).
   const openMarketForMovers = () => {
     handToMarket({ market: 'us', tab: filter === 'gainers' || filter === 'losers' ? filter : 'all', filters: { cap: [`us-${cap}`] } })
-    onMarket?.()
-  }
-  const openMarketForTitans = () => {
-    handToMarket({ market: 'us', tab: 'all', filters: { cap: ['us-mega'], sort: 'mcap-desc' } })
     onMarket?.()
   }
   const openMarketForThemes = () => {
@@ -22865,7 +23055,7 @@ export function UsHome({ usState = 'activate', onActivate, onStock, onMarket, on
             {/* FLAG: hand-made cap chip (outlined pill that cycles Mega / Large / Mid / Small) — L3 Select opens a sheet instead */}
             <button type="button" className={styles.capChip} aria-label={t('us.cap.switch', { cap: capName })} onClick={cycleCap}>
               <span className={styles.capName} key={cap}>{capName}</span>
-              <Icon icon={msUnfoldMore} size={16} />
+              <Icon icon={lmSwitchArrowVertical} size={16} />
             </button>
             <span className={styles.chipDivider} aria-hidden="true" />
             <Tabs
@@ -22879,28 +23069,47 @@ export function UsHome({ usState = 'activate', onActivate, onStock, onMarket, on
           </Stack>
           <Inset paddingInline="16" paddingBlock="00">
             <Stack gap="08">
-              {moversFor(cap, filter).map((m) => <MoverRow key={m.sym} mover={m} onOpen={open} />)}
+              {moversFor(cap, filter).map((m) => <MoverRow key={m.sym} mover={m} onOpen={open} holding={holding} />)}
             </Stack>
           </Inset>
         </Stack>
       </div>
 
-      <Stack as="section" gap="12" aria-label={t('us.titans.title')}>
-        <Inset paddingInline="16" paddingBlock="00"><SectionHeader title={t('us.titans.title')} action={{ type: 'view-all', onClick: openMarketForTitans }} /></Inset>
-        {/* FLAG: hand-made sideways scroller of fixed-width cards (L3 has no carousel; src/shared/ui Rail sizes by count, not by width) */}
-        <div className={styles.scroller} role="region" aria-label={t('us.titans.railLabel')}>
+      {/* Watchlist, the IND tab's section with the US list (one "Watchlist · 1 stock"). */}
+      <Watchlists lists={[{ id: 'us-watchlist', name: t('us.watchlist.name'), count: 1 }]} />
+
+      <Stack as="section" gap="12" aria-label={t('us.picks.title')}>
+        <Inset paddingInline="16" paddingBlock="00"><SectionHeader title={t('us.picks.title')} action={{ type: 'view-all', onClick: openMarketForThemes }} /></Inset>
+        {/* FLAG: the titan card's insides (logo · name · sparkline), now as a recommendation: Recommendation · 7D. */}
+        <div className={styles.scroller} role="region" aria-label={t('us.picks.railLabel')}>
           <div className={styles.row} data-gap="16">
-            {titans.map((titan) => (
-              <Card key={titan.sym} onClick={() => open(titan.sym)} surface="default" className={styles.titan}>
+            {analystPicks.map((pick) => (
+              <Card
+                key={pick.sym}
+                onClick={() => open(pick.sym)}
+                surface="default"
+                className={styles.titan}
+                aria-label={t('us.picks.label', { name: pick.name, sym: pick.sym, rating: pick.rating, direction: pick.week >= 0 ? 'up' : 'down', pct: Math.abs(pick.week).toFixed(2) })}
+              >
                 <span className={styles.titanHead}>
-                  <Avatar src={usLogo(titan.sym)} initials={titan.sym} size={24} />
+                  <Avatar src={usLogo(pick.sym)} initials={pick.sym} size={24} />
                   <span className={styles.titanName}>
-                    <b>{titan.name}</b>
-                    <span>{titan.sym}</span>
+                    <b>{pick.name}</b>
+                    <span>{pick.sym}</span>
                   </span>
                   <span className={styles.titanArrow}><Icon icon={msChevronRight} size={16} /></span>
                 </span>
-                <TitanFoot sym={titan.sym} cap={titan.cap} />
+                <img src={pick.week >= 0 ? sparkUp : sparkDown} alt="" className={styles.spark} data-flip={pick.week < 0 || undefined} />
+                <span className={styles.pickFoot}>
+                  <span>
+                    {t('us.picks.recommendation')}
+                    <b data-tone={pick.rating === 'Sell' ? 'down' : 'up'}>{pick.rating}</b>
+                  </span>
+                  <span data-end="">
+                    {t('us.picks.week')}
+                    <b data-tone={pick.week < 0 ? 'down' : 'up'}>{formatPct(pick.week)}</b>
+                  </span>
+                </span>
               </Card>
             ))}
           </div>
@@ -22928,18 +23137,42 @@ export function UsHome({ usState = 'activate', onActivate, onStock, onMarket, on
         </div>
       </Stack>
 
-      <Stack as="section" gap="16" aria-label={t('us.heatmap.title')}>
-        <Inset paddingInline="16" paddingBlock="00"><SectionHeader title={t('us.heatmap.title')} action={{ type: 'switcher', label: t('us.heatmap.index'), onClick: () => {}, 'aria-label': t('us.heatmap.indexLabel') }} /></Inset>
+      {/* Discover ETFs (3 Nov): a pitch of what an ETF is under the title (12, written to fill about two lines), then the region chips
+          and four ETFs of that region. */}
+      <Stack as="section" gap="16" aria-label={t('us.etfs.title')}>
+        <Inset paddingInline="16" paddingBlock="00"><SectionHeader title={t('us.etfs.title')} action={{ type: 'view-all', onClick: () => onEtfs?.() }} /></Inset>
+        {/* The pitch runs full width under the title line (3 Nov), not squeezed beside "View all". */}
+        <Inset paddingInline="16" paddingBlock="00"><p className={styles.sectionPitch}>{t('us.etfs.description')}</p></Inset>
+        <Stack direction="horizontal" align="center" gap="12" className={styles.chips}>
+          <Tabs appearance="pill" aria-label={t('us.etfs.tabsLabel')} items={etfCountries.map((value) => ({ value, label: value }))} value={etfCountry} onChange={(v) => setEtfCountry(v as EtfCountry)} className={styles.chipTabs} />
+        </Stack>
         <Inset paddingInline="16" paddingBlock="00">
+          {/* 16 between the cards, as on the Market page. */}
+          <Stack gap="16">
+            {/* An ETF row opens the ETF list (the ETF page is another flow's; it can't be handed one ETF from here). */}
+            {usEtfs.filter((e) => e.country === etfCountry).slice(0, 4).map((e) => <EtfRow key={e.sym} etf={e} onOpen={() => onEtfs?.()} />)}
+          </Stack>
+        </Inset>
+      </Stack>
+
+      <Stack as="section" gap="16" aria-label={t('us.sectors.title')}>
+        <Inset paddingInline="16" paddingBlock="00"><SectionHeader title={t('us.sectors.title')} action={{ type: 'switcher', label: t(`us.heatmap.${index}`), onClick: nextIndex, 'aria-label': t('us.heatmap.indexLabel') }} /></Inset>
+        <Stack direction="horizontal" align="center" gap="12" className={styles.chips}>
+          {/* FLAG: hand-made cap chip, as Top Movers' */}
+          <button type="button" className={styles.capChip} aria-label={t('us.cap.switch', { cap: heatCapName })} onClick={cycleHeatCap}>
+            <span className={styles.capName} key={heatCap}>{heatCapName}</span>
+            <Icon icon={lmSwitchArrowVertical} size={16} />
+          </button>
+          <span className={styles.chipDivider} aria-hidden="true" />
           <Tabs
             appearance="pill"
-            aria-label={t('us.heatmap.tabsLabel')}
-            items={heatmapIndices.map((value) => ({ value, label: t(`us.heatmap.${value}`) }))}
-            value={index}
-            onChange={(v) => setIndex(v as (typeof heatmapIndices)[number])}
-            className={styles.heatTabs}
+            aria-label={t('us.sectors.tabsLabel')}
+            items={heatSectors.map((value) => ({ value, label: value === 'all' ? t('us.sectors.all') : t(`us.sector.${value}`) }))}
+            value={sector}
+            onChange={(v) => setSector(v as HeatSector)}
+            className={styles.chipTabs}
           />
-        </Inset>
+        </Stack>
         {/* FLAG: heatmap tiles are hand-made buttons with computed colour strength; real prices, ticking with live.ts */}
         <Inset paddingInline="16" paddingBlock="00">
           <Grid columns={3} gap="00" className={styles.heatmap}>
@@ -22954,34 +23187,32 @@ export function UsHome({ usState = 'activate', onActivate, onStock, onMarket, on
         </Inset>
       </Stack>
 
-      <Stack as="section" gap="12" aria-label={t('us.themes.title')}>
-        <Inset paddingInline="16" paddingBlock="00"><SectionHeader title={t('us.themes.title')} /></Inset>
-        <Inset paddingInline="16" paddingBlock="00">
-          <Grid columns={2} gap="12">
-            {themes.map((theme) => (
-              <Card key={theme.id} onClick={openMarketForThemes} surface="default" padding="none" className={styles.theme}>
-                <span className={styles.themeHead}>
-                  <span>{t(`us.theme.${theme.id}`)}</span>
-                  <span className={styles.titanArrow}><Icon icon={msChevronRight} size={16} /></span>
+      {/* Explore by themes: the IND tab's "Invest in Ideas" card with US themes. A tap opens Market's US list. */}
+      <Stack as="section" gap="16" aria-label={t('us.themes.title')}>
+        <Inset paddingInline="16" paddingBlock="00"><SectionHeader title={t('us.themes.title')} description={t('us.themes.description')} /></Inset>
+        <Rail label={t('us.themes.railLabel')} visible={1.19}>
+          {usThemes.map((theme) => (
+            <Card key={theme.id} onClick={openMarketForThemes}>
+              <span className={homeStyles.cardStack}>
+                <span className={homeStyles.logos} aria-hidden="true">
+                  {theme.logos.map((sym) => <Avatar key={sym} initials={sym} src={usLogo(sym)} size={48} shape="rounded" />)}
                 </span>
-                {/* FLAG: hand-made overlapping logo stack instead of L3 Avatar group */}
-                <span className={styles.stack}>
-                  {theme.logos.map((sym) => (
-                    <span key={sym} className={styles.stackLogo}><Avatar src={usLogo(sym)} initials={sym} size={24} /></span>
-                  ))}
-                  <span className={styles.stackMore}>{theme.more}</span>
+                <span className={homeStyles.basketName}>{theme.name}</span>
+                <span className={homeStyles.cardRow}>
+                  <span className={homeStyles.cardMeta}>{t(theme.unit === 'etfs' ? 'us.themes.etfs' : 'us.themes.stocks', { count: theme.count })}</span>
+                  <span className={homeStyles.chevron}><Icon icon={msChevronRight} /></span>
                 </span>
-              </Card>
-            ))}
-          </Grid>
-        </Inset>
+              </span>
+            </Card>
+          ))}
+        </Rail>
       </Stack>
     </>
   )
 }
 
 /** A Top Movers row: the stock's real price and day change, ticking (live.ts). */
-function MoverRow({ mover, onOpen }: { mover: MoverToday; onOpen: (sym: string) => void }) {
+function MoverRow({ mover, onOpen, holding = false }: { mover: MoverToday; onOpen: (sym: string) => void; /** Holding US stocks: the second line reads "Category • TSLA". */ holding?: boolean }) {
   const stock = usStock(mover.sym, mover.name)
   const live = useLiveQuote(mover.sym, stock.price, stock.change)
   // A gainer stays a gainer (and a loser a loser) while it ticks: the list was picked by today's direction.
@@ -22993,7 +23224,7 @@ function MoverRow({ mover, onOpen }: { mover: MoverToday; onOpen: (sym: string) 
       <Avatar src={usLogo(mover.sym)} initials={mover.sym} size={24} />
       <span className={styles.rowText}>
         <span className={styles.rowName}>{mover.name}</span>
-        <span className={styles.rowSub}>{mover.sym}</span>
+        <span className={styles.rowSub}>{holding ? t('us.movers.holdingSub', { sym: mover.sym }) : mover.sym}</span>
       </span>
       <span className={styles.rowPrice}>
         <span className={styles.rowValue}><Usd value={live.price} align="end" /></span>
@@ -23003,19 +23234,45 @@ function MoverRow({ mover, onOpen }: { mover: MoverToday; onOpen: (sym: string) 
   )
 }
 
-/** A titan card's sparkline and foot: market cap (sample) and the real day change, ticking. */
-function TitanFoot({ sym, cap }: { sym: string; cap: string }) {
-  const stock = usStock(sym)
-  const live = useLiveQuote(sym, stock.price, stock.change)
+/** The fund's own logo (its issuer: SPDR, Invesco, Vanguard…) in a 40 circle on its plate; the ticker when none. */
+function EtfFundLogo({ sym }: { sym: string }) {
+  const logo = etfIssuerLogo(sym)
+  if (!logo) return <Avatar initials={sym} size={40} />
+  return (
+    <span className={styles.fundLogo} data-fill={logo.fill || undefined} style={{ background: logo.plate }} aria-hidden="true">
+      <img src={logo.src} alt="" />
+    </span>
+  )
+}
+
+/**
+ * A Discover ETFs row (3 Nov): the Market page's card (L3 ListCell, the same as the ETF list): the fund's logo (40), the
+ * plain name as the label ("Top 500 US stocks", Label 16), "SPY · SPDR S&P 500 ETF" under it (the name ends in "…"),
+ * then the ticking price (Label 16) over the change (▼ and the size, no sign).
+ */
+function EtfRow({ etf, onOpen }: { etf: { sym: string; name: string; plain: string }; onOpen: () => void }) {
+  const stock = usStock(etf.sym, etf.name)
+  const live = useLiveQuote(etf.sym, stock.price, stock.change)
   const up = live.changePct >= 0
   return (
-    <>
-      <img src={up ? sparkUp : sparkDown} alt="" className={styles.spark} data-flip={!up || undefined} />
-      <span className={styles.titanFoot}>
-        <Usd text={cap} layout="inline" />
-        <span className={styles.titanChange} data-up={up || undefined}>{formatPct(live.changePct)}</span>
-      </span>
-    </>
+    <ListCell
+      variant="card"
+      as="button"
+      iconLeft={<span className={styles.fundLogoSlot}><EtfFundLogo sym={etf.sym} /></span>}
+      label={etf.plain}
+      description={<span className={styles.etfSub}><span className={styles.etfSym}>{etf.sym} ·</span> {etf.name}</span>}
+      trailing={
+        <span className={styles.etfPrice}>
+          {/* No "≈ ₹" line on Discover ETFs (2 Nov), as on the ETF list: inline drops it. */}
+          <span className={styles.etfValue}><Usd value={live.price} layout="inline" /></span>
+          <span className={styles.etfMove} data-up={up || undefined} aria-label={`${up ? 'up' : 'down'} ${Math.abs(live.changePct).toFixed(2)}%`}>
+            <span className={styles.etfTri} aria-hidden="true" />
+            <span aria-hidden="true">{Math.abs(live.changePct).toFixed(2)}%</span>
+          </span>
+        </span>
+      }
+      onClick={onOpen}
+    />
   )
 }
 ```
@@ -23223,7 +23480,75 @@ export const formatUsd = (n: number) => `$${n.toFixed(2)}`
 /** Tile colour strength: 0.55 at flat up to 1 at ±3%. */
 export const heatStrength = (pct: number) => Math.min(1, 0.55 + (Math.abs(pct) / 3) * 0.45)
 
-// ---- Explore by themes ----
+// ---- Top analyst picks (US Stocks design, 2 Nov) ----
+
+/** The analysts' consensus and the 7-day move (sample). The card reuses the titan card: logo · name · sparkline, then
+ *  "Recommendation" and "7D". */
+export type AnalystPick = { sym: string; name: string; rating: 'Strong Buy' | 'Buy' | 'Sell'; week: number }
+export const analystPicks: AnalystPick[] = [
+  { sym: 'AMZN', name: 'Amazon', rating: 'Strong Buy', week: 0.92 },
+  { sym: 'NVDA', name: 'NVIDIA', rating: 'Strong Buy', week: 3.48 },
+  { sym: 'MSFT', name: 'Microsoft', rating: 'Strong Buy', week: -0.61 },
+  { sym: 'AVGO', name: 'Broadcom', rating: 'Strong Buy', week: 2.15 },
+  { sym: 'META', name: 'Meta', rating: 'Buy', week: 1.37 },
+  { sym: 'UBER', name: 'Uber', rating: 'Buy', week: -1.24 },
+]
+
+// ---- Discover ETFs (US Stocks design, 2 Nov) ----
+
+export type EtfCountry = 'US' | 'China' | 'Japan' | 'Europe' | 'Korea'
+export const etfCountries: EtfCountry[] = ['US', 'China', 'Japan', 'Europe', 'Korea']
+/**
+ * Regular ETFs by country (prices from the US snapshot via usStock). The row leads with `plain` (what it is, 2 Nov —
+ * tickers mean nothing to a new user), then "SYM · companies people know". Same words as the ETF list (us-stocks).
+ * `holdings` (biggest first) and `total` feed the logo square, as on the ETF list (sample, same as the us-stocks data).
+ */
+export const usEtfs: { sym: string; name: string; plain: string; known: string; country: EtfCountry; holdings: string[]; total: number }[] = [
+  { sym: 'SPY', name: 'SPDR S&P 500 ETF', plain: 'Top 500 US stocks', known: 'Apple, Microsoft, NVIDIA', country: 'US', holdings: ['NVDA', 'MSFT', 'AAPL'], total: 503 },
+  { sym: 'QQQ', name: 'Invesco QQQ Trust', plain: "Nasdaq's top 100", known: 'Apple, Microsoft, Amazon', country: 'US', holdings: ['NVDA', 'MSFT', 'AAPL'], total: 101 },
+  { sym: 'VTI', name: 'Vanguard Total Stock Market', plain: 'The whole US market', known: 'Apple, Microsoft, Amazon', country: 'US', holdings: ['NVDA', 'MSFT', 'AAPL'], total: 3612 },
+  { sym: 'SMH', name: 'VanEck Semiconductor ETF', plain: 'Top 25 chip stocks', known: 'NVIDIA, Broadcom, AMD', country: 'US', holdings: ['NVDA', 'AVGO', 'AMD'], total: 26 },
+  { sym: 'MCHI', name: 'iShares MSCI China ETF', plain: 'Big Chinese stocks', known: 'Alibaba, Tencent, Xiaomi', country: 'China', holdings: ['BABA', 'PDD', 'BIDU'], total: 558 },
+  { sym: 'KWEB', name: 'KraneShares China Internet', plain: 'China internet stocks', known: 'Alibaba, Tencent, Temu (PDD)', country: 'China', holdings: ['BABA', 'PDD', 'BIDU'], total: 3 },
+  { sym: 'EWJ', name: 'iShares MSCI Japan ETF', plain: 'Big Japanese stocks', known: 'Toyota, Sony, Nintendo', country: 'Japan', holdings: ['TM', 'SONY', 'MUFG'], total: 186 },
+  { sym: 'VGK', name: 'Vanguard FTSE Europe ETF', plain: 'Big European stocks', known: 'Nestlé, Louis Vuitton, ASML', country: 'Europe', holdings: ['ASML', 'NVO', 'SAP'], total: 1284 },
+  { sym: 'EWY', name: 'iShares MSCI South Korea', plain: 'Big Korean stocks', known: 'Samsung, SK Hynix, Hyundai', country: 'Korea', holdings: ['SSNLF', 'HXSCL'], total: 2 },
+]
+
+// ---- Sectors heatmap (US Stocks design, 2 Nov: the heatmap, by sector and cap) ----
+
+export type HeatSector = 'all' | 'tech' | 'fin' | 'health' | 'consumer' | 'energy' | 'industrials'
+/** Pill labels: copy `us.sector.<value>` ('all' → `us.sectors.all`). */
+export const heatSectors: HeatSector[] = ['all', 'tech', 'fin', 'health', 'consumer', 'energy', 'industrials']
+const SECTOR_SYMBOLS: Record<Exclude<HeatSector, 'all'>, string[]> = {
+  tech: ['NVDA', 'MSFT', 'AAPL', 'ORCL', 'AMD', 'INTC', 'CRM', 'ADBE', 'AVGO'],
+  fin: ['JPM', 'BAC', 'GS', 'WFC', 'MS', 'C', 'V', 'AXP', 'MA'],
+  health: ['LLY', 'PFE', 'UNH', 'MRK', 'ABBV', 'JNJ', 'ISRG', 'BMY', 'TMO'],
+  consumer: ['AMZN', 'NKE', 'COST', 'SBUX', 'MCD', 'TGT', 'KO', 'LULU', 'WMT'],
+  energy: ['XOM', 'CVX', 'COP', 'OXY', 'SLB', 'HAL', 'EOG', 'MPC', 'PSX'],
+  industrials: ['GE', 'BA', 'CAT', 'UPS', 'HON', 'MMM', 'RTX', 'DE', 'LMT'],
+}
+/** The nine tiles for a sector and cap tier (each tier starts the list at a different stock, so the map changes). */
+export const sectorSymbols = (sector: HeatSector, capIndex: number) => {
+  const list = sector === 'all' ? heatSymbols : SECTOR_SYMBOLS[sector]
+  return list.map((_, i) => list[(i + capIndex * 2) % list.length])
+}
+
+// ---- Explore by themes (US Stocks design, 2 Nov: the IND "Invest in Ideas" card with US themes) ----
+
+/** A theme: its name, up to five member tickers for the logo grid, and how many stocks (or ETFs) it holds. */
+export const usThemes: { id: string; name: string; logos: string[]; count: number; unit: 'stocks' | 'etfs' }[] = [
+  { id: 'ai', name: 'Artificial Intelligence', logos: ['NVDA', 'MSFT', 'GOOGL', 'META', 'PLTR'], count: 27, unit: 'stocks' },
+  { id: 'defense', name: 'Defense', logos: ['LMT', 'RTX', 'NOC', 'GD', 'BA'], count: 15, unit: 'stocks' },
+  { id: 'oil', name: 'Oil Price Dependents', logos: ['XOM', 'CVX', 'COP', 'OXY', 'SLB'], count: 18, unit: 'stocks' },
+  { id: 'consumer', name: 'Consumer Brands', logos: ['NKE', 'SBUX', 'KO', 'MCD', 'COST'], count: 33, unit: 'stocks' },
+  { id: 'space', name: 'Space', logos: ['RKLB', 'ASTS', 'LMT', 'BA', 'SPCE'], count: 11, unit: 'stocks' },
+  { id: 'dividend', name: 'Dividend Stocks', logos: ['KO', 'JNJ', 'PEP', 'PFE', 'XOM'], count: 43, unit: 'stocks' },
+  // Leveraged ETFs theme off for now (2 Nov).
+  { id: 'parking', name: 'Dollar Parking', logos: ['SGOV', 'BIL', 'SHV'], count: 9, unit: 'etfs' },
+]
+
+// ---- Explore by themes (earlier version) ----
 
 /** Each theme shows three company logos overlapping and a "+n" disc. Names: copy `us.theme.<id>`. (The prototype used placeholder thumbnails; these are real US tickers.) */
 export const themes: { id: 'trending' | 'leveraged' | 'dividend' | 'parking'; logos: string[]; more: string }[] = [
@@ -23551,11 +23876,13 @@ export function RiskDisclosureSheet({ onAgree, onClose }: { onAgree?: () => void
 }
 
 .logo {
-  border: 2px solid var(--l3-surface-primary); /* FLAG: raw px */
+  box-sizing: border-box;
+  overflow: hidden;
+  border: 2px solid var(--l3-surface-primary); /* FLAG: raw px — the ring between overlapping discs */
   border-radius: var(--l3-radius-full);
   background: var(--l3-surface-secondary);
-  width: 45px; /* FLAG: raw px */
-  height: 45px; /* FLAG: raw px */
+  width: var(--l3-size-44, 44px); /* 40 avatar + 2 ring each side */
+  height: var(--l3-size-44, 44px);
   animation: logo-in .48s var(--pop) calc(.38s + var(--i) * 70ms) both;
   justify-content: center;
   align-items: center;
@@ -23568,16 +23895,6 @@ export function RiskDisclosureSheet({ onAgree, onClose }: { onAgree?: () => void
   margin-right: 0;
 }
 
-.logo[data-dark] {
-  background: var(--l3-static-black); /* brand plate for white / dark-designed marks (Apple, NVIDIA): stays dark in light and dark */
-}
-
-.logoImg {
-  border-radius: var(--l3-radius-full);
-  object-fit: cover;
-  width: 27.5px; /* FLAG: raw px */
-  height: 27.5px; /* FLAG: raw px */
-}
 
 .title {
   margin-bottom: var(--l3-spacing-24);
@@ -23690,6 +24007,19 @@ export function RiskDisclosureSheet({ onAgree, onClose }: { onAgree?: () => void
     animation: none!important;
   }
 }
+
+/* Dark grey plates (2 Nov, not white): each mark sits 10 in from the disc's edge, so the circle never crops it. */
+.logo {
+  background: var(--l3-surface-tertiary);
+}
+
+.logoImg {
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  padding: var(--l3-spacing-10);
+  object-fit: contain;
+}
 ```
 
 ### `src/flows/stocks/components/us/sheets/UsFtuxSheet.tsx`
@@ -23707,6 +24037,7 @@ import { ButtonGroup } from '@l3/components/ButtonGroup'
 import { Icon } from '@l3/components/Icon'
 import { msClose, msHowToReg, msPieChart, msSchedule } from '@l3/icons/material'
 import { t } from '../../../copy'
+import { usLogo } from '../../../../../shared/data/usStocks'
 import bloomBlue from '../../../assets/us/ftux/bloom-blue.svg'
 import bloomRed from '../../../assets/us/ftux/bloom-red.svg'
 import flag from '../../../assets/us/ftux/flag.webp'
@@ -23714,23 +24045,20 @@ import flagGhost from '../../../assets/us/ftux/flag-ghost.png'
 import flagMaskGhost from '../../../assets/us/ftux/flag-mask-ghost.svg'
 import flagMaskMain from '../../../assets/us/ftux/flag-mask-main.svg'
 import markAapl from '../../../assets/us/ftux/mark-aapl.svg'
-import markGoogl from '../../../assets/us/ftux/mark-googl.svg'
-import markMsft from '../../../assets/us/ftux/mark-msft.svg'
-import markNvda from '../../../assets/us/ftux/mark-nvda.svg'
-import tsla from '../../../assets/us/ftux/tsla.png'
 import styles from './UsFtuxSheet.module.css'
 
 /** The width (px) the prototype drew the FTUX artwork on. */
 const ART_FRAME = 360
 
-type CompanyLogo = { name: string; src: string; size?: number; dark?: boolean; round?: boolean }
-
-const logos: CompanyLogo[] = [
-  { name: 'Apple', src: markAapl, size: 21.25, dark: true },
-  { name: 'NVIDIA', src: markNvda, size: 26.25, dark: true },
-  { name: 'Tesla', src: tsla, round: true },
-  { name: 'Microsoft', src: markMsft, size: 20 },
-  { name: 'Google', src: markGoogl, size: 21.25 },
+// The company marks on dark grey plates (2 Nov): the shared US logo PNGs (transparent marks drawn edge to edge) with
+// 10 around them, and Apple's white mark (its shared PNG comes on a white tile). Each disc has a 2px surface ring so
+// the overlapping stack reads as separate discs.
+const logos = [
+  { name: 'Apple', src: markAapl },
+  { name: 'NVIDIA', src: usLogo('NVDA') },
+  { name: 'Tesla', src: usLogo('TSLA') },
+  { name: 'Microsoft', src: usLogo('MSFT') },
+  { name: 'Google', src: usLogo('GOOGL') },
 ]
 
 const benefits = [
@@ -23792,8 +24120,8 @@ export function UsFtuxSheet({ onActivate, onClose }: { onActivate?: () => void; 
         <div className={styles.content}>
           <div className={styles.logos} role="img" aria-label={t('us.ftux.logos')}>
             {logos.map((logo, i) => (
-              <span key={logo.name} className={styles.logo} data-dark={logo.dark || undefined} style={{ '--i': i } as CSSProperties}>
-                {logo.round ? <img src={logo.src} alt="" className={styles.logoImg} /> : <img src={logo.src} alt="" style={{ width: logo.size, height: logo.size }} />}
+              <span key={logo.name} className={styles.logo} style={{ '--i': i } as CSSProperties}>
+                <img src={logo.src} alt="" className={styles.logoImg} />
               </span>
             ))}
           </div>
@@ -23908,10 +24236,11 @@ export function useAutoSlide(count: number, { every = 3000, slideMs = 500, still
 import { liveQuote, useLiveTick } from '../../../../shared/data/live'
 import { heatSymbols, usStock, type HeatValue } from './data'
 
-/** The heatmap's tiles: each stock's real price and day change (the US snapshot), moving every 2 s with live.ts. */
-export function useLiveHeatmap(): HeatValue[] {
+/** The heatmap's tiles: each stock's real price and day change (the US snapshot), moving every 2 s with live.ts.
+ *  `symbols`: the tiles to show (the Sectors heatmap passes a sector's); default the nine on the original heatmap. */
+export function useLiveHeatmap(symbols: string[] = heatSymbols): HeatValue[] {
   const at = useLiveTick()
-  return heatSymbols.map((sym) => {
+  return symbols.map((sym) => {
     const stock = usStock(sym)
     const live = liveQuote(sym, stock.price, stock.change, at)
     return { sym, pct: live.changePct, price: live.price }
@@ -24102,9 +24431,9 @@ export function useSwipeBetween({ canGo, onSwitch, page }: { canGo: (direction: 
   "top.wallet": "Wallet",
   "top.profile": "Profile and settings",
   "indices.label": "Market indices",
-  "holdings.label": "Current holdings",
-  "holdings.overallLabel": "Overall holdings",
-  "holdings.inLabel": "IN holdings",
+  "holdings.label": "Current Holdings",
+  "holdings.overallLabel": "Overall Holdings",
+  "holdings.inLabel": "INR Holdings",
   "products.label": "Products",
   "products.new": "New",
   "shortcuts.title": "Do More With Lemonn",
@@ -24145,8 +24474,8 @@ export function useSwipeBetween({ canGo, onSwitch, page }: { canGo: (direction: 
   "disclosure.readMore": "Read More",
   "disclosure.readLess": "Read Less",
   "us.tabs.label": "Market",
-  "us.tabs.in": "IN Stocks",
-  "us.tabs.us": "US Stocks",
+  "us.tabs.in": "INR Stocks",
+  "us.tabs.us": "USD Stocks",
   "us.tabs.live": "Live till 2:30 AM",
   "us.tabs.usLabel": "US Stocks, live till 2:30 AM IST",
   "us.tabs.inShort": "IND",
@@ -24223,7 +24552,7 @@ export function useSwipeBetween({ canGo, onSwitch, page }: { canGo: (direction: 
   "us.ready.title": "Your money is ready",
   "us.ready.subtitle": "$1,035.37 added to your US wallet",
   "us.ready.cta": "Explore US Stocks",
-  "us.holdings.label": "US holdings",
+  "us.holdings.label": "USD Holdings",
   "us.sheet.close": "Close",
   "us.ftux.title": "Invest in US stocks and ETFs on Lemonn",
   "us.ftux.logos": "Apple, NVIDIA, Tesla, Microsoft and Google",
@@ -24259,7 +24588,33 @@ export function useSwipeBetween({ canGo, onSwitch, page }: { canGo: (direction: 
   "switchGuide.captionTrade": "Trade from $1, even a part of a share",
   "switchGuide.fraction": "0.25 share · $1 minimum",
   "switchGuide.buy": "Buy",
-  "switchGuide.bought": "Bought 0.25 {sym}"
+  "switchGuide.bought": "Bought 0.25 {sym}",
+  "movers.under500": "Under ₹500",
+  "movers.high52": "52W High",
+  "movers.low52": "52W Low",
+  "us.picks.title": "Top analyst picks",
+  "us.picks.railLabel": "Top analyst picks",
+  "us.picks.recommendation": "Recommendation",
+  "us.picks.week": "7D",
+  "us.picks.label": "{name}, {sym}: recommendation {rating}; {direction} {pct}% in the last 7 days",
+  "us.etfs.title": "Discover ETFs",
+  "us.etfs.tabsLabel": "ETF country",
+  "us.etfs.description": "Buy a whole market in one go. An ETF is a basket of stocks that trades like a single share, starting from just $1.",
+  "us.sectors.title": "Sectors",
+  "us.sectors.tabsLabel": "Sector",
+  "us.sectors.all": "All",
+  "us.sector.tech": "Technology",
+  "us.sector.fin": "Financials",
+  "us.sector.health": "Healthcare",
+  "us.sector.consumer": "Consumer",
+  "us.sector.energy": "Energy",
+  "us.sector.industrials": "Industrials",
+  "us.themes.description": "Curated theme-based stock picks",
+  "us.themes.railLabel": "Themes",
+  "us.themes.stocks": "{count} Stocks",
+  "us.themes.etfs": "{count} ETFs",
+  "us.movers.holdingSub": "Category • {sym}",
+  "us.watchlist.name": "Watchlist"
 }
 ```
 
@@ -24283,7 +24638,7 @@ import { companies, companiesByChange, type Company } from '../../shared/data/co
 /** Stocks home — what the API sends for each section, in page order. Sample values; market data from the live app. */
 
 /** Product shortcuts under the holdings: one line on what's special about each. */
-export type Product = { id: 'mutual-funds' | 'fno' | 'commodities' | 'us-stocks' | 'us-etfs' | 'us-fractional' | 'us-hours'; name: string; highlight: string; detail: string; isNew?: boolean }
+export type Product = { id: 'mutual-funds' | 'fno' | 'commodities' | 'us-stocks' | 'us-etfs' | 'us-fractional' | 'us-hours' | 'us-themes'; name: string; highlight: string; detail: string; isNew?: boolean }
 export const products: Product[] = [
   { id: 'mutual-funds', name: 'Mutual funds', highlight: '240+', detail: 'funds' },
   { id: 'fno', name: 'Equity F&O', highlight: '0', detail: 'slippage' },
@@ -24301,30 +24656,32 @@ export const productsWithUs: Product[] = [
   { id: 'commodities', name: 'Commodities', highlight: '0', detail: 'brokerage' },
   { id: 'us-stocks', name: 'US Stocks', highlight: 'Opens', detail: '8:00 PM', isNew: true },
 ]
-/** The US home's own tiles (two-homes versions V10–V13): what's different about investing in the US. */
+/** The US Stocks tab's tiles (every version, and the two-homes US home), as the US Stocks design (2 Nov): ETFs opens
+ *  the ETF list; Fractional and Themes are promises only. */
 export const productsUs: Product[] = [
-  { id: 'us-etfs', name: 'ETFs', highlight: '3x', detail: 'leveraged' },
-  { id: 'us-fractional', name: 'Fractional', highlight: 'From', detail: '$1' },
-  { id: 'us-hours', name: 'Market hours', highlight: '8 PM', detail: 'to 2:30 AM' },
+  { id: 'us-etfs', name: 'ETFs', highlight: '500+', detail: 'funds' },
+  { id: 'us-fractional', name: 'Fractional', highlight: '$1', detail: 'to start' },
+  { id: 'us-themes', name: 'Themes', highlight: '12+', detail: 'curated' },
 ]
 
 /** "Do more with Lemonn": feature shortcuts, each with an optional count or "New" flag. */
 /** `art` names the shortcut's custom two-tone icon (Jojo's, assets/shortcuts/<art>.svg — not an L3 system icon). */
 export type ShortcutArt = 'analysis' | 'ipo' | 'watchlist' | 'referral' | 'etf'
 export type Shortcut = { id: string; label: string; art: ShortcutArt; badge?: { count?: number; text?: string } }
+// As the US Stocks design (2 Nov): Analysis 3 New · IPO 5 New · Watchlist 1 · Referral New.
 export const shortcuts: Shortcut[] = [
-  { id: 'trade-ideas', label: 'Trade Ideas', art: 'analysis' },
+  { id: 'analysis', label: 'Analysis', art: 'analysis', badge: { text: '3 New' } },
   { id: 'ipo', label: 'IPO', art: 'ipo', badge: { text: '5 New' } },
-  { id: 'watchlist', label: 'Watchlist', art: 'watchlist' },
+  { id: 'watchlist', label: 'Watchlist', art: 'watchlist', badge: { count: 1 } },
   { id: 'referral', label: 'Referral', art: 'referral', badge: { text: 'New' } },
 ]
 
-/** The US Stocks tab's shortcuts: Analysis · ETFs · Watchlist · Referral (no badges). */
+/** The US Stocks tab's shortcuts: Analysis · ETFs · Watchlist · Referral, with the same badges (ETFs takes IPO's). */
 export const usShortcuts: Shortcut[] = [
-  { id: 'analysis', label: 'Analysis', art: 'analysis' },
-  { id: 'etfs', label: 'ETFs', art: 'etf' },
-  { id: 'watchlist', label: 'Watchlist', art: 'watchlist' },
-  { id: 'referral', label: 'Referral', art: 'referral' },
+  { id: 'analysis', label: 'Analysis', art: 'analysis', badge: { text: '3 New' } },
+  { id: 'etfs', label: 'ETFs', art: 'etf', badge: { text: '5 New' } },
+  { id: 'watchlist', label: 'Watchlist', art: 'watchlist', badge: { count: 1 } },
+  { id: 'referral', label: 'Referral', art: 'referral', badge: { text: 'New' } },
 ]
 
 /**
@@ -24332,7 +24689,9 @@ export const usShortcuts: Shortcut[] = [
  * All three come from the company catalogue (src/shared/data/companies.ts — a real Yahoo Finance snapshot, refreshed
  * at runtime), so they're read at render time: call `topMovers(list)` inside a component that calls `useMarketSnapshot()`.
  */
-export type MoverList = 'gainers' | 'losers' | 'under-100'
+/** The chips (US Stocks design, 2 Nov): Under ₹100 · Under ₹500 · 52W High · 52W Low. Gainers / losers stay for the
+ *  board's older states. */
+export type MoverList = 'under-100' | 'under-500' | 'high-52' | 'low-52' | 'gainers' | 'losers'
 /** How many cards a list shows (two rows of three). */
 export const MOVERS_COUNT = 6
 
@@ -24348,10 +24707,22 @@ function asStock(c: Company): Stock {
  */
 export function topMovers(list: MoverList): Stock[] {
   const priced = Object.values(companies).filter((c) => c.market)
+  // Under ₹100 / ₹500: the best movers today under that price (cheapest first if none rose). 52W High / Low: the
+  // stocks closest to their 52-week high / low.
+  const under = (cap: number) => {
+    const cheap = priced.filter((c) => c.market!.price < cap)
+    return cheap.length ? cheap.sort((a, b) => b.market!.changePct - a.market!.changePct) : priced.sort((a, b) => a.market!.price - b.market!.price)
+  }
   const picked =
     list === 'under-100'
-      ? priced.sort((a, b) => a.market!.price - b.market!.price)
-      : companiesByChange(list).filter((c) => (list === 'gainers' ? c.market!.changePct > 0 : c.market!.changePct < 0))
+      ? under(100)
+      : list === 'under-500'
+        ? under(500)
+        : list === 'high-52'
+          ? priced.sort((a, b) => b.market!.price / b.market!.high52 - a.market!.price / a.market!.high52)
+          : list === 'low-52'
+            ? priced.sort((a, b) => a.market!.price / a.market!.low52 - b.market!.price / b.market!.low52)
+            : companiesByChange(list).filter((c) => (list === 'gainers' ? c.market!.changePct > 0 : c.market!.changePct < 0))
   return picked.slice(0, MOVERS_COUNT).map(asStock)
 }
 
@@ -24417,14 +24788,14 @@ export { disclosure } from '../../shared/data/broker'
 ### `src/flows/stocks/index.tsx`
 
 ```tsx
-import type { ComponentProps } from 'react'
+import { useState, type ComponentProps } from 'react'
 import type { Flow } from '../types'
 import { goToTab } from '../../shared/ui/MainNav'
 import type { Go } from '../types'
 import { Home } from './screens/Home'
 import { activeHomeVersions, DEFAULT_HOME_VERSION } from './components/homeVersions'
 import type { UsState } from './components/us/data'
-import { useUsJourney } from '../../shared/userStatus'
+import { useUserStatus, useUsJourney } from '../../shared/userStatus'
 import { ActivationApprovedSheet } from './components/us/sheets/ActivationApprovedSheet'
 import { ActivationSubmittedSheet } from './components/us/sheets/ActivationSubmittedSheet'
 import { RiskDisclosureSheet } from './components/us/sheets/RiskDisclosureSheet'
@@ -24464,10 +24835,14 @@ const stateTaps = (go: Go, usState: UsState): Partial<ComponentProps<typeof Home
  * activation, USD wallet, holdings). Picking a status shows its US tab. A US stock opens the stock page and the wallet
  * the wallet's US tab, which follow the same status (the wallet opens on the Indian tab until US Stocks is activated).
  */
+// User status "FTUX bottom sheet" (2 Nov): the Home opens with the US Stocks intro sheet over it. Activate → the risk
+// disclosure; ✕ closes it (until the Home opens again in that state).
 function HomeInState({ go }: { go: Go }) {
   const usState: UsState = useUsJourney()
   const wallet = usState === 'kyc' || usState === 'activate' ? 'us-stocks-53' : 'us-stocks-54'
-  return <Home usState={usState} {...chrome(go)} {...usNav(go)} {...stateTaps(go, usState)} onUsStock={() => go('us-stocks-13')} onWallet={() => go(wallet)} />
+  const [closed, setClosed] = useState(false)
+  const sheet = useUserStatus().us === 'ftux' && !closed ? <UsFtuxSheet onActivate={() => go('stocks-12')} onClose={() => setClosed(true)} /> : undefined
+  return <Home usState={usState} {...chrome(go)} {...usNav(go)} {...stateTaps(go, usState)} onUsStock={() => go('us-stocks-13')} onWallet={() => go(wallet)} sheet={sheet} />
 }
 
 /**
@@ -24499,7 +24874,7 @@ export const stocks: Flow = {
   screens: [
     { id: 'stocks-01', name: 'Home', badge: 'changed', badgeNote: 'Header hides on scroll; DASH pill removed; back returns to the IND / US tab you left', figma: '5714:64982', group: 'ftux', note: 'The Stocks home in the user status picked in the prototype settings (User status: US Stocks activation — Lemonn KYC pending → … → Activated —, USD wallet, US holdings — the same settings the US stock page and the wallet follow). Picking a status shows its US tab. Each state is also a screen of its own (hidden in the list), which the activation and add-money taps go to.', tab: true, render: (go) => <HomeInState go={go} /> },
     { id: 'stocks-02', hidden: true, name: 'Home · top movers & watchlists', badge: 'changed', badgeNote: 'Compact IND / US tabs under the index strip when scrolled; switching tabs keeps the scroll', figma: '', note: 'Same page, scrolled.', tab: true, render: (go) => <Home onTab={(t) => goToTab(go, t)} onSearch={(m) => go(searchFor(m))} onProfile={() => go('profile-01')} {...usNav(go)} scrollTo="movers" /> },
-    { id: 'stocks-03', hidden: true, name: 'Home · top losers', figma: '', note: 'The "Top losers" chip picked.', tab: true, render: (go) => <Home onTab={(t) => goToTab(go, t)} onSearch={(m) => go(searchFor(m))} onProfile={() => go('profile-01')} {...usNav(go)} scrollTo="movers" movers="losers" /> },
+    { id: 'stocks-03', hidden: true, name: 'Home · 52W Low', figma: '', note: 'The "52W Low" chip picked.', tab: true, render: (go) => <Home onTab={(t) => goToTab(go, t)} onSearch={(m) => go(searchFor(m))} onProfile={() => go('profile-01')} {...usNav(go)} scrollTo="movers" movers="low-52" /> },
     { id: 'stocks-04', hidden: true, name: 'Home · Smart Invest', figma: '', note: 'Same page, scrolled: managed strategies, then the announcement.', tab: true, render: (go) => <Home onTab={(t) => goToTab(go, t)} onSearch={(m) => go(searchFor(m))} onProfile={() => go('profile-01')} {...usNav(go)} scrollTo="invest" /> },
     { id: 'stocks-05', hidden: true, name: 'Home · sectors & highlights', figma: '', note: 'Same page, scrolled.', tab: true, render: (go) => <Home onTab={(t) => goToTab(go, t)} onSearch={(m) => go(searchFor(m))} onProfile={() => go('profile-01')} {...usNav(go)} scrollTo="sectors" /> },
     { id: 'stocks-06', hidden: true, name: 'Home · highlights & idea baskets', figma: '', note: 'Same page, scrolled. (The live app no longer has Trade ideas here — removed 2026-10-22.)', tab: true, render: (go) => <Home onTab={(t) => goToTab(go, t)} onSearch={(m) => go(searchFor(m))} onProfile={() => go('profile-01')} {...usNav(go)} scrollTo="highlights" /> },
@@ -24527,14 +24902,14 @@ export const stocks: Flow = {
 ```css
 /*
  * Stocks home — page layout. A grey summary area (indices, holdings, products) and, over its bottom edge, the feed on
- * a rounded sheet (radius 32 at the top), like the live app. The grey area is intentional and high-emphasis (the
- * account summary), so a large surface/secondary block is allowed here (DESIGN_SYSTEM 7.2). The layout is L3 Stack /
+ * a rounded sheet (radius 32 at the top), like the live app. The grey area is surface/primary (2 Nov; it was
+ * surface/secondary), with the top bar, the ticker's band and the market tabs on the same grey. The layout is L3 Stack /
  * Section; what those blocks don't cover lives here: uneven padding (16 / 48, 16 / 24), the feed's overlap and
  * top-only radius, the default surface and the accent tints.
  */
 .summary {
   padding: var(--l3-spacing-24) 0 var(--l3-spacing-48); /* 24 under the index marquee, which sits above it */
-  background: var(--l3-surface-secondary);
+  background: var(--l3-surface-primary);
 }
 
 .feed {
@@ -24645,7 +25020,7 @@ export const stocks: Flow = {
   position: absolute;
   inset: calc(-1 * var(--band-pad)) 0;
   z-index: -1;
-  background: var(--l3-surface-secondary); /* the summary's grey: invisible at the top of the page */
+  background: var(--l3-surface-primary); /* the summary's grey: invisible at the top of the page */
 }
 
 .marquee:not([data-state='top']) .band {
@@ -24666,8 +25041,10 @@ export const stocks: Flow = {
   pointer-events: none;
 }
 
+/* Folded away 4 past the clip edge, not exactly on it: the active tab's 2 underline sat on the edge and bled through
+   as a white line under the index strip when the mockup is scaled (3 Nov). */
 .pinnedTabs > * {
-  translate: 0 -100%;
+  translate: 0 calc(-100% - var(--l3-spacing-04));
 }
 
 .pinnedTabs[data-open] {
@@ -24759,7 +25136,7 @@ import { UsActivationCard } from '../components/us/UsActivationCard'
 import { UsHome } from '../components/us/UsHome'
 import { neighbour, useSwipeBetween } from '../components/useSwipeBetween'
 import { Shortcuts, TopMovers, Watchlists } from '../components/Discover'
-import { products, productsClassic, productsUs, productsWithUs, type MoverList } from '../data'
+import { products, productsClassic, productsWithUs, type MoverList } from '../data'
 import { t } from '../copy'
 import styles from './Home.module.css'
 
@@ -25028,12 +25405,14 @@ export function Home({ scrollTo = 'top', market = 'in', movers, onTab, onSearch,
   const switchInPage = (next: Market) => switchTo(next, true)
   // The US tab's summary: the status card (KYC → activation → add money → buy) in place of the holdings until every
   // step is done and the user holds a US stock; then the US holdings in dollars replace the card.
-  const usCard = usState !== 'holding'
-  // V2–V4 (the switch over the feed): the tabs are the feed's, not the page's. The top keeps "Current holdings" with its
-  // own IN / US switch, whatever tab the feed is on; only the index marquee follows the tabs. The US activation card
+  // Money ready (3 Nov): no card — the Aerobar ("Your money is ready") says it; the summary shows US holdings at $0.00.
+  const usCard = usState !== 'holding' && usState !== 'ready'
+  // V2–V4 (the switch over the feed): the holdings at the top follow the tab (2 Nov): INR holdings on INR Stocks, USD
+  // holdings on USD Stocks; the ↕ still cycles Overall → INR → USD by hand. The US activation card
   // moves into the US tab's feed — except Lemonn KYC pending, which takes the holdings' place (and leaves the feed).
   const feedTabs = version.place === 'mid' && !twoHomes
-  const [holdingsView, setHoldingsView] = useState<HoldingsView>('overall')
+  const [holdingsView, setHoldingsView] = useState<HoldingsView>(() => (tab === 'us' ? 'us' : 'in'))
+  useEffect(() => setHoldingsView(tab === 'us' ? 'us' : 'in'), [tab])
   const onProduct = (id: string) => {
     if (id === 'us-stocks') switchTo('us', true)
     else if (id === 'us-etfs') onUsEtfs?.()
@@ -25050,7 +25429,8 @@ export function Home({ scrollTo = 'top', market = 'in', movers, onTab, onSearch,
       <div className={styles.header} data-animate={animate || undefined}>
         <div className={styles.topBar} data-hidden={scrollState === 'down' || undefined} inert={scrollState === 'down' || undefined}>
           <TopBar scrolled={scrolled} initials={initials(user.name)} onProfile={onProfile} onSearch={() => onSearch?.(tab)} onWallet={onWallet}
-            compactSearch={twoHomes}
+            // The search shrinks to an icon only where the top bar also holds the market switch / chip (V12, V13).
+            compactSearch={twoHomes && version.place !== 'top'}
             placeholder={twoHomes && tab === 'us' ? t('search.placeholderUs') : undefined}
             market={version.place === 'picker' ? { value: heading ?? tab, onSwitch: () => swapVertically((heading ?? tab) === 'us' ? 'in' : 'us') } : undefined}
             start={version.place === 'header' && twoHomes && <MarketSwitch topBar appearance="pill-group" look={version} value={tab} onChange={switchInPage} />}
@@ -25079,24 +25459,25 @@ export function Home({ scrollTo = 'top', market = 'in', movers, onTab, onSearch,
         </div>
         {twoHomes && tab === 'us' ? (
           <Stack key="summary-us" gap="24" className={styles.summary} data-swap>
-            {usCard ? <Inset paddingInline="16" paddingBlock="00"><UsActivationCard state={usState as Exclude<UsState, 'holding'>} onCta={onActivateUs} /></Inset> : <HoldingsSummary us />}
-            <ProductCards items={productsUs} onProduct={onProduct} />
+            {usCard ? <Inset paddingInline="16" paddingBlock="00"><UsActivationCard state={usState as Exclude<UsState, 'holding'>} onCta={onActivateUs} /></Inset> : <HoldingsSummary us usEmpty={usState !== 'holding'} />}
           </Stack>
         ) : feedTabs ? (
           <Stack key="summary-feed-tabs" gap="24" className={styles.summary}>
             {usState === 'kyc'
               ? <Inset paddingInline="16" paddingBlock="00"><UsActivationCard state="kyc" onCta={onActivateUs} /></Inset>
               : <HoldingsSwitcher view={holdingsView} onView={setHoldingsView} usEmpty={usState !== 'holding'} />}
-            <ProductCards key={version.tiles} items={tiles[version.tiles]} onProduct={onProduct} />
+            {/* No product tiles on the US Stocks tab (2 Nov). */}
+            {tab !== 'us' && <ProductCards key={version.tiles} items={tiles[version.tiles]} onProduct={onProduct} />}
           </Stack>
         ) : (
           <Stack key="summary-in" gap="24" className={styles.summary} data-swap>
             {tab === 'us' && usCard ? (
               <Inset paddingInline="16" paddingBlock="00"><UsActivationCard state={usState as Exclude<UsState, 'holding'>} onCta={onActivateUs} /></Inset>
             ) : (
-              <HoldingsSummary us={tab === 'us'} />
+              <HoldingsSummary us={tab === 'us'} usEmpty={tab === 'us' && usState !== 'holding'} />
             )}
-            <ProductCards key={version.tiles} items={twoHomes ? products : tiles[version.tiles]} onProduct={onProduct} />
+            {/* No product tiles on the US Stocks tab (2 Nov). */}
+            {tab !== 'us' && <ProductCards key={version.tiles} items={twoHomes ? products : tiles[version.tiles]} onProduct={onProduct} />}
           </Stack>
         )}
         {version.place === 'mid' && <MarketSwitchFor version={version} value={tab} onChange={(next) => switchTo(next, true)} />}
@@ -25792,6 +26173,49 @@ export function companiesByChange(direction: 'gainers' | 'losers'): Company[] {
   const list = Object.values(companies).filter((c) => c.market)
   return list.sort((a, b) => (direction === 'gainers' ? b.market!.changePct - a.market!.changePct : a.market!.changePct - b.market!.changePct))
 }
+```
+
+### `src/shared/data/etfIssuers.ts`
+
+```ts
+// The companies that run the ETFs (issuers), their logos and which issuer runs which ETF — shared by the ETF list
+// (us-stocks) and the Stocks home's Discover ETFs (stocks), 3 Nov. Logos are PNGs in src/shared/assets/etf-issuers.
+
+const logoFiles = import.meta.glob('../assets/etf-issuers/*.png', { eager: true, query: '?url', import: 'default' }) as Record<string, string>
+const logoByFile = new Map(Object.entries(logoFiles).map(([path, url]) => [path.slice(path.lastIndexOf('/') + 1, -'.png'.length), url]))
+
+// Each logo sits on a plate (the colour it was drawn for); `fill` logos cover the whole circle.
+type Issuer = { file: string; plate: string; name: string; fill?: boolean }
+const ISSUERS: Record<string, Issuer> = {
+  spdr: { file: 'spdr', plate: 'var(--l3-static-white)', name: 'State Street (SPDR)' },
+  invesco: { file: 'invesco', plate: 'var(--l3-static-black)', name: 'Invesco' },
+  vanguard: { file: 'vanguard', plate: 'var(--l3-static-white)', name: 'Vanguard' },
+  vaneck: { file: 'vaneck', plate: 'var(--l3-static-black)', name: 'VanEck' },
+  ishares: { file: 'ishares', plate: 'var(--l3-static-black)', name: 'BlackRock (iShares)', fill: true },
+  globalx: { file: 'globalx', plate: 'var(--l3-static-white)', name: 'Global X' },
+  procure: { file: 'procure', plate: 'var(--l3-static-white)', name: 'Procure', fill: true },
+  wisdomtree: { file: 'wisdomtree', plate: 'var(--l3-static-white)', name: 'WisdomTree' },
+  kraneshares: { file: 'kraneshares', plate: 'var(--l3-static-white)', name: 'KraneShares', fill: true },
+  proshares: { file: 'proshares', plate: 'var(--l3-static-white)', name: 'ProShares' },
+  direxion: { file: 'direxion', plate: 'var(--l3-static-white)', name: 'Direxion' },
+  graniteshares: { file: 'graniteshares', plate: 'var(--l3-static-white)', name: 'GraniteShares', fill: true },
+}
+const ISSUER_OF: Record<string, string> = {
+  SPY: 'spdr', XLE: 'spdr', QQQ: 'invesco', VTI: 'vanguard', VGK: 'vanguard', SMH: 'vaneck', ITA: 'ishares', INDA: 'ishares',
+  MCHI: 'ishares', EWJ: 'ishares', EWY: 'ishares', BOTZ: 'globalx', UFO: 'procure', EPI: 'wisdomtree', KWEB: 'kraneshares',
+  TQQQ: 'proshares', SQQQ: 'proshares', SOXL: 'direxion', SOXS: 'direxion', SPXL: 'direxion', SPXS: 'direxion',
+  NVDL: 'graniteshares', NVD: 'graniteshares', SGOV: 'ishares', SHV: 'ishares', BIL: 'spdr',
+}
+
+/** The issuer's logo (PNG URL), the plate behind it and whether it fills the circle; undefined when there is none. */
+export const etfIssuerLogo = (sym: string): { src: string; plate: string; fill: boolean } | undefined => {
+  const issuer = ISSUERS[ISSUER_OF[sym]]
+  const src = issuer && logoByFile.get(issuer.file)
+  return issuer && src ? { src, plate: issuer.plate, fill: !!issuer.fill } : undefined
+}
+
+/** The issuer's name ("Vanguard"), for the ETF page. */
+export const etfIssuerName = (sym: string): string | undefined => ISSUERS[ISSUER_OF[sym]]?.name
 ```
 
 ### `src/shared/data/format.ts`
@@ -45042,6 +45466,15 @@ export const usLogoSymbols: string[] = [...logoBySymbol.keys()].sort()
 /** The logo of a US company (PNG URL), or undefined (show initials). */
 export const usLogo = (symbol: string): string | undefined => logoBySymbol.get(symbol)
 
+// Logos from financialmodelingprep.com (2 Nov, ETF holdings) are transparent marks drawn for a white page: they sit on
+// a static white plate so dark marks (Intuitive Surgical, Rocket Lab, Sony) show in dark mode too; the white marks
+// (Lockheed Martin, Northrop Grumman, Samsung) sit on black.
+const PLATED_WHITE = new Set('ABB ADI AMAT ASML ASTS BABA BIDU COP GE GRMN HXSCL ISRG KLAC LRCX MRVL MUFG NVO NXPI PDD RKLB RTX SAP SONY TM TSM TXN'.split(' '))
+const PLATED_BLACK = new Set(['LMT', 'NOC', 'SSNLF'])
+/** The plate a US logo needs inside an Avatar ('white' / 'black'), or undefined when the file brings its own. */
+export const usLogoPlate = (symbol: string): 'white' | 'black' | undefined =>
+  PLATED_BLACK.has(symbol) ? 'black' : PLATED_WHITE.has(symbol) ? 'white' : undefined
+
 // The stock being looked at: a list (Market tab, Search …) sets it, the stock page reads it.
 let viewed: string | undefined
 
@@ -45119,7 +45552,7 @@ export const bankAccount: BankAccount = {
 // with its rupee equivalent at the live USD → INR rate available everywhere. How the ₹ shows is a prototype setting
 // ("₹ equivalent" in the User status panel), so the same screens try each idea:
 //   off    — $ only
-//   below  — $ with a small "≈ ₹1,23,456" line under it
+//   below  — $ with a small "≈ ₹1,23,456" line under it — only in the order pad since 3 Nov (`layout="stack"`)
 //   switch — a $ / ₹ switch (<CurrencySwitch />); picking ₹ turns every US value into rupees, across every screen
 // Screens never format a US amount themselves: <Usd value={188.42} /> (or useUsd() where only a string fits).
 // The rate is real: USDINR=X in us-market-snapshot.json (`npm run us:snapshot`), ticking around it like the prices
@@ -45272,8 +45705,9 @@ export type UsdProps = MoneyFormat & {
   /** … or a $ amount written as text ('$188.42', '+$12.30', '$4.59T'); anything else shows as it is. */
   text?: string
   /**
-   * `stack` (default): the ≈ ₹ line goes under the value. `inline`: no ₹ line (inside a sentence, a button, a tight
-   * row) — the switch still turns it into ₹.
+   * `inline` (default): no ₹ line — the switch still turns it into ₹. `stack`: the ≈ ₹ line goes under the value, with
+   * the "₹ below" setting. Since 3 Nov only the order pad asks for it (its Fee breakdown); listing cards, pages and
+   * sheets show $ only.
    */
   layout?: 'stack' | 'inline'
   /** Text-align of the stack (a right-aligned column → 'end'). */
@@ -45285,7 +45719,7 @@ export type UsdProps = MoneyFormat & {
  * A US amount. Shows $ (or ₹ with the switch on ₹) in the parent's own type style, and with "₹ below" a small
  * secondary "≈ ₹…" line under it. `<Usd value={1234.5} />` · `<Usd text="+$12.30" />` · `<Usd value={4.59e12} compact />`
  */
-export function Usd({ value, text, layout = 'stack', align = 'start', className, ...format }: UsdProps) {
+export function Usd({ value, text, layout = 'inline', align = 'start', className, ...format }: UsdProps) {
   const usd = useUsd()
   const below = useInrEquivalent()
   const parsed = value === undefined && text !== undefined ? parseUsd(text) : undefined
@@ -45922,7 +46356,8 @@ import { useFlowOption } from './prototype'
 export const USER_STATUS = 'app'
 
 export type KycStatus = 'done' | 'pending'
-export type UsActivation = 'kyc' | 'off' | 'review' | 'support' | 'failed' | 'active'
+/** `ftux`: KYC done, not activated, first launch after release — the Home opens with the US Stocks intro sheet. */
+export type UsActivation = 'kyc' | 'off' | 'ftux' | 'review' | 'support' | 'failed' | 'active'
 export type UsWallet = 'empty' | 'onTheWay' | 'funded'
 export type UsHoldings = 'none' | 'some'
 
@@ -45944,6 +46379,7 @@ export const userStatusOptions: FlowOption[] = [
     values: [
       { value: 'kyc', label: 'Lemonn KYC pending' },
       { value: 'off', label: 'KYC done · not activated' },
+      { value: 'ftux', label: 'FTUX bottom sheet' },
       { value: 'review', label: 'Activation under review' },
       { value: 'support', label: 'Under review · contact support' },
       { value: 'failed', label: 'Activation failed' },
@@ -45956,7 +46392,8 @@ export const userStatusOptions: FlowOption[] = [
     id: 'usWallet',
     group: 'User status',
     label: 'USD wallet',
-    values: [{ value: 'empty', label: '$0' }, { value: 'onTheWay', label: 'Money on the way' }, { value: 'funded', label: 'Has money' }],
+    // "Money on the way" removed from the picker (2 Nov); the type keeps it so older saved settings still parse.
+    values: [{ value: 'empty', label: '$0' }, { value: 'funded', label: 'Has money' }],
     default: 'empty',
     showIf: { us: ['active'] },
     floatOn: STATUS_SCREENS,
@@ -45998,10 +46435,11 @@ export type UsJourney = 'kyc' | 'activate' | 'review' | 'support' | 'failed' | '
 
 export function usJourney({ kyc, us, usWallet, usHoldings }: UserStatus): UsJourney {
   if (kyc === 'pending' || us === 'kyc') return 'kyc'
-  if (us === 'off') return 'activate'
+  // The FTUX state is "not activated" everywhere; only the Home adds the intro sheet over it.
+  if (us === 'off' || us === 'ftux') return 'activate'
   if (us !== 'active') return us
-  if (usWallet === 'empty') return 'activated'
-  if (usWallet === 'onTheWay') return 'onTheWay'
+  // A saved "Money on the way" (no longer offered) reads as $0.
+  if (usWallet === 'empty' || usWallet === 'onTheWay') return 'activated'
   return usHoldings === 'some' ? 'holding' : 'ready'
 }
 

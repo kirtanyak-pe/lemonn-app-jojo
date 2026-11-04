@@ -32,9 +32,9 @@
     },
     {
       "id": "stocks-03",
-      "name": "Home · top losers",
+      "name": "Home · 52W Low",
       "figma": "",
-      "note": "The \"Top losers\" chip picked.",
+      "note": "The \"52W Low\" chip picked.",
       "goesTo": [
         "profile-01"
       ],
@@ -289,6 +289,7 @@
     "src/shared/copy.ts",
     "src/shared/data/broker.ts",
     "src/shared/data/companies.ts",
+    "src/shared/data/etfIssuers.ts",
     "src/shared/data/format.ts",
     "src/shared/data/live.ts",
     "src/shared/data/market-snapshot.json",

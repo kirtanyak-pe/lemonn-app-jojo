@@ -4247,7 +4247,8 @@ import { Icon } from '@l3/components/Icon'
 import { Stack } from '@l3/components/Stack'
 import { Stepper } from '@l3/components/Stepper'
 import { Tabs } from '@l3/components/Tabs'
-import { msAdd, msArrowBack, msArrowDropUp, msJoin, msLink, msMonitoring, msPlaylistAdd, msReceiptLong, msKeyboardArrowDown, msRefresh, msSwapHoriz, msUnfoldMore } from '@l3/icons/material'
+import { msAdd, msArrowBack, msArrowDropUp, msJoin, msLink, msMonitoring, msPlaylistAdd, msReceiptLong, msKeyboardArrowDown, msRefresh, msSwapHoriz } from '@l3/icons/material'
+import { lmSwitchArrowVertical } from '@l3/icons/lemonnade'
 import { Screen } from '../../../shared/ui/Screen'
 import { Sheet } from '../../../shared/ui/Sheet'
 import { TradingPane, type PaneLine } from '../components/TradingPane'
@@ -4382,12 +4383,12 @@ function ChartPanel({ instrument, lines, applied = 0, refresh, onTools }: { inst
             <button type="button" className={styles.picker} aria-label={t('scalper.pickInstrument')}>
               <span className={styles.name}>{name}</span>
               {side && <span className={styles.segment}>{side}</span>}
-              <Icon icon={msUnfoldMore} size={16} />
+              <Icon icon={lmSwitchArrowVertical} size={16} />
             </button>
             {segment && (
               <button type="button" className={styles.picker} aria-label={t('scalper.pickSegment')}>
                 <span className={styles.segment}>{segment}</span>
-                <Icon icon={msUnfoldMore} size={16} />
+                <Icon icon={lmSwitchArrowVertical} size={16} />
               </button>
             )}
             <Button variant="ghost" size="sm" iconLeft={<Icon icon={msJoin} />} aria-label={t('scalper.link')} className={styles.link} />
